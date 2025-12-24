@@ -38,7 +38,9 @@ import {
   Search,
   UserPlus,
   CreditCard,
-  Dumbbell
+  Dumbbell,
+  Filter,
+  X
 } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -94,6 +96,16 @@ export default function Schedule() {
     phone: "",
     notes: "",
   });
+
+  // Filtros de status
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const allStatuses = [
+    { value: 'scheduled', label: 'Agendada', color: 'bg-blue-500' },
+    { value: 'confirmed', label: 'Confirmada', color: 'bg-emerald-500' },
+    { value: 'completed', label: 'Realizada', color: 'bg-green-500' },
+    { value: 'no_show', label: 'Falta', color: 'bg-red-500' },
+    { value: 'cancelled', label: 'Cancelada', color: 'bg-gray-400' },
+  ];
 
   const utils = trpc.useUtils();
 
@@ -264,7 +276,24 @@ export default function Schedule() {
   }, [calendarDays]);
 
   const getSessionsForDay = (date: Date) => {
-    return sessions?.filter(s => isSameDay(new Date(s.scheduledAt), date)) || [];
+    let daySessions = sessions?.filter(s => isSameDay(new Date(s.scheduledAt), date)) || [];
+    // Aplicar filtro de status se houver filtros selecionados
+    if (statusFilter.length > 0) {
+      daySessions = daySessions.filter(s => statusFilter.includes(s.status));
+    }
+    return daySessions;
+  };
+
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilter(prev => 
+      prev.includes(status) 
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const clearFilters = () => {
+    setStatusFilter([]);
   };
 
   const filteredStudents = useMemo(() => {
@@ -357,7 +386,7 @@ export default function Schedule() {
 
         {/* Navigation */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-between">
               <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
                 <ChevronLeft className="h-4 w-4" />
@@ -379,6 +408,37 @@ export default function Schedule() {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+            
+            {/* Filtros de Status */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Filter className="h-4 w-4" />
+                <span>Filtrar:</span>
+              </div>
+              {allStatuses.map((status) => (
+                <button
+                  key={status.value}
+                  onClick={() => toggleStatusFilter(status.value)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    statusFilter.includes(status.value)
+                      ? `${status.color} text-white shadow-sm`
+                      : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${statusFilter.includes(status.value) ? 'bg-white' : status.color}`} />
+                  {status.label}
+                </button>
+              ))}
+              {statusFilter.length > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-1 px-2 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                >
+                  <X className="h-3 w-3" />
+                  Limpar
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>

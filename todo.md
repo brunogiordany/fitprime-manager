@@ -328,3 +328,11 @@
 
 ## Bugs Pendentes (v3.1)
 - [x] Edição de status de sessões na aba do aluno (clicar para editar status: Agendada, Confirmada, Realizada, Falta, Cancelada)
+- [x] Filtros por status no calendário (Agendada, Confirmada, Realizada, Falta, Cancelada)
+- [x] +X mais para dias com muitas sessões no calendário
+
+## Gerenciamento de Contratos (v3.2)
+- [ ] Status de contrato: Ativo, Cancelado, Pausado, Inadimplente
+- [ ] Opção de cancelar todos os agendamentos futuros quando contrato for cancelado/pausado
+- [ ] Opção de encerrar cobranças futuras quando contrato for cancelado
+- [ ] Atualizar interface para mostrar e gerenciar status do contrato
