@@ -15,6 +15,7 @@ import Automations from "./pages/Automations";
 import Settings from "./pages/Settings";
 import StudentPortal from "./pages/StudentPortal";
 import Workouts from "./pages/Workouts";
+import Messages from "./pages/Messages";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/cobrancas" component={Charges} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />
+      <Route path="/mensagens" component={Messages} />
       <Route path="/configuracoes" component={Settings} />
       
       <Route path="/404" component={NotFound} />

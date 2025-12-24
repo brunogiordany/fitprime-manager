@@ -47,6 +47,12 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 export default function StudentProfile() {
@@ -93,6 +99,11 @@ export default function StudentProfile() {
   );
 
   const { data: materials } = trpc.materials.list.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+
+  const { data: sessionStats } = trpc.sessions.studentStats.useQuery(
     { studentId },
     { enabled: studentId > 0 }
   );
@@ -536,6 +547,69 @@ export default function StudentProfile() {
 
           {/* Evolution Tab */}
           <TabsContent value="evolution" className="space-y-6">
+            {/* KPIs de Frequência */}
+            {sessionStats && (
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-emerald-600">{sessionStats.attendanceRate}%</p>
+                      <p className="text-sm text-muted-foreground">Taxa de Presença</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{sessionStats.completed}</p>
+                      <p className="text-sm text-muted-foreground">Sessões Realizadas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-amber-600">{sessionStats.noShow}</p>
+                      <p className="text-sm text-muted-foreground">Faltas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{sessionStats.thisMonth}</p>
+                      <p className="text-sm text-muted-foreground">Este Mês</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Gráfico de Frequência Mensal */}
+            {sessionStats && sessionStats.monthlyData && sessionStats.monthlyData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Frequência Mensal</CardTitle>
+                  <CardDescription>Últimos 6 meses de presenças e faltas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={sessionStats.monthlyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="presencas" name="Presenças" fill="oklch(0.55 0.18 160)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="faltas" name="Faltas" fill="oklch(0.7 0.15 60)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>

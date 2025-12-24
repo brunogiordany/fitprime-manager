@@ -83,6 +83,8 @@ export default function Schedule() {
     location: "",
     notes: "",
     planId: "",
+    generateCharges: false,
+    billingDay: "5",
   });
 
   const [newStudent, setNewStudent] = useState({
@@ -132,6 +134,16 @@ export default function Schedule() {
     },
   });
 
+  const generateChargesMutation = trpc.charges.generateFromPackage.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.charges.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Erro ao gerar cobranças: " + error.message);
+    },
+  });
+
   const createStudentMutation = trpc.students.create.useMutation({
     onSuccess: (data) => {
       toast.success("Aluno cadastrado com sucesso!");
@@ -171,6 +183,8 @@ export default function Schedule() {
       location: "",
       notes: "",
       planId: "",
+      generateCharges: false,
+      billingDay: "5",
     });
     setDialogStep("select");
     setStudentSearch("");
@@ -181,6 +195,8 @@ export default function Schedule() {
       toast.error("Selecione um aluno");
       return;
     }
+    
+    // Criar sessão
     createSessionMutation.mutate({
       studentId: parseInt(newSession.studentId),
       scheduledAt: newSession.scheduledAt,
@@ -189,6 +205,16 @@ export default function Schedule() {
       location: newSession.location || undefined,
       notes: newSession.notes || undefined,
     });
+    
+    // Gerar cobranças automáticas se selecionado
+    if (newSession.generateCharges && newSession.planId && newSession.planId !== "none") {
+      generateChargesMutation.mutate({
+        studentId: parseInt(newSession.studentId),
+        planId: parseInt(newSession.planId),
+        startDate: newSession.scheduledAt.split('T')[0],
+        billingDay: parseInt(newSession.billingDay),
+      });
+    }
   };
 
   const handleCreateStudent = () => {
@@ -774,6 +800,45 @@ export default function Schedule() {
                     onChange={(e) => setNewSession({ ...newSession, location: e.target.value })}
                   />
                 </div>
+
+                {/* Opção de gerar cobranças automáticas */}
+                {newSession.planId && newSession.planId !== "none" && (
+                  <div className="p-4 border rounded-lg bg-accent/30 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Gerar cobranças automáticas</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Criar cobranças recorrentes baseadas no plano selecionado
+                        </p>
+                      </div>
+                      <Switch
+                        checked={newSession.generateCharges}
+                        onCheckedChange={(checked) => setNewSession({ ...newSession, generateCharges: checked })}
+                      />
+                    </div>
+                    
+                    {newSession.generateCharges && (
+                      <div className="grid gap-2">
+                        <Label>Dia de vencimento</Label>
+                        <Select
+                          value={newSession.billingDay}
+                          onValueChange={(value) => setNewSession({ ...newSession, billingDay: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                              <SelectItem key={day} value={day.toString()}>
+                                Dia {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid gap-2">
                   <Label>Observações</Label>

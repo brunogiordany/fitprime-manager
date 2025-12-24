@@ -589,6 +589,68 @@ export const appRouter = router({
         await db.deleteSession(input.id);
         return { success: true };
       }),
+    
+    // Estatísticas de frequência por aluno
+    studentStats: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const sessions = await db.getSessionsByStudentId(input.studentId);
+        
+        const now = new Date();
+        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const last3Months = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+        
+        const completed = sessions.filter(s => s.status === 'completed');
+        const noShow = sessions.filter(s => s.status === 'no_show');
+        const cancelled = sessions.filter(s => s.status === 'cancelled');
+        
+        const thisMonthCompleted = completed.filter(s => new Date(s.scheduledAt) >= thisMonth);
+        const lastMonthCompleted = completed.filter(s => {
+          const d = new Date(s.scheduledAt);
+          return d >= lastMonth && d < thisMonth;
+        });
+        
+        // Frequência por mês (last 6 months)
+        const monthlyData = [];
+        for (let i = 5; i >= 0; i--) {
+          const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+          const monthName = monthStart.toLocaleDateString('pt-BR', { month: 'short' });
+          
+          const monthCompleted = completed.filter(s => {
+            const d = new Date(s.scheduledAt);
+            return d >= monthStart && d <= monthEnd;
+          }).length;
+          
+          const monthNoShow = noShow.filter(s => {
+            const d = new Date(s.scheduledAt);
+            return d >= monthStart && d <= monthEnd;
+          }).length;
+          
+          monthlyData.push({
+            month: monthName,
+            presencas: monthCompleted,
+            faltas: monthNoShow,
+          });
+        }
+        
+        const totalSessions = sessions.length;
+        const attendanceRate = totalSessions > 0 
+          ? Math.round((completed.length / totalSessions) * 100) 
+          : 0;
+        
+        return {
+          total: totalSessions,
+          completed: completed.length,
+          noShow: noShow.length,
+          cancelled: cancelled.length,
+          thisMonth: thisMonthCompleted.length,
+          lastMonth: lastMonthCompleted.length,
+          attendanceRate,
+          monthlyData,
+        };
+      }),
   }),
 
   // ==================== PLANS ====================
@@ -818,6 +880,91 @@ export const appRouter = router({
           notes: input.notes,
         });
         return { success: true };
+      }),
+    
+    // Gerar cobranças automáticas ao vincular plano
+    generateFromPackage: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        planId: z.number(),
+        startDate: z.string(),
+        billingDay: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const plan = await db.getPlanById(input.planId, ctx.personal.id);
+        if (!plan) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Plano não encontrado' });
+        }
+        
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        const startDate = new Date(input.startDate);
+        const billingDay = input.billingDay || 5;
+        const charges: { id: number }[] = [];
+        
+        // Calcular número de cobranças baseado no ciclo
+        let numCharges = 1;
+        let monthsPerCharge = 1;
+        
+        if (plan.type === 'recurring') {
+          switch (plan.billingCycle) {
+            case 'weekly':
+              numCharges = 4; // 4 semanas
+              break;
+            case 'biweekly':
+              numCharges = 2; // 2 quinzenas
+              break;
+            case 'monthly':
+              numCharges = 12; // 12 meses
+              break;
+            case 'quarterly':
+              numCharges = 4; // 4 trimestres
+              monthsPerCharge = 3;
+              break;
+            case 'semiannual':
+              numCharges = 2; // 2 semestres
+              monthsPerCharge = 6;
+              break;
+            case 'annual':
+              numCharges = 1; // 1 ano
+              monthsPerCharge = 12;
+              break;
+          }
+        }
+        
+        // Criar cobranças
+        for (let i = 0; i < numCharges; i++) {
+          const dueDate = new Date(startDate);
+          
+          if (plan.billingCycle === 'weekly') {
+            dueDate.setDate(dueDate.getDate() + (i * 7));
+          } else if (plan.billingCycle === 'biweekly') {
+            dueDate.setDate(dueDate.getDate() + (i * 14));
+          } else {
+            dueDate.setMonth(dueDate.getMonth() + (i * monthsPerCharge));
+            dueDate.setDate(billingDay);
+          }
+          
+          const chargeId = await db.createCharge({
+            studentId: input.studentId,
+            personalId: ctx.personal.id,
+            description: `${plan.name} - ${student.name}`,
+            amount: plan.price,
+            dueDate,
+            status: 'pending',
+          });
+          
+          charges.push({ id: chargeId });
+        }
+        
+        return { 
+          success: true, 
+          chargesCreated: charges.length,
+          message: `${charges.length} cobrança(s) gerada(s) automaticamente`
+        };
       }),
   }),
 

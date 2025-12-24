@@ -96,3 +96,16 @@
 - [x] Agendamento: opção de cadastrar cliente durante agendamento
 - [x] Agendamento: selecionar plano do cliente
 - [ ] Agendamento: definir datas de vencimento e cobrança (pendente)
+
+
+## Melhorias Solicitadas (v1.2)
+- [x] Planos pré-criados (templates) para editar
+- [x] Opção de duplicar plano existente
+- [x] Corrigir erro 404 na aba Anamnese do aluno (abas funcionam inline)
+- [x] Corrigir erro 404 na aba Medidas/Evolução do aluno (abas funcionam inline)
+- [x] Corrigir erro 404 na aba Fotos do aluno (abas funcionam inline)
+- [x] Corrigir página de Mensagens (erro 404)
+- [x] Gráficos de evolução dos alunos (frequência, medidas)
+- [x] Cobranças automáticas ao vincular plano ao aluno
+- [x] Frequência semanal: 1x, 2x, 3x, 4x, 5x, 6x por semana
+- [x] Recorrência de cobranças até cancelamento

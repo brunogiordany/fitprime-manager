@@ -30,7 +30,9 @@ import {
   MoreHorizontal,
   Package,
   Calculator,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Copy,
+  Sparkles
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -93,6 +95,56 @@ export default function Plans() {
   const utils = trpc.useUtils();
 
   const { data: plans, isLoading } = trpc.plans.list.useQuery();
+
+  // Planos pré-definidos para facilitar a criação
+  const presetPlans = [
+    { name: "Mensal 2x/semana", type: "recurring" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "2", sessionDuration: "60", price: "400" },
+    { name: "Mensal 3x/semana", type: "recurring" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "3", sessionDuration: "60", price: "550" },
+    { name: "Mensal 4x/semana", type: "recurring" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "4", sessionDuration: "60", price: "700" },
+    { name: "Mensal 5x/semana", type: "recurring" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "5", sessionDuration: "60", price: "850" },
+    { name: "Trimestral 3x/semana", type: "recurring" as PlanType, billingCycle: "quarterly" as BillingCycle, sessionsPerWeek: "3", sessionDuration: "60", price: "1500" },
+    { name: "Semestral 3x/semana", type: "recurring" as PlanType, billingCycle: "semiannual" as BillingCycle, sessionsPerWeek: "3", sessionDuration: "60", price: "2800" },
+    { name: "Anual 3x/semana", type: "recurring" as PlanType, billingCycle: "annual" as BillingCycle, sessionsPerWeek: "3", sessionDuration: "60", price: "5000" },
+    { name: "Pacote 10 Sessões", type: "sessions" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "2", sessionDuration: "60", totalSessions: "10", price: "600" },
+    { name: "Pacote 20 Sessões", type: "sessions" as PlanType, billingCycle: "monthly" as BillingCycle, sessionsPerWeek: "2", sessionDuration: "60", totalSessions: "20", price: "1100" },
+  ];
+
+  const handleUsePreset = (preset: typeof presetPlans[0]) => {
+    setNewPlan({
+      name: preset.name,
+      description: "",
+      type: preset.type,
+      billingCycle: preset.billingCycle,
+      durationMonths: "",
+      totalSessions: preset.totalSessions || "",
+      price: preset.price,
+      pricePerSession: "",
+      sessionsPerWeek: preset.sessionsPerWeek,
+      sessionDuration: preset.sessionDuration,
+      billingDay: "5",
+    });
+    setEditingPlan(null);
+    setIsNewDialogOpen(true);
+  };
+
+  const handleDuplicatePlan = (plan: any) => {
+    setNewPlan({
+      name: `${plan.name} (Cópia)`,
+      description: plan.description || "",
+      type: plan.type,
+      billingCycle: plan.billingCycle || "monthly",
+      durationMonths: plan.durationMonths?.toString() || "",
+      totalSessions: plan.totalSessions?.toString() || "",
+      price: plan.price,
+      pricePerSession: "",
+      sessionsPerWeek: plan.sessionsPerWeek?.toString() || "3",
+      sessionDuration: plan.sessionDuration?.toString() || "60",
+      billingDay: "5",
+    });
+    setEditingPlan(null);
+    setIsNewDialogOpen(true);
+    toast.info("Plano duplicado! Edite as informações e salve.");
+  };
 
   // Cálculo automático bidirecional
   useEffect(() => {
@@ -307,6 +359,40 @@ export default function Plans() {
           </Button>
         </div>
 
+        {/* Planos Pré-definidos */}
+        {(!plans || plans.length === 0) && (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Planos Sugeridos
+              </CardTitle>
+              <CardDescription>
+                Clique em um plano para usá-lo como base. Você pode editar os valores depois.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {presetPlans.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleUsePreset(preset)}
+                    className="p-4 text-left border rounded-lg hover:border-primary hover:bg-accent/50 transition-colors"
+                  >
+                    <p className="font-medium">{preset.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {preset.sessionsPerWeek}x/semana • {preset.sessionDuration}min
+                    </p>
+                    <p className="text-lg font-bold text-primary mt-1">
+                      {formatCurrency(preset.price)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Plans Grid */}
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -336,6 +422,10 @@ export default function Plans() {
                         <DropdownMenuItem onClick={() => handleEditPlan(plan)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Duplicar
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"

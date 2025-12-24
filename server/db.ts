@@ -490,10 +490,16 @@ export async function getPlansByPersonalId(personalId: number) {
     .orderBy(asc(plans.name));
 }
 
-export async function getPlanById(id: number) {
+export async function getPlanById(id: number, personalId?: number) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(plans).where(eq(plans.id, id)).limit(1);
+  
+  const conditions = [eq(plans.id, id)];
+  if (personalId) {
+    conditions.push(eq(plans.personalId, personalId));
+  }
+  
+  const result = await db.select().from(plans).where(and(...conditions)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
