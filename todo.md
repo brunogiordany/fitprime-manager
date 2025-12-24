@@ -279,3 +279,52 @@
 - [x] Editar aluno não funciona - CORRIGIDO (botão Editar no perfil)
 - [ ] Exportar PDF não funciona
 - [x] Treino excluído ainda aparece na lista (precisa lixeira) - RESOLVIDO
+
+## Melhorias Calendário/Agenda estilo Belasis (v3.0)
+
+### Visualização do Calendário
+- [ ] Visualização mensal com "+X more" quando tiver muitos agendamentos
+- [ ] Ao clicar em "+X more", expandir lista de agendamentos do dia
+- [ ] Ao clicar em agendamento, abrir modal de edição completo
+
+### Modal de Edição de Agendamento
+- [ ] Informações do cliente (nome, telefone, link para perfil)
+- [ ] Botões: Conversar (WhatsApp), Ver cliente
+- [ ] Data com opção de reagendar
+- [ ] Status com cores (Confirmado, Não confirmado, Cancelado, Aguardando, Faturado, Bloqueado)
+- [ ] Serviço/Descrição
+- [ ] Profissional
+- [ ] Horário e Duração
+- [ ] Botões: Outros, Salvar, Criar comanda
+
+### Configurações da Agenda (3 abas)
+- [ ] Aba Geral: Filtrar profissionais por serviço, Bloquear horários cancelados
+- [ ] Aba Visualização: Largura colunas, Intervalo (15min), Status padrão, Exibir avatares
+- [ ] Aba Cores: Personalizar cores por status, criar cores customizadas (Cliente VIP, etc)
+
+### Filtros
+- [ ] Filtro por profissional
+- [ ] Filtro por status (Confirmado, Não confirmado, Cancelado, Aguardando, Faturado, Bloqueado)
+- [ ] Botão "Desmarcar tudo"
+
+### Novo Agendamento Melhorado
+- [ ] Selecionar cliente (busca com lista)
+- [ ] Data e Status
+- [ ] Serviço com descrição
+- [ ] Profissional, Horário, Duração
+- [ ] Ações: Enviar lembrete, Encaixar agendamento
+- [ ] Recorrência: Frequência, Repetir X vezes
+- [ ] Observação
+
+### Menu de Ações Rápidas
+- [ ] Bloquear horários
+- [ ] Agrupar agendamentos
+- [ ] Visualização: Diário, Semanal, Mensal
+- [ ] Configurações
+
+### Dashboard - Agenda de Hoje
+- [ ] Ao clicar em sessão, abrir modal de edição (não ir para alunos)
+
+
+## Bugs Pendentes (v3.1)
+- [x] Edição de status de sessões na aba do aluno (clicar para editar status: Agendada, Confirmada, Realizada, Falta, Cancelada)

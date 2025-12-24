@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,8 @@ export default function StudentProfile() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editSessionStatus, setEditSessionStatus] = useState<string>('');
   const photoInputRef = useRef<HTMLInputElement>(null);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,6 +182,18 @@ export default function StudentProfile() {
     onError: (error: any) => {
       toast.error("Erro ao adicionar material: " + error.message);
       setIsUploadingMaterial(false);
+    },
+  });
+
+  const updateSessionMutation = trpc.sessions.update.useMutation({
+    onSuccess: () => {
+      toast.success("Sessão atualizada com sucesso!");
+      utils.sessions.listByStudent.invalidate({ studentId });
+      utils.sessions.studentStats.invalidate({ studentId });
+      setEditingSession(null);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao atualizar sessão: " + error.message);
     },
   });
 
@@ -975,7 +990,7 @@ export default function StudentProfile() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Sessões</CardTitle>
-                  <CardDescription>Histórico de sessões do aluno</CardDescription>
+                  <CardDescription>Histórico de sessões do aluno - clique para editar o status</CardDescription>
                 </div>
                 <Button onClick={() => setLocation(`/agenda?new=true&studentId=${studentId}`)}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -988,8 +1003,11 @@ export default function StudentProfile() {
                     {studentSessions.map((session) => (
                       <div 
                         key={session.id} 
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                        onClick={() => setLocation(`/sessao/${session.id}/treino`)}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          setEditingSession(session);
+                          setEditSessionStatus(session.status);
+                        }}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
@@ -1009,19 +1027,22 @@ export default function StudentProfile() {
                             </p>
                           </div>
                         </div>
-                        <Badge className={`${
-                          session.status === 'completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' :
-                          session.status === 'no_show' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
-                          session.status === 'cancelled' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100' :
-                          session.status === 'confirmed' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
-                          'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
-                        }`}>
-                          {session.status === 'completed' ? 'Realizada' :
-                           session.status === 'no_show' ? 'Falta' :
-                           session.status === 'cancelled' ? 'Cancelada' :
-                           session.status === 'confirmed' ? 'Confirmada' :
-                           'Agendada'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${
+                            session.status === 'completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' :
+                            session.status === 'no_show' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
+                            session.status === 'cancelled' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100' :
+                            session.status === 'confirmed' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
+                            'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
+                          }`}>
+                            {session.status === 'completed' ? 'Realizada' :
+                             session.status === 'no_show' ? 'Falta' :
+                             session.status === 'cancelled' ? 'Cancelada' :
+                             session.status === 'confirmed' ? 'Confirmada' :
+                             'Agendada'}
+                          </Badge>
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1036,6 +1057,103 @@ export default function StudentProfile() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Modal de Edição de Sessão */}
+            <Dialog open={!!editingSession} onOpenChange={(open) => !open && setEditingSession(null)}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Editar Sessão
+                  </DialogTitle>
+                </DialogHeader>
+                {editingSession && (
+                  <div className="space-y-4 py-4">
+                    <div className="bg-accent/30 rounded-lg p-4">
+                      <p className="font-semibold">
+                        {format(new Date(editingSession.scheduledAt), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(editingSession.scheduledAt), "HH:mm")} - {editingSession.duration || 60} min
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Status da Sessão</Label>
+                      <Select
+                        value={editSessionStatus}
+                        onValueChange={setEditSessionStatus}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-500" />
+                              Agendada
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-600" />
+                              Confirmada
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="completed">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                              Realizada
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="no_show">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-red-500" />
+                              Falta
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-gray-400" />
+                              Cancelada
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setLocation(`/sessao/${editingSession.id}/treino`)}
+                      >
+                        <Dumbbell className="h-4 w-4 mr-2" />
+                        Ir para Treino
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEditingSession(null)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (editingSession && editSessionStatus) {
+                        updateSessionMutation.mutate({
+                          id: editingSession.id,
+                          status: editSessionStatus as any,
+                        });
+                      }
+                    }}
+                    disabled={updateSessionMutation.isPending}
+                  >
+                    {updateSessionMutation.isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Payments Tab */}
