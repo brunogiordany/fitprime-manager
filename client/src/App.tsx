@@ -15,7 +15,11 @@ import Automations from "./pages/Automations";
 import Settings from "./pages/Settings";
 import StudentPortal from "./pages/StudentPortal";
 import Workouts from "./pages/Workouts";
+import Measurements from "./pages/Measurements";
 import Messages from "./pages/Messages";
+import WorkoutDetail from "@/pages/WorkoutDetail";
+import WorkoutLog from "@/pages/WorkoutLog";
+import Anamnesis from "./pages/Anamnesis";
 
 function Router() {
   return (
@@ -30,6 +34,10 @@ function Router() {
       <Route path="/alunos/:id" component={StudentProfile} />
       <Route path="/agenda" component={Schedule} />
       <Route path="/treinos" component={Workouts} />
+      <Route path="/treinos/:id" component={WorkoutDetail} />
+            <Route path="/sessao/:sessionId/treino" component={WorkoutLog} />
+      <Route path="/alunos/:studentId/medidas" component={Measurements} />
+      <Route path="/alunos/:studentId/anamnese" component={Anamnesis} />
       <Route path="/cobrancas" component={Charges} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />

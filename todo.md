@@ -109,3 +109,80 @@
 - [x] Cobranças automáticas ao vincular plano ao aluno
 - [x] Frequência semanal: 1x, 2x, 3x, 4x, 5x, 6x por semana
 - [x] Recorrência de cobranças até cancelamento
+
+
+## Melhorias Solicitadas (v1.3) - Medidas Corporais
+- [ ] Sistema de registro de medidas corporais
+  - [ ] Peso, altura, IMC (calculado automaticamente)
+  - [ ] Percentual de gordura corporal
+  - [ ] Circunferências (braço, peito, cintura, quadril, coxa, panturrilha)
+- [ ] Gráficos de evolução temporal das medidas
+- [ ] Comparativo entre datas de medição
+- [ ] Histórico completo de medições
+- [ ] Integração na aba Evolução do perfil do aluno
+
+## Melhorias Solicitadas (v1.4) - Cobranças Reorganizadas
+- [ ] Agrupar cobranças por aluno (não listar todas separadamente)
+- [ ] Clicar no aluno expande/mostra as cobranças dele
+- [ ] Métricas SaaS reais:
+  - [ ] MRR (Monthly Recurring Revenue)
+  - [ ] ARR (Annual Recurring Revenue)
+  - [ ] Churn Rate
+  - [ ] LTV (Lifetime Value)
+  - [ ] Ticket Médio
+
+
+## Melhorias Solicitadas (v1.5) - Planos de Fábrica
+- [ ] Criar 6 planos mensais pré-definidos de fábrica:
+  - [ ] Mensal 1x semana
+  - [ ] Mensal 2x semana
+  - [ ] Mensal 3x semana
+  - [ ] Mensal 4x semana
+  - [ ] Mensal 5x semana
+  - [ ] Mensal 6x semana
+- [ ] Planos criados automaticamente quando personal se cadastra
+- [ ] Valor zerado para personal editar
+- [ ] Opção de duplicar plano existente (já implementado)
+
+
+## Correções Urgentes (v1.6)
+- [ ] Corrigir menu de ações (3 pontinhos) na página de Treinos
+- [ ] Trocar integração Evolution API para Stevo (https://stevo.chat/)
+
+
+## Sistema de Treinos Completo (v1.7)
+- [x] Página de detalhes do treino
+- [x] CRUD de exercícios dentro do treino
+  - [x] Nome do exercício
+  - [x] Grupo muscular
+  - [x] Séries
+  - [x] Repetições
+  - [x] Carga/Peso
+  - [x] Tempo de descanso
+  - [x] Notas/observações
+- [x] Organização por dias da semana (Treino A, B, C)
+- [x] Funcionalidade de editar treino
+- [x] Funcionalidade de duplicar treino
+- [x] Funcionalidade de ver detalhes do treino
+
+
+## Diário de Treino (v1.8)
+- [x] Schema para workout_logs (registro de sessões de treino)
+- [x] Schema para exercise_logs (registro de cada exercício na sessão)
+- [x] Tabela estilo planilha para registrar treino
+  - [x] Data e hora da sessão
+  - [x] Colunas para séries (S1, S2, S3, S4, S5) com Peso/Reps
+  - [x] Coluna de observações
+  - [x] Checkbox de concluído
+- [ ] Histórico de sessões por treino
+- [ ] Comparativo de evolução de carga
+- [x] Personal e aluno podem preencher
+
+
+## Bugs Urgentes (v1.9)
+- [x] Corrigir abas do perfil do aluno que dão erro 404
+  - [x] Anamnese
+  - [x] Evolução/Medidas
+  - [x] Fotos
+  - [x] Treinos
+  - [x] Materiais

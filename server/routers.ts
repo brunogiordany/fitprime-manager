@@ -8,12 +8,27 @@ import * as db from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 
+// Default plans to seed for new personals
+const DEFAULT_PLANS = [
+  { name: 'Mensal 1x semana', description: 'Plano mensal com 1 treino por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 1, sessionDuration: 60, price: '0' },
+  { name: 'Mensal 2x semana', description: 'Plano mensal com 2 treinos por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 2, sessionDuration: 60, price: '0' },
+  { name: 'Mensal 3x semana', description: 'Plano mensal com 3 treinos por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 3, sessionDuration: 60, price: '0' },
+  { name: 'Mensal 4x semana', description: 'Plano mensal com 4 treinos por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 4, sessionDuration: 60, price: '0' },
+  { name: 'Mensal 5x semana', description: 'Plano mensal com 5 treinos por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 5, sessionDuration: 60, price: '0' },
+  { name: 'Mensal 6x semana', description: 'Plano mensal com 6 treinos por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 6, sessionDuration: 60, price: '0' },
+];
+
 // Helper to get or create personal profile
 async function getOrCreatePersonal(userId: number) {
   let personal = await db.getPersonalByUserId(userId);
   if (!personal) {
     const personalId = await db.createPersonal({ userId });
     personal = { id: personalId, userId } as any;
+    
+    // Seed default plans for new personal
+    for (const plan of DEFAULT_PLANS) {
+      await db.createPlan({ ...plan, personalId, isActive: true });
+    }
   }
   return personal;
 }
@@ -290,6 +305,47 @@ export const appRouter = router({
         return { id };
       }),
     
+    update: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        measureDate: z.string(),
+        weight: z.string().optional(),
+        height: z.string().optional(),
+        bodyFat: z.string().optional(),
+        muscleMass: z.string().optional(),
+        chest: z.string().optional(),
+        waist: z.string().optional(),
+        hip: z.string().optional(),
+        rightArm: z.string().optional(),
+        leftArm: z.string().optional(),
+        rightThigh: z.string().optional(),
+        leftThigh: z.string().optional(),
+        rightCalf: z.string().optional(),
+        leftCalf: z.string().optional(),
+        neck: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, measureDate, ...data } = input;
+        
+        // Calculate BMI if weight and height provided
+        let bmi: string | undefined;
+        if (data.weight && data.height) {
+          const w = parseFloat(data.weight);
+          const h = parseFloat(data.height) / 100;
+          if (w > 0 && h > 0) {
+            bmi = (w / (h * h)).toFixed(2);
+          }
+        }
+        
+        await db.updateMeasurement(id, {
+          ...data,
+          measureDate: new Date(measureDate),
+          bmi,
+        });
+        return { success: true };
+      }),
+
     delete: personalProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
@@ -508,6 +564,153 @@ export const appRouter = router({
       }),
   }),
 
+  // ==================== WORKOUT LOGS (Diário de Treino) ====================
+  workoutLogs: router({
+    list: personalProcedure
+      .input(z.object({ workoutId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const logs = await db.getWorkoutLogsByWorkoutId(input.workoutId);
+        // Get exercise logs for each workout log
+        const logsWithExercises = await Promise.all(
+          logs.map(async (log) => {
+            const exerciseLogs = await db.getExerciseLogsByWorkoutLogId(log.id);
+            return { ...log, exerciseLogs };
+          })
+        );
+        return logsWithExercises;
+      }),
+    
+    get: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const log = await db.getWorkoutLogById(input.id);
+        if (!log) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro não encontrado' });
+        }
+        const exerciseLogs = await db.getExerciseLogsByWorkoutLogId(log.id);
+        return { ...log, exerciseLogs };
+      }),
+    
+    create: personalProcedure
+      .input(z.object({
+        workoutId: z.number(),
+        workoutDayId: z.number(),
+        studentId: z.number(),
+        sessionDate: z.string(),
+        duration: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { sessionDate, ...data } = input;
+        const sessionNumber = await db.getNextSessionNumber(input.workoutId, input.workoutDayId);
+        const id = await db.createWorkoutLog({
+          ...data,
+          personalId: ctx.personal.id,
+          sessionDate: new Date(sessionDate),
+          sessionNumber,
+        });
+        return { id, sessionNumber };
+      }),
+    
+    update: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        sessionDate: z.string().optional(),
+        duration: z.number().optional(),
+        notes: z.string().optional(),
+        completed: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, sessionDate, ...data } = input;
+        await db.updateWorkoutLog(id, {
+          ...data,
+          sessionDate: sessionDate ? new Date(sessionDate) : undefined,
+        });
+        return { success: true };
+      }),
+    
+    delete: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteWorkoutLog(input.id);
+        return { success: true };
+      }),
+    
+    // Initialize exercise logs for a new session based on workout day exercises
+    initializeExercises: personalProcedure
+      .input(z.object({
+        workoutLogId: z.number(),
+        workoutDayId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const exercises = await db.getExercisesByWorkoutDayId(input.workoutDayId);
+        const exerciseLogs = exercises.map((exercise, index) => ({
+          workoutLogId: input.workoutLogId,
+          exerciseId: exercise.id,
+          exerciseName: exercise.name,
+          order: index,
+        }));
+        await db.bulkCreateExerciseLogs(exerciseLogs);
+        return { count: exerciseLogs.length };
+      }),
+  }),
+
+  // ==================== EXERCISE LOGS ====================
+  exerciseLogs: router({
+    update: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        set1Weight: z.string().optional(),
+        set1Reps: z.number().optional(),
+        set2Weight: z.string().optional(),
+        set2Reps: z.number().optional(),
+        set3Weight: z.string().optional(),
+        set3Reps: z.number().optional(),
+        set4Weight: z.string().optional(),
+        set4Reps: z.number().optional(),
+        set5Weight: z.string().optional(),
+        set5Reps: z.number().optional(),
+        notes: z.string().optional(),
+        completed: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        await db.updateExerciseLog(id, data);
+        return { success: true };
+      }),
+    
+    bulkUpdate: personalProcedure
+      .input(z.object({
+        logs: z.array(z.object({
+          id: z.number(),
+          set1Weight: z.string().optional(),
+          set1Reps: z.number().optional(),
+          set2Weight: z.string().optional(),
+          set2Reps: z.number().optional(),
+          set3Weight: z.string().optional(),
+          set3Reps: z.number().optional(),
+          set4Weight: z.string().optional(),
+          set4Reps: z.number().optional(),
+          set5Weight: z.string().optional(),
+          set5Reps: z.number().optional(),
+          notes: z.string().optional(),
+          completed: z.boolean().optional(),
+        }))
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const updates = input.logs.map(({ id, ...data }) => ({ id, data }));
+        await db.bulkUpdateExerciseLogs(updates);
+        return { success: true };
+      }),
+    
+    // Get exercise history for progression tracking
+    history: personalProcedure
+      .input(z.object({ exerciseId: z.number(), limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getExerciseHistory(input.exerciseId, input.limit || 10);
+      }),
+  }),
+
   // ==================== SESSIONS ====================
   sessions: router({
     list: personalProcedure
@@ -588,6 +791,17 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await db.deleteSession(input.id);
         return { success: true };
+      }),
+    
+    getById: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const session = await db.getSessionById(input.id);
+        if (!session) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        const student = await db.getStudentById(session.studentId, ctx.personal.id);
+        return { ...session, student };
       }),
     
     // Estatísticas de frequência por aluno

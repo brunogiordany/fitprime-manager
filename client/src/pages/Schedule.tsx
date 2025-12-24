@@ -37,7 +37,8 @@ import {
   AlertCircle,
   Search,
   UserPlus,
-  CreditCard
+  CreditCard,
+  Dumbbell
 } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -537,6 +538,15 @@ export default function Schedule() {
                       </div>
                       <div className="flex items-center gap-3">
                         {getStatusBadge(session.status)}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1"
+                          onClick={() => setLocation(`/sessao/${session.id}/treino`)}
+                        >
+                          <Dumbbell className="h-4 w-4" />
+                          Treino
+                        </Button>
                         {session.status === 'scheduled' && (
                           <div className="flex gap-1">
                             <Button

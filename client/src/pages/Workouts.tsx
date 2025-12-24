@@ -49,11 +49,13 @@ import {
   Calendar
 } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Workouts() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
@@ -99,6 +101,16 @@ export default function Workouts() {
       toast.error("Erro ao excluir: " + error.message);
     },
   });
+
+  const handleDuplicateWorkout = (workout: any) => {
+    createMutation.mutate({
+      studentId: workout.studentId,
+      name: `${workout.name} (Cópia)`,
+      description: workout.description || undefined,
+      type: workout.type || 'strength',
+      difficulty: workout.difficulty || 'intermediate',
+    });
+  };
 
   const handleCreateWorkout = () => {
     if (!selectedStudent) {
@@ -380,15 +392,15 @@ export default function Workouts() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                              <DropdownMenuItem onClick={() => setLocation(`/treinos/${workout.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver Detalhes
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                              <DropdownMenuItem onClick={() => setLocation(`/treinos/${workout.id}`)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toast.info("Funcionalidade em desenvolvimento")}>
+                              <DropdownMenuItem onClick={() => handleDuplicateWorkout(workout)}>
                                 <Copy className="h-4 w-4 mr-2" />
                                 Duplicar
                               </DropdownMenuItem>

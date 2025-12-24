@@ -410,3 +410,50 @@ export const messageLog = mysqlTable("message_log", {
 
 export type MessageLogEntry = typeof messageLog.$inferSelect;
 export type InsertMessageLog = typeof messageLog.$inferInsert;
+
+
+// ==================== WORKOUT LOGS (Diário de Treino) ====================
+export const workoutLogs = mysqlTable("workout_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  workoutId: int("workoutId").notNull().references(() => workouts.id),
+  workoutDayId: int("workoutDayId").notNull().references(() => workoutDays.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  sessionDate: timestamp("sessionDate").notNull(),
+  sessionNumber: int("sessionNumber").default(1), // Sessão 1, 2, 3...
+  duration: int("duration"), // Duração em minutos
+  notes: text("notes"),
+  completed: boolean("completed").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WorkoutLog = typeof workoutLogs.$inferSelect;
+export type InsertWorkoutLog = typeof workoutLogs.$inferInsert;
+
+// ==================== EXERCISE LOGS (Registro de Exercícios por Sessão) ====================
+export const exerciseLogs = mysqlTable("exercise_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  workoutLogId: int("workoutLogId").notNull().references(() => workoutLogs.id),
+  exerciseId: int("exerciseId").notNull().references(() => exercises.id),
+  exerciseName: varchar("exerciseName", { length: 255 }).notNull(), // Snapshot do nome
+  // Séries realizadas (cada série com peso/reps)
+  set1Weight: varchar("set1Weight", { length: 20 }),
+  set1Reps: int("set1Reps"),
+  set2Weight: varchar("set2Weight", { length: 20 }),
+  set2Reps: int("set2Reps"),
+  set3Weight: varchar("set3Weight", { length: 20 }),
+  set3Reps: int("set3Reps"),
+  set4Weight: varchar("set4Weight", { length: 20 }),
+  set4Reps: int("set4Reps"),
+  set5Weight: varchar("set5Weight", { length: 20 }),
+  set5Reps: int("set5Reps"),
+  // Campos adicionais
+  notes: text("notes"),
+  completed: boolean("completed").default(false),
+  order: int("order").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ExerciseLog = typeof exerciseLogs.$inferSelect;
+export type InsertExerciseLog = typeof exerciseLogs.$inferInsert;

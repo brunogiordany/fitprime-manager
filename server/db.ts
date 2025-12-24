@@ -20,6 +20,8 @@ import {
   automations, InsertAutomation, Automation,
   messageQueue, InsertMessageQueue, MessageQueueItem,
   messageLog, InsertMessageLog, MessageLogEntry,
+  workoutLogs, InsertWorkoutLog, WorkoutLog,
+  exerciseLogs, InsertExerciseLog, ExerciseLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -409,6 +411,15 @@ export async function getSessionsByStudentId(studentId: number) {
   return await db.select().from(sessions)
     .where(eq(sessions.studentId, studentId))
     .orderBy(desc(sessions.scheduledAt));
+}
+
+export async function getSessionById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(sessions)
+    .where(eq(sessions.id, id))
+    .limit(1);
+  return result[0] || null;
 }
 
 export async function getTodaySessions(personalId: number) {
@@ -807,4 +818,128 @@ export async function countMessagesSentToday(personalId: number, studentId: numb
     ));
   
   return result[0]?.count || 0;
+}
+
+
+// ==================== WORKOUT LOG FUNCTIONS ====================
+export async function getWorkoutLogsByWorkoutId(workoutId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(workoutLogs)
+    .where(eq(workoutLogs.workoutId, workoutId))
+    .orderBy(desc(workoutLogs.sessionDate));
+}
+
+export async function getWorkoutLogById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(workoutLogs)
+    .where(eq(workoutLogs.id, id))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function getWorkoutLogsByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(workoutLogs)
+    .where(eq(workoutLogs.studentId, studentId))
+    .orderBy(desc(workoutLogs.sessionDate));
+}
+
+export async function createWorkoutLog(data: InsertWorkoutLog) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(workoutLogs).values(data);
+  return result[0].insertId;
+}
+
+export async function updateWorkoutLog(id: number, data: Partial<InsertWorkoutLog>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(workoutLogs).set(data).where(eq(workoutLogs.id, id));
+}
+
+export async function deleteWorkoutLog(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Delete exercise logs first
+  await db.delete(exerciseLogs).where(eq(exerciseLogs.workoutLogId, id));
+  // Then delete workout log
+  await db.delete(workoutLogs).where(eq(workoutLogs.id, id));
+}
+
+export async function getNextSessionNumber(workoutId: number, workoutDayId: number) {
+  const db = await getDb();
+  if (!db) return 1;
+  
+  const result = await db.select({
+    maxSession: sql<number>`COALESCE(MAX(sessionNumber), 0)`
+  }).from(workoutLogs)
+    .where(and(
+      eq(workoutLogs.workoutId, workoutId),
+      eq(workoutLogs.workoutDayId, workoutDayId)
+    ));
+  
+  return (result[0]?.maxSession || 0) + 1;
+}
+
+// ==================== EXERCISE LOG FUNCTIONS ====================
+export async function getExerciseLogsByWorkoutLogId(workoutLogId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(exerciseLogs)
+    .where(eq(exerciseLogs.workoutLogId, workoutLogId))
+    .orderBy(asc(exerciseLogs.order));
+}
+
+export async function createExerciseLog(data: InsertExerciseLog) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(exerciseLogs).values(data);
+  return result[0].insertId;
+}
+
+export async function updateExerciseLog(id: number, data: Partial<InsertExerciseLog>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(exerciseLogs).set(data).where(eq(exerciseLogs.id, id));
+}
+
+export async function deleteExerciseLog(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(exerciseLogs).where(eq(exerciseLogs.id, id));
+}
+
+export async function bulkCreateExerciseLogs(data: InsertExerciseLog[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (data.length === 0) return [];
+  const result = await db.insert(exerciseLogs).values(data);
+  return result;
+}
+
+export async function bulkUpdateExerciseLogs(logs: { id: number; data: Partial<InsertExerciseLog> }[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  for (const log of logs) {
+    await db.update(exerciseLogs).set(log.data).where(eq(exerciseLogs.id, log.id));
+  }
+}
+
+// Get exercise history for progression tracking
+export async function getExerciseHistory(exerciseId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select({
+    exerciseLog: exerciseLogs,
+    workoutLog: workoutLogs
+  }).from(exerciseLogs)
+    .innerJoin(workoutLogs, eq(exerciseLogs.workoutLogId, workoutLogs.id))
+    .where(eq(exerciseLogs.exerciseId, exerciseId))
+    .orderBy(desc(workoutLogs.sessionDate))
+    .limit(limit);
 }
