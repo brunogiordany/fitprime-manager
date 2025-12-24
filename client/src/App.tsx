@@ -5,14 +5,34 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import Students from "./pages/Students";
+import StudentProfile from "./pages/StudentProfile";
+import Schedule from "./pages/Schedule";
+import Charges from "./pages/Charges";
+import Plans from "./pages/Plans";
+import Automations from "./pages/Automations";
+import Settings from "./pages/Settings";
+import StudentPortal from "./pages/StudentPortal";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Public routes */}
+      <Route path="/" component={Home} />
+      <Route path="/portal" component={StudentPortal} />
+      
+      {/* Personal Trainer routes */}
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/alunos" component={Students} />
+      <Route path="/alunos/:id" component={StudentProfile} />
+      <Route path="/agenda" component={Schedule} />
+      <Route path="/cobrancas" component={Charges} />
+      <Route path="/planos" component={Plans} />
+      <Route path="/automacoes" component={Automations} />
+      <Route path="/configuracoes" component={Settings} />
+      
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
