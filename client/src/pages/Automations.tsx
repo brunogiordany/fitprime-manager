@@ -243,9 +243,9 @@ export default function Automations() {
             <div className="flex gap-4">
               <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-blue-900">Integração com Evolution API</p>
+                <p className="font-medium text-blue-900">Integração com Stevo (WhatsApp)</p>
                 <p className="text-sm text-blue-700">
-                  As automações utilizam a Evolution API para envio de mensagens WhatsApp. 
+                  As automações utilizam o <a href="https://stevo.chat" target="_blank" rel="noopener noreferrer" className="underline font-medium">Stevo</a> para envio de mensagens WhatsApp. 
                   Configure suas credenciais nas Configurações para ativar o envio automático.
                 </p>
               </div>

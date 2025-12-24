@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { 
   ArrowLeft,
@@ -35,6 +36,9 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Heart,
+  Clipboard,
+  Calculator,
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState } from "react";
@@ -79,7 +83,26 @@ export default function Measurements() {
     leftCalf: "",
     neck: "",
     notes: "",
+    // Bioimpedância (manual)
+    bioBodyFat: "",
+    bioMuscleMass: "",
+    bioFatMass: "",
+    bioVisceralFat: "",
+    bioBasalMetabolism: "",
+    // Adipômetro (manual)
+    adipBodyFat: "",
+    adipMuscleMass: "",
+    adipFatMass: "",
+    // Dobras cutâneas
+    tricepsFold: "",
+    subscapularFold: "",
+    suprailiacFold: "",
+    abdominalFold: "",
+    thighFold: "",
+    chestFold: "",
+    axillaryFold: "",
   });
+  const [activeTab, setActiveTab] = useState("basic");
 
   const utils = trpc.useUtils();
   
@@ -146,7 +169,26 @@ export default function Measurements() {
       leftCalf: "",
       neck: "",
       notes: "",
+      // Bioimpedância (manual)
+      bioBodyFat: "",
+      bioMuscleMass: "",
+      bioFatMass: "",
+      bioVisceralFat: "",
+      bioBasalMetabolism: "",
+      // Adipômetro (manual)
+      adipBodyFat: "",
+      adipMuscleMass: "",
+      adipFatMass: "",
+      // Dobras cutâneas
+      tricepsFold: "",
+      subscapularFold: "",
+      suprailiacFold: "",
+      abdominalFold: "",
+      thighFold: "",
+      chestFold: "",
+      axillaryFold: "",
     });
+    setActiveTab("basic");
   };
 
   const handleEdit = (measurement: any) => {
@@ -168,6 +210,24 @@ export default function Measurements() {
       leftCalf: measurement.leftCalf || "",
       neck: measurement.neck || "",
       notes: measurement.notes || "",
+      // Bioimpedância (manual)
+      bioBodyFat: measurement.bioBodyFat || "",
+      bioMuscleMass: measurement.bioMuscleMass || "",
+      bioFatMass: measurement.bioFatMass || "",
+      bioVisceralFat: measurement.bioVisceralFat || "",
+      bioBasalMetabolism: measurement.bioBasalMetabolism || "",
+      // Adipômetro (manual)
+      adipBodyFat: measurement.adipBodyFat || "",
+      adipMuscleMass: measurement.adipMuscleMass || "",
+      adipFatMass: measurement.adipFatMass || "",
+      // Dobras cutâneas
+      tricepsFold: measurement.tricepsFold || "",
+      subscapularFold: measurement.subscapularFold || "",
+      suprailiacFold: measurement.suprailiacFold || "",
+      abdominalFold: measurement.abdominalFold || "",
+      thighFold: measurement.thighFold || "",
+      chestFold: measurement.chestFold || "",
+      axillaryFold: measurement.axillaryFold || "",
     });
     setIsDialogOpen(true);
   };
@@ -176,6 +236,7 @@ export default function Measurements() {
     if (editingId) {
       updateMutation.mutate({
         id: editingId,
+        studentId,
         ...formData,
       });
     } else {
@@ -276,11 +337,11 @@ export default function Measurements() {
                 Nova Medição
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingId ? 'Editar Medição' : 'Nova Medição'}</DialogTitle>
                 <DialogDescription>
-                  Registre as medidas corporais do aluno
+                  Registre as medidas corporais do aluno. O BF estimado é calculado automaticamente.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-6 py-4">
@@ -295,14 +356,31 @@ export default function Measurements() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <Scale className="h-4 w-4" />
-                    Composição Corporal
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="grid gap-2">
-                      <Label>Peso (kg)</Label>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="basic" className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      Básico
+                    </TabsTrigger>
+                    <TabsTrigger value="bio" className="flex items-center gap-2">
+                      <Heart className="h-4 w-4" />
+                      Bioimpedância
+                    </TabsTrigger>
+                    <TabsTrigger value="adip" className="flex items-center gap-2">
+                      <Clipboard className="h-4 w-4" />
+                      Adipômetro
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="basic" className="space-y-6 mt-4">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Scale className="h-4 w-4" />
+                        Composição Corporal
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Peso (kg)</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -451,19 +529,199 @@ export default function Measurements() {
                       />
                     </div>
                   </div>
-                </div>
+                    </div>
 
-                <div className="grid gap-2">
-                  <Label>Observações</Label>
-                  <Textarea
-                    placeholder="Anotações sobre a medição..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                  />
-                </div>
+                    <div className="grid gap-2">
+                      <Label>Observações</Label>
+                      <Textarea
+                        placeholder="Anotações sobre a medição..."
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        rows={3}
+                      />
+                    </div>
+                  </TabsContent>
 
-                <div className="flex justify-end gap-2">
+                  <TabsContent value="bio" className="space-y-6 mt-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-700">
+                        <strong>Bioimpedância:</strong> Preencha com os dados obtidos em exame de bioimpedância profissional.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid gap-2">
+                        <Label>% Gordura (Bio)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="15.5"
+                          value={formData.bioBodyFat}
+                          onChange={(e) => setFormData({ ...formData, bioBodyFat: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Massa Muscular (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="35.0"
+                          value={formData.bioMuscleMass}
+                          onChange={(e) => setFormData({ ...formData, bioMuscleMass: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Massa Gorda (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="12.0"
+                          value={formData.bioFatMass}
+                          onChange={(e) => setFormData({ ...formData, bioFatMass: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Gordura Visceral</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="8"
+                          value={formData.bioVisceralFat}
+                          onChange={(e) => setFormData({ ...formData, bioVisceralFat: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Metabolismo Basal (kcal)</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          placeholder="1800"
+                          value={formData.bioBasalMetabolism}
+                          onChange={(e) => setFormData({ ...formData, bioBasalMetabolism: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="adip" className="space-y-6 mt-4">
+                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                      <p className="text-sm text-amber-700">
+                        <strong>Adipômetro:</strong> Preencha com os dados obtidos em avaliação com adipômetro profissional.
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Resultados</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid gap-2">
+                          <Label>% Gordura (Adip)</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="15.5"
+                            value={formData.adipBodyFat}
+                            onChange={(e) => setFormData({ ...formData, adipBodyFat: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Massa Muscular (kg)</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="35.0"
+                            value={formData.adipMuscleMass}
+                            onChange={(e) => setFormData({ ...formData, adipMuscleMass: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Massa Gorda (kg)</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="12.0"
+                            value={formData.adipFatMass}
+                            onChange={(e) => setFormData({ ...formData, adipFatMass: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Dobras Cutâneas (mm)</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Tríceps</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="12"
+                            value={formData.tricepsFold}
+                            onChange={(e) => setFormData({ ...formData, tricepsFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Subescapular</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="14"
+                            value={formData.subscapularFold}
+                            onChange={(e) => setFormData({ ...formData, subscapularFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Supra-ilíaca</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="18"
+                            value={formData.suprailiacFold}
+                            onChange={(e) => setFormData({ ...formData, suprailiacFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Abdominal</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="20"
+                            value={formData.abdominalFold}
+                            onChange={(e) => setFormData({ ...formData, abdominalFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Coxa</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="16"
+                            value={formData.thighFold}
+                            onChange={(e) => setFormData({ ...formData, thighFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Peitoral</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="10"
+                            value={formData.chestFold}
+                            onChange={(e) => setFormData({ ...formData, chestFold: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Axilar Média</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="12"
+                            value={formData.axillaryFold}
+                            onChange={(e) => setFormData({ ...formData, axillaryFold: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancelar
                   </Button>

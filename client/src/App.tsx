@@ -20,6 +20,7 @@ import Messages from "./pages/Messages";
 import WorkoutDetail from "@/pages/WorkoutDetail";
 import WorkoutLog from "@/pages/WorkoutLog";
 import Anamnesis from "./pages/Anamnesis";
+import ContractPlan from "./pages/ContractPlan";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
             <Route path="/sessao/:sessionId/treino" component={WorkoutLog} />
       <Route path="/alunos/:studentId/medidas" component={Measurements} />
       <Route path="/alunos/:studentId/anamnese" component={Anamnesis} />
+      <Route path="/alunos/:studentId/contratar" component={ContractPlan} />
       <Route path="/cobrancas" component={Charges} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />

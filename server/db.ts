@@ -193,7 +193,16 @@ export async function updateStudent(id: number, personalId: number, data: Partia
 export async function deleteStudent(id: number, personalId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(students).set({ status: 'inactive' }).where(and(eq(students.id, id), eq(students.personalId, personalId)));
+  // Excluir registros relacionados primeiro
+  await db.delete(sessions).where(eq(sessions.studentId, id));
+  await db.delete(measurements).where(eq(measurements.studentId, id));
+  await db.delete(photos).where(eq(photos.studentId, id));
+  await db.delete(anamneses).where(eq(anamneses.studentId, id));
+  await db.delete(charges).where(eq(charges.studentId, id));
+  await db.delete(packages).where(eq(packages.studentId, id));
+  await db.delete(workouts).where(eq(workouts.studentId, id));
+  // Excluir o aluno
+  await db.delete(students).where(and(eq(students.id, id), eq(students.personalId, personalId)));
 }
 
 export async function countStudentsByPersonalId(personalId: number) {
@@ -321,7 +330,22 @@ export async function updateWorkout(id: number, data: Partial<InsertWorkout>) {
 export async function deleteWorkout(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(workouts).set({ status: 'inactive' }).where(eq(workouts.id, id));
+  // Buscar todos os dias do treino
+  const days = await db.select().from(workoutDays).where(eq(workoutDays.workoutId, id));
+  // Excluir exercícios de cada dia
+  for (const day of days) {
+    await db.delete(exercises).where(eq(exercises.workoutDayId, day.id));
+  }
+  // Excluir os dias do treino
+  await db.delete(workoutDays).where(eq(workoutDays.workoutId, id));
+  // Excluir workout logs relacionados
+  const logs = await db.select().from(workoutLogs).where(eq(workoutLogs.workoutId, id));
+  for (const log of logs) {
+    await db.delete(exerciseLogs).where(eq(exerciseLogs.workoutLogId, log.id));
+  }
+  await db.delete(workoutLogs).where(eq(workoutLogs.workoutId, id));
+  // Excluir o treino
+  await db.delete(workouts).where(eq(workouts.id, id));
 }
 
 // ==================== WORKOUT DAY FUNCTIONS ====================
@@ -943,3 +967,104 @@ export async function getExerciseHistory(exerciseId: number, limit: number = 10)
     .orderBy(desc(workoutLogs.sessionDate))
     .limit(limit);
 }
+
+
+// ==================== PACKAGES EXTRAS ====================
+export async function getPackageById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(packages).where(eq(packages.id, id));
+  return result[0] || null;
+}
+
+export async function deleteSessionsByPackageId(packageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Excluir apenas sessões futuras (status = 'scheduled')
+  await db.delete(sessions)
+    .where(and(
+      eq(sessions.packageId, packageId),
+      eq(sessions.status, 'scheduled')
+    ));
+}
+
+
+// ==================== DEFAULT AUTOMATIONS ====================
+export async function createDefaultAutomations(personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const defaultAutomations = [
+    {
+      personalId,
+      name: "Lembrete 24h antes do treino",
+      trigger: "session_reminder" as const,
+      messageTemplate: "Olá {nome}! 👋\n\nLembrete: você tem treino amanhã às {hora}.\n\nPrepare-se e até lá! 💪",
+      isActive: true,
+      triggerHoursBefore: 24,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "20:00",
+      maxMessagesPerDay: 10,
+    },
+    {
+      personalId,
+      name: "Lembrete 2h antes do treino",
+      trigger: "session_reminder" as const,
+      messageTemplate: "Olá {nome}! 🏋️\n\nSeu treino começa em 2 horas às {hora}.\n\nVamos lá! 💪",
+      isActive: true,
+      triggerHoursBefore: 2,
+      sendWindowStart: "06:00",
+      sendWindowEnd: "22:00",
+      maxMessagesPerDay: 10,
+    },
+    {
+      personalId,
+      name: "Lembrete de pagamento",
+      trigger: "payment_reminder" as const,
+      messageTemplate: "Olá {nome}! 📋\n\nLembrete: sua mensalidade vence em {vencimento}.\n\nValor: R$ {valor}\n\nQualquer dúvida, estou à disposição!",
+      isActive: true,
+      triggerHoursBefore: 72, // 3 dias antes
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 5,
+    },
+    {
+      personalId,
+      name: "Pagamento em atraso",
+      trigger: "payment_overdue" as const,
+      messageTemplate: "Olá {nome}! 📋\n\nIdentificamos que sua mensalidade está em atraso.\n\nValor: R$ {valor}\nVencimento: {vencimento}\n\nPor favor, regularize sua situação. Qualquer dúvida, estou à disposição!",
+      isActive: true,
+      triggerDaysAfter: 3,
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 3,
+    },
+    {
+      personalId,
+      name: "Boas-vindas",
+      trigger: "welcome" as const,
+      messageTemplate: "Olá {nome}! 🎉\n\nSeja muito bem-vindo(a)!\n\nEstou muito feliz em ter você como aluno(a). Vamos juntos alcançar seus objetivos!\n\nQualquer dúvida, é só chamar. 💪",
+      isActive: true,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "20:00",
+      maxMessagesPerDay: 10,
+    },
+    {
+      personalId,
+      name: "Aniversário",
+      trigger: "birthday" as const,
+      messageTemplate: "Olá {nome}! 🎂🎉\n\nFeliz aniversário!\n\nQue seu dia seja incrível e cheio de alegrias!\n\nConte comigo sempre! 💪",
+      isActive: true,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "20:00",
+      maxMessagesPerDay: 10,
+    },
+  ];
+  
+  for (const automation of defaultAutomations) {
+    await db.insert(automations).values(automation);
+  }
+  
+  return defaultAutomations.length;
+}
+

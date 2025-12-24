@@ -143,6 +143,28 @@ export const measurements = mysqlTable("measurements", {
   neck: decimal("neck", { precision: 5, scale: 2 }),
   // Calculados
   bmi: decimal("bmi", { precision: 5, scale: 2 }),
+  // BF Estimado (calculado com base nas medidas)
+  estimatedBodyFat: decimal("estimatedBodyFat", { precision: 5, scale: 2 }),
+  estimatedMuscleMass: decimal("estimatedMuscleMass", { precision: 5, scale: 2 }),
+  estimatedFatMass: decimal("estimatedFatMass", { precision: 5, scale: 2 }),
+  // Bioimpedância (manual - profissional)
+  bioBodyFat: decimal("bioBodyFat", { precision: 5, scale: 2 }),
+  bioMuscleMass: decimal("bioMuscleMass", { precision: 5, scale: 2 }),
+  bioFatMass: decimal("bioFatMass", { precision: 5, scale: 2 }),
+  bioVisceralFat: decimal("bioVisceralFat", { precision: 5, scale: 2 }),
+  bioBasalMetabolism: decimal("bioBasalMetabolism", { precision: 7, scale: 2 }),
+  // Adipômetro (manual - profissional)
+  adipBodyFat: decimal("adipBodyFat", { precision: 5, scale: 2 }),
+  adipMuscleMass: decimal("adipMuscleMass", { precision: 5, scale: 2 }),
+  adipFatMass: decimal("adipFatMass", { precision: 5, scale: 2 }),
+  // Dobras cutâneas (para adipômetro)
+  tricepsFold: decimal("tricepsFold", { precision: 5, scale: 2 }),
+  subscapularFold: decimal("subscapularFold", { precision: 5, scale: 2 }),
+  suprailiacFold: decimal("suprailiacFold", { precision: 5, scale: 2 }),
+  abdominalFold: decimal("abdominalFold", { precision: 5, scale: 2 }),
+  thighFold: decimal("thighFold", { precision: 5, scale: 2 }),
+  chestFold: decimal("chestFold", { precision: 5, scale: 2 }),
+  axillaryFold: decimal("axillaryFold", { precision: 5, scale: 2 }),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -276,6 +298,9 @@ export const packages = mysqlTable("packages", {
   status: mysqlEnum("status", ["active", "expired", "cancelled", "pending"]).default("pending").notNull(),
   startDate: date("startDate").notNull(),
   endDate: date("endDate"),
+  // Dias de treino da semana (0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab)
+  trainingDays: text("trainingDays"), // JSON array: [1, 3, 5] para Seg, Qua, Sex
+  defaultTime: varchar("defaultTime", { length: 5 }), // Horário padrão: "08:00"
   // Para pacotes de sessões
   totalSessions: int("totalSessions"),
   usedSessions: int("usedSessions").default(0),

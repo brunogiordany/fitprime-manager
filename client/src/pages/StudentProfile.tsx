@@ -801,10 +801,16 @@ export default function StudentProfile() {
                   <CardTitle>Pagamentos</CardTitle>
                   <CardDescription>Histórico de cobranças e pagamentos</CardDescription>
                 </div>
-                <Button onClick={() => setLocation(`/cobrancas?new=true&studentId=${studentId}`)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Cobrança
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setLocation(`/alunos/${studentId}/contratar`)}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Contratar Plano
+                  </Button>
+                  <Button onClick={() => setLocation(`/cobrancas?new=true&studentId=${studentId}`)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Cobrança
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {charges && charges.length > 0 ? (

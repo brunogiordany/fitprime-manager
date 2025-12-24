@@ -23,6 +23,14 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
   const { data: todaySessions, isLoading: sessionsLoading } = trpc.dashboard.todaySessions.useQuery();
+  const utils = trpc.useUtils();
+  
+  const updateSessionMutation = trpc.sessions.update.useMutation({
+    onSuccess: () => {
+      utils.dashboard.todaySessions.invalidate();
+      utils.dashboard.stats.invalidate();
+    },
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -202,7 +210,7 @@ export default function Dashboard() {
                             className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Mark as completed
+                              updateSessionMutation.mutate({ id: session.id, status: 'completed' });
                             }}
                           >
                             <CheckCircle2 className="h-4 w-4" />
@@ -213,7 +221,7 @@ export default function Dashboard() {
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Mark as no show
+                              updateSessionMutation.mutate({ id: session.id, status: 'no_show' });
                             }}
                           >
                             <XCircle className="h-4 w-4" />

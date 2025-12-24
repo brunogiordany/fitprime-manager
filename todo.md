@@ -146,8 +146,8 @@
 
 
 ## Correções Urgentes (v1.6)
-- [ ] Corrigir menu de ações (3 pontinhos) na página de Treinos
-- [ ] Trocar integração Evolution API para Stevo (https://stevo.chat/)
+- [x] Corrigir menu de ações (3 pontinhos) na página de Treinos
+- [x] Trocar integração Evolution API para Stevo (https://stevo.chat/)
 
 
 ## Sistema de Treinos Completo (v1.7)
@@ -186,3 +186,40 @@
   - [x] Fotos
   - [x] Treinos
   - [x] Materiais
+
+
+## Bugs Críticos (v2.0)
+- [x] Excluir aluno não funciona
+- [x] Botões check/X no Dashboard não funcionam (marcar sessão realizada/cancelada)
+- [ ] Editar aluno não funciona
+- [ ] Exportar PDF não funciona
+- [x] Erro ao atualizar medidas (problema no banco de dados)
+- [x] Treino excluído fica como "inativo" ao invés de sumir
+
+## Cálculo de BF e Composição Corporal (v2.0)
+- [x] Adicionar campo de gênero no aluno/medidas
+- [x] Cálculo automático de BF estimado baseado nas medidas (US Navy Method)
+- [x] Campo manual para Bioimpedância (BF, massa magra, massa gorda)
+- [x] Campo manual para Adipômetro (BF, massa magra, massa gorda, dobras cutâneas)
+- [ ] Comparativo entre métodos (estimado vs bio vs adi)
+- [x] Fórmula oficial para cálculo de BF
+
+## Agendamento Automático (v2.0)
+- [x] Ao fechar plano, selecionar dias fixos de treino (seg, qua, sex)
+- [x] Criar automaticamente 4 semanas de agendamento
+- [x] Ao cancelar parceria, excluir todos agendamentos do aluno
+
+## Automações Stevo (v2.0)
+- [x] Trocar Evolution API para Stevo (https://stevo.chat/)
+- [x] Automações padrão criadas automaticamente (quando não existem)
+- [x] Lembrete 24h antes do treino
+- [x] Lembrete 2h antes do treino
+- [x] Lembrete de pagamento (3 dias antes)
+- [x] Pagamento em atraso (3 dias depois)
+- [x] Boas-vindas
+- [x] Aniversário
+
+## Lixeira de Treinos (v2.0)
+- [ ] Treinos excluídos vão para lixeira
+- [ ] Opção de restaurar treino
+- [ ] Opção de esvaziar lixeira (exclusão permanente)

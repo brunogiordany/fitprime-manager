@@ -167,10 +167,10 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Integração WhatsApp (Evolution API)
+              Integração WhatsApp (Stevo)
             </CardTitle>
             <CardDescription>
-              Configure a integração com WhatsApp para envio automático de mensagens
+              Configure a integração com o <a href="https://stevo.chat" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">Stevo</a> para envio automático de mensagens via WhatsApp
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -191,18 +191,18 @@ export default function Settings() {
             
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label>URL da Evolution API</Label>
+                <Label>URL do Stevo (Evolution API)</Label>
                 <Input
-                  placeholder="https://sua-api.evolution.com"
+                  placeholder="https://api.stevo.chat"
                   value={whatsappConfig.evolutionApiUrl}
                   onChange={(e) => setWhatsappConfig({ ...whatsappConfig, evolutionApiUrl: e.target.value })}
                   disabled={!whatsappConfig.enabled}
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Nome da Instância</Label>
+                <Label>Nome da Instância Stevo</Label>
                 <Input
-                  placeholder="minha-instancia"
+                  placeholder="sua-instancia-stevo"
                   value={whatsappConfig.instanceName}
                   onChange={(e) => setWhatsappConfig({ ...whatsappConfig, instanceName: e.target.value })}
                   disabled={!whatsappConfig.enabled}

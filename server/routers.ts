@@ -282,12 +282,38 @@ export const appRouter = router({
         leftCalf: z.string().optional(),
         neck: z.string().optional(),
         notes: z.string().optional(),
+        // Bioimpedância (manual)
+        bioBodyFat: z.string().optional(),
+        bioMuscleMass: z.string().optional(),
+        bioFatMass: z.string().optional(),
+        bioVisceralFat: z.string().optional(),
+        bioBasalMetabolism: z.string().optional(),
+        // Adipômetro (manual)
+        adipBodyFat: z.string().optional(),
+        adipMuscleMass: z.string().optional(),
+        adipFatMass: z.string().optional(),
+        // Dobras cutâneas
+        tricepsFold: z.string().optional(),
+        subscapularFold: z.string().optional(),
+        suprailiacFold: z.string().optional(),
+        abdominalFold: z.string().optional(),
+        thighFold: z.string().optional(),
+        chestFold: z.string().optional(),
+        axillaryFold: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { measureDate, ...data } = input;
+        const { measureDate, studentId, ...data } = input;
+        
+        // Buscar gênero do aluno para cálculo de BF
+        const student = await db.getStudentById(studentId, ctx.personal.id);
+        const gender = student?.gender || 'male';
         
         // Calculate BMI if weight and height provided
         let bmi: string | undefined;
+        let estimatedBodyFat: string | undefined;
+        let estimatedMuscleMass: string | undefined;
+        let estimatedFatMass: string | undefined;
+        
         if (data.weight && data.height) {
           const w = parseFloat(data.weight);
           const h = parseFloat(data.height) / 100; // cm to m
@@ -296,18 +322,63 @@ export const appRouter = router({
           }
         }
         
+        // Cálculo de BF estimado usando fórmula da Marinha dos EUA (US Navy Method)
+        if (data.waist && data.neck && data.height) {
+          const waist = parseFloat(data.waist);
+          const neck = parseFloat(data.neck);
+          const height = parseFloat(data.height);
+          const hip = data.hip ? parseFloat(data.hip) : 0;
+          const weight = data.weight ? parseFloat(data.weight) : 0;
+          
+          if (waist > 0 && neck > 0 && height > 0) {
+            let bf: number;
+            if (gender === 'female' && hip > 0) {
+              // Fórmula para mulheres: 495 / (1.29579 - 0.35004 * log10(waist + hip - neck) + 0.22100 * log10(height)) - 450
+              bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            } else {
+              // Fórmula para homens: 495 / (1.0324 - 0.19077 * log10(waist - neck) + 0.15456 * log10(height)) - 450
+              bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            }
+            
+            if (bf > 0 && bf < 60) {
+              estimatedBodyFat = bf.toFixed(2);
+              
+              // Calcular massa gorda e massa magra estimadas
+              if (weight > 0) {
+                const fatMass = (weight * bf) / 100;
+                const leanMass = weight - fatMass;
+                estimatedFatMass = fatMass.toFixed(2);
+                estimatedMuscleMass = leanMass.toFixed(2);
+              }
+            }
+          }
+        }
+        
+        // Filter out empty strings to avoid database errors with decimal fields
+        const cleanData: Record<string, any> = {};
+        for (const [key, value] of Object.entries(data)) {
+          if (value !== '' && value !== undefined && value !== null) {
+            cleanData[key] = value;
+          }
+        }
+        
         const id = await db.createMeasurement({
-          ...data,
-          measureDate: new Date(measureDate),
+          ...cleanData,
+          studentId,
+          measureDate: new Date(measureDate + 'T12:00:00'), // Add time to avoid timezone issues
           personalId: ctx.personal.id,
           bmi,
-        });
+          estimatedBodyFat,
+          estimatedMuscleMass,
+          estimatedFatMass,
+        } as any);
         return { id };
       }),
     
     update: personalProcedure
       .input(z.object({
         id: z.number(),
+        studentId: z.number().optional(),
         measureDate: z.string(),
         weight: z.string().optional(),
         height: z.string().optional(),
@@ -324,12 +395,34 @@ export const appRouter = router({
         leftCalf: z.string().optional(),
         neck: z.string().optional(),
         notes: z.string().optional(),
+        // Bioimpedância (manual)
+        bioBodyFat: z.string().optional(),
+        bioMuscleMass: z.string().optional(),
+        bioFatMass: z.string().optional(),
+        bioVisceralFat: z.string().optional(),
+        bioBasalMetabolism: z.string().optional(),
+        // Adipômetro (manual)
+        adipBodyFat: z.string().optional(),
+        adipMuscleMass: z.string().optional(),
+        adipFatMass: z.string().optional(),
+        // Dobras cutâneas
+        tricepsFold: z.string().optional(),
+        subscapularFold: z.string().optional(),
+        suprailiacFold: z.string().optional(),
+        abdominalFold: z.string().optional(),
+        thighFold: z.string().optional(),
+        chestFold: z.string().optional(),
+        axillaryFold: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, measureDate, ...data } = input;
+        const { id, studentId, measureDate, ...data } = input;
         
         // Calculate BMI if weight and height provided
         let bmi: string | undefined;
+        let estimatedBodyFat: string | undefined;
+        let estimatedMuscleMass: string | undefined;
+        let estimatedFatMass: string | undefined;
+        
         if (data.weight && data.height) {
           const w = parseFloat(data.weight);
           const h = parseFloat(data.height) / 100;
@@ -338,11 +431,53 @@ export const appRouter = router({
           }
         }
         
+        // Cálculo de BF estimado se tiver as medidas necessárias
+        if (data.waist && data.neck && data.height && studentId) {
+          const student = await db.getStudentById(studentId, ctx.personal.id);
+          const gender = student?.gender || 'male';
+          
+          const waist = parseFloat(data.waist);
+          const neck = parseFloat(data.neck);
+          const height = parseFloat(data.height);
+          const hip = data.hip ? parseFloat(data.hip) : 0;
+          const weight = data.weight ? parseFloat(data.weight) : 0;
+          
+          if (waist > 0 && neck > 0 && height > 0) {
+            let bf: number;
+            if (gender === 'female' && hip > 0) {
+              bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            } else {
+              bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            }
+            
+            if (bf > 0 && bf < 60) {
+              estimatedBodyFat = bf.toFixed(2);
+              if (weight > 0) {
+                const fatMass = (weight * bf) / 100;
+                const leanMass = weight - fatMass;
+                estimatedFatMass = fatMass.toFixed(2);
+                estimatedMuscleMass = leanMass.toFixed(2);
+              }
+            }
+          }
+        }
+        
+        // Filter out empty strings to avoid database errors with decimal fields
+        const cleanData: Record<string, any> = {};
+        for (const [key, value] of Object.entries(data)) {
+          if (value !== '' && value !== undefined && value !== null) {
+            cleanData[key] = value;
+          }
+        }
+        
         await db.updateMeasurement(id, {
-          ...data,
-          measureDate: new Date(measureDate),
+          ...cleanData,
+          measureDate: new Date(measureDate + 'T12:00:00'),
           bmi,
-        });
+          estimatedBodyFat,
+          estimatedMuscleMass,
+          estimatedFatMass,
+        } as any);
         return { success: true };
       }),
 
@@ -939,6 +1074,10 @@ export const appRouter = router({
         endDate: z.string().optional(),
         price: z.string(),
         notes: z.string().optional(),
+        // Novos campos para agendamento automático
+        trainingDays: z.array(z.number()).optional(), // [1, 3, 5] para Seg, Qua, Sex
+        defaultTime: z.string().optional(), // "08:00"
+        weeksToSchedule: z.number().optional().default(4), // Número de semanas para agendar
       }))
       .mutation(async ({ ctx, input }) => {
         const plan = await db.getPlanById(input.planId);
@@ -946,17 +1085,61 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Plano não encontrado' });
         }
         
-        const { startDate, endDate, ...data } = input;
+        const { startDate, endDate, trainingDays, defaultTime, weeksToSchedule, ...data } = input;
         const id = await db.createPackage({
           ...data,
           personalId: ctx.personal.id,
-          startDate: new Date(startDate),
-          endDate: endDate ? new Date(endDate) : undefined,
+          startDate: new Date(startDate + 'T12:00:00'),
+          endDate: endDate ? new Date(endDate + 'T12:00:00') : undefined,
           totalSessions: plan.totalSessions,
           remainingSessions: plan.totalSessions,
+          trainingDays: trainingDays ? JSON.stringify(trainingDays) : undefined,
+          defaultTime: defaultTime || '08:00',
           status: 'active',
         });
-        return { id };
+        
+        // Gerar sessões automaticamente se dias de treino foram definidos
+        if (trainingDays && trainingDays.length > 0 && defaultTime) {
+          const weeks = weeksToSchedule || 4;
+          const start = new Date(startDate + 'T12:00:00');
+          const sessionsToCreate = [];
+          
+          for (let week = 0; week < weeks; week++) {
+            for (const dayOfWeek of trainingDays) {
+              // Calcular a data da sessão
+              const sessionDate = new Date(start);
+              sessionDate.setDate(start.getDate() + (week * 7));
+              
+              // Ajustar para o dia da semana correto
+              const currentDay = sessionDate.getDay();
+              const daysToAdd = (dayOfWeek - currentDay + 7) % 7;
+              sessionDate.setDate(sessionDate.getDate() + daysToAdd);
+              
+              // Se a data for antes da data de início, pular
+              if (sessionDate < start) continue;
+              
+              // Criar a sessão
+              const [hours, minutes] = defaultTime.split(':').map(Number);
+              sessionDate.setHours(hours, minutes, 0, 0);
+              
+              sessionsToCreate.push({
+                studentId: input.studentId,
+                personalId: ctx.personal.id,
+                packageId: id,
+                scheduledAt: sessionDate,
+                duration: plan.sessionDuration || 60,
+                status: 'scheduled' as const,
+              });
+            }
+          }
+          
+          // Criar todas as sessões
+          for (const session of sessionsToCreate) {
+            await db.createSession(session);
+          }
+        }
+        
+        return { id, sessionsCreated: trainingDays ? trainingDays.length * (weeksToSchedule || 4) : 0 };
       }),
     
     update: personalProcedure
@@ -966,10 +1149,34 @@ export const appRouter = router({
         usedSessions: z.number().optional(),
         remainingSessions: z.number().optional(),
         notes: z.string().optional(),
+        trainingDays: z.array(z.number()).optional(),
+        defaultTime: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, ...data } = input;
-        await db.updatePackage(id, data);
+        const { id, trainingDays, ...data } = input;
+        await db.updatePackage(id, {
+          ...data,
+          trainingDays: trainingDays ? JSON.stringify(trainingDays) : undefined,
+        } as any);
+        return { success: true };
+      }),
+    
+    // Cancelar pacote e excluir todas as sessões futuras
+    cancel: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        // Buscar o pacote
+        const pkg = await db.getPackageById(input.id);
+        if (!pkg) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Pacote não encontrado' });
+        }
+        
+        // Atualizar status do pacote para cancelado
+        await db.updatePackage(input.id, { status: 'cancelled' });
+        
+        // Excluir todas as sessões futuras do pacote
+        await db.deleteSessionsByPackageId(input.id);
+        
         return { success: true };
       }),
   }),
@@ -1219,7 +1426,22 @@ export const appRouter = router({
   // ==================== AUTOMATIONS ====================
   automations: router({
     list: personalProcedure.query(async ({ ctx }) => {
-      return await db.getAutomationsByPersonalId(ctx.personal.id);
+      const automations = await db.getAutomationsByPersonalId(ctx.personal.id);
+      // Se não houver automações, criar as padrões automaticamente
+      if (automations.length === 0) {
+        await db.createDefaultAutomations(ctx.personal.id);
+        return await db.getAutomationsByPersonalId(ctx.personal.id);
+      }
+      return automations;
+    }),
+    
+    createDefaults: personalProcedure.mutation(async ({ ctx }) => {
+      const existing = await db.getAutomationsByPersonalId(ctx.personal.id);
+      if (existing.length > 0) {
+        return { created: 0, message: 'Automações já existem' };
+      }
+      const count = await db.createDefaultAutomations(ctx.personal.id);
+      return { created: count, message: 'Automações padrão criadas com sucesso' };
     }),
     
     create: personalProcedure
