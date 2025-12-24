@@ -1000,6 +1000,16 @@ export const appRouter = router({
           monthlyData,
         };
       }),
+    
+    // Listar sessões por aluno
+    listByStudent: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const sessions = await db.getSessionsByStudentId(input.studentId);
+        return sessions.sort((a, b) => 
+          new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
+        );
+      }),
   }),
 
   // ==================== PLANS ====================

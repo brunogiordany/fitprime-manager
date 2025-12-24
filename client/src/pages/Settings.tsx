@@ -191,7 +191,7 @@ export default function Settings() {
             
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label>URL do Stevo (Evolution API)</Label>
+                <Label>URL da API Stevo</Label>
                 <Input
                   placeholder="https://api.stevo.chat"
                   value={whatsappConfig.evolutionApiUrl}

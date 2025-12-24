@@ -69,7 +69,7 @@ export default function Home() {
     {
       icon: MessageSquare,
       title: "WhatsApp Integrado",
-      description: "Envie lembretes e mensagens automáticas via Evolution API."
+      description: "Envie lembretes e mensagens automáticas via Stevo."
     },
   ];
 

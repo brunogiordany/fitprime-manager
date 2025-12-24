@@ -103,6 +103,54 @@ export default function Measurements() {
     axillaryFold: "",
   });
   const [activeTab, setActiveTab] = useState("basic");
+  
+  // Cálculos automáticos
+  const calculateIMC = (weight: string, height: string): string => {
+    const w = parseFloat(weight);
+    const h = parseFloat(height) / 100; // converter cm para metros
+    if (w > 0 && h > 0) {
+      return (w / (h * h)).toFixed(1);
+    }
+    return '';
+  };
+
+  // Fórmula da Marinha dos EUA para BF estimado
+  const calculateEstimatedBF = (gender: string, waist: string, neck: string, hip: string, height: string): string => {
+    const w = parseFloat(waist);
+    const n = parseFloat(neck);
+    const h = parseFloat(height);
+    const hp = parseFloat(hip);
+    
+    if (gender === 'male' && w > 0 && n > 0 && h > 0) {
+      // Fórmula masculina: 495 / (1.0324 - 0.19077 * log10(cintura - pescoço) + 0.15456 * log10(altura)) - 450
+      const bf = 495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450;
+      return Math.max(0, bf).toFixed(1);
+    } else if (gender === 'female' && w > 0 && n > 0 && h > 0 && hp > 0) {
+      // Fórmula feminina: 495 / (1.29579 - 0.35004 * log10(cintura + quadril - pescoço) + 0.22100 * log10(altura)) - 450
+      const bf = 495 / (1.29579 - 0.35004 * Math.log10(w + hp - n) + 0.22100 * Math.log10(h)) - 450;
+      return Math.max(0, bf).toFixed(1);
+    }
+    return '';
+  };
+
+  // Calcular massa gorda e massa magra estimadas
+  const calculateFatMass = (weight: string, bf: string): string => {
+    const w = parseFloat(weight);
+    const b = parseFloat(bf);
+    if (w > 0 && b > 0) {
+      return ((w * b) / 100).toFixed(1);
+    }
+    return '';
+  };
+
+  const calculateLeanMass = (weight: string, bf: string): string => {
+    const w = parseFloat(weight);
+    const b = parseFloat(bf);
+    if (w > 0 && b > 0) {
+      return (w - (w * b) / 100).toFixed(1);
+    }
+    return '';
+  };
 
   const utils = trpc.useUtils();
   
@@ -115,6 +163,18 @@ export default function Measurements() {
     { studentId },
     { enabled: studentId > 0 }
   );
+
+  // Valores calculados em tempo real
+  const calculatedIMC = calculateIMC(formData.weight, formData.height);
+  const calculatedBF = calculateEstimatedBF(
+    student?.gender || 'male',
+    formData.waist,
+    formData.neck,
+    formData.hip,
+    formData.height
+  );
+  const calculatedFatMass = calculateFatMass(formData.weight, formData.bodyFat || calculatedBF);
+  const calculatedLeanMass = calculateLeanMass(formData.weight, formData.bodyFat || calculatedBF);
 
   const createMutation = trpc.measurements.create.useMutation({
     onSuccess: () => {
@@ -421,6 +481,51 @@ export default function Measurements() {
                     </div>
                   </div>
                 </div>
+
+                {/* Cálculos Automáticos */}
+                {(calculatedIMC || calculatedBF) && (
+                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <h4 className="font-semibold flex items-center gap-2 mb-3 text-emerald-800">
+                      <Calculator className="h-4 w-4" />
+                      Cálculos Automáticos
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {calculatedIMC && (
+                        <div className="text-center p-3 bg-white rounded-lg">
+                          <p className="text-2xl font-bold text-emerald-600">{calculatedIMC}</p>
+                          <p className="text-xs text-muted-foreground">IMC</p>
+                          <p className="text-xs text-emerald-600">
+                            {parseFloat(calculatedIMC) < 18.5 ? 'Abaixo do peso' :
+                             parseFloat(calculatedIMC) < 25 ? 'Peso normal' :
+                             parseFloat(calculatedIMC) < 30 ? 'Sobrepeso' : 'Obesidade'}
+                          </p>
+                        </div>
+                      )}
+                      {calculatedBF && (
+                        <div className="text-center p-3 bg-white rounded-lg">
+                          <p className="text-2xl font-bold text-emerald-600">{calculatedBF}%</p>
+                          <p className="text-xs text-muted-foreground">BF Estimado</p>
+                          <p className="text-xs text-emerald-600">Fórmula Marinha EUA</p>
+                        </div>
+                      )}
+                      {calculatedFatMass && (
+                        <div className="text-center p-3 bg-white rounded-lg">
+                          <p className="text-2xl font-bold text-amber-600">{calculatedFatMass} kg</p>
+                          <p className="text-xs text-muted-foreground">Massa Gorda Est.</p>
+                        </div>
+                      )}
+                      {calculatedLeanMass && (
+                        <div className="text-center p-3 bg-white rounded-lg">
+                          <p className="text-2xl font-bold text-blue-600">{calculatedLeanMass} kg</p>
+                          <p className="text-xs text-muted-foreground">Massa Magra Est.</p>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      * BF estimado requer: altura, pescoço, cintura{student?.gender === 'female' ? ' e quadril' : ''}
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <h4 className="font-semibold flex items-center gap-2">

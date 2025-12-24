@@ -210,6 +210,7 @@
 - [x] Ao cancelar parceria, excluir todos agendamentos do aluno
 
 ## Automações Stevo (v2.0)
+- [x] Atualizar interface de automações para mostrar Stevo (não Evolution API)
 - [x] Trocar Evolution API para Stevo (https://stevo.chat/)
 - [x] Automações padrão criadas automaticamente (quando não existem)
 - [x] Lembrete 24h antes do treino
@@ -223,3 +224,25 @@
 - [ ] Treinos excluídos vão para lixeira
 - [ ] Opção de restaurar treino
 - [ ] Opção de esvaziar lixeira (exclusão permanente)
+
+## Histórico de Sessões (v2.1)
+- [x] Implementar listagem de sessões na aba Sessões do perfil do aluno
+- [x] Mostrar histórico completo de sessões (realizadas, faltas, agendadas)
+- [x] Integrar com sessões do calendário
+
+## Upload de Fotos e Materiais (v2.2)
+- [x] Implementar upload de fotos funcional (botão Adicionar Foto)
+- [x] Implementar upload de materiais funcional
+- [ ] Corrigir botão Editar do perfil do aluno
+
+## Cálculos Automáticos na Evolução (v2.3)
+- [x] Calcular BF (Body Fat) automaticamente baseado nas medidas
+- [x] Calcular IMC automaticamente (peso/altura²)
+- [x] Calcular Massa Gorda e Massa Magra estimadas
+- [ ] Permitir arrastar/reordenar colunas na tabela de medidas
+- [ ] Permitir criar novas colunas personalizadas
+- [ ] Permitir fórmulas personalizadas para cálculos
+
+## Automações Stevo Corrigidas (v2.4)
+- [x] Criar 6 automações padrão (Aniversário, Boas-vindas, Lembretes de treino 24h/2h, Lembrete de pagamento, Pagamento em atraso)
+- [x] Integração com Stevo para envio de WhatsApp

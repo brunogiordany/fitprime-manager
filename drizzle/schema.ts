@@ -27,8 +27,8 @@ export const personals = mysqlTable("personals", {
   specialties: text("specialties"), // JSON array of specialties
   workingHours: text("workingHours"), // JSON with working hours config
   whatsappNumber: varchar("whatsappNumber", { length: 20 }),
-  evolutionApiKey: varchar("evolutionApiKey", { length: 255 }),
-  evolutionInstance: varchar("evolutionInstance", { length: 255 }),
+  evolutionApiKey: varchar("evolutionApiKey", { length: 255 }), // Stevo API Key
+  evolutionInstance: varchar("evolutionInstance", { length: 255 }), // Stevo Instance Name
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "trial", "expired", "cancelled"]).default("trial").notNull(),
   subscriptionPeriod: mysqlEnum("subscriptionPeriod", ["monthly", "quarterly", "semiannual", "annual"]).default("monthly"),
   subscriptionExpiresAt: timestamp("subscriptionExpiresAt"),

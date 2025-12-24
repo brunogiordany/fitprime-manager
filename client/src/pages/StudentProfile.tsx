@@ -35,7 +35,7 @@ import {
   MapPin
 } from "lucide-react";
 import { useLocation, useParams, useSearch } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -65,6 +65,10 @@ export default function StudentProfile() {
   const [isEditing, setIsEditing] = useState(showEdit);
   const [editData, setEditData] = useState<any>({});
   const [activeTab, setActiveTab] = useState("overview");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const materialInputRef = useRef<HTMLInputElement>(null);
 
   const utils = trpc.useUtils();
   
@@ -108,6 +112,11 @@ export default function StudentProfile() {
     { enabled: studentId > 0 }
   );
 
+  const { data: studentSessions } = trpc.sessions.listByStudent.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+
   const updateMutation = trpc.students.update.useMutation({
     onSuccess: () => {
       toast.success("Dados atualizados com sucesso!");
@@ -116,6 +125,30 @@ export default function StudentProfile() {
     },
     onError: (error) => {
       toast.error("Erro ao atualizar: " + error.message);
+    },
+  });
+
+  const uploadPhotoMutation = trpc.photos.upload.useMutation({
+    onSuccess: () => {
+      toast.success("Foto adicionada com sucesso!");
+      utils.photos.list.invalidate({ studentId });
+      setIsUploadingPhoto(false);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao adicionar foto: " + error.message);
+      setIsUploadingPhoto(false);
+    },
+  });
+
+  const uploadMaterialMutation = trpc.materials.create.useMutation({
+    onSuccess: () => {
+      toast.success("Material adicionado com sucesso!");
+      utils.materials.list.invalidate({ studentId });
+      setIsUploadingMaterial(false);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao adicionar material: " + error.message);
+      setIsUploadingMaterial(false);
     },
   });
 
@@ -142,6 +175,94 @@ export default function StudentProfile() {
       id: studentId,
       ...editData,
     });
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        uploadPhotoMutation.mutate({
+          studentId,
+          photoDate: new Date().toISOString(),
+          fileBase64: base64,
+          fileName: file.name,
+          mimeType: file.type,
+          category: 'other',
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error('Erro ao processar a imagem');
+      setIsUploadingPhoto(false);
+    }
+
+    // Reset input
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+    }
+  };
+
+  const handleMaterialUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('O arquivo deve ter no máximo 10MB');
+      return;
+    }
+
+    setIsUploadingMaterial(true);
+
+    try {
+      // Upload para S3 via endpoint
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro no upload');
+      }
+
+      const { url, fileKey } = await response.json();
+
+      uploadMaterialMutation.mutate({
+        studentId,
+        title: file.name,
+        url,
+        fileKey,
+        type: file.type.includes('pdf') ? 'pdf' : 
+              file.type.includes('video') ? 'video' : 
+              file.type.includes('image') ? 'image' : 'other',
+      });
+    } catch (error) {
+      toast.error('Erro ao fazer upload do material');
+      setIsUploadingMaterial(false);
+    }
+
+    // Reset input
+    if (materialInputRef.current) {
+      materialInputRef.current.value = '';
+    }
   };
 
   const formatCurrency = (value: number | string) => {
@@ -242,40 +363,42 @@ export default function StudentProfile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-            <TabsTrigger value="overview" className="gap-2">
-              <User className="h-4 w-4 hidden sm:block" />
-              Geral
-            </TabsTrigger>
-            <TabsTrigger value="anamnesis" className="gap-2">
-              <FileText className="h-4 w-4 hidden sm:block" />
-              Anamnese
-            </TabsTrigger>
-            <TabsTrigger value="evolution" className="gap-2">
-              <TrendingUp className="h-4 w-4 hidden sm:block" />
-              Evolução
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="gap-2">
-              <Camera className="h-4 w-4 hidden sm:block" />
-              Fotos
-            </TabsTrigger>
-            <TabsTrigger value="workouts" className="gap-2">
-              <Dumbbell className="h-4 w-4 hidden sm:block" />
-              Treinos
-            </TabsTrigger>
-            <TabsTrigger value="sessions" className="gap-2">
-              <Calendar className="h-4 w-4 hidden sm:block" />
-              Sessões
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
-              <CreditCard className="h-4 w-4 hidden sm:block" />
-              Pagamentos
-            </TabsTrigger>
-            <TabsTrigger value="materials" className="gap-2">
-              <FolderOpen className="h-4 w-4 hidden sm:block" />
-              Materiais
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="inline-flex w-auto min-w-full h-auto flex-wrap lg:flex-nowrap gap-1 p-1">
+              <TabsTrigger value="overview" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <User className="h-4 w-4 hidden sm:block" />
+                Geral
+              </TabsTrigger>
+              <TabsTrigger value="anamnesis" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <FileText className="h-4 w-4 hidden sm:block" />
+                Anamnese
+              </TabsTrigger>
+              <TabsTrigger value="evolution" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <TrendingUp className="h-4 w-4 hidden sm:block" />
+                Evolução
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <Camera className="h-4 w-4 hidden sm:block" />
+                Fotos
+              </TabsTrigger>
+              <TabsTrigger value="workouts" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <Dumbbell className="h-4 w-4 hidden sm:block" />
+                Treinos
+              </TabsTrigger>
+              <TabsTrigger value="sessions" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <Calendar className="h-4 w-4 hidden sm:block" />
+                Sessões
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <CreditCard className="h-4 w-4 hidden sm:block" />
+                Pagamentos
+              </TabsTrigger>
+              <TabsTrigger value="materials" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <FolderOpen className="h-4 w-4 hidden sm:block" />
+                Materiais
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
@@ -686,10 +809,31 @@ export default function StudentProfile() {
                   <CardTitle>Galeria de Fotos</CardTitle>
                   <CardDescription>Registro visual da evolução</CardDescription>
                 </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Foto
-                </Button>
+                <div>
+                  <input
+                    type="file"
+                    ref={photoInputRef}
+                    onChange={handlePhotoUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button 
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                  >
+                    {isUploadingPhoto ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar Foto
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {photos && photos.length > 0 ? (
@@ -782,13 +926,57 @@ export default function StudentProfile() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground">Visualize as sessões na página de Agenda</p>
-                  <Button variant="link" onClick={() => setLocation('/agenda')}>
-                    Ir para Agenda
-                  </Button>
-                </div>
+                {studentSessions && studentSessions.length > 0 ? (
+                  <div className="space-y-3">
+                    {studentSessions.map((session) => (
+                      <div 
+                        key={session.id} 
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
+                        onClick={() => setLocation(`/sessao/${session.id}/treino`)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                            session.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+                            session.status === 'no_show' ? 'bg-red-100 text-red-600' :
+                            session.status === 'cancelled' ? 'bg-gray-100 text-gray-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            <Calendar className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {format(new Date(session.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(session.scheduledAt), "HH:mm")} - {session.duration || 60} min
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={`${
+                          session.status === 'completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' :
+                          session.status === 'no_show' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
+                          session.status === 'cancelled' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100' :
+                          session.status === 'confirmed' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
+                          'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
+                        }`}>
+                          {session.status === 'completed' ? 'Realizada' :
+                           session.status === 'no_show' ? 'Falta' :
+                           session.status === 'cancelled' ? 'Cancelada' :
+                           session.status === 'confirmed' ? 'Confirmada' :
+                           'Agendada'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Nenhuma sessão agendada</p>
+                    <Button variant="link" onClick={() => setLocation('/agenda')}>
+                      Ir para Agenda
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -857,10 +1045,31 @@ export default function StudentProfile() {
                   <CardTitle>Materiais</CardTitle>
                   <CardDescription>Arquivos e documentos compartilhados</CardDescription>
                 </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Material
-                </Button>
+                <div>
+                  <input
+                    type="file"
+                    ref={materialInputRef}
+                    onChange={handleMaterialUpload}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mp3,.jpg,.jpeg,.png,.gif"
+                    className="hidden"
+                  />
+                  <Button 
+                    onClick={() => materialInputRef.current?.click()}
+                    disabled={isUploadingMaterial}
+                  >
+                    {isUploadingMaterial ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar Material
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {materials && materials.length > 0 ? (

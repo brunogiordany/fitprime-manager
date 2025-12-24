@@ -1,0 +1,25 @@
+{
+  "query": "SELECT * FROM automations",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM automations",
+  "rows": [
+    {
+      "id": "1",
+      "personalId": "1",
+      "name": "Lembrete Sessao",
+      "trigger": "session_reminder",
+      "messageTemplate": "lembrando que nossa aula é amanhã ",
+      "isActive": "1",
+      "triggerHoursBefore": "24",
+      "triggerDaysAfter": "NULL",
+      "sendWindowStart": "08:00",
+      "sendWindowEnd": "20:00",
+      "maxMessagesPerDay": "1",
+      "createdAt": "2025-12-24 15:18:39",
+      "updatedAt": "2025-12-24 15:18:39"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tname\ttrigger\tmessageTemplate\tisActive\ttriggerHoursBefore\ttriggerDaysAfter\tsendWindowStart\tsendWindowEnd\tmaxMessagesPerDay\tcreatedAt\tupdatedAt\n1\t1\tLembrete Sessao\tsession_reminder\tlembrando que nossa aula é amanhã \t1\t24\tNULL\t08:00\t20:00\t1\t2025-12-24 15:18:39\t2025-12-24 15:18:39\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}
