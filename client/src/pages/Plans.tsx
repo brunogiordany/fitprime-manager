@@ -28,9 +28,11 @@ import {
   Edit,
   Trash2,
   MoreHorizontal,
-  Package
+  Package,
+  Calculator,
+  ArrowRightLeft
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -38,25 +40,106 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+
+type BillingCycle = "weekly" | "biweekly" | "monthly" | "quarterly" | "semiannual" | "annual";
+type PlanType = "recurring" | "fixed" | "sessions";
+
+// Função para calcular número de sessões no período baseado no ciclo
+const getSessionsInPeriod = (sessionsPerWeek: number, billingCycle: BillingCycle): number => {
+  const weeksInCycle: Record<BillingCycle, number> = {
+    weekly: 1,
+    biweekly: 2,
+    monthly: 4,
+    quarterly: 12,
+    semiannual: 24,
+    annual: 48,
+  };
+  return sessionsPerWeek * weeksInCycle[billingCycle];
+};
+
+// Função para calcular meses no ciclo
+const getMonthsInCycle = (billingCycle: BillingCycle): number => {
+  const monthsInCycle: Record<BillingCycle, number> = {
+    weekly: 0.25,
+    biweekly: 0.5,
+    monthly: 1,
+    quarterly: 3,
+    semiannual: 6,
+    annual: 12,
+  };
+  return monthsInCycle[billingCycle];
+};
 
 export default function Plans() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [calcMode, setCalcMode] = useState<'total' | 'session'>('total'); // Modo de cálculo
+  
   const [newPlan, setNewPlan] = useState({
     name: "",
     description: "",
-    type: "recurring" as "recurring" | "fixed" | "sessions",
-    billingCycle: "monthly" as "weekly" | "biweekly" | "monthly",
+    type: "recurring" as PlanType,
+    billingCycle: "monthly" as BillingCycle,
     durationMonths: "",
     totalSessions: "",
-    price: "",
-    sessionsPerWeek: "",
+    price: "", // Preço total do plano
+    pricePerSession: "", // Preço por sessão
+    sessionsPerWeek: "3",
     sessionDuration: "60",
+    billingDay: "5", // Dia de vencimento
   });
 
   const utils = trpc.useUtils();
 
   const { data: plans, isLoading } = trpc.plans.list.useQuery();
+
+  // Cálculo automático bidirecional
+  useEffect(() => {
+    const sessionsPerWeek = parseInt(newPlan.sessionsPerWeek) || 0;
+    const billingCycle = newPlan.billingCycle;
+    
+    if (sessionsPerWeek > 0 && newPlan.type === 'recurring') {
+      const sessionsInPeriod = getSessionsInPeriod(sessionsPerWeek, billingCycle);
+      
+      if (calcMode === 'session' && newPlan.pricePerSession) {
+        // Calcular preço total a partir do preço por sessão
+        const pricePerSession = parseFloat(newPlan.pricePerSession) || 0;
+        const totalPrice = (pricePerSession * sessionsInPeriod).toFixed(2);
+        if (newPlan.price !== totalPrice) {
+          setNewPlan(prev => ({ ...prev, price: totalPrice }));
+        }
+      } else if (calcMode === 'total' && newPlan.price) {
+        // Calcular preço por sessão a partir do preço total
+        const totalPrice = parseFloat(newPlan.price) || 0;
+        const pricePerSession = sessionsInPeriod > 0 ? (totalPrice / sessionsInPeriod).toFixed(2) : "0";
+        if (newPlan.pricePerSession !== pricePerSession) {
+          setNewPlan(prev => ({ ...prev, pricePerSession }));
+        }
+      }
+    }
+  }, [newPlan.price, newPlan.pricePerSession, newPlan.sessionsPerWeek, newPlan.billingCycle, calcMode, newPlan.type]);
+
+  // Informações calculadas para exibição
+  const calculatedInfo = useMemo(() => {
+    const sessionsPerWeek = parseInt(newPlan.sessionsPerWeek) || 0;
+    const billingCycle = newPlan.billingCycle;
+    const price = parseFloat(newPlan.price) || 0;
+    
+    if (sessionsPerWeek > 0 && newPlan.type === 'recurring') {
+      const sessionsInPeriod = getSessionsInPeriod(sessionsPerWeek, billingCycle);
+      const pricePerSession = sessionsInPeriod > 0 ? price / sessionsInPeriod : 0;
+      const monthsInCycle = getMonthsInCycle(billingCycle);
+      const monthlyValue = monthsInCycle > 0 ? price / monthsInCycle : 0;
+      
+      return {
+        sessionsInPeriod,
+        pricePerSession,
+        monthlyValue,
+      };
+    }
+    return null;
+  }, [newPlan.price, newPlan.sessionsPerWeek, newPlan.billingCycle, newPlan.type]);
 
   const createMutation = trpc.plans.create.useMutation({
     onSuccess: () => {
@@ -101,9 +184,12 @@ export default function Plans() {
       durationMonths: "",
       totalSessions: "",
       price: "",
-      sessionsPerWeek: "",
+      pricePerSession: "",
+      sessionsPerWeek: "3",
       sessionDuration: "60",
+      billingDay: "5",
     });
+    setCalcMode('total');
   };
 
   const handleCreatePlan = () => {
@@ -154,8 +240,10 @@ export default function Plans() {
       durationMonths: plan.durationMonths?.toString() || "",
       totalSessions: plan.totalSessions?.toString() || "",
       price: plan.price,
-      sessionsPerWeek: plan.sessionsPerWeek?.toString() || "",
+      pricePerSession: "",
+      sessionsPerWeek: plan.sessionsPerWeek?.toString() || "3",
       sessionDuration: plan.sessionDuration?.toString() || "60",
+      billingDay: "5",
     });
     setIsNewDialogOpen(true);
   };
@@ -188,16 +276,15 @@ export default function Plans() {
   };
 
   const getBillingCycleText = (cycle: string) => {
-    switch (cycle) {
-      case 'weekly':
-        return 'Semanal';
-      case 'biweekly':
-        return 'Quinzenal';
-      case 'monthly':
-        return 'Mensal';
-      default:
-        return cycle;
-    }
+    const cycles: Record<string, string> = {
+      weekly: 'Semanal',
+      biweekly: 'Quinzenal',
+      monthly: 'Mensal',
+      quarterly: 'Trimestral',
+      semiannual: 'Semestral',
+      annual: 'Anual',
+    };
+    return cycles[cycle] || cycle;
   };
 
   return (
@@ -211,7 +298,10 @@ export default function Plans() {
               Configure os planos e pacotes oferecidos aos alunos
             </p>
           </div>
-          <Button onClick={() => { resetForm(); setEditingPlan(null); setIsNewDialogOpen(true); }}>
+          <Button 
+            onClick={() => { resetForm(); setEditingPlan(null); setIsNewDialogOpen(true); }}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Novo Plano
           </Button>
@@ -283,6 +373,14 @@ export default function Plans() {
                       {plan.sessionDuration && (
                         <p>Sessões de {plan.sessionDuration} min</p>
                       )}
+                      {/* Calcular e mostrar valor por sessão */}
+                      {plan.type === 'recurring' && plan.sessionsPerWeek && plan.billingCycle && (
+                        <p className="text-emerald-600 font-medium">
+                          ≈ {formatCurrency(
+                            parseFloat(plan.price) / getSessionsInPeriod(plan.sessionsPerWeek, plan.billingCycle as BillingCycle)
+                          )}/sessão
+                        </p>
+                      )}
                     </div>
 
                     <div className="pt-2">
@@ -319,7 +417,7 @@ export default function Plans() {
             resetForm();
           }
         }}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingPlan ? 'Editar Plano' : 'Novo Plano'}</DialogTitle>
               <DialogDescription>
@@ -343,12 +441,13 @@ export default function Plans() {
                   onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
                 />
               </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Tipo *</Label>
                   <Select
                     value={newPlan.type}
-                    onValueChange={(value: "recurring" | "fixed" | "sessions") => 
+                    onValueChange={(value: PlanType) => 
                       setNewPlan({ ...newPlan, type: value })
                     }
                   >
@@ -362,38 +461,31 @@ export default function Plans() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid gap-2">
-                  <Label>Preço *</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0,00"
-                    value={newPlan.price}
-                    onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                  />
-                </div>
+                
+                {newPlan.type === 'recurring' && (
+                  <div className="grid gap-2">
+                    <Label>Ciclo de Cobrança</Label>
+                    <Select
+                      value={newPlan.billingCycle}
+                      onValueChange={(value: BillingCycle) => 
+                        setNewPlan({ ...newPlan, billingCycle: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekly">Semanal</SelectItem>
+                        <SelectItem value="biweekly">Quinzenal</SelectItem>
+                        <SelectItem value="monthly">Mensal</SelectItem>
+                        <SelectItem value="quarterly">Trimestral (3 meses)</SelectItem>
+                        <SelectItem value="semiannual">Semestral (6 meses)</SelectItem>
+                        <SelectItem value="annual">Anual (12 meses)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-
-              {newPlan.type === 'recurring' && (
-                <div className="grid gap-2">
-                  <Label>Ciclo de Cobrança</Label>
-                  <Select
-                    value={newPlan.billingCycle}
-                    onValueChange={(value: "weekly" | "biweekly" | "monthly") => 
-                      setNewPlan({ ...newPlan, billingCycle: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">Semanal</SelectItem>
-                      <SelectItem value="biweekly">Quinzenal</SelectItem>
-                      <SelectItem value="monthly">Mensal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               {newPlan.type === 'fixed' && (
                 <div className="grid gap-2">
@@ -406,6 +498,7 @@ export default function Plans() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="1">1 mês</SelectItem>
                       <SelectItem value="3">3 meses</SelectItem>
                       <SelectItem value="6">6 meses</SelectItem>
                       <SelectItem value="12">12 meses</SelectItem>
@@ -442,6 +535,8 @@ export default function Plans() {
                       <SelectItem value="3">3x por semana</SelectItem>
                       <SelectItem value="4">4x por semana</SelectItem>
                       <SelectItem value="5">5x por semana</SelectItem>
+                      <SelectItem value="6">6x por semana</SelectItem>
+                      <SelectItem value="7">7x por semana</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -459,22 +554,165 @@ export default function Plans() {
                       <SelectItem value="45">45 minutos</SelectItem>
                       <SelectItem value="60">60 minutos</SelectItem>
                       <SelectItem value="90">90 minutos</SelectItem>
+                      <SelectItem value="120">120 minutos</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              {/* Dia de Vencimento */}
+              <div className="grid gap-2">
+                <Label>Dia de Vencimento</Label>
+                <Select
+                  value={newPlan.billingDay}
+                  onValueChange={(value) => setNewPlan({ ...newPlan, billingDay: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o dia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString()}>
+                        Dia {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Dia do mês em que a cobrança será gerada
+                </p>
+              </div>
+
+              {/* Seção de Preços com Cálculo Automático */}
+              {newPlan.type === 'recurring' && (
+                <Card className="bg-muted/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Calculator className="h-4 w-4" />
+                      Calculadora de Preços
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Preencha um valor e o outro será calculado automaticamente
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Toggle de modo */}
+                    <div className="flex items-center justify-between p-2 bg-background rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm ${calcMode === 'session' ? 'font-medium' : 'text-muted-foreground'}`}>
+                          Valor por Sessão
+                        </span>
+                        <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                        <span className={`text-sm ${calcMode === 'total' ? 'font-medium' : 'text-muted-foreground'}`}>
+                          Valor Total
+                        </span>
+                      </div>
+                      <Switch
+                        checked={calcMode === 'total'}
+                        onCheckedChange={(checked) => setCalcMode(checked ? 'total' : 'session')}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label className={calcMode === 'session' ? 'font-medium text-primary' : ''}>
+                          Valor por Sessão {calcMode === 'session' && '*'}
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0,00"
+                            className={`pl-10 ${calcMode === 'session' ? 'border-primary' : 'bg-muted'}`}
+                            value={newPlan.pricePerSession}
+                            onChange={(e) => {
+                              setCalcMode('session');
+                              setNewPlan({ ...newPlan, pricePerSession: e.target.value });
+                            }}
+                            disabled={calcMode === 'total'}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label className={calcMode === 'total' ? 'font-medium text-primary' : ''}>
+                          Valor Total do Plano {calcMode === 'total' && '*'}
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0,00"
+                            className={`pl-10 ${calcMode === 'total' ? 'border-primary' : 'bg-muted'}`}
+                            value={newPlan.price}
+                            onChange={(e) => {
+                              setCalcMode('total');
+                              setNewPlan({ ...newPlan, price: e.target.value });
+                            }}
+                            disabled={calcMode === 'session'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resumo do cálculo */}
+                    {calculatedInfo && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-2">
+                          Resumo do Plano:
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Sessões no período</p>
+                            <p className="font-medium">{calculatedInfo.sessionsInPeriod}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Valor/sessão</p>
+                            <p className="font-medium">{formatCurrency(calculatedInfo.pricePerSession)}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Valor mensal equiv.</p>
+                            <p className="font-medium">{formatCurrency(calculatedInfo.monthlyValue)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Preço simples para outros tipos */}
+              {newPlan.type !== 'recurring' && (
+                <div className="grid gap-2">
+                  <Label>Preço *</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      className="pl-10"
+                      value={newPlan.price}
+                      onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsNewDialogOpen(false)}>
                 Cancelar
               </Button>
               <Button 
-                onClick={editingPlan ? handleUpdatePlan : handleCreatePlan} 
+                onClick={editingPlan ? handleUpdatePlan : handleCreatePlan}
                 disabled={createMutation.isPending || updateMutation.isPending}
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
               >
                 {createMutation.isPending || updateMutation.isPending 
-                  ? "Salvando..." 
-                  : editingPlan ? "Atualizar" : "Criar Plano"}
+                  ? 'Salvando...' 
+                  : editingPlan ? 'Atualizar Plano' : 'Criar Plano'
+                }
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -85,3 +85,14 @@
 - [x] Testes unitários para plans
 - [x] Testes unitários para automations
 - [x] Testes de segurança (rotas protegidas)
+
+
+## Melhorias Solicitadas (v1.1)
+- [x] Corrigir página de Treinos (erro 404)
+- [x] Planos: cálculo automático valor aula ↔ valor total (bidirecional)
+- [x] Planos: adicionar ciclos maiores (trimestral, semestral, anual)
+- [x] Planos: definir dia de vencimento/cobrança
+- [x] Agenda: visualização mensal completa (calendário)
+- [x] Agendamento: opção de cadastrar cliente durante agendamento
+- [x] Agendamento: selecionar plano do cliente
+- [ ] Agendamento: definir datas de vencimento e cobrança (pendente)

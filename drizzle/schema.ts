@@ -249,7 +249,8 @@ export const plans = mysqlTable("plans", {
   description: text("description"),
   type: mysqlEnum("type", ["recurring", "fixed", "sessions"]).notNull(),
   // Para planos recorrentes
-  billingCycle: mysqlEnum("billingCycle", ["weekly", "biweekly", "monthly"]),
+  billingCycle: mysqlEnum("billingCycle", ["weekly", "biweekly", "monthly", "quarterly", "semiannual", "annual"]),
+  billingDay: int("billingDay").default(5), // Dia do mês para cobrança
   // Para planos fixos
   durationMonths: int("durationMonths"), // 3, 6, 12 meses
   // Para pacotes de sessões

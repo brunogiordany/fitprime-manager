@@ -14,6 +14,7 @@ import Plans from "./pages/Plans";
 import Automations from "./pages/Automations";
 import Settings from "./pages/Settings";
 import StudentPortal from "./pages/StudentPortal";
+import Workouts from "./pages/Workouts";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/alunos" component={Students} />
       <Route path="/alunos/:id" component={StudentProfile} />
       <Route path="/agenda" component={Schedule} />
+      <Route path="/treinos" component={Workouts} />
       <Route path="/cobrancas" component={Charges} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />
