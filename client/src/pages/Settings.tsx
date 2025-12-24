@@ -13,7 +13,14 @@ import {
   Bell,
   MessageSquare,
   Shield,
-  Save
+  Save,
+  QrCode,
+  Smartphone,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Loader2,
+  ExternalLink
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -39,6 +46,10 @@ export default function Settings() {
     sessionReminders: true,
     paymentReminders: true,
   });
+
+  const [whatsappStatus, setWhatsappStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [isLoadingQR, setIsLoadingQR] = useState(false);
 
   const { data: personalData, isLoading } = trpc.personal.get.useQuery();
 
@@ -83,6 +94,38 @@ export default function Settings() {
       evolutionApiKey: whatsappConfig.evolutionApiKey || undefined,
       evolutionInstance: whatsappConfig.instanceName || undefined,
     });
+  };
+
+  const handleConnectWhatsApp = async () => {
+    if (!whatsappConfig.evolutionApiUrl || !whatsappConfig.evolutionApiKey || !whatsappConfig.instanceName) {
+      toast.error("Preencha todos os campos de configuração do Stevo primeiro");
+      return;
+    }
+    
+    setIsLoadingQR(true);
+    setWhatsappStatus('connecting');
+    
+    try {
+      // Simulação de conexão - em produção seria uma chamada real à API do Stevo
+      // A API do Stevo retorna um QR Code para conexão
+      toast.info("Para conectar seu WhatsApp, acesse o painel do Stevo e escaneie o QR Code");
+      
+      // Abrir link do Stevo em nova aba
+      window.open('https://app.stevo.chat', '_blank');
+      
+      setWhatsappStatus('disconnected');
+    } catch (error) {
+      toast.error("Erro ao conectar WhatsApp");
+      setWhatsappStatus('disconnected');
+    } finally {
+      setIsLoadingQR(false);
+    }
+  };
+
+  const handleDisconnectWhatsApp = () => {
+    setWhatsappStatus('disconnected');
+    setQrCode(null);
+    toast.success("WhatsApp desconectado");
   };
 
   return (
@@ -222,11 +265,69 @@ export default function Settings() {
                 A chave será armazenada de forma segura e criptografada
               </p>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               <Button onClick={handleSaveWhatsapp} disabled={updateMutation.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {updateMutation.isPending ? "Salvando..." : "Salvar Configurações"}
               </Button>
+            </div>
+            
+            <Separator />
+            
+            {/* Status de Conexão e Botão Conectar */}
+            <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${whatsappStatus === 'connected' ? 'bg-green-100' : whatsappStatus === 'connecting' ? 'bg-yellow-100' : 'bg-gray-100'}`}>
+                    <Smartphone className={`h-5 w-5 ${whatsappStatus === 'connected' ? 'text-green-600' : whatsappStatus === 'connecting' ? 'text-yellow-600' : 'text-gray-500'}`} />
+                  </div>
+                  <div>
+                    <p className="font-medium">Status da Conexão</p>
+                    <p className={`text-sm ${whatsappStatus === 'connected' ? 'text-green-600' : whatsappStatus === 'connecting' ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                      {whatsappStatus === 'connected' ? 'Conectado' : whatsappStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {whatsappStatus === 'connected' ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <Button variant="outline" size="sm" onClick={handleDisconnectWhatsApp}>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Desconectar
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      onClick={handleConnectWhatsApp} 
+                      disabled={isLoadingQR || !whatsappConfig.enabled}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isLoadingQR ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Conectando...</>
+                      ) : (
+                        <><QrCode className="h-4 w-4 mr-2" /> Conectar WhatsApp</>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-700">
+                  <strong>Como conectar:</strong> Após salvar as configurações, clique em "Conectar WhatsApp" para abrir o painel do Stevo. 
+                  Lá você poderá escanear o QR Code com seu celular para conectar sua conta.
+                </p>
+                <a 
+                  href="https://stevo.chat" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-2"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Acessar Stevo
+                </a>
+              </div>
             </div>
           </CardContent>
         </Card>

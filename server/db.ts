@@ -1,7 +1,7 @@
-import { eq, and, desc, asc, gte, lte, like, sql, or, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, like, sql, or, isNull, not } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
-  InsertUser, users,
+  InsertUser, users, User,
   personals, InsertPersonal, Personal,
   students, InsertStudent, Student,
   anamneses, InsertAnamnesis, Anamnesis,
@@ -22,6 +22,8 @@ import {
   messageLog, InsertMessageLog, MessageLogEntry,
   workoutLogs, InsertWorkoutLog, WorkoutLog,
   exerciseLogs, InsertExerciseLog, ExerciseLog,
+  studentInvites, InsertStudentInvite, StudentInvite,
+  passwordResetTokens, InsertPasswordResetToken, PasswordResetToken,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -303,7 +305,10 @@ export async function getWorkoutsByStudentId(studentId: number) {
   const db = await getDb();
   if (!db) return [];
   return await db.select().from(workouts)
-    .where(eq(workouts.studentId, studentId))
+    .where(and(
+      eq(workouts.studentId, studentId),
+      isNull(workouts.deletedAt) // Filtrar treinos não excluídos
+    ))
     .orderBy(desc(workouts.createdAt));
 }
 
@@ -327,7 +332,35 @@ export async function updateWorkout(id: number, data: Partial<InsertWorkout>) {
   await db.update(workouts).set(data).where(eq(workouts.id, id));
 }
 
+// Soft delete - move para lixeira
 export async function deleteWorkout(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Soft delete - marca como excluído ao invés de deletar
+  await db.update(workouts).set({ deletedAt: new Date() }).where(eq(workouts.id, id));
+}
+
+// Restaurar treino da lixeira
+export async function restoreWorkout(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(workouts).set({ deletedAt: null }).where(eq(workouts.id, id));
+}
+
+// Listar treinos na lixeira
+export async function getDeletedWorkoutsByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(workouts)
+    .where(and(
+      eq(workouts.personalId, personalId),
+      not(isNull(workouts.deletedAt))
+    ))
+    .orderBy(desc(workouts.deletedAt));
+}
+
+// Exclusão permanente - remove de todos os lugares
+export async function permanentlyDeleteWorkout(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   // Buscar todos os dias do treino
@@ -344,7 +377,7 @@ export async function deleteWorkout(id: number) {
     await db.delete(exerciseLogs).where(eq(exerciseLogs.workoutLogId, log.id));
   }
   await db.delete(workoutLogs).where(eq(workoutLogs.workoutId, id));
-  // Excluir o treino
+  // Excluir o treino permanentemente
   await db.delete(workouts).where(eq(workouts.id, id));
 }
 
@@ -1068,3 +1101,120 @@ export async function createDefaultAutomations(personalId: number) {
   return defaultAutomations.length;
 }
 
+
+// ==================== STUDENT INVITE FUNCTIONS ====================
+export async function createStudentInvite(data: InsertStudentInvite) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(studentInvites).values(data);
+  return result[0].insertId;
+}
+
+export async function getStudentInviteByToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(studentInvites)
+    .where(eq(studentInvites.inviteToken, token))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function getStudentInvitesByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(studentInvites)
+    .where(eq(studentInvites.personalId, personalId))
+    .orderBy(desc(studentInvites.createdAt));
+}
+
+export async function getStudentInvitesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(studentInvites)
+    .where(eq(studentInvites.studentId, studentId))
+    .orderBy(desc(studentInvites.createdAt));
+}
+
+export async function updateStudentInvite(id: number, data: Partial<InsertStudentInvite>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(studentInvites).set(data).where(eq(studentInvites.id, id));
+}
+
+export async function acceptStudentInvite(token: string, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get invite
+  const invite = await getStudentInviteByToken(token);
+  if (!invite) throw new Error("Convite não encontrado");
+  if (invite.status !== 'pending') throw new Error("Convite já foi usado ou expirou");
+  if (new Date() > invite.expiresAt) throw new Error("Convite expirado");
+  
+  // Update invite status
+  await db.update(studentInvites).set({
+    status: 'accepted',
+    acceptedAt: new Date(),
+  }).where(eq(studentInvites.id, invite.id));
+  
+  // Link user to student
+  await db.update(students).set({
+    userId: userId,
+    status: 'active',
+  }).where(eq(students.id, invite.studentId));
+  
+  // Update user role to student
+  await db.update(users).set({
+    role: 'student',
+  }).where(eq(users.id, userId));
+  
+  return invite.studentId;
+}
+
+// ==================== PASSWORD RESET FUNCTIONS ====================
+export async function createPasswordResetToken(data: InsertPasswordResetToken) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(passwordResetTokens).values(data);
+  return result[0].insertId;
+}
+
+export async function getPasswordResetToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(passwordResetTokens)
+    .where(and(
+      eq(passwordResetTokens.token, token),
+      isNull(passwordResetTokens.usedAt)
+    ))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function markPasswordResetTokenUsed(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(passwordResetTokens).set({
+    usedAt: new Date(),
+  }).where(eq(passwordResetTokens.id, id));
+}
+
+// ==================== USER FUNCTIONS EXTRAS ====================
+export async function updateUserRole(userId: number, role: 'user' | 'admin' | 'personal' | 'student') {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+// ==================== STUDENT EXTRAS ====================
+export async function linkStudentToUser(studentId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(students).set({ userId }).where(eq(students.id, studentId));
+}
+
+export async function unlinkStudentFromUser(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(students).set({ userId: null }).where(eq(students.id, studentId));
+}

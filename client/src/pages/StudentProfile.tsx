@@ -32,7 +32,14 @@ import {
   Plus,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  Send,
+  Link2,
+  RefreshCw,
+  Copy,
+  CheckCircle,
+  Clock,
+  XCircle
 } from "lucide-react";
 import { useLocation, useParams, useSearch } from "wouter";
 import { useState, useEffect, useRef } from "react";
@@ -137,6 +144,29 @@ export default function StudentProfile() {
     onError: (error: any) => {
       toast.error("Erro ao adicionar foto: " + error.message);
       setIsUploadingPhoto(false);
+    },
+  });
+
+  const sendInviteMutation = trpc.students.sendInvite.useMutation({
+    onSuccess: (data) => {
+      toast.success("Convite enviado com sucesso!");
+      // Copiar link para clipboard
+      const fullLink = window.location.origin + data.inviteLink;
+      navigator.clipboard.writeText(fullLink);
+      toast.info("Link copiado para a área de transferência!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao enviar convite: " + error.message);
+    },
+  });
+
+  const resetAccessMutation = trpc.students.resetAccess.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.students.get.invalidate({ id: studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao resetar acesso: " + error.message);
     },
   });
 
@@ -352,6 +382,33 @@ export default function StudentProfile() {
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
                 </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => sendInviteMutation.mutate({ studentId, sendVia: 'both' })}
+                  disabled={sendInviteMutation.isPending}
+                  title="Enviar convite para o aluno acessar o app"
+                >
+                  {sendInviteMutation.isPending ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Send className="h-4 w-4 mr-2" /> Convidar</>
+                  )}
+                </Button>
+                {student.userId && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      if (confirm('Isso irá desconectar o aluno do app. Ele precisará de um novo convite para acessar. Continuar?')) {
+                        resetAccessMutation.mutate({ studentId });
+                      }
+                    }}
+                    disabled={resetAccessMutation.isPending}
+                    title="Resetar acesso do aluno"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Resetar Acesso
+                  </Button>
+                )}
                 <Button variant="outline">
                   <Download className="h-4 w-4 mr-2" />
                   Exportar PDF

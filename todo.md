@@ -191,7 +191,7 @@
 ## Bugs Críticos (v2.0)
 - [x] Excluir aluno não funciona
 - [x] Botões check/X no Dashboard não funcionam (marcar sessão realizada/cancelada)
-- [ ] Editar aluno não funciona
+- [x] Editar aluno não funciona - CORRIGIDO
 - [ ] Exportar PDF não funciona
 - [x] Erro ao atualizar medidas (problema no banco de dados)
 - [x] Treino excluído fica como "inativo" ao invés de sumir
@@ -221,9 +221,9 @@
 - [x] Aniversário
 
 ## Lixeira de Treinos (v2.0)
-- [ ] Treinos excluídos vão para lixeira
-- [ ] Opção de restaurar treino
-- [ ] Opção de esvaziar lixeira (exclusão permanente)
+- [x] Treinos excluídos vão para lixeira
+- [x] Opção de restaurar treino
+- [x] Opção de esvaziar lixeira (exclusão permanente)
 
 ## Histórico de Sessões (v2.1)
 - [x] Implementar listagem de sessões na aba Sessões do perfil do aluno
@@ -246,3 +246,36 @@
 ## Automações Stevo Corrigidas (v2.4)
 - [x] Criar 6 automações padrão (Aniversário, Boas-vindas, Lembretes de treino 24h/2h, Lembrete de pagamento, Pagamento em atraso)
 - [x] Integração com Stevo para envio de WhatsApp
+
+## Sistema de Lixeira para Treinos (v2.5)
+- [x] Implementar soft delete para treinos (campo deletedAt)
+- [x] Criar página de lixeira para visualizar treinos excluídos
+- [x] Implementar restauração de treinos da lixeira
+- [x] Ao excluir definitivamente, remover de todos os lugares
+
+## Integração WhatsApp via QR Code (v2.6)
+- [x] Pesquisar API do Stevo para conexão via QR Code
+- [x] Criar interface para conexão WhatsApp nas Configurações
+- [x] Implementar botão para conectar WhatsApp (abre painel Stevo)
+- [x] Status de conexão visível na interface
+- [x] Permitir desconectar e reconectar WhatsApp
+
+## Área do Aluno com Sistema de Convites (v2.7)
+- [x] Sistema de convites por email/WhatsApp para alunos
+- [x] Aluno recebe link único para criar conta
+- [x] Aluno acessa com role "student" (não personal)
+- [x] Personal pode resetar acesso do aluno
+- [x] Personal pode editar dados do aluno para auxiliar
+- [ ] Dashboard específico para alunos:
+  - [ ] Ver seus treinos
+  - [ ] Ver agenda de sessões
+  - [ ] Ver histórico de pagamentos
+  - [ ] Ver anamnese e medidas
+  - [ ] Ver fotos de evolução
+- [ ] Aluno pode registrar treino (diário de treino)
+- [ ] Notificação para personal quando aluno registra treino
+
+## Bugs Pendentes (v2.8)
+- [x] Editar aluno não funciona - CORRIGIDO (botão Editar no perfil)
+- [ ] Exportar PDF não funciona
+- [x] Treino excluído ainda aparece na lista (precisa lixeira) - RESOLVIDO

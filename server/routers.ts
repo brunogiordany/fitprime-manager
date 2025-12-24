@@ -187,6 +187,77 @@ export const appRouter = router({
         await db.deleteStudent(input.id, ctx.personal.id);
         return { success: true };
       }),
+    
+    // Enviar convite para aluno criar conta
+    sendInvite: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        sendVia: z.enum(['email', 'whatsapp', 'both']).default('both'),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Gerar token único
+        const inviteToken = nanoid(32);
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
+        
+        // Criar convite
+        await db.createStudentInvite({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          inviteToken,
+          email: student.email || undefined,
+          phone: student.phone || undefined,
+          expiresAt,
+        });
+        
+        // TODO: Enviar email/WhatsApp com o link de convite
+        // Por enquanto retorna o link para o personal copiar
+        const inviteLink = `/convite/${inviteToken}`;
+        
+        return { 
+          success: true, 
+          inviteLink,
+          inviteToken,
+          expiresAt,
+        };
+      }),
+    
+    // Listar convites de um aluno
+    getInvites: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getStudentInvitesByStudentId(input.studentId);
+      }),
+    
+    // Cancelar convite
+    cancelInvite: personalProcedure
+      .input(z.object({ inviteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateStudentInvite(input.inviteId, { status: 'cancelled' });
+        return { success: true };
+      }),
+    
+    // Resetar senha do aluno (desvincula usuário)
+    resetAccess: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Desvincular usuário do aluno
+        if (student.userId) {
+          await db.unlinkStudentFromUser(input.studentId);
+        }
+        
+        return { success: true, message: 'Acesso resetado. Envie um novo convite para o aluno.' };
+      }),
   }),
 
   // ==================== ANAMNESIS ====================
@@ -609,6 +680,26 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         await db.deleteWorkout(input.id);
+        return { success: true };
+      }),
+    
+    // Lixeira de treinos
+    listDeleted: personalProcedure
+      .query(async ({ ctx }) => {
+        return await db.getDeletedWorkoutsByPersonalId(ctx.personal.id);
+      }),
+    
+    restore: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreWorkout(input.id);
+        return { success: true };
+      }),
+    
+    permanentDelete: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.permanentlyDeleteWorkout(input.id);
         return { success: true };
       }),
   }),

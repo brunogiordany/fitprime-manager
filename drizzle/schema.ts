@@ -201,6 +201,7 @@ export const workouts = mysqlTable("workouts", {
   startDate: date("startDate"),
   endDate: date("endDate"),
   notes: text("notes"),
+  deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -482,3 +483,34 @@ export const exerciseLogs = mysqlTable("exercise_logs", {
 
 export type ExerciseLog = typeof exerciseLogs.$inferSelect;
 export type InsertExerciseLog = typeof exerciseLogs.$inferInsert;
+
+
+// ==================== STUDENT INVITES (Convites para Alunos) ====================
+export const studentInvites = mysqlTable("student_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  inviteToken: varchar("inviteToken", { length: 64 }).notNull().unique(),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 20 }),
+  status: mysqlEnum("status", ["pending", "accepted", "expired", "cancelled"]).default("pending").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type StudentInvite = typeof studentInvites.$inferSelect;
+export type InsertStudentInvite = typeof studentInvites.$inferInsert;
+
+// ==================== PASSWORD RESET TOKENS ====================
+export const passwordResetTokens = mysqlTable("password_reset_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
