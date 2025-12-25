@@ -40,7 +40,14 @@ import {
   CreditCard,
   Dumbbell,
   Filter,
-  X
+  X,
+  MessageCircle,
+  Phone,
+  Edit,
+  Repeat,
+  Bell,
+  MoreHorizontal,
+  Save
 } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -106,6 +113,22 @@ export default function Schedule() {
     { value: 'no_show', label: 'Falta', color: 'bg-red-500' },
     { value: 'cancelled', label: 'Cancelada', color: 'bg-gray-400' },
   ];
+
+  // Modal de edição de sessão
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    status: '',
+    scheduledAt: '',
+    duration: '60',
+    notes: '',
+    sendReminder: true,
+  });
+
+  // Modal de lista de sessões do dia (+X more)
+  const [isDayListOpen, setIsDayListOpen] = useState(false);
+  const [selectedDaySessions, setSelectedDaySessions] = useState<any[]>([]);
+  const [selectedDayDate, setSelectedDayDate] = useState<Date | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -294,6 +317,51 @@ export default function Schedule() {
 
   const clearFilters = () => {
     setStatusFilter([]);
+  };
+
+  // Funções para modal de edição de sessão
+  const openEditDialog = (session: any) => {
+    setEditingSession(session);
+    setEditForm({
+      status: session.status,
+      scheduledAt: format(new Date(session.scheduledAt), "yyyy-MM-dd'T'HH:mm"),
+      duration: session.duration?.toString() || '60',
+      notes: session.notes || '',
+      sendReminder: true,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingSession) return;
+    updateMutation.mutate({
+      id: editingSession.id,
+      status: editForm.status as any,
+      scheduledAt: editForm.scheduledAt,
+      duration: parseInt(editForm.duration),
+      notes: editForm.notes || undefined,
+    }, {
+      onSuccess: () => {
+        setIsEditDialogOpen(false);
+        setEditingSession(null);
+      }
+    });
+  };
+
+  // Funções para modal de lista do dia (+X more)
+  const openDayList = (date: Date, daySessions: any[]) => {
+    setSelectedDayDate(date);
+    setSelectedDaySessions(daySessions);
+    setIsDayListOpen(true);
+  };
+
+  const openWhatsApp = (phone: string | undefined) => {
+    if (!phone) {
+      toast.error('Número de telefone não cadastrado');
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
   const filteredStudents = useMemo(() => {
@@ -492,7 +560,7 @@ export default function Schedule() {
                             <div
                               key={session.id}
                               className={`text-xs p-1 rounded truncate cursor-pointer hover:opacity-80 text-white ${getStatusColor(session.status)}`}
-                              onClick={() => setLocation(`/alunos/${session.studentId}`)}
+                              onClick={() => openEditDialog(session)}
                               title={`${format(new Date(session.scheduledAt), "HH:mm")} - ${session.student?.name}`}
                             >
                               <span className="font-medium">{format(new Date(session.scheduledAt), "HH:mm")}</span>
@@ -500,7 +568,10 @@ export default function Schedule() {
                             </div>
                           ))}
                           {daySessions.length > 3 && (
-                            <div className="text-xs text-primary font-medium px-1 cursor-pointer hover:underline">
+                            <div 
+                              className="text-xs text-primary font-medium px-1 cursor-pointer hover:underline"
+                              onClick={() => openDayList(day, daySessions)}
+                            >
                               +{daySessions.length - 3} mais
                             </div>
                           )}
@@ -534,7 +605,7 @@ export default function Schedule() {
                         <div
                           key={session.id}
                           className="p-2 rounded-lg bg-accent/50 hover:bg-accent cursor-pointer text-sm"
-                          onClick={() => setLocation(`/alunos/${session.studentId}`)}
+                          onClick={() => openEditDialog(session)}
                         >
                           <div className="flex items-center gap-1 font-medium">
                             <Clock className="h-3 w-3" />
@@ -929,6 +1000,213 @@ export default function Schedule() {
                 </DialogFooter>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Edição de Sessão */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Editando agendamento</DialogTitle>
+            </DialogHeader>
+            
+            {editingSession && (
+              <div className="space-y-6">
+                {/* Informações do Cliente */}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground">Informações</h4>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-primary">{editingSession.student?.name}</p>
+                      <p className="text-sm text-muted-foreground">{editingSession.student?.phone || 'Sem telefone'}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => openWhatsApp(editingSession.student?.phone)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
+                      Conversar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => {
+                        setIsEditDialogOpen(false);
+                        setLocation(`/alunos/${editingSession.studentId}`);
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Ver cliente
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Data e Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Data e Horário</Label>
+                    <Input
+                      type="datetime-local"
+                      value={editForm.scheduledAt}
+                      onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={editForm.status}
+                      onValueChange={(value) => setEditForm({ ...editForm, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="scheduled">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                            Não confirmado
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="confirmed">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            Confirmado
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="completed">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-green-500" />
+                            Realizada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="no_show">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500" />
+                            Falta
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="cancelled">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-gray-400" />
+                            Cancelado
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Duração */}
+                <div className="grid gap-2">
+                  <Label>Duração</Label>
+                  <Select
+                    value={editForm.duration}
+                    onValueChange={(value) => setEditForm({ ...editForm, duration: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15">15 min</SelectItem>
+                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
+                      <SelectItem value="60">60 min</SelectItem>
+                      <SelectItem value="90">1h 30 min</SelectItem>
+                      <SelectItem value="120">2h</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Ações */}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground">Ações</h4>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Enviar lembrete</span>
+                    </div>
+                    <Switch
+                      checked={editForm.sendReminder}
+                      onCheckedChange={(checked) => setEditForm({ ...editForm, sendReminder: checked })}
+                    />
+                  </div>
+                </div>
+
+                {/* Observações */}
+                <div className="grid gap-2">
+                  <Label>Observação</Label>
+                  <Textarea
+                    placeholder="Escreva aqui"
+                    value={editForm.notes}
+                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                {/* Botões */}
+                <DialogFooter className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateMutation.isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Lista do Dia (+X more) */}
+        <Dialog open={isDayListOpen} onOpenChange={setIsDayListOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedDayDate && format(selectedDayDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedDaySessions.length} agendamentos
+              </DialogDescription>
+            </DialogHeader>
+            
+            <ScrollArea className="max-h-[400px]">
+              <div className="space-y-2">
+                {selectedDaySessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={`p-3 rounded-lg cursor-pointer hover:opacity-90 text-white ${getStatusColor(session.status)}`}
+                    onClick={() => {
+                      setIsDayListOpen(false);
+                      openEditDialog(session);
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">
+                        {format(new Date(session.scheduledAt), "HH:mm")}
+                      </span>
+                      <span className="text-xs opacity-80">
+                        {session.duration || 60} min
+                      </span>
+                    </div>
+                    <p className="font-medium">{session.student?.name}</p>
+                    <p className="text-sm opacity-80">
+                      {session.type === 'regular' ? 'Sessão regular' : 
+                       session.type === 'trial' ? 'Experimental' :
+                       session.type === 'makeup' ? 'Reposição' : 'Extra'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>

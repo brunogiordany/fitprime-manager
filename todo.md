@@ -336,3 +336,15 @@
 - [ ] Opção de cancelar todos os agendamentos futuros quando contrato for cancelado/pausado
 - [ ] Opção de encerrar cobranças futuras quando contrato for cancelado
 - [ ] Atualizar interface para mostrar e gerenciar status do contrato
+
+## Melhorias do Calendário - Belasis (v3.3)
+- [ ] Modal de edição ao clicar em sessão no calendário
+- [ ] Mostrar informações do cliente (nome, telefone) no modal
+- [ ] Botões Conversar (WhatsApp) e Ver cliente no modal
+- [ ] Editar data, status, horário e duração no modal
+- [ ] Ações: Enviar lembrete, Encaixar agendamento
+- [ ] Recorrência: frequência e repetições
+- [ ] Campo de observações
+- [ ] Botões: Outros, Salvar no modal
+- [ ] +X more clicável abrindo lista de agendamentos do dia
+- [ ] Ao clicar em item da lista, abrir modal de edição
