@@ -363,3 +363,12 @@
 - [x] Observação (textarea)
 - [x] Botões fixos no rodapé: Outros (dropdown), Salvar (azul), Criar comanda (verde)
 - [x] Lista lateral de agendamentos do dia ao clicar em +X more
+
+## Integração Stripe (v3.5)
+- [x] Adicionar feature Stripe ao projeto
+- [x] Configurar chaves de API do Stripe
+- [x] Criar produtos e preços no Stripe
+- [x] Implementar checkout para pagamentos únicos
+- [x] Implementar assinaturas recorrentes
+- [x] Webhooks para atualizar status de pagamento
+- [x] Interface de pagamento (botão Pagar com Cartão nas cobranças)

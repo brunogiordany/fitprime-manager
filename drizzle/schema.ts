@@ -57,6 +57,7 @@ export const students = mysqlTable("students", {
   status: mysqlEnum("status", ["active", "inactive", "pending"]).default("active").notNull(),
   whatsappOptIn: boolean("whatsappOptIn").default(true),
   avatarUrl: varchar("avatarUrl", { length: 500 }),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }), // Stripe Customer ID
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -282,6 +283,8 @@ export const plans = mysqlTable("plans", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   sessionsPerWeek: int("sessionsPerWeek"),
   sessionDuration: int("sessionDuration").default(60),
+  stripePriceId: varchar("stripePriceId", { length: 255 }), // Stripe Price ID
+  stripeProductId: varchar("stripeProductId", { length: 255 }), // Stripe Product ID
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -307,6 +310,7 @@ export const packages = mysqlTable("packages", {
   usedSessions: int("usedSessions").default(0),
   remainingSessions: int("remainingSessions"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }), // Stripe Subscription ID
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -325,9 +329,11 @@ export const charges = mysqlTable("charges", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   dueDate: date("dueDate").notNull(),
   status: mysqlEnum("status", ["pending", "paid", "overdue", "cancelled"]).default("pending").notNull(),
-  paymentMethod: mysqlEnum("paymentMethod", ["pix", "credit_card", "debit_card", "cash", "transfer", "other"]),
+  paymentMethod: mysqlEnum("paymentMethod", ["pix", "credit_card", "debit_card", "cash", "transfer", "stripe", "other"]),
   paidAt: timestamp("paidAt"),
   paidAmount: decimal("paidAmount", { precision: 10, scale: 2 }),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }), // Stripe Payment Intent ID
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }), // Stripe Invoice ID
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

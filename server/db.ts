@@ -673,6 +673,13 @@ export async function updateCharge(id: number, data: Partial<InsertCharge>) {
   await db.update(charges).set(data).where(eq(charges.id, id));
 }
 
+export async function getChargeById(id: number): Promise<Charge | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(charges).where(eq(charges.id, id));
+  return result[0] || null;
+}
+
 export async function getMonthlyRevenue(personalId: number) {
   const db = await getDb();
   if (!db) return 0;

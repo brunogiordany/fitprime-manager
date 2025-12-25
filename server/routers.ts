@@ -7,6 +7,8 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
+import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription, getSubscription, createPaymentLink } from "./stripe";
+import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -1486,6 +1488,242 @@ export const appRouter = router({
           success: true, 
           chargesCreated: charges.length,
           message: `${charges.length} cobrança(s) gerada(s) automaticamente`
+        };
+      }),
+    
+    // Criar link de pagamento Stripe para uma cobrança
+    createPaymentLink: personalProcedure
+      .input(z.object({
+        chargeId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const charge = await db.getChargeById(input.chargeId);
+        if (!charge) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Cobrança não encontrada' });
+        }
+        
+        const student = await db.getStudentById(charge.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        const amount = priceToCents(parseFloat(charge.amount));
+        const paymentLink = await createPaymentLink({
+          amount,
+          description: charge.description,
+          metadata: {
+            charge_id: charge.id.toString(),
+            student_id: student.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+          },
+        });
+        
+        return { url: paymentLink.url };
+      }),
+  }),
+
+  // ==================== STRIPE ====================
+  stripe: router({
+    // Criar sessão de checkout para pagamento de cobrança
+    createCheckoutSession: personalProcedure
+      .input(z.object({
+        chargeId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const charge = await db.getChargeById(input.chargeId);
+        if (!charge) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Cobrança não encontrada' });
+        }
+        
+        const student = await db.getStudentById(charge.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Criar ou recuperar cliente Stripe
+        const stripeCustomer = await getOrCreateStripeCustomer(
+          student.email || `student-${student.id}@fitprime.app`,
+          student.name,
+          {
+            student_id: student.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+          }
+        );
+        
+        // Atualizar Stripe Customer ID no aluno
+        if (!student.stripeCustomerId) {
+          await db.updateStudent(student.id, ctx.personal.id, { stripeCustomerId: stripeCustomer.id } as any);
+        }
+        
+        const origin = ctx.req.headers.origin || 'https://fitprime-manager.manus.space';
+        const amount = priceToCents(parseFloat(charge.amount));
+        
+        // Criar produto e preço temporário
+        const { stripe } = await import('./stripe');
+        const product = await stripe.products.create({
+          name: charge.description,
+          metadata: {
+            charge_id: charge.id.toString(),
+          },
+        });
+        
+        const price = await stripe.prices.create({
+          product: product.id,
+          unit_amount: amount,
+          currency: 'brl',
+        });
+        
+        const session = await createCheckoutSession({
+          customerId: stripeCustomer.id,
+          priceId: price.id,
+          mode: 'payment',
+          successUrl: `${origin}/cobrancas?success=true&charge_id=${charge.id}`,
+          cancelUrl: `${origin}/cobrancas?cancelled=true&charge_id=${charge.id}`,
+          metadata: {
+            charge_id: charge.id.toString(),
+            student_id: student.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+            user_id: ctx.user.id.toString(),
+            customer_email: student.email || '',
+            customer_name: student.name,
+          },
+          clientReferenceId: ctx.user.id.toString(),
+          allowPromotionCodes: true,
+        });
+        
+        return { url: session.url };
+      }),
+    
+    // Criar assinatura para um pacote
+    createSubscription: personalProcedure
+      .input(z.object({
+        packageId: z.number(),
+        planId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pkg = await db.getPackageById(input.packageId);
+        if (!pkg) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Pacote não encontrado' });
+        }
+        
+        const plan = await db.getPlanById(input.planId, ctx.personal.id);
+        if (!plan) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Plano não encontrado' });
+        }
+        
+        const student = await db.getStudentById(pkg.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Criar ou recuperar cliente Stripe
+        const stripeCustomer = await getOrCreateStripeCustomer(
+          student.email || `student-${student.id}@fitprime.app`,
+          student.name,
+          {
+            student_id: student.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+          }
+        );
+        
+        if (!student.stripeCustomerId) {
+          await db.updateStudent(student.id, ctx.personal.id, { stripeCustomerId: stripeCustomer.id } as any);
+        }
+        
+        const origin = ctx.req.headers.origin || 'https://fitprime-manager.manus.space';
+        const amount = priceToCents(parseFloat(plan.price));
+        
+        // Criar produto e preço recorrente
+        const { stripe } = await import('./stripe');
+        const product = await stripe.products.create({
+          name: plan.name,
+          description: plan.description || undefined,
+          metadata: {
+            plan_id: plan.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+          },
+        });
+        
+        // Mapear ciclo de cobrança para intervalo do Stripe
+        const billingInterval = plan.billingCycle 
+          ? billingCycleToStripeInterval[plan.billingCycle] 
+          : { interval: 'month' as const, intervalCount: 1 };
+        
+        const price = await stripe.prices.create({
+          product: product.id,
+          unit_amount: amount,
+          currency: 'brl',
+          recurring: {
+            interval: billingInterval.interval,
+            interval_count: billingInterval.intervalCount,
+          },
+        });
+        
+        // Atualizar plano com IDs do Stripe
+        await db.updatePlan(plan.id, {
+          stripeProductId: product.id,
+          stripePriceId: price.id,
+        } as any);
+        
+        const session = await createCheckoutSession({
+          customerId: stripeCustomer.id,
+          priceId: price.id,
+          mode: 'subscription',
+          successUrl: `${origin}/alunos/${student.id}?tab=plano&success=true`,
+          cancelUrl: `${origin}/alunos/${student.id}?tab=plano&cancelled=true`,
+          metadata: {
+            package_id: pkg.id.toString(),
+            plan_id: plan.id.toString(),
+            student_id: student.id.toString(),
+            personal_id: ctx.personal.id.toString(),
+            user_id: ctx.user.id.toString(),
+            customer_email: student.email || '',
+            customer_name: student.name,
+          },
+          clientReferenceId: ctx.user.id.toString(),
+          allowPromotionCodes: true,
+        });
+        
+        return { url: session.url };
+      }),
+    
+    // Cancelar assinatura
+    cancelSubscription: personalProcedure
+      .input(z.object({
+        packageId: z.number(),
+        immediately: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pkg = await db.getPackageById(input.packageId);
+        if (!pkg || !pkg.stripeSubscriptionId) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Assinatura não encontrada' });
+        }
+        
+        await cancelSubscription(pkg.stripeSubscriptionId, input.immediately);
+        
+        if (input.immediately) {
+          await db.updatePackage(input.packageId, { status: 'cancelled' });
+        }
+        
+        return { success: true };
+      }),
+    
+    // Verificar status da assinatura
+    getSubscriptionStatus: personalProcedure
+      .input(z.object({
+        packageId: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const pkg = await db.getPackageById(input.packageId);
+        if (!pkg || !pkg.stripeSubscriptionId) {
+          return { status: 'no_subscription' };
+        }
+        
+        const subscription = await getSubscription(pkg.stripeSubscriptionId);
+        return {
+          status: subscription.status,
+          currentPeriodEnd: (subscription as any).current_period_end,
+          cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
         };
       }),
   }),

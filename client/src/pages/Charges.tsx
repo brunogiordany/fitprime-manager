@@ -285,6 +285,23 @@ export default function Charges() {
     }
   };
 
+  // Stripe payment
+  const createPaymentLinkMutation = trpc.charges.createPaymentLink.useMutation({
+    onSuccess: (data) => {
+      if (data.url) {
+        toast.success("Redirecionando para pagamento...");
+        window.open(data.url, '_blank');
+      }
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao criar link de pagamento: " + error.message);
+    },
+  });
+
+  const handleStripePayment = (chargeId: number) => {
+    createPaymentLinkMutation.mutate({ chargeId });
+  };
+
   const toggleStudentExpanded = (studentId: number) => {
     setExpandedStudents(prev => {
       const next = new Set(prev);
@@ -616,6 +633,13 @@ export default function Charges() {
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
+                                        <DropdownMenuItem 
+                                          onClick={() => handleStripePayment(chargeItem.charge.id)}
+                                          disabled={createPaymentLinkMutation.isPending}
+                                        >
+                                          <CreditCard className="h-4 w-4 mr-2" />
+                                          {createPaymentLinkMutation.isPending ? 'Gerando link...' : 'Pagar com Cartão'}
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleMarkAsPaid(chargeItem.charge.id)}>
                                           <Check className="h-4 w-4 mr-2" />
                                           Marcar como Pago
