@@ -47,7 +47,9 @@ import {
   Repeat,
   Bell,
   MoreHorizontal,
-  Save
+  Save,
+  CalendarDays,
+  RotateCcw
 } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect, useMemo } from "react";
@@ -123,6 +125,9 @@ export default function Schedule() {
     duration: '60',
     notes: '',
     sendReminder: true,
+    encaixar: false,
+    recurrenceFrequency: 'none',
+    recurrenceRepeat: '1',
   });
 
   // Modal de lista de sessões do dia (+X more)
@@ -328,6 +333,9 @@ export default function Schedule() {
       duration: session.duration?.toString() || '60',
       notes: session.notes || '',
       sendReminder: true,
+      encaixar: false,
+      recurrenceFrequency: 'none',
+      recurrenceRepeat: '1',
     });
     setIsEditDialogOpen(true);
   };
@@ -1003,19 +1011,25 @@ export default function Schedule() {
           </DialogContent>
         </Dialog>
 
-        {/* Modal de Edição de Sessão */}
+        {/* Modal de Edição de Sessão - Estilo Belasis */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Editando agendamento</DialogTitle>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="text-xl">Editando agendamento</DialogTitle>
             </DialogHeader>
             
             {editingSession && (
-              <div className="space-y-6">
+              <div className="flex flex-col">
                 {/* Informações do Cliente */}
-                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground">Informações</h4>
-                  <div className="flex items-center gap-3">
+                <div className="p-4 mx-4 bg-muted/30 rounded-lg space-y-3">
+                  <h4 className="font-semibold text-sm">Informações</h4>
+                  <div 
+                    className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 -mx-2 rounded-lg transition-colors"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setLocation(`/alunos/${editingSession.studentId}`);
+                    }}
+                  >
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="h-5 w-5 text-primary" />
                     </div>
@@ -1023,21 +1037,22 @@ export default function Schedule() {
                       <p className="font-medium text-primary">{editingSession.student?.name}</p>
                       <p className="text-sm text-muted-foreground">{editingSession.student?.phone || 'Sem telefone'}</p>
                     </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2 border-t">
                     <Button 
-                      variant="outline" 
+                      variant="ghost" 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50"
                       onClick={() => openWhatsApp(editingSession.student?.phone)}
                     >
-                      <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
+                      <MessageCircle className="h-4 w-4 mr-2" />
                       Conversar
                     </Button>
                     <Button 
-                      variant="outline" 
+                      variant="ghost" 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 text-primary hover:bg-primary/10"
                       onClick={() => {
                         setIsEditDialogOpen(false);
                         setLocation(`/alunos/${editingSession.studentId}`);
@@ -1049,85 +1064,134 @@ export default function Schedule() {
                   </div>
                 </div>
 
-                {/* Data e Status */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Data e Horário</Label>
-                    <Input
-                      type="datetime-local"
-                      value={editForm.scheduledAt}
-                      onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Status</Label>
-                    <Select
-                      value={editForm.status}
-                      onValueChange={(value) => setEditForm({ ...editForm, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="scheduled">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-blue-500" />
-                            Não confirmado
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="confirmed">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                            Confirmado
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="completed">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                            Realizada
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="no_show">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-red-500" />
-                            Falta
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="cancelled">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-gray-400" />
-                            Cancelado
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                {/* Data clicável */}
+                <div className="px-4 py-3 border-b">
+                  <div className="flex items-center justify-between cursor-pointer hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors">
+                    <span className="text-sm">
+                      {format(new Date(editForm.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                    </span>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
 
-                {/* Duração */}
-                <div className="grid gap-2">
-                  <Label>Duração</Label>
+                {/* Status com cor */}
+                <div className="px-4 py-3 border-b">
                   <Select
-                    value={editForm.duration}
-                    onValueChange={(value) => setEditForm({ ...editForm, duration: value })}
+                    value={editForm.status}
+                    onValueChange={(value) => setEditForm({ ...editForm, status: value })}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
+                    <SelectTrigger className="border-0 p-0 h-auto shadow-none focus:ring-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-3 h-3 rounded ${
+                          editForm.status === 'confirmed' ? 'bg-emerald-500' :
+                          editForm.status === 'completed' ? 'bg-green-500' :
+                          editForm.status === 'no_show' ? 'bg-red-500' :
+                          editForm.status === 'cancelled' ? 'bg-gray-400' :
+                          'bg-blue-500'
+                        }`} />
+                        <span className="text-sm">
+                          {editForm.status === 'confirmed' ? 'Confirmado' :
+                           editForm.status === 'completed' ? 'Realizada' :
+                           editForm.status === 'no_show' ? 'Falta' :
+                           editForm.status === 'cancelled' ? 'Cancelado' :
+                           'Não confirmado'}
+                        </span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="15">15 min</SelectItem>
-                      <SelectItem value="30">30 min</SelectItem>
-                      <SelectItem value="45">45 min</SelectItem>
-                      <SelectItem value="60">60 min</SelectItem>
-                      <SelectItem value="90">1h 30 min</SelectItem>
-                      <SelectItem value="120">2h</SelectItem>
+                      <SelectItem value="scheduled">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-blue-500" />
+                          Não confirmado
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="confirmed">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-emerald-500" />
+                          Confirmado
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="completed">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-green-500" />
+                          Realizada
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="no_show">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-red-500" />
+                          Falta
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-gray-400" />
+                          Cancelado
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
+                {/* Serviços */}
+                <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-4">
+                  <h4 className="font-semibold text-sm">Serviços</h4>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Descrição</Label>
+                    <Select defaultValue="sessao">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sessao">Sessão de treino</SelectItem>
+                        <SelectItem value="avaliacao">Avaliação física</SelectItem>
+                        <SelectItem value="consultoria">Consultoria</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Horário</Label>
+                      <Input
+                        type="time"
+                        value={editForm.scheduledAt.split('T')[1] || ''}
+                        onChange={(e) => {
+                          const date = editForm.scheduledAt.split('T')[0];
+                          setEditForm({ ...editForm, scheduledAt: `${date}T${e.target.value}` });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Duração</Label>
+                      <Select
+                        value={editForm.duration}
+                        onValueChange={(value) => setEditForm({ ...editForm, duration: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="30">30 min</SelectItem>
+                          <SelectItem value="45">45 min</SelectItem>
+                          <SelectItem value="60">1h</SelectItem>
+                          <SelectItem value="90">1h 30 min</SelectItem>
+                          <SelectItem value="120">2h</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Button variant="ghost" size="sm" className="text-primary p-0 h-auto">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar Serviço
+                  </Button>
+                </div>
+
                 {/* Ações */}
-                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground">Ações</h4>
+                <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-3">
+                  <h4 className="font-semibold text-sm">Ações</h4>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Bell className="h-4 w-4 text-muted-foreground" />
@@ -1138,68 +1202,141 @@ export default function Schedule() {
                       onCheckedChange={(checked) => setEditForm({ ...editForm, sendReminder: checked })}
                     />
                   </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Encaixar agendamento</span>
+                    </div>
+                    <Switch
+                      checked={editForm.encaixar}
+                      onCheckedChange={(checked) => setEditForm({ ...editForm, encaixar: checked })}
+                    />
+                  </div>
                 </div>
 
-                {/* Observações */}
-                <div className="grid gap-2">
-                  <Label>Observação</Label>
+                {/* Recorrência */}
+                <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-4">
+                  <h4 className="font-semibold text-sm">Recorrência</h4>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Frequência</Label>
+                    <Select
+                      value={editForm.recurrenceFrequency}
+                      onValueChange={(value) => setEditForm({ ...editForm, recurrenceFrequency: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Agendamento não se repete" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Agendamento não se repete</SelectItem>
+                        <SelectItem value="daily">Diário</SelectItem>
+                        <SelectItem value="weekly">Semanal</SelectItem>
+                        <SelectItem value="biweekly">Quinzenal</SelectItem>
+                        <SelectItem value="monthly">Mensal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {editForm.recurrenceFrequency !== 'none' && (
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Além deste, repetir mais</Label>
+                      <Select
+                        value={editForm.recurrenceRepeat}
+                        onValueChange={(value) => setEditForm({ ...editForm, recurrenceRepeat: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 vez</SelectItem>
+                          <SelectItem value="2">2 vezes</SelectItem>
+                          <SelectItem value="3">3 vezes</SelectItem>
+                          <SelectItem value="4">4 vezes</SelectItem>
+                          <SelectItem value="5">5 vezes</SelectItem>
+                          <SelectItem value="10">10 vezes</SelectItem>
+                          <SelectItem value="20">20 vezes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                {/* Observação */}
+                <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-2">
+                  <h4 className="font-semibold text-sm">Observação</h4>
                   <Textarea
                     placeholder="Escreva aqui"
                     value={editForm.notes}
                     onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                     rows={3}
+                    className="resize-none"
                   />
                 </div>
 
-                {/* Botões */}
-                <DialogFooter className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
-                    <Save className="h-4 w-4 mr-2" />
+                {/* Botões fixos no rodapé */}
+                <div className="sticky bottom-0 bg-background border-t p-4 mt-4 flex gap-2">
+                  <Select>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Outros" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="delete">Excluir</SelectItem>
+                      <SelectItem value="duplicate">Duplicar</SelectItem>
+                      <SelectItem value="reschedule">Reagendar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    onClick={handleSaveEdit} 
+                    disabled={updateMutation.isPending}
+                  >
                     {updateMutation.isPending ? "Salvando..." : "Salvar"}
                   </Button>
-                </DialogFooter>
+                  <Button 
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    onClick={() => toast.info('Funcionalidade em desenvolvimento')}
+                  >
+                    Criar comanda
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>
         </Dialog>
 
-        {/* Modal de Lista do Dia (+X more) */}
+        {/* Modal de Lista do Dia (+X more) - Estilo Belasis */}
         <Dialog open={isDayListOpen} onOpenChange={setIsDayListOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {selectedDayDate && format(selectedDayDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedDaySessions.length} agendamentos
-              </DialogDescription>
+          <DialogContent className="max-w-sm p-0">
+            <DialogHeader className="p-4 pb-2 border-b">
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-base">
+                  {selectedDayDate && format(selectedDayDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                </DialogTitle>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsDayListOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </DialogHeader>
             
-            <ScrollArea className="max-h-[400px]">
-              <div className="space-y-2">
+            <ScrollArea className="max-h-[60vh]">
+              <div className="p-2 space-y-1">
                 {selectedDaySessions.map((session) => (
                   <div
                     key={session.id}
-                    className={`p-3 rounded-lg cursor-pointer hover:opacity-90 text-white ${getStatusColor(session.status)}`}
+                    className={`p-3 rounded-lg cursor-pointer hover:opacity-90 text-white transition-all ${getStatusColor(session.status)}`}
                     onClick={() => {
                       setIsDayListOpen(false);
                       openEditDialog(session);
                     }}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-sm">
                         {format(new Date(session.scheduledAt), "HH:mm")}
                       </span>
-                      <span className="text-xs opacity-80">
-                        {session.duration || 60} min
-                      </span>
                     </div>
-                    <p className="font-medium">{session.student?.name}</p>
-                    <p className="text-sm opacity-80">
-                      {session.type === 'regular' ? 'Sessão regular' : 
+                    <p className="font-medium text-sm">{session.student?.name}</p>
+                    <p className="text-xs opacity-90">
+                      {session.type === 'regular' ? 'Sessão de treino' : 
                        session.type === 'trial' ? 'Experimental' :
                        session.type === 'makeup' ? 'Reposição' : 'Extra'}
                     </p>

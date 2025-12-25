@@ -348,3 +348,18 @@
 - [ ] Botões: Outros, Salvar no modal
 - [ ] +X more clicável abrindo lista de agendamentos do dia
 - [ ] Ao clicar em item da lista, abrir modal de edição
+
+## Melhorias Modal de Edição - Estilo Belasis (v3.4)
+- [x] Informações do cliente com seta para perfil
+- [x] Data clicável com seta
+- [x] Status com cor (dropdown)
+- [ ] Campo Padrão (dropdown)
+- [x] Seção Serviços: Descrição e Profissional
+- [x] Horário como dropdown com opções de horário
+- [x] Duração como dropdown
+- [x] Botão + Adicionar Serviço
+- [x] Ações: Enviar lembrete (switch) + Encaixar agendamento (switch)
+- [x] Recorrência: Frequência (dropdown) + Repetir mais X vezes
+- [x] Observação (textarea)
+- [x] Botões fixos no rodapé: Outros (dropdown), Salvar (azul), Criar comanda (verde)
+- [x] Lista lateral de agendamentos do dia ao clicar em +X more
