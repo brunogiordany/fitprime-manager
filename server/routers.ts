@@ -2011,6 +2011,102 @@ export const appRouter = router({
         
         return { id };
       }),
+    
+    // Enviar mensagem WhatsApp imediatamente via Stevo
+    sendNow: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        message: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student || !student.phone) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aluno não possui telefone cadastrado' });
+        }
+        
+        if (!student.whatsappOptIn) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aluno optou por não receber mensagens' });
+        }
+        
+        // Verificar se o personal tem Stevo configurado
+        const personal = ctx.personal;
+        if (!personal.evolutionApiKey || !personal.evolutionInstance) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'WhatsApp não configurado. Configure nas Configurações.' });
+        }
+        
+        // Importar e enviar via Stevo
+        const { sendWhatsAppMessage } = await import('./stevo');
+        const result = await sendWhatsAppMessage({
+          phone: student.phone,
+          message: input.message,
+          config: {
+            apiKey: personal.evolutionApiKey,
+            instanceName: personal.evolutionInstance,
+          },
+        });
+        
+        // Registrar no log
+        await db.createMessageLog({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          phone: student.phone,
+          message: input.message,
+          direction: 'outbound',
+          status: result.success ? 'sent' : 'failed',
+        });
+        
+        if (!result.success) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: result.error || 'Erro ao enviar mensagem' });
+        }
+        
+        return { success: true, messageId: result.messageId };
+      }),
+    
+    // Enviar lembrete de sessão
+    sendSessionReminder: personalProcedure
+      .input(z.object({
+        sessionId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await db.getSessionById(input.sessionId);
+        if (!session) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        
+        const student = await db.getStudentById(session.studentId, ctx.personal.id);
+        if (!student || !student.phone) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aluno não possui telefone cadastrado' });
+        }
+        
+        const personal = ctx.personal;
+        if (!personal.evolutionApiKey || !personal.evolutionInstance) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'WhatsApp não configurado' });
+        }
+        
+        const { sendSessionReminder } = await import('./stevo');
+        const result = await sendSessionReminder({
+          studentName: student.name,
+          studentPhone: student.phone,
+          sessionDate: new Date(session.scheduledAt),
+          sessionTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          personalName: personal.businessName || 'Seu Personal',
+          config: {
+            apiKey: personal.evolutionApiKey,
+            instanceName: personal.evolutionInstance,
+          },
+        });
+        
+        await db.createMessageLog({
+          personalId: ctx.personal.id,
+          studentId: student.id,
+          phone: student.phone,
+          message: 'Lembrete de sessão enviado',
+          direction: 'outbound',
+          status: result.success ? 'sent' : 'failed',
+        });
+        
+        return { success: result.success, error: result.error };
+      }),
   }),
 
   // ==================== STUDENT PORTAL ====================
@@ -2065,6 +2161,87 @@ export const appRouter = router({
     activePackage: studentProcedure.query(async ({ ctx }) => {
       return await db.getActivePackageByStudentId(ctx.student.id);
     }),
+    
+    // Buscar logs de treino do aluno
+    workoutLogs: studentProcedure.query(async ({ ctx }) => {
+      return await db.getWorkoutLogsByStudentId(ctx.student.id);
+    }),
+    
+    // Criar registro de treino pelo aluno
+    createWorkoutLog: studentProcedure
+      .input(z.object({
+        workoutId: z.number(),
+        workoutDayId: z.number(),
+        sessionDate: z.string(),
+        duration: z.number().optional(),
+        notes: z.string().optional(),
+        exercises: z.array(z.object({
+          exerciseId: z.number(),
+          exerciseName: z.string(),
+          set1Weight: z.string().optional(),
+          set1Reps: z.number().optional(),
+          set2Weight: z.string().optional(),
+          set2Reps: z.number().optional(),
+          set3Weight: z.string().optional(),
+          set3Reps: z.number().optional(),
+          set4Weight: z.string().optional(),
+          set4Reps: z.number().optional(),
+          set5Weight: z.string().optional(),
+          set5Reps: z.number().optional(),
+          notes: z.string().optional(),
+          completed: z.boolean().optional(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { sessionDate, exercises, ...data } = input;
+        
+        // Buscar o personal do aluno
+        const student = ctx.student;
+        
+        // Criar o log de treino
+        const sessionNumber = await db.getNextSessionNumber(input.workoutId, input.workoutDayId);
+        const logId = await db.createWorkoutLog({
+          ...data,
+          personalId: student.personalId,
+          studentId: student.id,
+          sessionDate: new Date(sessionDate),
+          sessionNumber,
+          completed: true,
+        });
+        
+        // Criar logs de exercícios se fornecidos
+        if (exercises && exercises.length > 0) {
+          const exerciseLogs = exercises.map((ex, index) => ({
+            workoutLogId: logId,
+            exerciseId: ex.exerciseId,
+            exerciseName: ex.exerciseName,
+            set1Weight: ex.set1Weight,
+            set1Reps: ex.set1Reps,
+            set2Weight: ex.set2Weight,
+            set2Reps: ex.set2Reps,
+            set3Weight: ex.set3Weight,
+            set3Reps: ex.set3Reps,
+            set4Weight: ex.set4Weight,
+            set4Reps: ex.set4Reps,
+            set5Weight: ex.set5Weight,
+            set5Reps: ex.set5Reps,
+            notes: ex.notes,
+            completed: ex.completed ?? true,
+            order: index,
+          }));
+          await db.bulkCreateExerciseLogs(exerciseLogs);
+        }
+        
+        // Notificar o personal (owner)
+        const { notifyOwner } = await import('./_core/notification');
+        const workout = await db.getWorkoutById(input.workoutId);
+        await notifyOwner({
+          title: `🏋️ Treino Registrado - ${student.name}`,
+          content: `O aluno ${student.name} registrou um treino:\n\n📝 Treino: ${workout?.name || 'N/A'}\n📅 Data: ${new Date(sessionDate).toLocaleDateString('pt-BR')}\n⏱️ Duração: ${input.duration || 60} minutos\n\n${input.notes ? `Observações: ${input.notes}` : ''}`,
+        });
+        
+        return { id: logId, sessionNumber };
+      }),
   }),
 
   // ==================== TRASH (Lixeira Geral) ====================

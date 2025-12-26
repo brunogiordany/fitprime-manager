@@ -401,3 +401,19 @@
   - [x] Exportar dados do aluno (anamnese, medidas, treinos)
   - [x] Gerar PDF formatado com informações completas
 - [x] Corrigir Lixeira para mostrar menu lateral
+
+## Melhorias v3.9
+- [x] Registro de Treino pelo Aluno no Portal
+  - [x] Página para aluno registrar treino realizado
+  - [x] Selecionar treino e exercícios
+  - [x] Registrar séries, peso e repetições
+  - [x] Notificação automática para o personal quando treino for concluído
+- [x] Integração WhatsApp via Stevo
+  - [x] Enviar lembretes de sessão automaticamente
+  - [x] Enviar confirmações de pagamento via WhatsApp
+  - [x] Usar API do Stevo para envio de mensagens
+- [x] Página de Relatórios de Desempenho
+  - [x] Gráficos de evolução dos alunos (medidas, peso)
+  - [x] Gráfico de frequência mensal
+  - [x] Análise de receita por período
+  - [x] Taxa de presença geral

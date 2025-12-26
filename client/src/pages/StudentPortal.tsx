@@ -283,10 +283,17 @@ export default function StudentPortal() {
                     )}
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground mb-4">
                       <p>Tipo: {workout.type || 'Não especificado'}</p>
                       {workout.difficulty && <p>Dificuldade: {workout.difficulty}</p>}
                     </div>
+                    <Button 
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                      onClick={() => setLocation(`/portal/treino/${workout.id}`)}
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Registrar Treino
+                    </Button>
                   </CardContent>
                 </Card>
               ))

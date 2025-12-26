@@ -5,6 +5,8 @@ import { getDb } from '../db';
 import { charges, packages, students } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { notifyOwner } from '../_core/notification';
+import { sendPaymentConfirmation } from '../stevo';
+import { personals } from '../../drizzle/schema';
 
 // Função para enviar notificação de pagamento confirmado
 async function sendPaymentNotification(studentName: string, amount: string, chargeDescription: string) {
@@ -87,11 +89,35 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           if (chargeData && studentId) {
             const [studentData] = await db.select().from(students).where(eq(students.id, parseInt(studentId)));
             if (studentData) {
+              // Notificar o owner (personal)
               await sendPaymentNotification(
                 studentData.name,
                 chargeData.amount,
                 chargeData.description || 'Pagamento'
               );
+              
+              // Enviar WhatsApp para o aluno (se configurado)
+              if (studentData.phone && studentData.personalId) {
+                try {
+                  const [personalData] = await db.select().from(personals).where(eq(personals.id, studentData.personalId));
+                  if (personalData?.evolutionApiKey && personalData?.evolutionInstance) {
+                    await sendPaymentConfirmation({
+                      studentName: studentData.name,
+                      studentPhone: studentData.phone,
+                      amount: parseFloat(chargeData.amount),
+                      description: chargeData.description || 'Pagamento',
+                      personalName: personalData.businessName || 'Seu Personal',
+                      config: {
+                        apiKey: personalData.evolutionApiKey,
+                        instanceName: personalData.evolutionInstance,
+                      },
+                    });
+                    console.log(`[Webhook] WhatsApp de confirmação enviado para ${studentData.name}`);
+                  }
+                } catch (whatsappError) {
+                  console.error('[Webhook] Erro ao enviar WhatsApp:', whatsappError);
+                }
+              }
             }
           }
         }

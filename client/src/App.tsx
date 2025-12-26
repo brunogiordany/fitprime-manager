@@ -23,6 +23,8 @@ import Anamnesis from "./pages/Anamnesis";
 import ContractPlan from "./pages/ContractPlan";
 import Trash from "./pages/Trash";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentWorkoutLog from "./pages/StudentWorkoutLog";
+import Reports from "./pages/Reports";
 
 function Router() {
   return (
@@ -31,6 +33,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/portal" component={StudentPortal} />
       <Route path="/meu-portal" component={StudentDashboard} />
+      <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />
       
       {/* Personal Trainer routes */}
       <Route path="/dashboard" component={Dashboard} />
@@ -49,6 +52,7 @@ function Router() {
       <Route path="/mensagens" component={Messages} />
       <Route path="/configuracoes" component={Settings} />
       <Route path="/lixeira" component={Trash} />
+      <Route path="/relatorios" component={Reports} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
