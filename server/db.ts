@@ -195,16 +195,9 @@ export async function updateStudent(id: number, personalId: number, data: Partia
 export async function deleteStudent(id: number, personalId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Excluir registros relacionados primeiro
-  await db.delete(sessions).where(eq(sessions.studentId, id));
-  await db.delete(measurements).where(eq(measurements.studentId, id));
-  await db.delete(photos).where(eq(photos.studentId, id));
-  await db.delete(anamneses).where(eq(anamneses.studentId, id));
-  await db.delete(charges).where(eq(charges.studentId, id));
-  await db.delete(packages).where(eq(packages.studentId, id));
-  await db.delete(workouts).where(eq(workouts.studentId, id));
-  // Excluir o aluno
-  await db.delete(students).where(and(eq(students.id, id), eq(students.personalId, personalId)));
+  // Soft delete - mover para lixeira
+  await db.update(students).set({ deletedAt: new Date() })
+    .where(and(eq(students.id, id), eq(students.personalId, personalId)));
 }
 
 export async function countStudentsByPersonalId(personalId: number) {
@@ -351,12 +344,27 @@ export async function restoreWorkout(id: number) {
 export async function getDeletedWorkoutsByPersonalId(personalId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(workouts)
+  
+  const deletedWorkouts = await db.select().from(workouts)
     .where(and(
       eq(workouts.personalId, personalId),
       not(isNull(workouts.deletedAt))
     ))
     .orderBy(desc(workouts.deletedAt));
+  
+  // Adicionar nome do aluno
+  const result = [];
+  for (const workout of deletedWorkouts) {
+    const student = await db.select().from(students)
+      .where(eq(students.id, workout.studentId))
+      .limit(1);
+    result.push({
+      ...workout,
+      studentName: student[0]?.name || 'Aluno desconhecido',
+    });
+  }
+  
+  return result;
 }
 
 // Exclusão permanente - remove de todos os lugares
@@ -517,7 +525,8 @@ export async function updateSession(id: number, data: Partial<InsertSession>) {
 export async function deleteSession(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(sessions).where(eq(sessions.id, id));
+  // Soft delete - mover para lixeira
+  await db.update(sessions).set({ deletedAt: new Date() }).where(eq(sessions.id, id));
 }
 
 export async function countSessionsThisMonth(personalId: number) {
@@ -1224,4 +1233,132 @@ export async function unlinkStudentFromUser(studentId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(students).set({ userId: null }).where(eq(students.id, studentId));
+}
+
+// ==================== TRASH (LIXEIRA) FUNCTIONS ====================
+
+// --- Students Trash ---
+export async function getDeletedStudentsByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      not(isNull(students.deletedAt))
+    ))
+    .orderBy(desc(students.deletedAt));
+}
+
+export async function restoreStudent(id: number, personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(students).set({ deletedAt: null })
+    .where(and(eq(students.id, id), eq(students.personalId, personalId)));
+}
+
+export async function deleteStudentPermanently(id: number, personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se o aluno pertence ao personal
+  const student = await db.select().from(students)
+    .where(and(eq(students.id, id), eq(students.personalId, personalId)))
+    .limit(1);
+  if (!student[0]) throw new Error("Aluno não encontrado");
+  
+  // Excluir dados relacionados
+  await db.delete(anamneses).where(eq(anamneses.studentId, id));
+  await db.delete(anamnesisHistory).where(eq(anamnesisHistory.studentId, id));
+  await db.delete(measurements).where(eq(measurements.studentId, id));
+  await db.delete(photos).where(eq(photos.studentId, id));
+  await db.delete(sessions).where(eq(sessions.studentId, id));
+  await db.delete(packages).where(eq(packages.studentId, id));
+  await db.delete(charges).where(eq(charges.studentId, id));
+  await db.delete(materials).where(eq(materials.studentId, id));
+  
+  // Excluir treinos e seus dados
+  const studentWorkouts = await db.select().from(workouts).where(eq(workouts.studentId, id));
+  for (const workout of studentWorkouts) {
+    await permanentlyDeleteWorkout(workout.id);
+  }
+  
+  // Excluir o aluno
+  await db.delete(students).where(eq(students.id, id));
+}
+
+// Soft delete student (mover para lixeira)
+export async function softDeleteStudent(id: number, personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(students).set({ deletedAt: new Date() })
+    .where(and(eq(students.id, id), eq(students.personalId, personalId)));
+}
+
+// --- Sessions Trash ---
+export async function getDeletedSessionsByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const deletedSessions = await db.select().from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      not(isNull(sessions.deletedAt))
+    ))
+    .orderBy(desc(sessions.deletedAt));
+  
+  // Adicionar nome do aluno
+  const result = [];
+  for (const session of deletedSessions) {
+    const student = await db.select().from(students)
+      .where(eq(students.id, session.studentId))
+      .limit(1);
+    result.push({
+      ...session,
+      studentName: student[0]?.name || 'Aluno desconhecido',
+    });
+  }
+  
+  return result;
+}
+
+export async function restoreSession(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(sessions).set({ deletedAt: null }).where(eq(sessions.id, id));
+}
+
+export async function deleteSessionPermanently(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(sessions).where(eq(sessions.id, id));
+}
+
+export async function softDeleteSession(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(sessions).set({ deletedAt: new Date() }).where(eq(sessions.id, id));
+}
+
+// --- Empty All Trash ---
+export async function emptyTrash(personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Excluir treinos permanentemente
+  const deletedWorkouts = await db.select().from(workouts)
+    .where(and(eq(workouts.personalId, personalId), not(isNull(workouts.deletedAt))));
+  for (const workout of deletedWorkouts) {
+    await permanentlyDeleteWorkout(workout.id);
+  }
+  
+  // Excluir alunos permanentemente
+  const deletedStudents = await db.select().from(students)
+    .where(and(eq(students.personalId, personalId), not(isNull(students.deletedAt))));
+  for (const student of deletedStudents) {
+    await deleteStudentPermanently(student.id, personalId);
+  }
+  
+  // Excluir sessões permanentemente
+  await db.delete(sessions)
+    .where(and(eq(sessions.personalId, personalId), not(isNull(sessions.deletedAt))));
 }

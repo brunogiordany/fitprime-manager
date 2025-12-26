@@ -58,6 +58,7 @@ export const students = mysqlTable("students", {
   whatsappOptIn: boolean("whatsappOptIn").default(true),
   avatarUrl: varchar("avatarUrl", { length: 500 }),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }), // Stripe Customer ID
+  deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -258,6 +259,7 @@ export const sessions = mysqlTable("sessions", {
   notes: text("notes"),
   cancelReason: text("cancelReason"),
   completedAt: timestamp("completedAt"),
+  deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

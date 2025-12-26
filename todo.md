@@ -372,3 +372,11 @@
 - [x] Implementar assinaturas recorrentes
 - [x] Webhooks para atualizar status de pagamento
 - [x] Interface de pagamento (botão Pagar com Cartão nas cobranças)
+
+## Lixeira Geral (v3.6)
+- [x] Criar página de Lixeira Geral no menu lateral esquerdo
+- [x] Englobar todos os itens excluídos (treinos, alunos, sessões)
+- [x] Organizar por tipo de item (abas: Treinos, Alunos, Sessões)
+- [x] Opção de restaurar item
+- [x] Opção de excluir permanentemente
+- [x] Remover lixeira específica da página de Treinos

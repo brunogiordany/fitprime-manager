@@ -46,9 +46,7 @@ import {
   Copy,
   Eye,
   Users,
-  Calendar,
-  RotateCcw,
-  Archive
+  Calendar
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -68,7 +66,7 @@ export default function Workouts() {
     type: "strength" as const,
     difficulty: "intermediate" as const,
   });
-  const [showTrash, setShowTrash] = useState(false);
+  
 
   const { data: students, isLoading: studentsLoading } = trpc.students.list.useQuery({});
   
@@ -99,36 +97,13 @@ export default function Workouts() {
     onSuccess: () => {
       toast.success("Treino movido para lixeira!");
       refetch();
-      refetchDeleted();
     },
     onError: (error) => {
       toast.error("Erro ao excluir: " + error.message);
     },
   });
 
-  // Lixeira de treinos
-  const { data: deletedWorkouts, refetch: refetchDeleted } = trpc.workouts.listDeleted.useQuery();
-
-  const restoreMutation = trpc.workouts.restore.useMutation({
-    onSuccess: () => {
-      toast.success("Treino restaurado!");
-      refetch();
-      refetchDeleted();
-    },
-    onError: (error) => {
-      toast.error("Erro ao restaurar: " + error.message);
-    },
-  });
-
-  const permanentDeleteMutation = trpc.workouts.permanentDelete.useMutation({
-    onSuccess: () => {
-      toast.success("Treino excluído permanentemente!");
-      refetchDeleted();
-    },
-    onError: (error) => {
-      toast.error("Erro ao excluir: " + error.message);
-    },
-  });
+  
 
   const handleDuplicateWorkout = (workout: any) => {
     createMutation.mutate({
@@ -196,14 +171,6 @@ export default function Workouts() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant={showTrash ? "default" : "outline"}
-              onClick={() => setShowTrash(!showTrash)}
-              className={showTrash ? "bg-red-500 hover:bg-red-600" : ""}
-            >
-              <Archive className="h-4 w-4 mr-2" />
-              Lixeira {deletedWorkouts && deletedWorkouts.length > 0 && `(${deletedWorkouts.length})`}
-            </Button>
             <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
@@ -305,84 +272,8 @@ export default function Workouts() {
           </div>
         </div>
 
-        {/* Lixeira de Treinos */}
-        {showTrash && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Archive className="h-5 w-5" />
-                Lixeira de Treinos
-              </CardTitle>
-              <CardDescription>
-                Treinos excluídos podem ser restaurados ou removidos permanentemente
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {deletedWorkouts && deletedWorkouts.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Aluno</TableHead>
-                      <TableHead>Excluído em</TableHead>
-                      <TableHead className="w-[150px]">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deletedWorkouts.map((workout) => {
-                      const student = students?.find(s => s.id === workout.studentId);
-                      return (
-                        <TableRow key={workout.id}>
-                          <TableCell className="font-medium">{workout.name}</TableCell>
-                          <TableCell>{student?.name || "Aluno removido"}</TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {workout.deletedAt && format(new Date(workout.deletedAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => restoreMutation.mutate({ id: workout.id })}
-                                disabled={restoreMutation.isPending}
-                              >
-                                <RotateCcw className="h-4 w-4 mr-1" />
-                                Restaurar
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  if (confirm("Excluir permanentemente? Esta ação não pode ser desfeita.")) {
-                                    permanentDeleteMutation.mutate({ id: workout.id });
-                                  }
-                                }}
-                                disabled={permanentDeleteMutation.isPending}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Archive className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <p className="text-lg font-medium">Lixeira vazia</p>
-                  <p className="text-muted-foreground text-sm">
-                    Nenhum treino na lixeira
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
         {/* Filters */}
-        {!showTrash && (
+        {true && (
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row gap-4">
@@ -432,7 +323,7 @@ export default function Workouts() {
         )}
 
         {/* Workouts List */}
-        {!showTrash && (
+        {true && (
           <>
             {!selectedStudent ? (
               <Card>

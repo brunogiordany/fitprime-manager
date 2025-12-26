@@ -33,7 +33,8 @@ import {
   MessageSquare,
   Settings,
   FileText,
-  Activity
+  Activity,
+  Trash2
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -50,6 +51,7 @@ const menuItems = [
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  { icon: Trash2, label: "Lixeira", path: "/lixeira" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

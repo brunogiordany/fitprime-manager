@@ -21,6 +21,7 @@ import WorkoutDetail from "@/pages/WorkoutDetail";
 import WorkoutLog from "@/pages/WorkoutLog";
 import Anamnesis from "./pages/Anamnesis";
 import ContractPlan from "./pages/ContractPlan";
+import Trash from "./pages/Trash";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/automacoes" component={Automations} />
       <Route path="/mensagens" component={Messages} />
       <Route path="/configuracoes" component={Settings} />
+      <Route path="/lixeira" component={Trash} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

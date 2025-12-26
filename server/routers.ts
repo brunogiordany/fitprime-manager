@@ -260,6 +260,26 @@ export const appRouter = router({
         
         return { success: true, message: 'Acesso resetado. Envie um novo convite para o aluno.' };
       }),
+    
+    // Lixeira de alunos
+    listDeleted: personalProcedure
+      .query(async ({ ctx }) => {
+        return await db.getDeletedStudentsByPersonalId(ctx.personal.id);
+      }),
+    
+    restore: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreStudent(input.id, ctx.personal.id);
+        return { success: true };
+      }),
+    
+    deletePermanently: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteStudentPermanently(input.id, ctx.personal.id);
+        return { success: true };
+      }),
   }),
 
   // ==================== ANAMNESIS ====================
@@ -1103,6 +1123,26 @@ export const appRouter = router({
           new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
         );
       }),
+    
+    // Lixeira de sessões
+    listDeleted: personalProcedure
+      .query(async ({ ctx }) => {
+        return await db.getDeletedSessionsByPersonalId(ctx.personal.id);
+      }),
+    
+    restore: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreSession(input.id);
+        return { success: true };
+      }),
+    
+    deletePermanently: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteSessionPermanently(input.id);
+        return { success: true };
+      }),
   }),
 
   // ==================== PLANS ====================
@@ -1919,6 +1959,15 @@ export const appRouter = router({
     
     activePackage: studentProcedure.query(async ({ ctx }) => {
       return await db.getActivePackageByStudentId(ctx.student.id);
+    }),
+  }),
+
+  // ==================== TRASH (Lixeira Geral) ====================
+  trash: router({
+    emptyAll: personalProcedure.mutation(async ({ ctx }) => {
+      // Excluir permanentemente todos os itens da lixeira
+      await db.emptyTrash(ctx.personal.id);
+      return { success: true };
     }),
   }),
 });
