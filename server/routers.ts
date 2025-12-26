@@ -1288,7 +1288,7 @@ export const appRouter = router({
     update: personalProcedure
       .input(z.object({
         id: z.number(),
-        status: z.enum(['active', 'expired', 'cancelled', 'pending']).optional(),
+        status: z.enum(['active', 'paused', 'cancelled', 'defaulted', 'expired', 'pending']).optional(),
         usedSessions: z.number().optional(),
         remainingSessions: z.number().optional(),
         notes: z.string().optional(),
@@ -1301,6 +1301,54 @@ export const appRouter = router({
           ...data,
           trainingDays: trainingDays ? JSON.stringify(trainingDays) : undefined,
         } as any);
+        return { success: true };
+      }),
+    
+    // Pausar contrato e cancelar sessões futuras
+    pause: personalProcedure
+      .input(z.object({ id: z.number(), cancelFutureSessions: z.boolean().default(true) }))
+      .mutation(async ({ ctx, input }) => {
+        const pkg = await db.getPackageById(input.id);
+        if (!pkg) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Pacote não encontrado' });
+        }
+        
+        await db.updatePackage(input.id, { status: 'paused' });
+        
+        if (input.cancelFutureSessions) {
+          await db.cancelFutureSessionsByStudentId(pkg.studentId);
+        }
+        
+        return { success: true };
+      }),
+    
+    // Reativar contrato
+    reactivate: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updatePackage(input.id, { status: 'active' });
+        return { success: true };
+      }),
+    
+    // Marcar como inadimplente
+    markDefaulted: personalProcedure
+      .input(z.object({ id: z.number(), cancelFutureSessions: z.boolean().default(true), cancelFutureCharges: z.boolean().default(false) }))
+      .mutation(async ({ ctx, input }) => {
+        const pkg = await db.getPackageById(input.id);
+        if (!pkg) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Pacote não encontrado' });
+        }
+        
+        await db.updatePackage(input.id, { status: 'defaulted' });
+        
+        if (input.cancelFutureSessions) {
+          await db.cancelFutureSessionsByStudentId(pkg.studentId);
+        }
+        
+        if (input.cancelFutureCharges) {
+          await db.cancelFutureChargesByStudentId(pkg.studentId);
+        }
+        
         return { success: true };
       }),
     

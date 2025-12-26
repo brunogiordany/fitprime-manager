@@ -380,3 +380,9 @@
 - [x] Opção de restaurar item
 - [x] Opção de excluir permanentemente
 - [x] Remover lixeira específica da página de Treinos
+
+## Melhorias v3.7
+- [x] Gerenciamento de contratos com status: Ativo, Pausado, Cancelado, Inadimplente
+- [x] Ações automáticas ao mudar status do contrato (cancelar agendamentos/cobranças futuras)
+- [x] Botão Esvaziar Lixeira na interface
+- [x] Modal de edição ao clicar em sessão na Agenda de Hoje do Dashboard

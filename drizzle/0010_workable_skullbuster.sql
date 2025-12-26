@@ -1,0 +1,1 @@
+ALTER TABLE `packages` MODIFY COLUMN `status` enum('active','paused','cancelled','defaulted','expired','pending') NOT NULL DEFAULT 'pending';

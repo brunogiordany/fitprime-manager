@@ -301,7 +301,7 @@ export const packages = mysqlTable("packages", {
   studentId: int("studentId").notNull().references(() => students.id),
   personalId: int("personalId").notNull().references(() => personals.id),
   planId: int("planId").notNull().references(() => plans.id),
-  status: mysqlEnum("status", ["active", "expired", "cancelled", "pending"]).default("pending").notNull(),
+  status: mysqlEnum("status", ["active", "paused", "cancelled", "defaulted", "expired", "pending"]).default("pending").notNull(),
   startDate: date("startDate").notNull(),
   endDate: date("endDate"),
   // Dias de treino da semana (0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab)

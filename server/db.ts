@@ -1362,3 +1362,36 @@ export async function emptyTrash(personalId: number) {
   await db.delete(sessions)
     .where(and(eq(sessions.personalId, personalId), not(isNull(sessions.deletedAt))));
 }
+
+// ==================== CONTRACT MANAGEMENT FUNCTIONS ====================
+
+// Cancelar sessões futuras de um aluno (soft delete)
+export async function cancelFutureSessionsByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const now = new Date();
+  await db.update(sessions)
+    .set({ status: 'cancelled' })
+    .where(and(
+      eq(sessions.studentId, studentId),
+      gte(sessions.scheduledAt, now),
+      isNull(sessions.deletedAt)
+    ));
+}
+
+// Cancelar cobranças futuras de um aluno
+export async function cancelFutureChargesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const now = new Date();
+  await db.update(charges)
+    .set({ status: 'cancelled' })
+    .where(and(
+      eq(charges.studentId, studentId),
+      gte(charges.dueDate, now),
+      eq(charges.status, 'pending')
+    ));
+}
+

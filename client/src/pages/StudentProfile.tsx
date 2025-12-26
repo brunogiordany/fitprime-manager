@@ -40,8 +40,19 @@ import {
   Copy,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Pause,
+  Play,
+  AlertTriangle,
+  MoreVertical
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useLocation, useParams, useSearch } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -127,6 +138,11 @@ export default function StudentProfile() {
     { enabled: studentId > 0 }
   );
 
+  const { data: studentPackages } = trpc.packages.listByStudent.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+
   const updateMutation = trpc.students.update.useMutation({
     onSuccess: () => {
       toast.success("Dados atualizados com sucesso!");
@@ -194,6 +210,47 @@ export default function StudentProfile() {
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar sessão: " + error.message);
+    },
+  });
+
+  // Mutations para gerenciamento de contratos
+  const pauseContractMutation = trpc.packages.pause.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato pausado com sucesso!");
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao pausar contrato: " + error.message);
+    },
+  });
+
+  const reactivateContractMutation = trpc.packages.reactivate.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato reativado com sucesso!");
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao reativar contrato: " + error.message);
+    },
+  });
+
+  const markDefaultedMutation = trpc.packages.markDefaulted.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato marcado como inadimplente!");
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao marcar inadimplente: " + error.message);
+    },
+  });
+
+  const cancelContractMutation = trpc.packages.cancel.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato cancelado com sucesso!");
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar contrato: " + error.message);
     },
   });
 
@@ -1176,6 +1233,86 @@ export default function StudentProfile() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Seção de Contratos */}
+                {studentPackages && studentPackages.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-3">Contratos</h3>
+                    <div className="space-y-3">
+                      {studentPackages.map((pkg: any) => (
+                        <div key={pkg.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-3 h-3 rounded-full ${
+                              pkg.status === 'active' ? 'bg-emerald-500' :
+                              pkg.status === 'paused' ? 'bg-yellow-500' :
+                              pkg.status === 'defaulted' ? 'bg-red-500' :
+                              pkg.status === 'cancelled' ? 'bg-gray-500' :
+                              'bg-blue-500'
+                            }`} />
+                            <div>
+                              <p className="font-medium">{pkg.plan?.name || 'Plano'}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(pkg.startDate), "dd/MM/yyyy")} - {pkg.endDate ? format(new Date(pkg.endDate), "dd/MM/yyyy") : 'Sem fim'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge className={`${
+                              pkg.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                              pkg.status === 'paused' ? 'bg-yellow-100 text-yellow-700' :
+                              pkg.status === 'defaulted' ? 'bg-red-100 text-red-700' :
+                              pkg.status === 'cancelled' ? 'bg-gray-100 text-gray-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {pkg.status === 'active' ? 'Ativo' :
+                               pkg.status === 'paused' ? 'Pausado' :
+                               pkg.status === 'defaulted' ? 'Inadimplente' :
+                               pkg.status === 'cancelled' ? 'Cancelado' :
+                               pkg.status === 'expired' ? 'Expirado' : 'Pendente'}
+                            </Badge>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {pkg.status === 'active' && (
+                                  <>
+                                    <DropdownMenuItem onClick={() => pauseContractMutation.mutate({ id: pkg.id, cancelFutureSessions: true })}>
+                                      <Pause className="h-4 w-4 mr-2" />
+                                      Pausar Contrato
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => markDefaultedMutation.mutate({ id: pkg.id, cancelFutureSessions: true, cancelFutureCharges: false })}>
+                                      <AlertTriangle className="h-4 w-4 mr-2" />
+                                      Marcar Inadimplente
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                {(pkg.status === 'paused' || pkg.status === 'defaulted') && (
+                                  <DropdownMenuItem onClick={() => reactivateContractMutation.mutate({ id: pkg.id })}>
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Reativar Contrato
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  className="text-red-600"
+                                  onClick={() => cancelContractMutation.mutate({ id: pkg.id })}
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Cancelar Contrato
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Seção de Cobranças */}
+                <h3 className="text-lg font-semibold mb-3">Cobranças</h3>
                 {charges && charges.length > 0 ? (
                   <div className="space-y-4">
                     {charges.map((charge) => (

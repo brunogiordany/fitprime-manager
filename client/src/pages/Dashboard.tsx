@@ -13,8 +13,25 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Phone,
+  MessageCircle,
+  User,
+  ChevronRight
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -25,12 +42,40 @@ export default function Dashboard() {
   const { data: todaySessions, isLoading: sessionsLoading } = trpc.dashboard.todaySessions.useQuery();
   const utils = trpc.useUtils();
   
+  // Estado para modal de edição de sessão
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editSessionStatus, setEditSessionStatus] = useState<string>('');
+  const [editSessionNotes, setEditSessionNotes] = useState<string>('');
+  const [sendReminder, setSendReminder] = useState(false);
+  
   const updateSessionMutation = trpc.sessions.update.useMutation({
     onSuccess: () => {
+      toast.success("Sessão atualizada com sucesso!");
       utils.dashboard.todaySessions.invalidate();
       utils.dashboard.stats.invalidate();
+      setEditingSession(null);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao atualizar sessão: " + error.message);
     },
   });
+
+  const openEditModal = (session: any, student: any) => {
+    setEditingSession({ ...session, student });
+    setEditSessionStatus(session.status);
+    setEditSessionNotes(session.notes || '');
+    setSendReminder(false);
+  };
+
+  const handleSaveSession = () => {
+    if (editingSession) {
+      updateSessionMutation.mutate({
+        id: editingSession.id,
+        status: editSessionStatus as any,
+        notes: editSessionNotes,
+      });
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -187,7 +232,7 @@ export default function Dashboard() {
                   <div 
                     key={session.id} 
                     className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                    onClick={() => setLocation(`/alunos/${student.id}`)}
+                    onClick={() => openEditModal(session, student)}
                   >
                     <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold">
@@ -289,6 +334,168 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal de Edição de Sessão */}
+        <Dialog open={!!editingSession} onOpenChange={(open) => !open && setEditingSession(null)}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editando agendamento</DialogTitle>
+            </DialogHeader>
+            
+            {editingSession && (
+              <div className="space-y-6">
+                {/* Informações do Cliente */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Informações</h4>
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-muted rounded-lg p-2 -mx-2"
+                    onClick={() => {
+                      setEditingSession(null);
+                      setLocation(`/alunos/${editingSession.student.id}`);
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold">
+                        {editingSession.student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-primary">{editingSession.student.name}</p>
+                        <p className="text-sm text-muted-foreground">{editingSession.student.phone || 'Sem telefone'}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  
+                  <div className="flex gap-4 mt-3 pt-3 border-t">
+                    {editingSession.student.phone && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex-1 text-emerald-600"
+                        onClick={() => window.open(`https://wa.me/55${editingSession.student.phone?.replace(/\D/g, '')}`, '_blank')}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Conversar
+                      </Button>
+                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="flex-1 text-blue-600"
+                      onClick={() => {
+                        setEditingSession(null);
+                        setLocation(`/alunos/${editingSession.student.id}`);
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Ver cliente
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Data e Horário */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(editingSession.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  
+                  {/* Status */}
+                  <div className="mb-3">
+                    <Select value={editSessionStatus} onValueChange={setEditSessionStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="scheduled">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500" />
+                            Agendada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="confirmed">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                            Confirmada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="completed">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500" />
+                            Realizada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="no_show">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-500" />
+                            Falta
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="cancelled">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-gray-500" />
+                            Cancelada
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Horário e Duração */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Horário</Label>
+                      <p className="font-medium">{format(new Date(editingSession.scheduledAt), "HH:mm")}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Duração</Label>
+                      <p className="font-medium">{editingSession.duration || 60} min</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ações */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Ações</h4>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="send-reminder">Enviar lembrete</Label>
+                    <Switch 
+                      id="send-reminder" 
+                      checked={sendReminder} 
+                      onCheckedChange={setSendReminder} 
+                    />
+                  </div>
+                </div>
+
+                {/* Observação */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Observação</h4>
+                  <Textarea
+                    placeholder="Escreva aqui"
+                    value={editSessionNotes}
+                    onChange={(e) => setEditSessionNotes(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setEditingSession(null)} className="flex-1">
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSaveSession}
+                disabled={updateSessionMutation.isPending}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                {updateSessionMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
