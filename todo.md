@@ -417,3 +417,9 @@
   - [x] Gráfico de frequência mensal
   - [x] Análise de receita por período
   - [x] Taxa de presença geral
+
+## Melhorias v4.0
+- [x] Relatórios: mais opções de período
+  - [x] Adicionar: Última semana, Últimos 15 dias, Último mês
+  - [x] Adicionar: Últimos 2 anos, Todo o período
+  - [x] Seletor de datas personalizado (de/até)

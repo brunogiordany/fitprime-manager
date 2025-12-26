@@ -26,7 +26,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval, subDays } from "date-fns";
+import { format, subMonths, subWeeks, subYears, startOfMonth, endOfMonth, eachMonthOfInterval, eachWeekOfInterval, subDays, startOfWeek, endOfWeek, parseISO, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Componente simples de gráfico de barras
@@ -171,6 +171,9 @@ function DonutChart({ data, size = 120 }: {
 
 export default function Reports() {
   const [period, setPeriod] = useState("6");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   
   // Buscar dados do dashboard
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
@@ -188,13 +191,34 @@ export default function Reports() {
   const monthlyData = useMemo(() => {
     if (!sessions || !charges) return [];
     
-    const months = parseInt(period);
     const now = new Date();
-    const startDate = subMonths(now, months - 1);
+    let startDate: Date;
+    let endDate: Date = now;
+    
+    if (period === "custom" && customStartDate && customEndDate) {
+      startDate = parseISO(customStartDate);
+      endDate = parseISO(customEndDate);
+    } else if (period === "all") {
+      // Pegar a data mais antiga das sessões ou cobranças
+      const allDates = [
+        ...sessions.map((s: any) => new Date(s.date)),
+        ...charges.map((c: any) => new Date(c.dueDate))
+      ].filter(d => !isNaN(d.getTime()));
+      startDate = allDates.length > 0 ? new Date(Math.min(...allDates.map(d => d.getTime()))) : subYears(now, 1);
+    } else if (period === "0.25") {
+      // Última semana
+      startDate = subWeeks(now, 1);
+    } else if (period === "0.5") {
+      // Últimos 15 dias
+      startDate = subDays(now, 15);
+    } else {
+      const months = parseFloat(period);
+      startDate = subMonths(now, months);
+    }
     
     const monthsRange = eachMonthOfInterval({
       start: startOfMonth(startDate),
-      end: endOfMonth(now),
+      end: endOfMonth(endDate),
     });
     
     return monthsRange.map((month) => {
@@ -222,7 +246,7 @@ export default function Reports() {
         revenue,
       };
     });
-  }, [sessions, charges, period]);
+  }, [sessions, charges, period, customStartDate, customEndDate]);
 
   // Calcular estatísticas de presença
   const attendanceStats = useMemo(() => {
@@ -303,16 +327,51 @@ export default function Reports() {
               Análise detalhada da evolução e frequência dos alunos
             </p>
           </div>
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Período" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="3">Últimos 3 meses</SelectItem>
-              <SelectItem value="6">Últimos 6 meses</SelectItem>
-              <SelectItem value="12">Último ano</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={period} onValueChange={(val) => {
+              setPeriod(val);
+              if (val === "custom") {
+                setShowCustomDatePicker(true);
+              } else {
+                setShowCustomDatePicker(false);
+              }
+            }}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.25">Última semana</SelectItem>
+                <SelectItem value="0.5">Últimos 15 dias</SelectItem>
+                <SelectItem value="1">Último mês</SelectItem>
+                <SelectItem value="3">Últimos 3 meses</SelectItem>
+                <SelectItem value="6">Últimos 6 meses</SelectItem>
+                <SelectItem value="12">Último ano</SelectItem>
+                <SelectItem value="24">Últimos 2 anos</SelectItem>
+                <SelectItem value="all">Todo o período</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {showCustomDatePicker && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-3 py-2 border rounded-md text-sm bg-background"
+                  placeholder="Data inicial"
+                />
+                <span className="text-muted-foreground">até</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-3 py-2 border rounded-md text-sm bg-background"
+                  placeholder="Data final"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* KPIs */}
