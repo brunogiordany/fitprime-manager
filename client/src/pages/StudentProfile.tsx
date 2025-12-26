@@ -254,6 +254,34 @@ export default function StudentProfile() {
     },
   });
 
+  const exportPDFMutation = trpc.students.exportPDF.useMutation({
+    onSuccess: (data) => {
+      // Criar blob e fazer download
+      const byteCharacters = atob(data.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: data.contentType });
+      
+      // Criar link e fazer download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = data.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("PDF exportado com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao exportar PDF: " + error.message);
+    },
+  });
+
   useEffect(() => {
     if (student) {
       setEditData({
@@ -481,9 +509,16 @@ export default function StudentProfile() {
                     Resetar Acesso
                   </Button>
                 )}
-                <Button variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar PDF
+                <Button 
+                  variant="outline" 
+                  onClick={() => exportPDFMutation.mutate({ studentId })}
+                  disabled={exportPDFMutation.isPending}
+                >
+                  {exportPDFMutation.isPending ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Gerando...</>
+                  ) : (
+                    <><Download className="h-4 w-4 mr-2" /> Exportar PDF</>
+                  )}
                 </Button>
               </>
             )}
@@ -1077,10 +1112,10 @@ export default function StudentProfile() {
                           </div>
                           <div>
                             <p className="font-medium">
-                              {format(new Date(session.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                              {format(new Date(session.date), "EEEE, dd/MM/yyyy", { locale: ptBR })}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(session.scheduledAt), "HH:mm")} - {session.duration || 60} min
+                              {format(new Date(session.date), "HH:mm")} - {session.duration || 60} min
                             </p>
                           </div>
                         </div>

@@ -386,3 +386,18 @@
 - [x] Ações automáticas ao mudar status do contrato (cancelar agendamentos/cobranças futuras)
 - [x] Botão Esvaziar Lixeira na interface
 - [x] Modal de edição ao clicar em sessão na Agenda de Hoje do Dashboard
+
+## Melhorias v3.8
+- [x] Portal do Aluno completo
+  - [x] Dashboard específico para alunos
+  - [x] Visualização de treinos
+  - [x] Visualização de agenda/sessões
+  - [x] Histórico de pagamentos
+  - [ ] Registro de treino (diário) - pendente
+- [x] Notificações de pagamento
+  - [x] Envio automático quando pagamento confirmado pelo Stripe
+  - [x] Notificação para o owner do sistema
+- [x] Exportar PDF
+  - [x] Exportar dados do aluno (anamnese, medidas, treinos)
+  - [x] Gerar PDF formatado com informações completas
+- [x] Corrigir Lixeira para mostrar menu lateral

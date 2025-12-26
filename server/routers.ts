@@ -261,6 +261,13 @@ export const appRouter = router({
         return { success: true, message: 'Acesso resetado. Envie um novo convite para o aluno.' };
       }),
     
+    // Buscar aluno pelo userId (para portal do aluno)
+    getByUserId: protectedProcedure
+      .input(z.object({ userId: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getStudentByUserId(parseInt(input.userId) || 0);
+      }),
+    
     // Lixeira de alunos
     listDeleted: personalProcedure
       .query(async ({ ctx }) => {
@@ -279,6 +286,43 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await db.deleteStudentPermanently(input.id, ctx.personal.id);
         return { success: true };
+      }),
+    
+    // Exportar PDF do aluno
+    exportPDF: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateStudentPDF } = await import('./pdf/studentReport');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        
+        // Buscar medidas
+        const measurements = await db.getMeasurementsByStudentId(input.studentId);
+        
+        // Buscar treinos
+        const workouts = await db.getWorkoutsByStudentId(input.studentId);
+        
+        // Gerar PDF
+        const pdfBuffer = await generateStudentPDF(
+          student as any,
+          anamnesis as any,
+          measurements as any[],
+          workouts as any[]
+        );
+        
+        // Retornar como base64
+        return {
+          filename: `${student.name.replace(/\s+/g, '_')}_relatorio.pdf`,
+          data: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        };
       }),
   }),
 
@@ -1041,6 +1085,21 @@ export const appRouter = router({
         return { success: true };
       }),
     
+    // Listar sessões por aluno (para portal do aluno)
+    listByStudent: protectedProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ input }) => {
+        const sessions = await db.getSessionsByStudentId(input.studentId);
+        return sessions.map(s => ({
+          id: s.id,
+          date: s.scheduledAt,
+          time: s.scheduledAt ? new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '',
+          duration: s.duration || 60,
+          status: s.status,
+          notes: s.notes,
+        }));
+      }),
+    
     getById: personalProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
@@ -1112,16 +1171,6 @@ export const appRouter = router({
           attendanceRate,
           monthlyData,
         };
-      }),
-    
-    // Listar sessões por aluno
-    listByStudent: personalProcedure
-      .input(z.object({ studentId: z.number() }))
-      .query(async ({ ctx, input }) => {
-        const sessions = await db.getSessionsByStudentId(input.studentId);
-        return sessions.sort((a, b) => 
-          new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
-        );
       }),
     
     // Lixeira de sessões
@@ -1431,10 +1480,18 @@ export const appRouter = router({
         return await db.getChargesByPersonalId(ctx.personal.id, input);
       }),
     
-    listByStudent: personalProcedure
+    listByStudent: protectedProcedure
       .input(z.object({ studentId: z.number() }))
-      .query(async ({ ctx, input }) => {
-        return await db.getChargesByStudentId(input.studentId);
+      .query(async ({ input }) => {
+        const charges = await db.getChargesByStudentId(input.studentId);
+        return charges.map(c => ({
+          id: c.id,
+          description: c.description,
+          amount: c.amount,
+          dueDate: c.dueDate,
+          status: c.status,
+          paidAt: c.paidAt,
+        }));
       }),
     
     create: personalProcedure

@@ -22,6 +22,7 @@ import WorkoutLog from "@/pages/WorkoutLog";
 import Anamnesis from "./pages/Anamnesis";
 import ContractPlan from "./pages/ContractPlan";
 import Trash from "./pages/Trash";
+import StudentDashboard from "./pages/StudentDashboard";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       {/* Public routes */}
       <Route path="/" component={Home} />
       <Route path="/portal" component={StudentPortal} />
+      <Route path="/meu-portal" component={StudentDashboard} />
       
       {/* Personal Trainer routes */}
       <Route path="/dashboard" component={Dashboard} />

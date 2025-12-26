@@ -4,6 +4,20 @@ import { ENV } from '../_core/env';
 import { getDb } from '../db';
 import { charges, packages, students } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
+import { notifyOwner } from '../_core/notification';
+
+// Função para enviar notificação de pagamento confirmado
+async function sendPaymentNotification(studentName: string, amount: string, chargeDescription: string) {
+  try {
+    await notifyOwner({
+      title: `💰 Pagamento Confirmado - ${studentName}`,
+      content: `O aluno ${studentName} realizou um pagamento de R$ ${amount}.\n\nDescrição: ${chargeDescription}\n\nO pagamento foi processado com sucesso pelo Stripe.`
+    });
+    console.log(`[Webhook] Notificação de pagamento enviada para ${studentName}`);
+  } catch (error) {
+    console.error('[Webhook] Erro ao enviar notificação de pagamento:', error);
+  }
+}
 
 export async function handleStripeWebhook(req: Request, res: Response) {
   const signature = req.headers['stripe-signature'] as string;
@@ -56,6 +70,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         
         // Atualizar cobrança se existir
         if (chargeId) {
+          // Buscar dados da cobrança e aluno para notificação
+          const [chargeData] = await db.select().from(charges).where(eq(charges.id, parseInt(chargeId)));
+          
           await db.update(charges)
             .set({
               status: 'paid',
@@ -65,6 +82,18 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             })
             .where(eq(charges.id, parseInt(chargeId)));
           console.log(`[Webhook] Charge ${chargeId} marked as paid`);
+          
+          // Enviar notificação de pagamento
+          if (chargeData && studentId) {
+            const [studentData] = await db.select().from(students).where(eq(students.id, parseInt(studentId)));
+            if (studentData) {
+              await sendPaymentNotification(
+                studentData.name,
+                chargeData.amount,
+                chargeData.description || 'Pagamento'
+              );
+            }
+          }
         }
         
         // Atualizar pacote se for assinatura
