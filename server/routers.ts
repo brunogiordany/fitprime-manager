@@ -2325,6 +2325,126 @@ export const appRouter = router({
       return { success: true };
     }),
   }),
+
+  // ==================== STEVO WEBHOOK (Receber mensagens WhatsApp) ====================
+  stevoWebhook: router({
+    // Processar mensagem recebida do Stevo
+    processMessage: publicProcedure
+      .input(z.object({
+        instanceName: z.string(),
+        from: z.string(), // Número do remetente
+        message: z.string().optional(),
+        messageType: z.enum(['text', 'image', 'document', 'audio', 'video']),
+        mediaUrl: z.string().optional(),
+        timestamp: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { analyzePaymentMessage, generatePaymentResponseMessage, sendWhatsAppMessage } = await import('./stevo');
+        
+        // Normalizar número de telefone (remover 55 e formatar)
+        let phone = input.from.replace(/\D/g, '');
+        if (phone.startsWith('55')) {
+          phone = phone.substring(2);
+        }
+        
+        // Buscar aluno pelo telefone
+        const student = await db.getStudentByPhone(phone);
+        
+        if (!student) {
+          console.log('[Stevo Webhook] Aluno não encontrado para telefone:', phone);
+          return { processed: false, reason: 'student_not_found' };
+        }
+        
+        // Analisar a mensagem
+        const analysis = analyzePaymentMessage({
+          instanceName: input.instanceName,
+          from: input.from,
+          message: input.message || '',
+          messageType: input.messageType,
+          mediaUrl: input.mediaUrl,
+          timestamp: input.timestamp || Date.now(),
+        });
+        
+        if (!analysis.isPaymentRelated) {
+          return { processed: false, reason: 'not_payment_related' };
+        }
+        
+        // Buscar cobrança pendente mais recente do aluno
+        const charges = await db.getChargesByStudentId(student.id);
+        const pendingCharge = charges.find(c => c.status === 'pending' || c.status === 'overdue');
+        
+        if (!pendingCharge) {
+          return { processed: false, reason: 'no_pending_charge' };
+        }
+        
+        // Se alta confiança, confirmar automaticamente
+        if (analysis.suggestedAction === 'auto_confirm') {
+          await db.updateCharge(pendingCharge.id, {
+            status: 'paid',
+            paidAt: new Date(),
+            notes: (pendingCharge.notes || '') + '\n[Auto] Confirmado via WhatsApp em ' + new Date().toLocaleString('pt-BR'),
+          });
+          
+          // Buscar personal para enviar resposta
+          const personal = await db.getPersonalByUserId(student.personalId);
+          if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+            await sendWhatsAppMessage({
+              phone: student.phone || '',
+              message: generatePaymentResponseMessage(student.name, 'confirmed'),
+              config: {
+                apiKey: personal.evolutionApiKey,
+                instanceName: personal.evolutionInstance,
+              },
+            });
+          }
+          
+          // Notificar o personal
+          const { notifyOwner } = await import('./_core/notification');
+          await notifyOwner({
+            title: `💳 Pagamento Confirmado Automaticamente - ${student.name}`,
+            content: `O aluno ${student.name} enviou comprovante de pagamento via WhatsApp.\n\nValor: R$ ${(Number(pendingCharge.amount) / 100).toFixed(2)}\nDescrição: ${pendingCharge.description}\n\nO pagamento foi confirmado automaticamente.`,
+          });
+          
+          return { 
+            processed: true, 
+            action: 'auto_confirmed',
+            chargeId: pendingCharge.id,
+            studentId: student.id,
+          };
+        }
+        
+        // Se precisa revisão manual, notificar o personal
+        if (analysis.suggestedAction === 'manual_review') {
+          const { notifyOwner } = await import('./_core/notification');
+          await notifyOwner({
+            title: `💳 Possível Pagamento - ${student.name}`,
+            content: `O aluno ${student.name} enviou uma mensagem que pode ser confirmação de pagamento:\n\nMensagem: "${input.message || '[Mídia]'}"\nTipo: ${input.messageType}\n\nValor pendente: R$ ${(Number(pendingCharge.amount) / 100).toFixed(2)}\n\nPor favor, verifique e confirme manualmente se necessário.`,
+          });
+          
+          // Enviar resposta ao aluno
+          const personal = await db.getPersonalByUserId(student.personalId);
+          if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+            await sendWhatsAppMessage({
+              phone: student.phone || '',
+              message: generatePaymentResponseMessage(student.name, 'pending_review'),
+              config: {
+                apiKey: personal.evolutionApiKey,
+                instanceName: personal.evolutionInstance,
+              },
+            });
+          }
+          
+          return { 
+            processed: true, 
+            action: 'pending_review',
+            chargeId: pendingCharge.id,
+            studentId: student.id,
+          };
+        }
+        
+        return { processed: false, reason: 'no_action_needed' };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

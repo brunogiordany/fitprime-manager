@@ -175,12 +175,32 @@ export default function Automations() {
         return 'Lembrete de Sessão';
       case 'payment_reminder':
         return 'Lembrete de Pagamento';
+      case 'payment_reminder_2days':
+        return 'Lembrete 2 dias antes';
+      case 'payment_reminder_dueday':
+        return 'Lembrete no vencimento';
+      case 'payment_overdue':
+        return 'Pagamento em atraso';
       case 'birthday':
         return 'Aniversário';
       case 'inactive_student':
         return 'Aluno Inativo';
       case 'welcome':
         return 'Boas-vindas';
+      case 'mothers_day':
+        return 'Dia das Mães';
+      case 'fathers_day':
+        return 'Dia dos Pais';
+      case 'christmas':
+        return 'Natal';
+      case 'new_year':
+        return 'Ano Novo';
+      case 'womens_day':
+        return 'Dia da Mulher';
+      case 'mens_day':
+        return 'Dia do Homem';
+      case 'customer_day':
+        return 'Dia do Cliente';
       default:
         return trigger;
     }
@@ -191,13 +211,31 @@ export default function Automations() {
       case 'session_reminder':
         return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Sessão</Badge>;
       case 'payment_reminder':
+      case 'payment_reminder_2days':
+      case 'payment_reminder_dueday':
         return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Pagamento</Badge>;
+      case 'payment_overdue':
+        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">payment_overdue</Badge>;
       case 'birthday':
         return <Badge className="bg-pink-100 text-pink-700 hover:bg-pink-100">Aniversário</Badge>;
       case 'inactive_student':
         return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Inatividade</Badge>;
       case 'welcome':
         return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Boas-vindas</Badge>;
+      case 'mothers_day':
+        return <Badge className="bg-pink-100 text-pink-700 hover:bg-pink-100">Dia das Mães</Badge>;
+      case 'fathers_day':
+        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Dia dos Pais</Badge>;
+      case 'christmas':
+        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Natal</Badge>;
+      case 'new_year':
+        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Ano Novo</Badge>;
+      case 'womens_day':
+        return <Badge className="bg-pink-100 text-pink-700 hover:bg-pink-100">Dia da Mulher</Badge>;
+      case 'mens_day':
+        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Dia do Homem</Badge>;
+      case 'customer_day':
+        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Dia do Cliente</Badge>;
       default:
         return <Badge variant="outline">{trigger}</Badge>;
     }
@@ -384,10 +422,20 @@ export default function Automations() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="session_reminder">Lembrete de Sessão</SelectItem>
-                    <SelectItem value="payment_reminder">Lembrete de Pagamento</SelectItem>
+                    <SelectItem value="payment_reminder">Lembrete de Pagamento (3 dias)</SelectItem>
+                    <SelectItem value="payment_reminder_2days">Lembrete de Pagamento (2 dias)</SelectItem>
+                    <SelectItem value="payment_reminder_dueday">Lembrete no Vencimento</SelectItem>
+                    <SelectItem value="payment_overdue">Pagamento em Atraso</SelectItem>
                     <SelectItem value="birthday">Aniversário</SelectItem>
                     <SelectItem value="inactive_student">Aluno Inativo</SelectItem>
                     <SelectItem value="welcome">Boas-vindas</SelectItem>
+                    <SelectItem value="mothers_day">Dia das Mães</SelectItem>
+                    <SelectItem value="fathers_day">Dia dos Pais</SelectItem>
+                    <SelectItem value="christmas">Natal</SelectItem>
+                    <SelectItem value="new_year">Ano Novo</SelectItem>
+                    <SelectItem value="womens_day">Dia da Mulher</SelectItem>
+                    <SelectItem value="mens_day">Dia do Homem</SelectItem>
+                    <SelectItem value="customer_day">Dia do Cliente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

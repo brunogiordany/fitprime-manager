@@ -58,6 +58,8 @@ export const students = mysqlTable("students", {
   whatsappOptIn: boolean("whatsappOptIn").default(true),
   avatarUrl: varchar("avatarUrl", { length: 500 }),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }), // Stripe Customer ID
+  hasChildren: boolean("hasChildren").default(false), // Tem filhos - usado para automações de Dia das Mães/Pais
+  maritalStatus: mysqlEnum("maritalStatus", ["single", "married", "divorced", "widowed", "other"]), // Estado civil
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -387,12 +389,24 @@ export const automations = mysqlTable("automations", {
     "session_reminder",
     "session_confirmation",
     "payment_reminder",
+    "payment_reminder_2days",
+    "payment_reminder_dueday",
     "payment_overdue",
     "birthday",
     "inactive_student",
     "welcome",
+    "mothers_day",
+    "fathers_day",
+    "christmas",
+    "new_year",
+    "womens_day",
+    "mens_day",
+    "customer_day",
     "custom"
   ]).notNull(),
+  // Filtros para datas comemorativas
+  targetGender: mysqlEnum("targetGender", ["all", "male", "female"]).default("all"),
+  requiresChildren: boolean("requiresChildren").default(false), // Para Dia das Mães/Pais
   messageTemplate: text("messageTemplate").notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   // Configurações

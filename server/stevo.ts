@@ -262,3 +262,141 @@ export default {
   sendWelcomeMessage,
   sendBirthdayMessage,
 };
+
+
+/**
+ * Interface para mensagem recebida do webhook do Stevo
+ */
+export interface StevoWebhookMessage {
+  instanceName: string;
+  from: string; // Número do remetente
+  message: string;
+  messageType: 'text' | 'image' | 'document' | 'audio' | 'video';
+  mediaUrl?: string; // URL da mídia se for imagem/documento
+  timestamp: number;
+}
+
+/**
+ * Padrões para detectar confirmação de pagamento na mensagem
+ */
+const PAYMENT_CONFIRMATION_PATTERNS = [
+  /j[aá]\s*paguei/i,
+  /pagamento\s*(feito|realizado|efetuado)/i,
+  /paguei\s*(sim|j[aá])/i,
+  /transferi/i,
+  /fiz\s*(o\s*)?(pix|pagamento|transfer[eê]ncia)/i,
+  /pix\s*(feito|enviado|realizado)/i,
+  /comprovante/i,
+  /segue\s*(o\s*)?(comprovante|pix)/i,
+  /ta\s*pago/i,
+  /tá\s*pago/i,
+  /está\s*pago/i,
+  /quitado/i,
+];
+
+/**
+ * Verifica se a mensagem indica confirmação de pagamento
+ */
+export function isPaymentConfirmation(message: string): boolean {
+  const normalizedMessage = message.toLowerCase().trim();
+  return PAYMENT_CONFIRMATION_PATTERNS.some(pattern => pattern.test(normalizedMessage));
+}
+
+/**
+ * Verifica se a mensagem contém um comprovante (imagem ou documento)
+ */
+export function hasPaymentProof(webhookMessage: StevoWebhookMessage): boolean {
+  // Se for imagem ou documento, provavelmente é um comprovante
+  if (webhookMessage.messageType === 'image' || webhookMessage.messageType === 'document') {
+    return true;
+  }
+  
+  // Se for texto, verifica se menciona comprovante
+  if (webhookMessage.messageType === 'text') {
+    return /comprovante|anexo|segue/i.test(webhookMessage.message);
+  }
+  
+  return false;
+}
+
+/**
+ * Analisa a mensagem recebida e retorna informações sobre pagamento
+ */
+export interface PaymentAnalysisResult {
+  isPaymentRelated: boolean;
+  isConfirmation: boolean;
+  hasProof: boolean;
+  confidence: 'high' | 'medium' | 'low';
+  suggestedAction: 'auto_confirm' | 'manual_review' | 'ignore';
+}
+
+export function analyzePaymentMessage(webhookMessage: StevoWebhookMessage): PaymentAnalysisResult {
+  const hasProof = hasPaymentProof(webhookMessage);
+  const isConfirmation = webhookMessage.messageType === 'text' && isPaymentConfirmation(webhookMessage.message);
+  
+  // Se tem comprovante (imagem/documento), alta confiança
+  if (hasProof && (webhookMessage.messageType === 'image' || webhookMessage.messageType === 'document')) {
+    return {
+      isPaymentRelated: true,
+      isConfirmation: true,
+      hasProof: true,
+      confidence: 'high',
+      suggestedAction: 'auto_confirm',
+    };
+  }
+  
+  // Se é texto confirmando pagamento
+  if (isConfirmation) {
+    return {
+      isPaymentRelated: true,
+      isConfirmation: true,
+      hasProof: false,
+      confidence: 'medium',
+      suggestedAction: 'manual_review', // Sem comprovante, precisa revisão
+    };
+  }
+  
+  // Se tem imagem mas não é claramente um comprovante
+  if (webhookMessage.messageType === 'image') {
+    return {
+      isPaymentRelated: true,
+      isConfirmation: false,
+      hasProof: true,
+      confidence: 'low',
+      suggestedAction: 'manual_review',
+    };
+  }
+  
+  return {
+    isPaymentRelated: false,
+    isConfirmation: false,
+    hasProof: false,
+    confidence: 'low',
+    suggestedAction: 'ignore',
+  };
+}
+
+/**
+ * Gera resposta automática para confirmação de pagamento
+ */
+export function generatePaymentResponseMessage(studentName: string, status: 'confirmed' | 'pending_review'): string {
+  if (status === 'confirmed') {
+    return `Olá ${studentName}! ✅
+
+Recebemos seu comprovante de pagamento!
+
+O pagamento foi confirmado automaticamente. Obrigado! 🙏
+
+Continue firme nos treinos! 💪
+
+_FitPrime Manager_`;
+  }
+  
+  return `Olá ${studentName}! 📋
+
+Recebemos sua mensagem sobre o pagamento.
+
+Vou verificar e confirmar em breve. Obrigado! 🙏
+
+_FitPrime Manager_`;
+}

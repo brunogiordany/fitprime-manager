@@ -451,3 +451,24 @@
 - [x] Melhorar comparativo visual nas Alterações Pendentes
   - [x] Mostrar lado a lado: valor atual vs valor proposto
   - [x] Destacar diferenças com cores
+
+## Automações Avançadas v4.3
+- [ ] Adicionar campo "Tem filhos" no cadastro do aluno
+- [ ]## Automações Avançadas v4.3
+- [x] Datas comemorativas com filtros inteligentes
+  - [x] Dia das Mães (filtro: mulheres com filhos)
+  - [x] Dia dos Pais (filtro: homens com filhos)
+  - [x] Natal (todos)
+  - [x] Ano Novo (todos)
+  - [x] Dia da Mulher (filtro: mulheres)
+  - [x] Dia do Homem (filtro: homens)
+  - [x] Dia do Cliente (todos)
+- [x] Lembretes de pagamento adicionais
+  - [x] 2 dias antes do vencimento
+  - [x] No dia do vencimento
+- [x] Reconhecimento automático de pagamento via WhatsApp
+  - [x] Detectar "já paguei" ou variações
+  - [x] Detectar envio de comprovante (imagem/documento)
+  - [x] Atualizar status da cobrança automaticamente
+  - [x] Notificar personal sobre pagamento confirmado
+- [x] Campos adicionados no aluno: hasChildren (tem filhos), maritalStatus (estado civil)

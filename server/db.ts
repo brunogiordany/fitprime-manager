@@ -209,6 +209,24 @@ export async function countStudentsByPersonalId(personalId: number) {
   return result[0]?.count || 0;
 }
 
+export async function getStudentByPhone(phone: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  // Normalizar telefone para busca (remover caracteres não numéricos)
+  const normalizedPhone = phone.replace(/\D/g, '');
+  
+  // Buscar aluno pelo telefone (comparando últimos dígitos)
+  const result = await db.select().from(students)
+    .where(and(
+      isNull(students.deletedAt),
+      sql`REPLACE(REPLACE(REPLACE(REPLACE(${students.phone}, '(', ''), ')', ''), '-', ''), ' ', '') LIKE ${'%' + normalizedPhone.slice(-9)}`
+    ))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
 // ==================== ANAMNESIS FUNCTIONS ====================
 export async function getAnamnesisByStudentId(studentId: number) {
   const db = await getDb();
@@ -1108,6 +1126,114 @@ export async function createDefaultAutomations(personalId: number) {
       sendWindowStart: "08:00",
       sendWindowEnd: "20:00",
       maxMessagesPerDay: 10,
+    },
+    // Lembretes de pagamento adicionais
+    {
+      personalId,
+      name: "Lembrete 2 dias antes do vencimento",
+      trigger: "payment_reminder_2days" as const,
+      messageTemplate: "Olá {nome}! 💳\n\nLembrete: sua mensalidade vence em 2 dias ({vencimento}).\n\nValor: R$ {valor}\n\nQualquer dúvida, estou à disposição!",
+      isActive: true,
+      triggerHoursBefore: 48, // 2 dias antes
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 5,
+    },
+    {
+      personalId,
+      name: "Lembrete no dia do vencimento",
+      trigger: "payment_reminder_dueday" as const,
+      messageTemplate: "Olá {nome}! 💳\n\nHoje é o dia do vencimento da sua mensalidade!\n\nValor: R$ {valor}\n\nSe já pagou, me envie o comprovante. Qualquer dúvida, estou aqui!",
+      isActive: true,
+      triggerHoursBefore: 0, // No dia
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 5,
+    },
+    // Datas comemorativas
+    {
+      personalId,
+      name: "Dia das Mães",
+      trigger: "mothers_day" as const,
+      messageTemplate: "Olá {nome}! 🌹💖\n\nFeliz Dia das Mães!\n\nQue seu dia seja repleto de amor e carinho. Você merece todas as felicidades do mundo!\n\nUm abraço especial! 💪",
+      isActive: true,
+      targetGender: "female" as const,
+      requiresChildren: true,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 50,
+    },
+    {
+      personalId,
+      name: "Dia dos Pais",
+      trigger: "fathers_day" as const,
+      messageTemplate: "Olá {nome}! 👨\u200d👧\u200d👦💪\n\nFeliz Dia dos Pais!\n\nQue seu dia seja incrível ao lado de quem você ama. Parabéns por ser esse pai dedicado!\n\nUm abraço!",
+      isActive: true,
+      targetGender: "male" as const,
+      requiresChildren: true,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 50,
+    },
+    {
+      personalId,
+      name: "Natal",
+      trigger: "christmas" as const,
+      messageTemplate: "Olá {nome}! 🎄🎁\n\nFeliz Natal!\n\nQue essa data especial traga muita paz, amor e saúde para você e sua família!\n\nBoas festas! 🌟",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 100,
+    },
+    {
+      personalId,
+      name: "Ano Novo",
+      trigger: "new_year" as const,
+      messageTemplate: "Olá {nome}! 🎉🎊\n\nFeliz Ano Novo!\n\nQue {ano} seja repleto de conquistas, saúde e muito sucesso nos treinos!\n\nConte comigo nessa jornada! 💪",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 100,
+    },
+    {
+      personalId,
+      name: "Dia da Mulher",
+      trigger: "womens_day" as const,
+      messageTemplate: "Olá {nome}! 🌸💜\n\nFeliz Dia Internacional da Mulher!\n\nVocê é incrível e inspiração! Continue brilhando e conquistando seus objetivos!\n\nUm abraço especial! 💪",
+      isActive: true,
+      targetGender: "female" as const,
+      requiresChildren: false,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 50,
+    },
+    {
+      personalId,
+      name: "Dia do Homem",
+      trigger: "mens_day" as const,
+      messageTemplate: "Olá {nome}! 💪🔵\n\nFeliz Dia do Homem!\n\nParabéns por cuidar da sua saúde e bem-estar. Continue firme nos seus objetivos!\n\nUm abraço!",
+      isActive: true,
+      targetGender: "male" as const,
+      requiresChildren: false,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "12:00",
+      maxMessagesPerDay: 50,
+    },
+    {
+      personalId,
+      name: "Dia do Cliente",
+      trigger: "customer_day" as const,
+      messageTemplate: "Olá {nome}! 🌟🙏\n\nFeliz Dia do Cliente!\n\nObrigado por confiar no meu trabalho. É uma honra fazer parte da sua jornada de saúde e bem-estar!\n\nConte sempre comigo! 💪",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      sendWindowStart: "08:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 100,
     },
   ];
   

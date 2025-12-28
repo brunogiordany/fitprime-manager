@@ -296,6 +296,8 @@ export default function StudentProfile() {
         emergencyPhone: student.emergencyPhone || "",
         notes: student.notes || "",
         status: student.status,
+        hasChildren: student.hasChildren || false,
+        maritalStatus: student.maritalStatus || "",
       });
     }
   }, [student]);
@@ -624,6 +626,41 @@ export default function StudentProfile() {
                           </Select>
                         </div>
                       </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Estado Civil</Label>
+                          <Select
+                            value={editData.maritalStatus}
+                            onValueChange={(value) => setEditData({ ...editData, maritalStatus: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="single">Solteiro(a)</SelectItem>
+                              <SelectItem value="married">Casado(a)</SelectItem>
+                              <SelectItem value="divorced">Divorciado(a)</SelectItem>
+                              <SelectItem value="widowed">Viúvo(a)</SelectItem>
+                              <SelectItem value="other">Outro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Tem Filhos?</Label>
+                          <Select
+                            value={editData.hasChildren ? "yes" : "no"}
+                            onValueChange={(value) => setEditData({ ...editData, hasChildren: value === "yes" })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Sim</SelectItem>
+                              <SelectItem value="no">Não</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                       <div className="grid gap-2">
                         <Label>CPF</Label>
                         <Input
@@ -684,6 +721,20 @@ export default function StudentProfile() {
                            student.gender === 'female' ? 'Feminino' : 
                            student.gender === 'other' ? 'Outro' : '-'}
                         </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Estado Civil</span>
+                        <span className="font-medium">
+                          {student.maritalStatus === 'single' ? 'Solteiro(a)' :
+                           student.maritalStatus === 'married' ? 'Casado(a)' :
+                           student.maritalStatus === 'divorced' ? 'Divorciado(a)' :
+                           student.maritalStatus === 'widowed' ? 'Viúvo(a)' :
+                           student.maritalStatus === 'other' ? 'Outro' : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tem Filhos</span>
+                        <span className="font-medium">{student.hasChildren ? 'Sim' : 'Não'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">CPF</span>
