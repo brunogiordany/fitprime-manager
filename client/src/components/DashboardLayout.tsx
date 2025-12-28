@@ -35,7 +35,8 @@ import {
   FileText,
   Activity,
   Trash2,
-  BarChart3
+  BarChart3,
+  AlertTriangle
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -50,6 +51,7 @@ const menuItems = [
   { icon: CreditCard, label: "Cobranças", path: "/cobrancas" },
   { icon: FileText, label: "Planos", path: "/planos" },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
+  { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },

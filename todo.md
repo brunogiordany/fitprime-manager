@@ -423,3 +423,19 @@
   - [x] Adicionar: Última semana, Últimos 15 dias, Último mês
   - [x] Adicionar: Últimos 2 anos, Todo o período
   - [x] Seletor de datas personalizado (de/até)
+
+## Correções e Melhorias v4.1
+- [x] Corrigir erro "Invalid time value" na página de alunos
+- [x] Corrigir botão "Adicionar Serviço" que não funciona
+- [x] Adicionar opções de duração de 5 em 5 minutos (5min, 10min, 15min, etc)
+- [x] Adicionar opções "Cancelar" e "Falta" no menu "Outros"
+- [x] Sistema de convite para Portal do Aluno já existe (botão Convidar no perfil do aluno)
+- [x] Sincronização Personal ↔ Aluno com aprovação de alterações
+  - [x] Tabela de alterações pendentes (pending_changes)
+  - [x] Aluno pode solicitar alteração via Portal
+  - [x] Personal aprova ou rejeita na página Alterações Pendentes
+  - [x] Notificação automática quando aluno solicita alteração
+- [ ] Sincronização Personal ↔ Aluno com sistema de aprovação
+  - [ ] Alterações do aluno ficam pendentes
+  - [ ] Personal pode aprovar ou rejeitar
+  - [ ] Mostrar original vs alteração proposta

@@ -78,6 +78,13 @@
       "when": 1766758885824,
       "tag": "0010_workable_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1766954401512,
+      "tag": "0011_orange_namorita",
+      "breakpoints": true
     }
   ]
 }

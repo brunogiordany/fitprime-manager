@@ -1112,10 +1112,14 @@ export default function StudentProfile() {
                           </div>
                           <div>
                             <p className="font-medium">
-                              {format(new Date(session.date), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                              {session.date && !isNaN(new Date(session.date).getTime())
+                                ? format(new Date(session.date), "EEEE, dd/MM/yyyy", { locale: ptBR })
+                                : 'Data não definida'}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(session.date), "HH:mm")} - {session.duration || 60} min
+                              {session.date && !isNaN(new Date(session.date).getTime())
+                                ? format(new Date(session.date), "HH:mm")
+                                : '--:--'} - {session.duration || 60} min
                             </p>
                           </div>
                         </div>
@@ -1163,10 +1167,14 @@ export default function StudentProfile() {
                   <div className="space-y-4 py-4">
                     <div className="bg-accent/30 rounded-lg p-4">
                       <p className="font-semibold">
-                        {format(new Date(editingSession.scheduledAt), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                        {editingSession.scheduledAt && !isNaN(new Date(editingSession.scheduledAt).getTime())
+                          ? format(new Date(editingSession.scheduledAt), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                          : 'Data não definida'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(editingSession.scheduledAt), "HH:mm")} - {editingSession.duration || 60} min
+                        {editingSession.scheduledAt && !isNaN(new Date(editingSession.scheduledAt).getTime())
+                          ? format(new Date(editingSession.scheduledAt), "HH:mm")
+                          : '--:--'} - {editingSession.duration || 60} min
                       </p>
                     </div>
 

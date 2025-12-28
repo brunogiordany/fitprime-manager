@@ -202,9 +202,21 @@ export default function Schedule() {
     onSuccess: () => {
       toast.success("Sessão atualizada!");
       utils.sessions.list.invalidate();
+      setIsEditDialogOpen(false);
     },
     onError: (error) => {
       toast.error("Erro ao atualizar: " + error.message);
+    },
+  });
+
+  const deleteMutation = trpc.sessions.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Sessão excluída!");
+      utils.sessions.list.invalidate();
+      setIsEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir: " + error.message);
     },
   });
 
@@ -1173,10 +1185,29 @@ export default function Schedule() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="5">5 min</SelectItem>
+                          <SelectItem value="10">10 min</SelectItem>
+                          <SelectItem value="15">15 min</SelectItem>
+                          <SelectItem value="20">20 min</SelectItem>
+                          <SelectItem value="25">25 min</SelectItem>
                           <SelectItem value="30">30 min</SelectItem>
+                          <SelectItem value="35">35 min</SelectItem>
+                          <SelectItem value="40">40 min</SelectItem>
                           <SelectItem value="45">45 min</SelectItem>
+                          <SelectItem value="50">50 min</SelectItem>
+                          <SelectItem value="55">55 min</SelectItem>
                           <SelectItem value="60">1h</SelectItem>
-                          <SelectItem value="90">1h 30 min</SelectItem>
+                          <SelectItem value="65">1h 5min</SelectItem>
+                          <SelectItem value="70">1h 10min</SelectItem>
+                          <SelectItem value="75">1h 15min</SelectItem>
+                          <SelectItem value="80">1h 20min</SelectItem>
+                          <SelectItem value="85">1h 25min</SelectItem>
+                          <SelectItem value="90">1h 30min</SelectItem>
+                          <SelectItem value="95">1h 35min</SelectItem>
+                          <SelectItem value="100">1h 40min</SelectItem>
+                          <SelectItem value="105">1h 45min</SelectItem>
+                          <SelectItem value="110">1h 50min</SelectItem>
+                          <SelectItem value="115">1h 55min</SelectItem>
                           <SelectItem value="120">2h</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1275,11 +1306,31 @@ export default function Schedule() {
 
                 {/* Botões fixos no rodapé */}
                 <div className="sticky bottom-0 bg-background border-t p-4 mt-4 flex gap-2">
-                  <Select>
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === 'delete') {
+                        if (confirm('Tem certeza que deseja excluir esta sessão?')) {
+                          deleteMutation.mutate({ id: editingSession.id });
+                        }
+                      } else if (value === 'duplicate') {
+                        toast.info('Funcionalidade em desenvolvimento');
+                      } else if (value === 'reschedule') {
+                        toast.info('Use o campo de data acima para reagendar');
+                      } else if (value === 'cancel') {
+                        setEditForm({ ...editForm, status: 'cancelled' });
+                        toast.info('Status alterado para Cancelada. Clique em Salvar para confirmar.');
+                      } else if (value === 'no_show') {
+                        setEditForm({ ...editForm, status: 'no_show' });
+                        toast.info('Status alterado para Falta. Clique em Salvar para confirmar.');
+                      }
+                    }}
+                  >
                     <SelectTrigger className="w-[120px]">
                       <SelectValue placeholder="Outros" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="cancel">Cancelar</SelectItem>
+                      <SelectItem value="no_show">Falta</SelectItem>
                       <SelectItem value="delete">Excluir</SelectItem>
                       <SelectItem value="duplicate">Duplicar</SelectItem>
                       <SelectItem value="reschedule">Reagendar</SelectItem>

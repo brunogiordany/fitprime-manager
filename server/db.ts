@@ -24,6 +24,7 @@ import {
   exerciseLogs, InsertExerciseLog, ExerciseLog,
   studentInvites, InsertStudentInvite, StudentInvite,
   passwordResetTokens, InsertPasswordResetToken, PasswordResetToken,
+  pendingChanges, InsertPendingChange, PendingChange,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1395,3 +1396,93 @@ export async function cancelFutureChargesByStudentId(studentId: number) {
     ));
 }
 
+// ==================== PENDING CHANGES FUNCTIONS ====================
+export async function createPendingChange(data: InsertPendingChange) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pendingChanges).values(data);
+  return result[0].insertId;
+}
+
+export async function getPendingChangesByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select({
+    change: pendingChanges,
+    student: students,
+  })
+    .from(pendingChanges)
+    .leftJoin(students, eq(pendingChanges.studentId, students.id))
+    .where(and(
+      eq(pendingChanges.personalId, personalId),
+      eq(pendingChanges.status, 'pending')
+    ))
+    .orderBy(desc(pendingChanges.createdAt));
+}
+
+export async function getPendingChangesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(pendingChanges)
+    .where(eq(pendingChanges.studentId, studentId))
+    .orderBy(desc(pendingChanges.createdAt));
+}
+
+export async function updatePendingChange(id: number, data: Partial<InsertPendingChange>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(pendingChanges).set(data).where(eq(pendingChanges.id, id));
+}
+
+export async function approvePendingChange(id: number, reviewNotes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get the pending change
+  const change = await db.select().from(pendingChanges)
+    .where(eq(pendingChanges.id, id))
+    .limit(1);
+  
+  if (!change[0]) throw new Error("Alteração não encontrada");
+  
+  const { entityType, entityId, fieldName, newValue } = change[0];
+  
+  // Apply the change based on entity type
+  if (entityType === 'student') {
+    await db.update(students).set({ [fieldName]: newValue }).where(eq(students.id, entityId));
+  } else if (entityType === 'anamnesis') {
+    await db.update(anamneses).set({ [fieldName]: newValue }).where(eq(anamneses.id, entityId));
+  } else if (entityType === 'measurement') {
+    await db.update(measurements).set({ [fieldName]: newValue }).where(eq(measurements.id, entityId));
+  }
+  
+  // Mark as approved
+  await db.update(pendingChanges).set({
+    status: 'approved',
+    reviewedAt: new Date(),
+    reviewNotes,
+  }).where(eq(pendingChanges.id, id));
+}
+
+export async function rejectPendingChange(id: number, reviewNotes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(pendingChanges).set({
+    status: 'rejected',
+    reviewedAt: new Date(),
+    reviewNotes,
+  }).where(eq(pendingChanges.id, id));
+}
+
+export async function countPendingChangesByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(pendingChanges)
+    .where(and(
+      eq(pendingChanges.personalId, personalId),
+      eq(pendingChanges.status, 'pending')
+    ));
+  return result[0]?.count || 0;
+}

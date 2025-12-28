@@ -2242,6 +2242,73 @@ export const appRouter = router({
         
         return { id: logId, sessionNumber };
       }),
+    
+    // Solicitar alteração de dados (cria pending change)
+    requestChange: studentProcedure
+      .input(z.object({
+        entityType: z.enum(['student', 'anamnesis', 'measurement']),
+        entityId: z.number(),
+        fieldName: z.string(),
+        oldValue: z.string().optional(),
+        newValue: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await db.createPendingChange({
+          personalId: ctx.student.personalId,
+          studentId: ctx.student.id,
+          entityType: input.entityType,
+          entityId: input.entityId,
+          fieldName: input.fieldName,
+          oldValue: input.oldValue,
+          newValue: input.newValue,
+          requestedBy: 'student',
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `📝 Solicitação de Alteração - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} solicitou uma alteração:\n\n📋 Campo: ${input.fieldName}\n📤 Valor atual: ${input.oldValue || 'N/A'}\n📥 Novo valor: ${input.newValue}\n\nAcesse o sistema para aprovar ou rejeitar.`,
+        });
+        
+        return { id };
+      }),
+    
+    // Listar alterações pendentes do aluno
+    myPendingChanges: studentProcedure.query(async ({ ctx }) => {
+      return await db.getPendingChangesByStudentId(ctx.student.id);
+    }),
+  }),
+  
+  // ==================== PENDING CHANGES (Para o Personal) ====================
+  pendingChanges: router({
+    list: personalProcedure.query(async ({ ctx }) => {
+      return await db.getPendingChangesByPersonalId(ctx.personal.id);
+    }),
+    
+    count: personalProcedure.query(async ({ ctx }) => {
+      return await db.countPendingChangesByPersonalId(ctx.personal.id);
+    }),
+    
+    approve: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.approvePendingChange(input.id, input.reviewNotes);
+        return { success: true };
+      }),
+    
+    reject: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.rejectPendingChange(input.id, input.reviewNotes);
+        return { success: true };
+      }),
   }),
 
   // ==================== TRASH (Lixeira Geral) ====================

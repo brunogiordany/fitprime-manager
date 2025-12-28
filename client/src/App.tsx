@@ -25,6 +25,7 @@ import Trash from "./pages/Trash";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentWorkoutLog from "./pages/StudentWorkoutLog";
 import Reports from "./pages/Reports";
+import PendingChanges from "./pages/PendingChanges";
 
 function Router() {
   return (
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/configuracoes" component={Settings} />
       <Route path="/lixeira" component={Trash} />
       <Route path="/relatorios" component={Reports} />
+      <Route path="/alteracoes-pendentes" component={PendingChanges} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

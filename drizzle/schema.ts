@@ -522,3 +522,23 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+// ==================== PENDING CHANGES (Alterações Pendentes do Aluno) ====================
+export const pendingChanges = mysqlTable("pending_changes", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  entityType: mysqlEnum("entityType", ["student", "anamnesis", "measurement"]).notNull(),
+  entityId: int("entityId").notNull(), // ID do registro sendo alterado
+  fieldName: varchar("fieldName", { length: 100 }).notNull(),
+  oldValue: text("oldValue"),
+  newValue: text("newValue"),
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  requestedBy: mysqlEnum("requestedBy", ["student", "personal"]).notNull(),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewNotes: text("reviewNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PendingChange = typeof pendingChanges.$inferSelect;
+export type InsertPendingChange = typeof pendingChanges.$inferInsert;

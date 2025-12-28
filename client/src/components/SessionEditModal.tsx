@@ -302,11 +302,29 @@ export default function SessionEditModal({ session, isOpen, onClose, onUpdate }:
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="5">5 min</SelectItem>
+                  <SelectItem value="10">10 min</SelectItem>
                   <SelectItem value="15">15 min</SelectItem>
+                  <SelectItem value="20">20 min</SelectItem>
+                  <SelectItem value="25">25 min</SelectItem>
                   <SelectItem value="30">30 min</SelectItem>
+                  <SelectItem value="35">35 min</SelectItem>
+                  <SelectItem value="40">40 min</SelectItem>
                   <SelectItem value="45">45 min</SelectItem>
+                  <SelectItem value="50">50 min</SelectItem>
+                  <SelectItem value="55">55 min</SelectItem>
                   <SelectItem value="60">1h</SelectItem>
-                  <SelectItem value="90">1h 30 min</SelectItem>
+                  <SelectItem value="65">1h 5min</SelectItem>
+                  <SelectItem value="70">1h 10min</SelectItem>
+                  <SelectItem value="75">1h 15min</SelectItem>
+                  <SelectItem value="80">1h 20min</SelectItem>
+                  <SelectItem value="85">1h 25min</SelectItem>
+                  <SelectItem value="90">1h 30min</SelectItem>
+                  <SelectItem value="95">1h 35min</SelectItem>
+                  <SelectItem value="100">1h 40min</SelectItem>
+                  <SelectItem value="105">1h 45min</SelectItem>
+                  <SelectItem value="110">1h 50min</SelectItem>
+                  <SelectItem value="115">1h 55min</SelectItem>
                   <SelectItem value="120">2h</SelectItem>
                 </SelectContent>
               </Select>
