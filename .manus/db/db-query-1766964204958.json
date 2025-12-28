@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, `trigger`, isActive FROM automations WHERE personalId = 1 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, `trigger`, isActive FROM automations WHERE personalId = 1 ORDER BY id;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Lembrete 24h antes do treino",
+      "trigger": "session_reminder",
+      "isActive": "1"
+    },
+    {
+      "id": "30002",
+      "name": "Lembrete 2h antes do treino",
+      "trigger": "session_reminder",
+      "isActive": "1"
+    },
+    {
+      "id": "30003",
+      "name": "Lembrete de pagamento",
+      "trigger": "payment_reminder",
+      "isActive": "1"
+    },
+    {
+      "id": "30004",
+      "name": "Pagamento em atraso",
+      "trigger": "payment_overdue",
+      "isActive": "1"
+    },
+    {
+      "id": "30005",
+      "name": "Boas-vindas",
+      "trigger": "welcome",
+      "isActive": "1"
+    },
+    {
+      "id": "30006",
+      "name": "Aniversário",
+      "trigger": "birthday",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttrigger\tisActive\n30001\tLembrete 24h antes do treino\tsession_reminder\t1\n30002\tLembrete 2h antes do treino\tsession_reminder\t1\n30003\tLembrete de pagamento\tpayment_reminder\t1\n30004\tPagamento em atraso\tpayment_overdue\t1\n30005\tBoas-vindas\twelcome\t1\n30006\tAniversário\tbirthday\t1\n",
+  "stderr": "",
+  "execution_time_ms": 634
+}

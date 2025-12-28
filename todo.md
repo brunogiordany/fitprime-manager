@@ -477,3 +477,7 @@
 - [x] Mensagem com oferta especial para reengajamento (sessão gratuita)
 - [x] Adicionar na interface de automações
 - [x] Variáveis disponíveis: {nome}, {dias_inativo}, {ultima_sessao}
+
+## Automações Pré-criadas v4.5
+- [x] Inserir todas as automações padrão no banco de dados (16 automações ativas)
+- [x] Garantir que automações sejam criadas automaticamente para novos personals
