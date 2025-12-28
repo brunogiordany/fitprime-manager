@@ -1,0 +1,1 @@
+ALTER TABLE `automations` MODIFY COLUMN `trigger` enum('session_reminder','session_confirmation','payment_reminder','payment_reminder_2days','payment_reminder_dueday','payment_overdue','birthday','inactive_student','welcome','mothers_day','fathers_day','christmas','new_year','womens_day','mens_day','customer_day','reengagement_30days','custom') NOT NULL;

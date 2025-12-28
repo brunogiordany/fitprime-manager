@@ -1235,6 +1235,20 @@ export async function createDefaultAutomations(personalId: number) {
       sendWindowEnd: "18:00",
       maxMessagesPerDay: 100,
     },
+    // Reengajamento de alunos inativos
+    {
+      personalId,
+      name: "Reengajamento - 30 dias inativo",
+      trigger: "reengagement_30days" as const,
+      messageTemplate: "Olá {nome}! 👋\n\nSentimos sua falta! Já faz mais de 30 dias desde seu último treino.\n\n🎁 OFERTA ESPECIAL: Volte agora e ganhe uma sessão de treino GRATUITA!\n\nSua saúde é importante e estou aqui para te ajudar a retomar seus objetivos.\n\nVamos marcar um horário? 💪",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      triggerDaysAfter: 30, // 30 dias de inatividade
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 10,
+    },
   ];
   
   for (const automation of defaultAutomations) {

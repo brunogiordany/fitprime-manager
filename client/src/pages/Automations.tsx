@@ -201,6 +201,8 @@ export default function Automations() {
         return 'Dia do Homem';
       case 'customer_day':
         return 'Dia do Cliente';
+      case 'reengagement_30days':
+        return 'Reengajamento 30 dias';
       default:
         return trigger;
     }
@@ -236,6 +238,8 @@ export default function Automations() {
         return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Dia do Homem</Badge>;
       case 'customer_day':
         return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Dia do Cliente</Badge>;
+      case 'reengagement_30days':
+        return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Reengajamento</Badge>;
       default:
         return <Badge variant="outline">{trigger}</Badge>;
     }
@@ -253,6 +257,8 @@ export default function Automations() {
         return '{nome}, {dias_inativo}';
       case 'welcome':
         return '{nome}';
+      case 'reengagement_30days':
+        return '{nome}, {dias_inativo}, {ultima_sessao}';
       default:
         return '{nome}';
     }
@@ -436,6 +442,7 @@ export default function Automations() {
                     <SelectItem value="womens_day">Dia da Mulher</SelectItem>
                     <SelectItem value="mens_day">Dia do Homem</SelectItem>
                     <SelectItem value="customer_day">Dia do Cliente</SelectItem>
+                    <SelectItem value="reengagement_30days">Reengajamento 30 dias</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

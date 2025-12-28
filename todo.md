@@ -472,3 +472,8 @@
   - [x] Atualizar status da cobrança automaticamente
   - [x] Notificar personal sobre pagamento confirmado
 - [x] Campos adicionados no aluno: hasChildren (tem filhos), maritalStatus (estado civil)
+## Automação de Reengajamento v4.4
+- [x] Criar trigger "reengagement_30days" para alunos inativos há 30+ dias
+- [x] Mensagem com oferta especial para reengajamento (sessão gratuita)
+- [x] Adicionar na interface de automações
+- [x] Variáveis disponíveis: {nome}, {dias_inativo}, {ultima_sessao}
