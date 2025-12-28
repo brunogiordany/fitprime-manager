@@ -60,6 +60,8 @@ export const students = mysqlTable("students", {
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }), // Stripe Customer ID
   hasChildren: boolean("hasChildren").default(false), // Tem filhos - usado para automações de Dia das Mães/Pais
   maritalStatus: mysqlEnum("maritalStatus", ["single", "married", "divorced", "widowed", "other"]), // Estado civil
+  messagePausedUntil: timestamp("messagePausedUntil"), // Pausa de mensagens até esta data
+  messagePauseReason: varchar("messagePauseReason", { length: 255 }), // Motivo da pausa (férias, viagem, etc)
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

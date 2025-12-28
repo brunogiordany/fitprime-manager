@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name, `trigger` FROM automations WHERE personalId = 1 ORDER BY `trigger`, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, `trigger` FROM automations WHERE personalId = 1 ORDER BY `trigger`, id;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Lembrete 24h antes do treino",
+      "trigger": "session_reminder"
+    },
+    {
+      "id": "30002",
+      "name": "Lembrete 2h antes do treino",
+      "trigger": "session_reminder"
+    },
+    {
+      "id": "30003",
+      "name": "Lembrete de pagamento",
+      "trigger": "payment_reminder"
+    },
+    {
+      "id": "60001",
+      "name": "Lembrete 2 dias antes do vencimento",
+      "trigger": "payment_reminder_2days"
+    },
+    {
+      "id": "60002",
+      "name": "Lembrete no dia do vencimento",
+      "trigger": "payment_reminder_dueday"
+    },
+    {
+      "id": "30004",
+      "name": "Pagamento em atraso",
+      "trigger": "payment_overdue"
+    },
+    {
+      "id": "30006",
+      "name": "Aniversário",
+      "trigger": "birthday"
+    },
+    {
+      "id": "30005",
+      "name": "Boas-vindas",
+      "trigger": "welcome"
+    },
+    {
+      "id": "60003",
+      "name": "Dia das Mães",
+      "trigger": "mothers_day"
+    },
+    {
+      "id": "60004",
+      "name": "Dia dos Pais",
+      "trigger": "fathers_day"
+    },
+    {
+      "id": "60005",
+      "name": "Natal",
+      "trigger": "christmas"
+    },
+    {
+      "id": "60006",
+      "name": "Ano Novo",
+      "trigger": "new_year"
+    },
+    {
+      "id": "60007",
+      "name": "Dia da Mulher",
+      "trigger": "womens_day"
+    },
+    {
+      "id": "60008",
+      "name": "Dia do Homem",
+      "trigger": "mens_day"
+    },
+    {
+      "id": "60009",
+      "name": "Dia do Cliente",
+      "trigger": "customer_day"
+    },
+    {
+      "id": "60010",
+      "name": "Reengajamento - 30 dias inativo",
+      "trigger": "reengagement_30days"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttrigger\n30001\tLembrete 24h antes do treino\tsession_reminder\n30002\tLembrete 2h antes do treino\tsession_reminder\n30003\tLembrete de pagamento\tpayment_reminder\n60001\tLembrete 2 dias antes do vencimento\tpayment_reminder_2days\n60002\tLembrete no dia do vencimento\tpayment_reminder_dueday\n30004\tPagamento em atraso\tpayment_overdue\n30006\tAniversário\tbirthday\n30005\tBoas-vindas\twelcome\n60003\tDia das Mães\tmothers_day\n60004\tDia dos Pais\tfathers_day\n60005\tNatal\tchristmas\n60006\tAno Novo\tnew_year\n60007\tDia da Mulher\twomens_day\n60008\tDia do Homem\tmens_day\n60009\tDia do Cliente\tcustomer_day\n60010\tReengajamento - 30 dias inativo\treengagement_30days\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name, birthDate, createdAt, updatedAt, deletedAt FROM students WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, birthDate, createdAt, updatedAt, deletedAt FROM students WHERE id = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "birthDate": "1989-03-06",
+      "createdAt": "2025-12-24 11:41:45",
+      "updatedAt": "2025-12-24 22:29:43",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tbirthDate\tcreatedAt\tupdatedAt\tdeletedAt\n1\tBruno\t1989-03-06\t2025-12-24 11:41:45\t2025-12-24 22:29:43\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

@@ -1,0 +1,9 @@
+{
+  "query": "DELETE a1 FROM automations a1 INNER JOIN automations a2 ON a1.`trigger` = a2.`trigger` AND a1.personalId = a2.personalId AND a1.id < a2.id WHERE a1.personalId = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute DELETE a1 FROM automations a1 INNER JOIN automations a2 ON a1.`trigger` = a2.`trigger` AND a1.personalId = a2.personalId AND a1.id < a2.id WHERE a1.personalId = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 62
+}

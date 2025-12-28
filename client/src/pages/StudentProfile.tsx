@@ -429,7 +429,7 @@ export default function StudentProfile() {
     );
   }
 
-  const weightData = measurements?.map(m => ({
+  const weightData = measurements?.filter(m => m.measureDate && !isNaN(new Date(m.measureDate).getTime())).map(m => ({
     date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
     weight: parseFloat(m.weight || "0"),
   })).reverse() || [];
@@ -924,7 +924,7 @@ export default function StudentProfile() {
                   <CardTitle>Anamnese</CardTitle>
                   <CardDescription>
                     {anamnesis 
-                      ? `Última atualização: ${format(new Date(anamnesis.updatedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`
+                      ? `Última atualização: ${anamnesis.updatedAt && !isNaN(new Date(anamnesis.updatedAt).getTime()) ? format(new Date(anamnesis.updatedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : '--/--/----'}`
                       : 'Nenhuma anamnese cadastrada'}
                   </CardDescription>
                 </div>
@@ -1105,7 +1105,9 @@ export default function StudentProfile() {
                       <div key={m.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">
-                            {format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR })}
+                            {m.measureDate && !isNaN(new Date(m.measureDate).getTime())
+                              ? format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR })
+                              : '--/--/----'}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             Peso: {m.weight || '-'} kg | IMC: {m.bmi || '-'}
@@ -1169,7 +1171,9 @@ export default function StudentProfile() {
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 rounded-b-lg">
                           <p className="text-xs">
-                            {format(new Date(photo.photoDate), "dd/MM/yyyy")}
+                            {photo.photoDate && !isNaN(new Date(photo.photoDate).getTime())
+                              ? format(new Date(photo.photoDate), "dd/MM/yyyy")
+                              : '--/--/----'}
                           </p>
                         </div>
                       </div>
@@ -1452,7 +1456,11 @@ export default function StudentProfile() {
                             <div>
                               <p className="font-medium">{pkg.plan?.name || 'Plano'}</p>
                               <p className="text-sm text-muted-foreground">
-                                {format(new Date(pkg.startDate), "dd/MM/yyyy")} - {pkg.endDate ? format(new Date(pkg.endDate), "dd/MM/yyyy") : 'Sem fim'}
+                                {pkg.startDate && !isNaN(new Date(pkg.startDate).getTime()) 
+                                  ? format(new Date(pkg.startDate), "dd/MM/yyyy") 
+                                  : '--/--/----'} - {pkg.endDate && !isNaN(new Date(pkg.endDate).getTime()) 
+                                  ? format(new Date(pkg.endDate), "dd/MM/yyyy") 
+                                  : 'Sem fim'}
                               </p>
                             </div>
                           </div>
@@ -1521,7 +1529,9 @@ export default function StudentProfile() {
                         <div>
                           <p className="font-medium">{charge.description}</p>
                           <p className="text-sm text-muted-foreground">
-                            Vencimento: {format(new Date(charge.dueDate), "dd/MM/yyyy")}
+                            Vencimento: {charge.dueDate && !isNaN(new Date(charge.dueDate).getTime()) 
+                              ? format(new Date(charge.dueDate), "dd/MM/yyyy") 
+                              : '--/--/----'}
                           </p>
                         </div>
                         <div className="text-right">

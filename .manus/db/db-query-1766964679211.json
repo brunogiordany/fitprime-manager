@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, name, status, deletedAt FROM students WHERE personalId = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, status, deletedAt FROM students WHERE personalId = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "status": "inactive",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "30001",
+      "name": "Laura",
+      "status": "active",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tstatus\tdeletedAt\n1\tBruno\tinactive\tNULL\n30001\tLaura\tactive\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

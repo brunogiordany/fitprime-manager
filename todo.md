@@ -481,3 +481,10 @@
 ## Automações Pré-criadas v4.5
 - [x] Inserir todas as automações padrão no banco de dados (16 automações ativas)
 - [x] Garantir que automações sejam criadas automaticamente para novos personals
+
+## Pausa de Mensagens v4.6
+- [ ] Remover automações duplicadas do banco
+- [ ] Adicionar campo messagePausedUntil no schema de alunos
+- [ ] Interface no Portal do Aluno para pausar mensagens
+- [ ] Interface no perfil do aluno para personal gerenciar pausa
+- [ ] Lógica para verificar pausa antes de enviar mensagens
