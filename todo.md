@@ -439,3 +439,15 @@
   - [ ] Alterações do aluno ficam pendentes
   - [ ] Personal pode aprovar ou rejeitar
   - [ ] Mostrar original vs alteração proposta
+
+## Melhorias v4.2 - Enviar Acesso ao Aluno
+- [x] Seção dedicada "Enviar Acesso" no perfil do aluno
+  - [x] Card destacado com status de acesso (conectado/não conectado)
+  - [x] Botão para enviar convite por email
+  - [x] Botão para enviar convite por WhatsApp
+  - [x] Copiar link de convite
+  - [x] Opção de resetar acesso do aluno
+- [x] Botão de convite rápido na lista de alunos
+- [x] Melhorar comparativo visual nas Alterações Pendentes
+  - [x] Mostrar lado a lado: valor atual vs valor proposto
+  - [x] Destacar diferenças com cores

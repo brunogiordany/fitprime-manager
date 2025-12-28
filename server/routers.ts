@@ -133,7 +133,13 @@ export const appRouter = router({
         if (!student) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
         }
-        return student;
+        // Buscar o último convite válido do aluno
+        const invites = await db.getStudentInvitesByStudentId(student.id);
+        const activeInvite = invites.find(i => i.status === 'pending' && new Date(i.expiresAt) > new Date());
+        return {
+          ...student,
+          inviteToken: activeInvite?.inviteToken || null,
+        };
       }),
     
     create: personalProcedure

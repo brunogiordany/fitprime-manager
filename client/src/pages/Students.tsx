@@ -39,7 +39,9 @@ import {
   Eye,
   Edit,
   Trash2,
-  Users
+  Users,
+  Send,
+  CheckCircle
 } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect } from "react";
@@ -72,6 +74,15 @@ export default function Students() {
   const { data: students, isLoading } = trpc.students.list.useQuery({
     status: statusFilter === "all" ? undefined : statusFilter,
     search: search || undefined,
+  });
+
+  const sendInviteMutation = trpc.students.sendInvite.useMutation({
+    onSuccess: () => {
+      toast.success("Convite enviado com sucesso!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao enviar convite");
+    },
   });
 
   const createMutation = trpc.students.create.useMutation({
@@ -353,6 +364,20 @@ export default function Students() {
                               }}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sendInviteMutation.mutate({ studentId: student.id, sendVia: 'both' });
+                                }}
+                                disabled={sendInviteMutation.isPending}
+                                className="text-emerald-600 focus:text-emerald-600"
+                              >
+                                {student.userId ? (
+                                  <><CheckCircle className="h-4 w-4 mr-2" /> Já conectado</>
+                                ) : (
+                                  <><Send className="h-4 w-4 mr-2" /> Enviar Acesso</>
+                                )}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="text-destructive focus:text-destructive"

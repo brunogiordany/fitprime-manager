@@ -149,13 +149,28 @@ export default function PendingChanges() {
                         <p className="text-sm text-muted-foreground">
                           Campo: <span className="font-medium">{fieldLabels[item.change.fieldName] || item.change.fieldName}</span>
                         </p>
-                        <div className="flex items-center gap-2 text-sm mt-2">
-                          <div className="bg-red-50 text-red-700 px-2 py-1 rounded">
-                            {item.change.oldValue || '(vazio)'}
+                        {/* Comparativo Visual Lado a Lado */}
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-red-600 uppercase tracking-wide">Valor Atual</p>
+                              <div className="bg-white border-2 border-red-200 rounded-lg p-3 min-h-[60px]">
+                                <p className="text-sm text-red-800 font-medium break-words">
+                                  {item.change.oldValue || <span className="text-gray-400 italic">(vazio)</span>}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-green-600 uppercase tracking-wide">Novo Valor</p>
+                              <div className="bg-white border-2 border-green-200 rounded-lg p-3 min-h-[60px]">
+                                <p className="text-sm text-green-800 font-medium break-words">
+                                  {item.change.newValue || <span className="text-gray-400 italic">(vazio)</span>}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          <div className="bg-green-50 text-green-700 px-2 py-1 rounded">
-                            {item.change.newValue || '(vazio)'}
+                          <div className="flex justify-center mt-2">
+                            <ArrowRight className="h-5 w-5 text-emerald-500" />
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
@@ -219,17 +234,37 @@ export default function PendingChanges() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Alteração solicitada:</p>
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Comparação de valores:</p>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-xs text-red-600 mb-1">Valor atual</p>
-                      <p className="text-sm">{selectedChange.change.oldValue || '(vazio)'}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <p className="text-xs font-semibold text-red-600 uppercase">Valor Atual (Original)</p>
+                      </div>
+                      <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 min-h-[80px]">
+                        <p className="text-sm text-red-900 font-medium break-words">
+                          {selectedChange.change.oldValue || <span className="text-gray-400 italic">(campo vazio)</span>}
+                        </p>
+                      </div>
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p className="text-xs text-green-600 mb-1">Novo valor</p>
-                      <p className="text-sm">{selectedChange.change.newValue || '(vazio)'}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                        <p className="text-xs font-semibold text-green-600 uppercase">Novo Valor (Proposto)</p>
+                      </div>
+                      <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 min-h-[80px]">
+                        <p className="text-sm text-green-900 font-medium break-words">
+                          {selectedChange.change.newValue || <span className="text-gray-400 italic">(campo vazio)</span>}
+                        </p>
+                      </div>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-2">
+                    <div className="h-px flex-1 bg-gray-200"></div>
+                    <ArrowRight className="h-5 w-5 text-emerald-500" />
+                    <span className="text-xs text-muted-foreground">Se aprovado, o valor será atualizado</span>
+                    <div className="h-px flex-1 bg-gray-200"></div>
                   </div>
                 </div>
                 

@@ -755,6 +755,113 @@ export default function StudentProfile() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Card de Acesso ao Portal do Aluno */}
+              <Card className="border-2 border-emerald-200 bg-emerald-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Send className="h-5 w-5 text-emerald-600" />
+                    Acesso ao Portal do Aluno
+                  </CardTitle>
+                  <CardDescription>
+                    Envie o acesso para o aluno visualizar treinos, agenda e pagamentos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Status de Conexão */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                    <div className="flex items-center gap-3">
+                      {student.userId ? (
+                        <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                          <XCircle className="h-5 w-5 text-gray-400" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium">
+                          {student.userId ? 'Conectado ao Portal' : 'Sem acesso ao Portal'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {student.userId 
+                            ? 'O aluno pode acessar seus treinos e agenda'
+                            : 'Envie um convite para o aluno acessar o app'}
+                        </p>
+                      </div>
+                    </div>
+                    {student.userId && (
+                      <Badge className="bg-emerald-100 text-emerald-700">Ativo</Badge>
+                    )}
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendInviteMutation.mutate({ studentId, sendVia: 'email' })}
+                      disabled={sendInviteMutation.isPending || !student.email}
+                    >
+                      <Mail className="h-4 w-4 text-blue-600" />
+                      Enviar por E-mail
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendInviteMutation.mutate({ studentId, sendVia: 'whatsapp' })}
+                      disabled={sendInviteMutation.isPending || !student.phone}
+                    >
+                      <Phone className="h-4 w-4 text-green-600" />
+                      Enviar por WhatsApp
+                    </Button>
+                  </div>
+
+                  {/* Link de Convite */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Link de Convite</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        readOnly 
+                        value={`${window.location.origin}/portal?invite=${student.inviteToken || 'gerar-convite'}`}
+                        className="bg-gray-50"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => {
+                          const link = `${window.location.origin}/portal?invite=${student.inviteToken || ''}`;
+                          navigator.clipboard.writeText(link);
+                          toast.success('Link copiado!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Ações Adicionais */}
+                  {student.userId && (
+                    <div className="pt-2 border-t">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => {
+                          if (confirm('Isso irá desconectar o aluno do app. Ele precisará de um novo convite para acessar. Continuar?')) {
+                            resetAccessMutation.mutate({ studentId });
+                          }
+                        }}
+                        disabled={resetAccessMutation.isPending}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Resetar Acesso do Aluno
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
