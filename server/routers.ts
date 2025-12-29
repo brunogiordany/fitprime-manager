@@ -696,6 +696,8 @@ export const appRouter = router({
         previousActivities: z.string().optional(),
         availableDays: z.string().optional(),
         preferredTime: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
+        trainingRestrictions: z.string().optional(),
+        restrictionNotes: z.string().optional(),
         observations: z.string().optional(),
         // Medidas corporais
         measurements: z.object({
@@ -1286,6 +1288,8 @@ export const appRouter = router({
           equipamentosDisponiveis: anamnesis.availableEquipment,
           frequenciaSemanal: anamnesis.weeklyFrequency,
           duracaoSessao: anamnesis.sessionDuration,
+          restricoesTreino: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
+          detalhesRestricoes: anamnesis.restrictionNotes,
         } : null;
         
         const measurementInfo = latestMeasurement ? {
@@ -1322,13 +1326,19 @@ Você DEVE retornar um JSON válido no seguinte formato:
 }
 
 Regras importantes:
+- PRIORIDADE MÁXIMA: Respeite as restrições de treino do aluno (lombar, joelho, ombro, etc.)
+- Se houver restrições, EVITE exercícios que sobrecarreguem essas regiões
+- Substitua exercícios problemáticos por alternativas mais seguras
 - Considere as lesões e limitações do aluno
 - Adapte o volume e intensidade ao nível de experiência
 - Considere os equipamentos disponíveis
 - Respeite a frequência semanal desejada
 - Inclua aquecimento e alongamento quando apropriado
 - Para iniciantes, priorize exercícios em máquinas
-- Para avançados, inclua técnicas avançadas como drop-sets`;
+- Para avançados, inclua técnicas avançadas como drop-sets
+- Se houver restrição lombar: evite agachamento livre, levantamento terra, bom dia
+- Se houver restrição no joelho: evite leg press profundo, agachamento completo, saltos
+- Se houver restrição no ombro: evite desenvolvimento atrás da nuca, crucifixo com peso alto`;
         
         const userPrompt = `Crie um treino personalizado para este aluno:
 

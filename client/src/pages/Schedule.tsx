@@ -354,10 +354,18 @@ export default function Schedule() {
 
   const handleSaveEdit = () => {
     if (!editingSession) return;
+    
+    // Garantir que scheduledAt seja válido
+    let scheduledAtValue = editForm.scheduledAt;
+    if (!scheduledAtValue || !scheduledAtValue.includes('T') || isNaN(new Date(scheduledAtValue).getTime())) {
+      // Usar a data original da sessão se o novo valor for inválido
+      scheduledAtValue = format(new Date(editingSession.scheduledAt), "yyyy-MM-dd'T'HH:mm");
+    }
+    
     updateMutation.mutate({
       id: editingSession.id,
       status: editForm.status as any,
-      scheduledAt: editForm.scheduledAt,
+      scheduledAt: scheduledAtValue,
       duration: parseInt(editForm.duration),
       notes: editForm.notes || undefined,
     }, {
@@ -486,9 +494,6 @@ export default function Schedule() {
                     ? `${format(weekStart, "dd MMM", { locale: ptBR })} - ${format(weekEnd, "dd MMM yyyy", { locale: ptBR })}`
                     : format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </h2>
-              <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
-                Hoje
-              </Button>
               <Button variant="outline" size="icon" onClick={() => navigateDate("next")}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -1076,7 +1081,9 @@ export default function Schedule() {
                 <div className="px-4 py-3 border-b">
                   <div className="flex items-center justify-between cursor-pointer hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors">
                     <span className="text-sm">
-                      {format(new Date(editForm.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })}
+                      {editForm.scheduledAt && !isNaN(new Date(editForm.scheduledAt).getTime()) 
+                        ? format(new Date(editForm.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })
+                        : 'Data não definida'}
                     </span>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
@@ -1164,10 +1171,17 @@ export default function Schedule() {
                       <Label className="text-xs text-muted-foreground">Horário</Label>
                       <Input
                         type="time"
-                        value={editForm.scheduledAt.split('T')[1] || ''}
+                        value={editForm.scheduledAt?.includes('T') ? editForm.scheduledAt.split('T')[1]?.substring(0, 5) || '' : ''}
                         onChange={(e) => {
-                          const date = editForm.scheduledAt.split('T')[0];
-                          setEditForm({ ...editForm, scheduledAt: `${date}T${e.target.value}` });
+                          // Usar a data da sessão original se disponível
+                          let date = editForm.scheduledAt?.includes('T') ? editForm.scheduledAt.split('T')[0] : '';
+                          if (!date && editingSession?.scheduledAt) {
+                            date = format(new Date(editingSession.scheduledAt), 'yyyy-MM-dd');
+                          }
+                          if (!date) {
+                            date = format(new Date(), 'yyyy-MM-dd');
+                          }
+                          setEditForm({ ...editForm, scheduledAt: `${date}T${e.target.value}:00` });
                         }}
                       />
                     </div>

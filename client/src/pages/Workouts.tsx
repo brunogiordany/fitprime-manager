@@ -57,7 +57,8 @@ import {
   ChevronRight,
   Zap,
   Brain,
-  ListChecks
+  ListChecks,
+  RefreshCw
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -302,7 +303,7 @@ export default function Workouts() {
                   Gerar com IA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5 text-purple-600" />
@@ -431,31 +432,37 @@ export default function Workouts() {
                         ))}
                       </div>
                       
-                      <div className="flex gap-2 pt-4">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setAiPreview(null)}
-                          className="flex-1"
-                        >
-                          Gerar Novo
-                        </Button>
-                        <Button 
-                          onClick={handleSaveAIWorkout}
-                          disabled={saveAIMutation.isPending}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600"
-                        >
-                          {saveAIMutation.isPending ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Salvando...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="h-4 w-4 mr-2" />
-                              Salvar Treino
-                            </>
-                          )}
-                        </Button>
+                      <div className="flex flex-col gap-3 pt-4 border-t">
+                        <p className="text-sm text-muted-foreground text-center">
+                          Revise o treino acima. Após salvar, você poderá editar os exercícios, séries e repetições.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setAiPreview(null)}
+                            className="flex-1"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Gerar Novo
+                          </Button>
+                          <Button 
+                            onClick={handleSaveAIWorkout}
+                            disabled={saveAIMutation.isPending}
+                            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600"
+                          >
+                            {saveAIMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Salvando...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4 mr-2" />
+                                Salvar e Editar
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </ScrollArea>
@@ -471,7 +478,7 @@ export default function Workouts() {
                   Templates
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+              <DialogContent className="max-w-3xl h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Templates de Treino</DialogTitle>
                   <DialogDescription>

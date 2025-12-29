@@ -655,3 +655,19 @@
   - [x] Filtro por objetivo (Hipertrofia, Emagrecimento, etc.)
   - [x] Badge de objetivo na lista de treinos
   - [x] Indicador visual de treino gerado por IA
+
+
+## Bugs e Melhorias Reportados (v5.2)
+- [x] Botão "Hoje" na agenda removido (ficava fora de padrão)
+- [x] Edição de agendamento corrigida:
+  - [x] Horário salva corretamente
+  - [x] Alterações são salvas
+- [x] Modal de Templates de Treino com scroll adequado (h-[85vh])
+- [x] Tela de treino gerado com IA:
+  - [x] Botão "Gerar Novo" para regenerar treino
+  - [x] Botão "Salvar e Editar" para salvar e editar depois
+- [x] Campo de restrições de treino na anamnese:
+  - [x] Seleção visual de regiões (lombar, joelho, ombro, cervical, quadril, etc.)
+  - [x] Campo de detalhes das restrições
+- [x] IA puxa restrições da anamnese automaticamente
+- [x] Prompt da IA atualizado com regras específicas para cada restrição

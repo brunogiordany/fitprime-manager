@@ -62,6 +62,10 @@ export default function Anamnesis() {
     waterIntake: "",
     supplements: "",
     
+    // Restrições de Treino
+    trainingRestrictions: [] as string[],
+    restrictionNotes: "",
+    
     // Observações
     observations: "",
     
@@ -204,6 +208,8 @@ export default function Anamnesis() {
         mealsPerDay: anamnesis.mealsPerDay?.toString() || "",
         waterIntake: anamnesis.waterIntake?.toString() || "",
         supplements: anamnesis.supplements || "",
+        trainingRestrictions: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
+        restrictionNotes: anamnesis.restrictionNotes || "",
         observations: anamnesis.observations || "",
       }));
     }
@@ -254,6 +260,8 @@ export default function Anamnesis() {
       mealsPerDay: formData.mealsPerDay ? parseInt(formData.mealsPerDay) : undefined,
       waterIntake: formData.waterIntake || undefined,
       supplements: formData.supplements || undefined,
+      trainingRestrictions: formData.trainingRestrictions?.length > 0 ? JSON.stringify(formData.trainingRestrictions) : undefined,
+      restrictionNotes: formData.restrictionNotes || undefined,
       observations: formData.observations || undefined,
       // Medidas corporais
       measurements: {
@@ -794,6 +802,72 @@ export default function Anamnesis() {
                     value={formData.allergies}
                     onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
                   />
+                </div>
+
+                {/* Restrições de Treino */}
+                <div className="pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-orange-500" />
+                    Restrições de Treino
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Selecione as regiões que precisam de cuidado especial ou devem ser evitadas durante os treinos.
+                    A IA usará essas informações para criar treinos mais seguros.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                    {[
+                      { id: "lombar", label: "Lombar", icon: "🪴" },
+                      { id: "joelho", label: "Joelho", icon: "🦾" },
+                      { id: "ombro", label: "Ombro", icon: "💪" },
+                      { id: "cervical", label: "Cervical", icon: "🦴" },
+                      { id: "quadril", label: "Quadril", icon: "🏃" },
+                      { id: "tornozelo", label: "Tornozelo", icon: "🦶" },
+                      { id: "punho", label: "Punho", icon: "✋" },
+                      { id: "cotovelo", label: "Cotovelo", icon: "💪" },
+                      { id: "hernia", label: "Hérnia", icon: "⚠️" },
+                      { id: "cardiaco", label: "Cardíaco", icon: "❤️" },
+                      { id: "respiratorio", label: "Respiratório", icon: "💨" },
+                      { id: "outro", label: "Outro", icon: "➕" },
+                    ].map((restriction) => (
+                      <button
+                        key={restriction.id}
+                        type="button"
+                        onClick={() => {
+                          const current = formData.trainingRestrictions || [];
+                          if (current.includes(restriction.id)) {
+                            setFormData({
+                              ...formData,
+                              trainingRestrictions: current.filter(r => r !== restriction.id)
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              trainingRestrictions: [...current, restriction.id]
+                            });
+                          }
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                          (formData.trainingRestrictions || []).includes(restriction.id)
+                            ? 'border-orange-500 bg-orange-50 text-orange-700'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <span>{restriction.icon}</span>
+                        <span className="text-sm font-medium">{restriction.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Detalhes das Restrições</Label>
+                    <Textarea
+                      placeholder="Ex: Evitar exercícios com impacto no joelho direito devido a cirurgia de LCA. Lombar sensível, evitar peso livre em exercícios de costas..."
+                      value={formData.restrictionNotes}
+                      onChange={(e) => setFormData({ ...formData, restrictionNotes: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

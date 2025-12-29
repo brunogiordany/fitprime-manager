@@ -111,6 +111,9 @@ export const anamneses = mysqlTable("anamneses", {
   availableEquipment: text("availableEquipment"), // JSON array of equipment
   weeklyFrequency: int("weeklyFrequency"), // Quantos dias por semana
   sessionDuration: int("sessionDuration"), // Duração preferida em minutos
+  // Restrições de Treino (regiões a evitar ou cuidar)
+  trainingRestrictions: text("trainingRestrictions"), // JSON array: ["lombar", "joelho", "ombro", etc.]
+  restrictionNotes: text("restrictionNotes"), // Detalhes sobre as restrições
   // Observações
   observations: text("observations"),
   version: int("version").default(1).notNull(),
