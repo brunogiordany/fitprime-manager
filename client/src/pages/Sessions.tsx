@@ -30,7 +30,9 @@ import {
   X,
   Ban,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  CalendarDays
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -39,7 +41,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 // Helper para formatar horário em UTC
 const formatTimeUTC = (date: Date) => {
@@ -57,7 +59,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
 };
 
 export default function Sessions() {
-
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [studentFilter, setStudentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -281,6 +283,13 @@ export default function Sessions() {
             </span>
             <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}>
               <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button 
+              onClick={() => setLocation('/agenda?new=true')}
+              className="bg-emerald-600 hover:bg-emerald-700 ml-2"
+            >
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Nova Sessão
             </Button>
           </div>
         </div>

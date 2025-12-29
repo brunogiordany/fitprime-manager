@@ -891,3 +891,9 @@
 ## Página Sessões - Ações em Lote (v5.27)
 - [x] Adicionar botões de ações em lote (Cancelar/Excluir sessões futuras)
 - [x] Sincronizar funcionalidades com aba de sessões do perfil do aluno
+
+## Agendamento em Lote Personalizado (v5.28)
+- [x] Permitir configurar treinos diferentes por dia da semana (Seg=A, Qua=B, Sex=C)
+- [x] Adicionar botão "Nova Sessão" na página Sessões
+- [x] Criar componente NewSessionModal reutilizável para Agenda e Sessões
+- [x] Manter funcionalidade idêntica em ambas as páginas

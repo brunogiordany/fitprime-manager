@@ -113,6 +113,8 @@ export default function Schedule() {
     workoutDayIndex: "",
     weekDays: [] as number[], // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
     startTime: "08:00", // Horário padrão para sessões em cascata
+    // Configuração de treino por dia da semana: { dayOfWeek: { workoutId, workoutDayIndex, time } }
+    weekDayWorkouts: {} as Record<number, { workoutId: string; workoutDayIndex: string; time: string }>,
   });
 
   const [newStudent, setNewStudent] = useState({
@@ -299,6 +301,7 @@ export default function Schedule() {
       workoutDayIndex: "",
       weekDays: [],
       startTime: "08:00",
+      weekDayWorkouts: {},
     });
     setDialogStep("select");
     setStudentSearch("");
@@ -332,36 +335,55 @@ export default function Schedule() {
       const endDate = addDays(startDate, totalDays);
       
       // Gerar todas as datas que correspondem aos dias da semana selecionados
-      const sessionsToCreate: Date[] = [];
+      const sessionsToCreate: { date: Date; dayOfWeek: number }[] = [];
       let currentDate = startDate;
       
       while (currentDate <= endDate) {
         const dayOfWeek = getDay(currentDate);
         if (newSession.weekDays.includes(dayOfWeek)) {
-          sessionsToCreate.push(new Date(currentDate));
+          sessionsToCreate.push({ date: new Date(currentDate), dayOfWeek });
         }
         currentDate = addDays(currentDate, 1);
       }
       
       // Criar todas as sessões
       let createdCount = 0;
+      const hasCustomWorkouts = Object.keys(newSession.weekDayWorkouts).length > 0;
+      
+      // Fallback para treino único se não houver configuração por dia
       const selectedWorkout = studentWorkouts?.find(w => w.id.toString() === newSession.workoutId);
       const workoutDays = selectedWorkout?.days ? (typeof selectedWorkout.days === 'string' ? JSON.parse(selectedWorkout.days) : selectedWorkout.days) : [];
       
       for (let i = 0; i < sessionsToCreate.length; i++) {
-        const sessionDate = sessionsToCreate[i];
-        // Calcular qual treino usar (A, B, C... em sequência)
-        const workoutDayIdx = workoutDays.length > 0 ? i % workoutDays.length : undefined;
+        const { date: sessionDate, dayOfWeek } = sessionsToCreate[i];
+        
+        // Verificar se há configuração específica para este dia da semana
+        const dayConfig = newSession.weekDayWorkouts[dayOfWeek];
+        
+        let sessionWorkoutId: number | undefined;
+        let sessionWorkoutDayIndex: number | undefined;
+        let sessionTime = newSession.startTime;
+        
+        if (hasCustomWorkouts && dayConfig) {
+          // Usar configuração específica do dia
+          sessionWorkoutId = dayConfig.workoutId && dayConfig.workoutId !== 'none' ? parseInt(dayConfig.workoutId) : undefined;
+          sessionWorkoutDayIndex = dayConfig.workoutDayIndex !== '' ? parseInt(dayConfig.workoutDayIndex) : undefined;
+          sessionTime = dayConfig.time || newSession.startTime;
+        } else {
+          // Fallback: usar treino único rotacionando dias (A, B, C...)
+          sessionWorkoutId = newSession.workoutId && newSession.workoutId !== 'none' ? parseInt(newSession.workoutId) : undefined;
+          sessionWorkoutDayIndex = workoutDays.length > 0 ? i % workoutDays.length : undefined;
+        }
         
         createSessionMutation.mutate({
           studentId: parseInt(newSession.studentId),
-          scheduledAt: format(sessionDate, "yyyy-MM-dd") + 'T' + newSession.startTime,
+          scheduledAt: format(sessionDate, "yyyy-MM-dd") + 'T' + sessionTime,
           duration: parseInt(newSession.duration),
           type: newSession.type,
           location: newSession.location || undefined,
           notes: newSession.notes || undefined,
-          workoutId: newSession.workoutId && newSession.workoutId !== 'none' ? parseInt(newSession.workoutId) : undefined,
-          workoutDayIndex: workoutDayIdx,
+          workoutId: sessionWorkoutId,
+          workoutDayIndex: sessionWorkoutDayIndex,
         });
         createdCount++;
       }
@@ -1379,15 +1401,26 @@ export default function Schedule() {
                               type="button"
                               onClick={() => {
                                 const current = newSession.weekDays || [];
+                                const currentWorkouts = { ...newSession.weekDayWorkouts };
                                 if (current.includes(day.value)) {
+                                  // Remover dia e sua configuração de treino
+                                  delete currentWorkouts[day.value];
                                   setNewSession({
                                     ...newSession,
-                                    weekDays: current.filter(d => d !== day.value)
+                                    weekDays: current.filter(d => d !== day.value),
+                                    weekDayWorkouts: currentWorkouts
                                   });
                                 } else {
+                                  // Adicionar dia com configuração padrão
+                                  currentWorkouts[day.value] = { 
+                                    workoutId: newSession.workoutId || '', 
+                                    workoutDayIndex: '', 
+                                    time: newSession.startTime 
+                                  };
                                   setNewSession({
                                     ...newSession,
-                                    weekDays: [...current, day.value].sort((a, b) => a - b)
+                                    weekDays: [...current, day.value].sort((a, b) => a - b),
+                                    weekDayWorkouts: currentWorkouts
                                   });
                                 }
                               }}
@@ -1403,23 +1436,108 @@ export default function Schedule() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-xs text-muted-foreground">Horário das Sessões</Label>
-                          <Input
-                            type="time"
-                            value={newSession.startTime}
-                            onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
-                          />
+                      {/* Configuração de treino por dia da semana */}
+                      {newSession.weekDays && newSession.weekDays.length > 0 && studentWorkouts && studentWorkouts.length > 0 && (
+                        <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                          <div className="flex items-center gap-2">
+                            <Dumbbell className="h-4 w-4 text-emerald-600" />
+                            <Label className="text-sm font-medium">Treino por Dia da Semana</Label>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Configure qual treino usar em cada dia selecionado
+                          </p>
+                          <div className="space-y-3">
+                            {newSession.weekDays.map((dayValue) => {
+                              const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                              const dayConfig = newSession.weekDayWorkouts[dayValue] || { workoutId: '', workoutDayIndex: '', time: newSession.startTime };
+                              const selectedWorkoutForDay = studentWorkouts.find(w => w.id.toString() === dayConfig.workoutId);
+                              const workoutDaysForDay = selectedWorkoutForDay?.days || [];
+                              
+                              return (
+                                <div key={dayValue} className="p-3 bg-background rounded-lg border space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-sm">{dayNames[dayValue]}</span>
+                                    <Input
+                                      type="time"
+                                      value={dayConfig.time}
+                                      onChange={(e) => {
+                                        const updated = { ...newSession.weekDayWorkouts };
+                                        updated[dayValue] = { ...dayConfig, time: e.target.value };
+                                        setNewSession({ ...newSession, weekDayWorkouts: updated });
+                                      }}
+                                      className="w-28 h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <Select
+                                      value={dayConfig.workoutId}
+                                      onValueChange={(value) => {
+                                        const updated = { ...newSession.weekDayWorkouts };
+                                        updated[dayValue] = { ...dayConfig, workoutId: value, workoutDayIndex: '' };
+                                        setNewSession({ ...newSession, weekDayWorkouts: updated });
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue placeholder="Treino" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="none">Sem treino</SelectItem>
+                                        {studentWorkouts.map((workout) => (
+                                          <SelectItem key={workout.id} value={workout.id.toString()}>
+                                            {workout.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    {dayConfig.workoutId && dayConfig.workoutId !== 'none' && workoutDaysForDay.length > 0 && (
+                                      <Select
+                                        value={dayConfig.workoutDayIndex}
+                                        onValueChange={(value) => {
+                                          const updated = { ...newSession.weekDayWorkouts };
+                                          updated[dayValue] = { ...dayConfig, workoutDayIndex: value };
+                                          setNewSession({ ...newSession, weekDayWorkouts: updated });
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs">
+                                          <SelectValue placeholder="Dia" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {workoutDaysForDay.map((day: any, index: number) => (
+                                            <SelectItem key={index} value={index.toString()}>
+                                              Treino {String.fromCharCode(65 + index)}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      
+                      {/* Horário padrão (quando não há treinos ou para fallback) */}
+                      {newSession.weekDays && newSession.weekDays.length > 0 && (!studentWorkouts || studentWorkouts.length === 0) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label className="text-xs text-muted-foreground">Horário das Sessões</Label>
+                            <Input
+                              type="time"
+                              value={newSession.startTime}
+                              onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      )}
                       
                       {newSession.weekDays && newSession.weekDays.length > 0 && (
                         <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                           <p className="text-xs text-emerald-700 dark:text-emerald-400">
                             <strong>Resumo:</strong> Serão criadas sessões toda{newSession.weekDays.length > 1 ? 's' : ''} 
                             {' '}{newSession.weekDays.map(d => ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][d]).join(', ')}
-                            {' '}às {newSession.startTime} pelo período de {newSession.recurrenceFrequency.replace('week', ' semana').replace('weeks', ' semanas').replace('month', ' mês').replace('months', ' meses').replace('year', ' ano')}.
+                            {' '}pelo período de {newSession.recurrenceFrequency.replace('week', ' semana').replace('weeks', ' semanas').replace('month', ' mês').replace('months', ' meses').replace('year', ' ano')}.
                           </p>
                         </div>
                       )}
