@@ -909,3 +909,6 @@
 
 ## Bug: Popup de Calendário Duplicado (v5.32)
 - [x] Remover popup de calendário que aparece ao editar sessão na página Sessões
+
+## Bug: Layout Horário/Duração Encavalado (v5.33)
+- [x] Corrigir layout dos campos Horário e Duração no modal de edição de agendamento

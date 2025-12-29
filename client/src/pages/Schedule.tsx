@@ -1704,11 +1704,12 @@ export default function Schedule() {
                     </Select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-[1fr_auto] gap-3">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Horário</Label>
                       <Input
                         type="time"
+                        className="w-full"
                         value={editForm.scheduledAt?.includes('T') ? editForm.scheduledAt.split('T')[1]?.substring(0, 5) || '' : ''}
                         onChange={(e) => {
                           // Usar a data da sessão original se disponível (usando UTC)
@@ -1728,13 +1729,13 @@ export default function Schedule() {
                         }}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-[100px]">
                       <Label className="text-xs text-muted-foreground">Duração</Label>
                       <Select
                         value={editForm.duration}
                         onValueChange={(value) => setEditForm({ ...editForm, duration: value })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
