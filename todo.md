@@ -919,3 +919,4 @@
 ## Bug: Excluir no Menu Abrindo Modal Geral (v5.36)
 - [x] Corrigir botão Excluir no menu de 3 bolinhas para excluir apenas a sessão específica
 - [x] Evitar abertura de dois modais ao mesmo tempo
+- [x] Corrigir popup de horário que fecha muito rápido no modal de edição de sessão

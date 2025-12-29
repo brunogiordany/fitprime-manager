@@ -597,12 +597,6 @@ export default function Sessions() {
                     value={editForm.scheduledDate}
                     onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
                     className="w-full"
-                    tabIndex={-1}
-                    onFocus={(e) => e.target.blur()}
-                    onClick={(e) => {
-                      e.currentTarget.focus();
-                      e.currentTarget.showPicker?.();
-                    }}
                   />
                 </div>
                 <div className="space-y-1">
@@ -612,12 +606,6 @@ export default function Sessions() {
                     value={editForm.scheduledTime}
                     onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
                     className="w-full"
-                    tabIndex={-1}
-                    onFocus={(e) => e.target.blur()}
-                    onClick={(e) => {
-                      e.currentTarget.focus();
-                      e.currentTarget.showPicker?.();
-                    }}
                   />
                 </div>
               </div>
