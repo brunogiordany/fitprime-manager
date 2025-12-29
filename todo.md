@@ -944,3 +944,8 @@
 - [x] Corrigir UX da página de detalhes do aluno - botões Editar/Convidar/Exportar cortados no mobile
 - [x] Adicionar opção do personal bloquear/liberar edição de anamnese e medidas pelo aluno
 - [x] Corrigir bug: excluir sessão abre calendário e modal de edição antes do modal de exclusão
+
+## Bugs Reportados (v3.1)
+- [x] Corrigir erro "Load failed" ao excluir sessão
+- [x] Calendário abre automaticamente ao editar sessão (remover)
+- [x] Remover opções em massa do menu de 3 pontinhos (Cancelar/Excluir sessões do aluno)

@@ -538,29 +538,7 @@ export default function Sessions() {
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Excluir esta sessão
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setStudentFilter(session.studentId.toString());
-                                  openBatchModal('cancel');
-                                }}
-                                className="text-amber-600"
-                              >
-                                <Ban className="h-4 w-4 mr-2" />
-                                Cancelar sessões do aluno
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setStudentFilter(session.studentId.toString());
-                                  openBatchModal('delete');
-                                }}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir sessões do aluno
-                              </DropdownMenuItem>
+
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -603,6 +581,7 @@ export default function Sessions() {
                     value={editForm.scheduledDate}
                     onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
                     className="w-full"
+                    autoFocus={false}
                   />
                 </div>
                 <div className="space-y-1">
@@ -612,6 +591,7 @@ export default function Sessions() {
                     value={editForm.scheduledTime}
                     onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
                     className="w-full"
+                    autoFocus={false}
                   />
                 </div>
               </div>
