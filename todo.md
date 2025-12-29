@@ -526,3 +526,33 @@
   - [x] Adicionar rotas validateInvite e acceptInvite no backend
   - [x] Adicionar rota /convite/:token no App.tsx
 - [x] Mover botão de voltar mês para junto do título na agenda
+
+## Onboarding do Aluno via Convite (v4.6)
+- [ ] Página de cadastro simplificado para aluno via convite
+  - [ ] Formulário: nome, email, telefone, senha
+  - [ ] Validação do token de convite
+  - [ ] Criar conta do aluno automaticamente
+  - [ ] Vincular ao perfil existente no sistema do personal
+- [ ] Fluxo de onboarding no Portal do Aluno
+  - [ ] Tela de boas-vindas após cadastro
+  - [ ] Wizard para completar anamnese
+  - [ ] Indicador de progresso do perfil
+- [ ] Sincronização com dashboard do personal
+  - [ ] Notificar personal quando aluno completar cadastro
+  - [ ] Atualizar dados do aluno em tempo real
+
+
+## Autenticação de Alunos v4.7
+- [x] Sistema de autenticação próprio para alunos (email/senha)
+  - [x] Adicionar campo passwordHash na tabela students
+  - [x] Criar rota de login para alunos
+  - [x] Criar rota de cadastro via convite
+  - [x] Gerar JWT para sessão do aluno
+- [x] Ajustar página de convite para cadastro direto
+  - [x] Remover dependência de OAuth
+  - [x] Formulário de cadastro com email/senha
+  - [x] Login automático após cadastro
+- [x] Implementar login de aluno com email/senha
+  - [x] Página de login para alunos (/login-aluno)
+  - [x] Validação de credenciais
+  - [x] Redirecionamento para portal do aluno (/portal-aluno)

@@ -65,6 +65,7 @@ export const students = mysqlTable("students", {
   maritalStatus: mysqlEnum("maritalStatus", ["single", "married", "divorced", "widowed", "other"]), // Estado civil
   messagePausedUntil: timestamp("messagePausedUntil"), // Pausa de mensagens até esta data
   messagePauseReason: varchar("messagePauseReason", { length: 255 }), // Motivo da pausa (férias, viagem, etc)
+  passwordHash: varchar("passwordHash", { length: 255 }), // Senha hash para login direto do aluno
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

@@ -1005,14 +1005,14 @@ export default function StudentProfile() {
                     <div className="flex gap-2">
                       <Input 
                         readOnly 
-                        value={`${window.location.origin}/portal?invite=${student.inviteToken || 'gerar-convite'}`}
+                        value={`${window.location.origin}/convite/${student.inviteToken || 'gerar-convite'}`}
                         className="bg-gray-50"
                       />
                       <Button 
                         variant="outline" 
                         size="icon"
                         onClick={() => {
-                          const link = `${window.location.origin}/portal?invite=${student.inviteToken || ''}`;
+                          const link = `${window.location.origin}/convite/${student.inviteToken || ''}`;
                           navigator.clipboard.writeText(link);
                           toast.success('Link copiado!');
                         }}

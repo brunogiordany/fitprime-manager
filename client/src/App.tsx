@@ -27,6 +27,7 @@ import StudentWorkoutLog from "./pages/StudentWorkoutLog";
 import Reports from "./pages/Reports";
 import PendingChanges from "./pages/PendingChanges";
 import Invite from "./pages/Invite";
+import StudentLogin from "./pages/StudentLogin";
 
 function Router() {
   return (
@@ -34,6 +35,8 @@ function Router() {
       {/* Public routes */}
       <Route path="/" component={Home} />
       <Route path="/convite/:token" component={Invite} />
+      <Route path="/login-aluno" component={StudentLogin} />
+      <Route path="/portal-aluno" component={StudentDashboard} />
       <Route path="/portal" component={StudentPortal} />
       <Route path="/meu-portal" component={StudentDashboard} />
       <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />

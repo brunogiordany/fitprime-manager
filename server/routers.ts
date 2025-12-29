@@ -265,6 +265,8 @@ export const appRouter = router({
           valid: true, 
           personalName: personal?.name || 'Personal',
           studentName: student?.name || '',
+          studentEmail: student?.email || '',
+          studentPhone: student?.phone || '',
           studentId: invite.studentId,
           personalId: invite.personalId,
         };
@@ -292,6 +294,108 @@ export const appRouter = router({
         await db.updateStudentInvite(invite.id, { status: 'accepted' });
         
         return { success: true };
+      }),
+    
+    // Registrar aluno com convite (sem login prévio)
+    registerWithInvite: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+        phone: z.string(),
+        password: z.string().min(6),
+      }))
+      .mutation(async ({ input }) => {
+        const invite = await db.getStudentInviteByToken(input.token);
+        if (!invite) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Convite não encontrado' });
+        }
+        if (invite.status !== 'pending') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este convite já foi usado ou cancelado' });
+        }
+        if (new Date(invite.expiresAt) < new Date()) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este convite expirou' });
+        }
+        
+        // Hash da senha
+        const bcrypt = await import('bcryptjs');
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        
+        // Atualizar dados do aluno com as informações do cadastro e senha
+        await db.updateStudent(invite.studentId, invite.personalId, {
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          passwordHash: passwordHash,
+          status: 'active',
+        });
+        
+        // Marcar convite como aceito
+        await db.updateStudentInvite(invite.id, { status: 'accepted' });
+        
+        // Gerar token JWT para login automático
+        const jwt = await import('jsonwebtoken');
+        const token = jwt.sign(
+          { studentId: invite.studentId, type: 'student' },
+          process.env.JWT_SECRET || 'secret',
+          { expiresIn: '30d' }
+        );
+        
+        return { success: true, token, studentId: invite.studentId, message: 'Cadastro realizado com sucesso!' };
+      }),
+    
+    // Login de aluno com email/senha
+    loginStudent: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Buscar aluno pelo email
+        const student = await db.getStudentByEmail(input.email);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
+        }
+        if (!student.passwordHash) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aluno não possui senha cadastrada. Use o link de convite para criar sua conta.' });
+        }
+        
+        // Verificar senha
+        const bcrypt = await import('bcryptjs');
+        const valid = await bcrypt.compare(input.password, student.passwordHash);
+        if (!valid) {
+          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Senha incorreta' });
+        }
+        
+        // Gerar token JWT
+        const jwt = await import('jsonwebtoken');
+        const token = jwt.sign(
+          { studentId: student.id, type: 'student' },
+          process.env.JWT_SECRET || 'secret',
+          { expiresIn: '30d' }
+        );
+        
+        return { success: true, token, studentId: student.id, studentName: student.name };
+      }),
+    
+    // Verificar token de aluno
+    verifyStudentToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const jwt = await import('jsonwebtoken');
+          const decoded = jwt.verify(input.token, process.env.JWT_SECRET || 'secret') as { studentId: number; type: string };
+          if (decoded.type !== 'student') {
+            return { valid: false };
+          }
+          const student = await db.getStudentByIdPublic(decoded.studentId);
+          if (!student) {
+            return { valid: false };
+          }
+          return { valid: true, student: { id: student.id, name: student.name, email: student.email } };
+        } catch {
+          return { valid: false };
+        }
       }),
     
     // Cancelar convite

@@ -1,0 +1,14 @@
+{
+  "query": "SELECT inviteToken, status FROM student_invites WHERE status = 'pending' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT inviteToken, status FROM student_invites WHERE status = 'pending' LIMIT 1",
+  "rows": [
+    {
+      "inviteToken": "ZZ4PvK2AGg9OWOyW2nfMzZB0ASXIofn7",
+      "status": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "inviteToken\tstatus\nZZ4PvK2AGg9OWOyW2nfMzZB0ASXIofn7\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 92
+}

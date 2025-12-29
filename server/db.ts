@@ -180,6 +180,24 @@ export async function getStudentByUserId(userId: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getStudentByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(students)
+    .where(and(eq(students.email, email), isNull(students.deletedAt)))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getStudentByIdPublic(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(students)
+    .where(and(eq(students.id, id), isNull(students.deletedAt)))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function createStudent(data: InsertStudent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

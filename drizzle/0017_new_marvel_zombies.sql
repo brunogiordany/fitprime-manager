@@ -1,0 +1,1 @@
+ALTER TABLE `students` ADD `passwordHash` varchar(255);
