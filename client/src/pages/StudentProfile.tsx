@@ -472,6 +472,24 @@ export default function StudentProfile() {
     weight: parseFloat(m.weight || "0"),
   })).reverse() || [];
 
+  // Dados para gráfico de composição corporal (% gordura e massa muscular)
+  const bodyCompositionData = measurements?.filter(m => m.measureDate && !isNaN(new Date(m.measureDate).getTime())).map(m => ({
+    date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
+    gordura: parseFloat(m.bodyFat || "0"),
+    musculo: parseFloat(m.muscleMass || "0"),
+    imc: parseFloat(m.bmi || "0"),
+  })).reverse() || [];
+
+  // Dados para gráfico de circunferências
+  const circumferenceData = measurements?.filter(m => m.measureDate && !isNaN(new Date(m.measureDate).getTime())).map(m => ({
+    date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
+    cintura: parseFloat(m.waist || "0"),
+    quadril: parseFloat(m.hip || "0"),
+    peito: parseFloat(m.chest || "0"),
+    bracoDireito: parseFloat(m.rightArm || "0"),
+    coxaDireita: parseFloat(m.rightThigh || "0"),
+  })).reverse() || [];
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -1205,6 +1223,73 @@ export default function StudentProfile() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Gráfico de Composição Corporal */}
+            {bodyCompositionData.length > 0 && bodyCompositionData.some(d => d.gordura > 0 || d.musculo > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Composição Corporal</CardTitle>
+                  <CardDescription>Evolução de % gordura e massa muscular</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={bodyCompositionData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="gordura" 
+                          name="% Gordura"
+                          stroke="oklch(0.7 0.15 60)" 
+                          strokeWidth={2}
+                          dot={{ fill: "oklch(0.7 0.15 60)" }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="musculo" 
+                          name="Massa Muscular (kg)"
+                          stroke="oklch(0.55 0.18 160)" 
+                          strokeWidth={2}
+                          dot={{ fill: "oklch(0.55 0.18 160)" }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gráfico de Circunferências */}
+            {circumferenceData.length > 0 && circumferenceData.some(d => d.cintura > 0 || d.quadril > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Evolução das Circunferências</CardTitle>
+                  <CardDescription>Medidas em centímetros ao longo do tempo</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={circumferenceData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="cintura" name="Cintura" stroke="#82ca9d" strokeWidth={2} />
+                        <Line type="monotone" dataKey="quadril" name="Quadril" stroke="#ffc658" strokeWidth={2} />
+                        <Line type="monotone" dataKey="peito" name="Peito" stroke="#8884d8" strokeWidth={2} />
+                        <Line type="monotone" dataKey="bracoDireito" name="Braço D" stroke="#ff7300" strokeWidth={2} />
+                        <Line type="monotone" dataKey="coxaDireita" name="Coxa D" stroke="#00C49F" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {measurements && measurements.length > 0 && (
               <Card>

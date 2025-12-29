@@ -508,3 +508,14 @@
 - [x] Cancelamento definitivo do aluno
   - [x] Cancelar contrato, sessões e cobranças
   - [x] Manter histórico (anamnese, medidas, evolução)
+
+## Melhorias v4.4
+- [x] Gráfico de evolução para comparar histórico de medidas corporais
+  - [x] Gráfico de peso ao longo do tempo
+  - [x] Gráfico de % gordura e massa muscular ao longo do tempo
+  - [x] Gráfico de circunferências ao longo do tempo (cintura, quadril, peito, braço, coxa)
+  - [x] Comparativo entre medidas
+- [x] Exportar PDF completo com histórico de medidas e anamnese
+  - [x] Incluir dados da anamnese expandida (estilo de vida, objetivos, saúde, nutrição, exercícios)
+  - [x] Incluir histórico completo de medidas com todas as medições
+  - [x] Resumo da evolução (primeira vs última medida)

@@ -13,17 +13,41 @@ interface StudentData {
   emergencyPhone: string | null;
   notes: string | null;
   createdAt: Date | string;
+  cpf?: string | null;
+  maritalStatus?: string | null;
+  hasChildren?: boolean | null;
 }
 
 interface AnamnesisData {
-  objectives: string | null;
-  healthConditions: string | null;
-  medications: string | null;
-  injuries: string | null;
-  exerciseHistory: string | null;
-  lifestyle: string | null;
-  restrictions: string | null;
-  additionalNotes: string | null;
+  objectives?: string | null;
+  healthConditions?: string | null;
+  medications?: string | null;
+  injuries?: string | null;
+  exerciseHistory?: string | null;
+  lifestyle?: string | null;
+  restrictions?: string | null;
+  additionalNotes?: string | null;
+  // Novos campos
+  occupation?: string | null;
+  sleepHours?: number | null;
+  sleepQuality?: string | null;
+  stressLevel?: string | null;
+  mainGoal?: string | null;
+  secondaryGoals?: string | null;
+  targetWeight?: string | null;
+  motivation?: string | null;
+  mealsPerDay?: number | null;
+  waterIntake?: string | null;
+  dietRestrictions?: string | null;
+  supplements?: string | null;
+  exerciseExperience?: string | null;
+  previousActivities?: string | null;
+  availableDays?: string | null;
+  preferredTime?: string | null;
+  medicalHistory?: string | null;
+  surgeries?: string | null;
+  allergies?: string | null;
+  observations?: string | null;
 }
 
 interface MeasurementData {
@@ -31,6 +55,9 @@ interface MeasurementData {
   weight: string | null;
   height: string | null;
   bodyFat: string | null;
+  muscleMass?: string | null;
+  bmi?: string | null;
+  neck?: string | null;
   chest: string | null;
   waist: string | null;
   hip: string | null;
@@ -40,6 +67,7 @@ interface MeasurementData {
   rightThigh: string | null;
   leftCalf: string | null;
   rightCalf: string | null;
+  notes?: string | null;
 }
 
 interface WorkoutData {
@@ -58,10 +86,7 @@ function safeFormatDate(dateValue: Date | string | null | undefined, formatStr: 
     let date: Date;
     
     if (typeof dateValue === 'string') {
-      // Tenta parsear a string de data
       date = parseISO(dateValue);
-      
-      // Se não for válido, tenta criar Date diretamente
       if (!isValid(date)) {
         date = new Date(dateValue);
       }
@@ -71,7 +96,6 @@ function safeFormatDate(dateValue: Date | string | null | undefined, formatStr: 
       return null;
     }
     
-    // Verifica se a data é válida
     if (!isValid(date)) {
       return null;
     }
@@ -82,6 +106,61 @@ function safeFormatDate(dateValue: Date | string | null | undefined, formatStr: 
     return null;
   }
 }
+
+// Tradução de enums
+const translateLifestyle = (value: string | null): string => {
+  const map: Record<string, string> = {
+    'sedentary': 'Sedentário',
+    'light': 'Levemente ativo',
+    'moderate': 'Moderadamente ativo',
+    'active': 'Ativo',
+    'very_active': 'Muito ativo',
+  };
+  return value ? map[value] || value : '-';
+};
+
+const translateStressLevel = (value: string | null): string => {
+  const map: Record<string, string> = {
+    'low': 'Baixo',
+    'moderate': 'Moderado',
+    'high': 'Alto',
+    'very_high': 'Muito alto',
+  };
+  return value ? map[value] || value : '-';
+};
+
+const translateGoal = (value: string | null): string => {
+  const map: Record<string, string> = {
+    'weight_loss': 'Perda de peso',
+    'muscle_gain': 'Ganho de massa muscular',
+    'conditioning': 'Condicionamento físico',
+    'health': 'Saúde e bem-estar',
+    'rehabilitation': 'Reabilitação',
+    'sports': 'Performance esportiva',
+    'other': 'Outro',
+  };
+  return value ? map[value] || value : '-';
+};
+
+const translateExperience = (value: string | null): string => {
+  const map: Record<string, string> = {
+    'none': 'Nenhuma',
+    'beginner': 'Iniciante',
+    'intermediate': 'Intermediário',
+    'advanced': 'Avançado',
+  };
+  return value ? map[value] || value : '-';
+};
+
+const translatePreferredTime = (value: string | null): string => {
+  const map: Record<string, string> = {
+    'morning': 'Manhã',
+    'afternoon': 'Tarde',
+    'evening': 'Noite',
+    'flexible': 'Flexível',
+  };
+  return value ? map[value] || value : '-';
+};
 
 export async function generateStudentPDF(
   student: StudentData,
@@ -121,7 +200,7 @@ export async function generateStudentPDF(
 
   // Função auxiliar para adicionar campo
   const addField = (label: string, value: string | null | undefined) => {
-    if (value) {
+    if (value && value !== '-') {
       checkNewPage(10);
       doc.setFont('helvetica', 'bold');
       doc.text(`${label}: `, margin, yPos);
@@ -133,6 +212,32 @@ export async function generateStudentPDF(
     }
   };
 
+  // Função auxiliar para adicionar campo em duas colunas
+  const addFieldRow = (label1: string, value1: string | null | undefined, label2: string, value2: string | null | undefined) => {
+    checkNewPage(10);
+    const colWidth = contentWidth / 2;
+    
+    if (value1) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label1}: `, margin, yPos);
+      const labelWidth1 = doc.getTextWidth(`${label1}: `);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value1, margin + labelWidth1, yPos);
+    }
+    
+    if (value2) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label2}: `, margin + colWidth, yPos);
+      const labelWidth2 = doc.getTextWidth(`${label2}: `);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value2, margin + colWidth + labelWidth2, yPos);
+    }
+    
+    if (value1 || value2) {
+      yPos += 6;
+    }
+  };
+
   // ==================== CABEÇALHO ====================
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
@@ -141,12 +246,12 @@ export async function generateStudentPDF(
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
-  doc.text('Relatório do Aluno', pageWidth - margin - 50, yPos);
+  doc.text('Relatório Completo do Aluno', pageWidth - margin - 60, yPos);
   yPos += 10;
   
   doc.setFontSize(8);
   const currentDate = safeFormatDate(new Date(), "dd/MM/yyyy 'às' HH:mm") || 'Data não disponível';
-  doc.text(`Gerado em: ${currentDate}`, pageWidth - margin - 50, yPos);
+  doc.text(`Gerado em: ${currentDate}`, pageWidth - margin - 60, yPos);
   yPos += 15;
 
   // ==================== DADOS PESSOAIS ====================
@@ -160,73 +265,230 @@ export async function generateStudentPDF(
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   
-  addField('Email', student.email);
-  addField('Telefone', student.phone);
-  addField('Data de Nascimento', safeFormatDate(student.birthDate));
-  addField('Gênero', student.gender === 'male' ? 'Masculino' : student.gender === 'female' ? 'Feminino' : student.gender);
+  addFieldRow('Email', student.email, 'Telefone', student.phone);
+  addFieldRow('Data de Nascimento', safeFormatDate(student.birthDate), 'Gênero', student.gender === 'male' ? 'Masculino' : student.gender === 'female' ? 'Feminino' : student.gender);
+  addFieldRow('CPF', student.cpf, 'Estado Civil', student.maritalStatus);
   addField('Endereço', student.address);
-  addField('Contato de Emergência', student.emergencyContact);
-  addField('Telefone de Emergência', student.emergencyPhone);
+  addFieldRow('Contato de Emergência', student.emergencyContact, 'Tel. Emergência', student.emergencyPhone);
   addField('Observações', student.notes);
   addField('Cliente desde', safeFormatDate(student.createdAt));
   yPos += 5;
 
-  // ==================== ANAMNESE ====================
+  // ==================== ANAMNESE COMPLETA ====================
   if (anamnesis) {
     addSection('Anamnese');
-    addField('Objetivos', anamnesis.objectives);
-    addField('Condições de Saúde', anamnesis.healthConditions);
+    
+    // Estilo de Vida
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Estilo de Vida', margin, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    addFieldRow('Ocupação', anamnesis.occupation, 'Estilo de Vida', translateLifestyle(anamnesis.lifestyle || null));
+    addFieldRow('Horas de Sono', anamnesis.sleepHours?.toString(), 'Nível de Estresse', translateStressLevel(anamnesis.stressLevel || null));
+    yPos += 3;
+    
+    // Objetivos
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Objetivos', margin, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    addField('Objetivo Principal', translateGoal(anamnesis.mainGoal || null));
+    addField('Objetivos Secundários', anamnesis.secondaryGoals);
+    addFieldRow('Peso Meta', anamnesis.targetWeight ? `${anamnesis.targetWeight} kg` : null, 'Motivação', anamnesis.motivation);
+    yPos += 3;
+    
+    // Saúde
+    checkNewPage(40);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Histórico de Saúde', margin, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    addField('Histórico Médico', anamnesis.medicalHistory || anamnesis.healthConditions);
     addField('Medicamentos', anamnesis.medications);
     addField('Lesões', anamnesis.injuries);
-    addField('Histórico de Exercícios', anamnesis.exerciseHistory);
-    addField('Estilo de Vida', anamnesis.lifestyle);
-    addField('Restrições', anamnesis.restrictions);
-    addField('Observações Adicionais', anamnesis.additionalNotes);
+    addField('Cirurgias', anamnesis.surgeries);
+    addField('Alergias', anamnesis.allergies);
+    yPos += 3;
+    
+    // Nutrição
+    checkNewPage(40);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Nutrição', margin, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    addFieldRow('Refeições/dia', anamnesis.mealsPerDay?.toString(), 'Água/dia', anamnesis.waterIntake ? `${anamnesis.waterIntake}L` : null);
+    addField('Restrições Alimentares', anamnesis.dietRestrictions || anamnesis.restrictions);
+    addField('Suplementos', anamnesis.supplements);
+    yPos += 3;
+    
+    // Exercícios
+    checkNewPage(40);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Histórico de Exercícios', margin, yPos);
+    yPos += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    addField('Experiência', translateExperience(anamnesis.exerciseExperience || null));
+    addField('Atividades Anteriores', anamnesis.previousActivities || anamnesis.exerciseHistory);
+    addFieldRow('Dias Disponíveis', anamnesis.availableDays, 'Horário Preferido', translatePreferredTime(anamnesis.preferredTime || null));
+    yPos += 3;
+    
+    // Observações
+    if (anamnesis.observations || anamnesis.additionalNotes) {
+      addField('Observações', anamnesis.observations || anamnesis.additionalNotes);
+    }
     yPos += 5;
   }
 
-  // ==================== MEDIDAS ====================
+  // ==================== HISTÓRICO COMPLETO DE MEDIDAS ====================
   if (measurements.length > 0) {
-    addSection('Histórico de Medidas');
+    addSection('Histórico Completo de Medidas');
     
-    // Última medida
-    const lastMeasurement = measurements[0];
+    // Resumo da evolução (primeira vs última medida)
+    if (measurements.length > 1) {
+      const firstMeasurement = measurements[measurements.length - 1];
+      const lastMeasurement = measurements[0];
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(16, 185, 129);
+      doc.text('Resumo da Evolução', margin, yPos);
+      yPos += 8;
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      const calcVariation = (current: string | null, initial: string | null): string => {
+        if (!current || !initial) return '-';
+        const diff = parseFloat(current) - parseFloat(initial);
+        const sign = diff >= 0 ? '+' : '';
+        return `${sign}${diff.toFixed(1)}`;
+      };
+      
+      const firstDate = safeFormatDate(firstMeasurement.date, 'dd/MM/yy') || '-';
+      const lastDate = safeFormatDate(lastMeasurement.date, 'dd/MM/yy') || '-';
+      
+      doc.text(`Período: ${firstDate} até ${lastDate}`, margin, yPos);
+      yPos += 6;
+      
+      // Tabela de evolução
+      const evolutionData = [
+        { label: 'Peso', initial: firstMeasurement.weight, current: lastMeasurement.weight, unit: 'kg' },
+        { label: '% Gordura', initial: firstMeasurement.bodyFat, current: lastMeasurement.bodyFat, unit: '%' },
+        { label: 'Cintura', initial: firstMeasurement.waist, current: lastMeasurement.waist, unit: 'cm' },
+        { label: 'Quadril', initial: firstMeasurement.hip, current: lastMeasurement.hip, unit: 'cm' },
+      ];
+      
+      // Cabeçalho da tabela
+      doc.setFont('helvetica', 'bold');
+      doc.text('Medida', margin, yPos);
+      doc.text('Inicial', margin + 40, yPos);
+      doc.text('Atual', margin + 70, yPos);
+      doc.text('Variação', margin + 100, yPos);
+      yPos += 6;
+      doc.setFont('helvetica', 'normal');
+      
+      evolutionData.forEach(item => {
+        if (item.initial || item.current) {
+          doc.text(item.label, margin, yPos);
+          doc.text(item.initial ? `${item.initial}${item.unit}` : '-', margin + 40, yPos);
+          doc.text(item.current ? `${item.current}${item.unit}` : '-', margin + 70, yPos);
+          const variation = calcVariation(item.current, item.initial);
+          doc.text(variation !== '-' ? `${variation}${item.unit}` : '-', margin + 100, yPos);
+          yPos += 5;
+        }
+      });
+      yPos += 8;
+    }
+    
+    // Lista de todas as medições
     doc.setFont('helvetica', 'bold');
-    const measurementDate = safeFormatDate(lastMeasurement.date) || 'Data não disponível';
-    doc.text(`Última avaliação: ${measurementDate}`, margin, yPos);
+    doc.setFontSize(11);
+    doc.text('Todas as Medições', margin, yPos);
     yPos += 8;
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
-    // Tabela de medidas
-    const measurementFields = [
-      { label: 'Peso', value: lastMeasurement.weight, unit: 'kg' },
-      { label: 'Altura', value: lastMeasurement.height, unit: 'cm' },
-      { label: '% Gordura', value: lastMeasurement.bodyFat, unit: '%' },
-      { label: 'Peitoral', value: lastMeasurement.chest, unit: 'cm' },
-      { label: 'Cintura', value: lastMeasurement.waist, unit: 'cm' },
-      { label: 'Quadril', value: lastMeasurement.hip, unit: 'cm' },
-      { label: 'Braço Esq.', value: lastMeasurement.leftArm, unit: 'cm' },
-      { label: 'Braço Dir.', value: lastMeasurement.rightArm, unit: 'cm' },
-      { label: 'Coxa Esq.', value: lastMeasurement.leftThigh, unit: 'cm' },
-      { label: 'Coxa Dir.', value: lastMeasurement.rightThigh, unit: 'cm' },
-      { label: 'Panturrilha Esq.', value: lastMeasurement.leftCalf, unit: 'cm' },
-      { label: 'Panturrilha Dir.', value: lastMeasurement.rightCalf, unit: 'cm' },
-    ];
-    
-    let col = 0;
-    measurementFields.forEach((field, index) => {
-      if (field.value) {
-        const xPos = margin + (col * 60);
-        doc.text(`${field.label}: ${field.value}${field.unit}`, xPos, yPos);
-        col++;
-        if (col >= 3) {
-          col = 0;
-          yPos += 6;
-          checkNewPage(10);
-        }
+    measurements.forEach((m, index) => {
+      checkNewPage(35);
+      
+      const measureDate = safeFormatDate(m.date, "dd/MM/yyyy") || 'Data não disponível';
+      
+      // Data da medição
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`${index + 1}. ${measureDate}`, margin, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      
+      // Composição corporal
+      const compositionFields = [
+        m.weight ? `Peso: ${m.weight}kg` : null,
+        m.height ? `Altura: ${m.height}cm` : null,
+        m.bmi ? `IMC: ${m.bmi}` : null,
+        m.bodyFat ? `Gordura: ${m.bodyFat}%` : null,
+        m.muscleMass ? `Massa Muscular: ${m.muscleMass}kg` : null,
+      ].filter(Boolean);
+      
+      if (compositionFields.length > 0) {
+        doc.text(compositionFields.join(' | '), margin + 5, yPos);
+        yPos += 5;
       }
+      
+      // Circunferências
+      const circumferenceFields = [
+        m.neck ? `Pescoço: ${m.neck}` : null,
+        m.chest ? `Peito: ${m.chest}` : null,
+        m.waist ? `Cintura: ${m.waist}` : null,
+        m.hip ? `Quadril: ${m.hip}` : null,
+      ].filter(Boolean);
+      
+      if (circumferenceFields.length > 0) {
+        doc.text(circumferenceFields.join(' | ') + ' cm', margin + 5, yPos);
+        yPos += 5;
+      }
+      
+      // Membros
+      const limbFields = [
+        m.rightArm ? `Braço D: ${m.rightArm}` : null,
+        m.leftArm ? `Braço E: ${m.leftArm}` : null,
+        m.rightThigh ? `Coxa D: ${m.rightThigh}` : null,
+        m.leftThigh ? `Coxa E: ${m.leftThigh}` : null,
+        m.rightCalf ? `Pant. D: ${m.rightCalf}` : null,
+        m.leftCalf ? `Pant. E: ${m.leftCalf}` : null,
+      ].filter(Boolean);
+      
+      if (limbFields.length > 0) {
+        doc.text(limbFields.join(' | ') + ' cm', margin + 5, yPos);
+        yPos += 5;
+      }
+      
+      if (m.notes) {
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Obs: ${m.notes}`, margin + 5, yPos);
+        doc.setFont('helvetica', 'normal');
+        yPos += 5;
+      }
+      
+      yPos += 3;
     });
-    if (col > 0) yPos += 6;
     yPos += 5;
   }
 
