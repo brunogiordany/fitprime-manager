@@ -76,12 +76,19 @@ export default function Students() {
     search: search || undefined,
   });
 
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
+  const [selectedStudentForInvite, setSelectedStudentForInvite] = useState<any>(null);
+
   const sendInviteMutation = trpc.students.sendInvite.useMutation({
-    onSuccess: () => {
-      toast.success("Convite enviado com sucesso!");
+    onSuccess: (data) => {
+      const fullLink = `${window.location.origin}${data.inviteLink}`;
+      setInviteLink(fullLink);
+      setInviteDialogOpen(true);
+      toast.success("Convite gerado com sucesso!");
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao enviar convite");
+      toast.error(error.message || "Erro ao gerar convite");
     },
   });
 
@@ -418,6 +425,70 @@ export default function Students() {
             )}
           </CardContent>
         </Card>
+
+        {/* Modal de Convite */}
+        <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-emerald-500" />
+                Enviar Acesso ao Aluno
+              </DialogTitle>
+              <DialogDescription>
+                Compartilhe o link abaixo para o aluno criar sua conta no portal.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Link de Convite</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={inviteLink}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteLink);
+                      toast.success("Link copiado!");
+                    }}
+                  >
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p className="text-sm text-emerald-700">
+                  <strong>Instrucões:</strong> Envie este link para o aluno via WhatsApp ou email. 
+                  Ao acessar, ele poderá criar uma senha e acessar o portal do aluno.
+                </p>
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                <p>⚠️ O link expira em 7 dias.</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  const whatsappText = encodeURIComponent(
+                    `Olá! Você foi convidado para acessar o FitPrime. Clique no link para criar sua conta: ${inviteLink}`
+                  );
+                  window.open(`https://wa.me/?text=${whatsappText}`, '_blank');
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Enviar via WhatsApp
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

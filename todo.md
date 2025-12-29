@@ -587,3 +587,13 @@
   - [x] Histórico de pagamentos
   - [x] Indicador de progresso do perfil
 - [x] Fluxo completo: convite → cadastro → login → onboarding → portal
+
+
+## Bugs Reportados (v4.7)
+- [x] Botão "Enviar Acesso" na lista de alunos não abre modal/tela
+- [ ] Erro ao finalizar cadastro via link de convite (convite já usado)
+- [x] Aluno não recebe email de confirmação/acesso após cadastro
+- [x] Implementar envio de email com link de login para o aluno
+- [x] Modal de convite com link copiável e botão WhatsApp
+- [x] Email de convite com template bonito
+- [x] Email de boas-vindas após cadastro

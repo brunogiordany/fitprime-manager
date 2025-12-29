@@ -223,9 +223,17 @@ export const appRouter = router({
           expiresAt,
         });
         
-        // TODO: Enviar email/WhatsApp com o link de convite
-        // Por enquanto retorna o link para o personal copiar
+        // Construir link completo
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimehub-sfh8sqab.manus.space';
         const inviteLink = `/convite/${inviteToken}`;
+        const fullInviteLink = `${baseUrl}${inviteLink}`;
+        
+        // Enviar email se tiver email cadastrado
+        if (student.email && (input.sendVia === 'email' || input.sendVia === 'both')) {
+          const { sendInviteEmail } = await import('./email');
+          const personalName = ctx.user.name || 'Seu Personal Trainer';
+          await sendInviteEmail(student.email, student.name, personalName, fullInviteLink);
+        }
         
         return { 
           success: true, 
@@ -339,6 +347,12 @@ export const appRouter = router({
           title: `🎉 Novo Cadastro - ${input.name}`,
           content: `O aluno ${input.name} aceitou o convite e criou sua conta!\n\n📧 Email: ${input.email}\n📱 Telefone: ${input.phone}\n\nO aluno agora pode acessar o portal e preencher sua anamnese.`,
         });
+        
+        // Enviar email de boas-vindas ao aluno
+        const { sendWelcomeEmail } = await import('./email');
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimehub-sfh8sqab.manus.space';
+        const loginLink = `${baseUrl}/login-aluno`;
+        await sendWelcomeEmail(input.email, input.name, loginLink);
         
         // Gerar token JWT para login automático
         const jwt = await import('jsonwebtoken');
