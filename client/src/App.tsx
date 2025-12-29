@@ -26,12 +26,14 @@ import StudentDashboard from "./pages/StudentDashboard";
 import StudentWorkoutLog from "./pages/StudentWorkoutLog";
 import Reports from "./pages/Reports";
 import PendingChanges from "./pages/PendingChanges";
+import Invite from "./pages/Invite";
 
 function Router() {
   return (
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
+      <Route path="/convite/:token" component={Invite} />
       <Route path="/portal" component={StudentPortal} />
       <Route path="/meu-portal" component={StudentDashboard} />
       <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />

@@ -519,3 +519,10 @@
   - [x] Incluir dados da anamnese expandida (estilo de vida, objetivos, saúde, nutrição, exercícios)
   - [x] Incluir histórico completo de medidas com todas as medições
   - [x] Resumo da evolução (primeira vs última medida)
+
+## Correções v4.5
+- [x] Corrigir link de convite que dá erro 404 (rota /convite/:token não existe)
+  - [x] Criar página Invite.tsx com validação de token
+  - [x] Adicionar rotas validateInvite e acceptInvite no backend
+  - [x] Adicionar rota /convite/:token no App.tsx
+- [x] Mover botão de voltar mês para junto do título na agenda

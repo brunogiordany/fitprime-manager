@@ -1,0 +1,22 @@
+{
+  "query": "SELECT * FROM student_invites WHERE status = 'pending' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM student_invites WHERE status = 'pending' LIMIT 1",
+  "rows": [
+    {
+      "id": "1",
+      "personalId": "1",
+      "studentId": "1",
+      "inviteToken": "ZZ4PvK2AGg9OWOyW2nfMzZB0ASXIofn7",
+      "email": "brunogiordany@gmail.com",
+      "phone": "15997612063",
+      "status": "pending",
+      "expiresAt": "2026-01-04 23:59:01",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-28 23:59:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tstudentId\tinviteToken\temail\tphone\tstatus\texpiresAt\tacceptedAt\tcreatedAt\n1\t1\t1\tZZ4PvK2AGg9OWOyW2nfMzZB0ASXIofn7\tbrunogiordany@gmail.com\t15997612063\tpending\t2026-01-04 23:59:01\tNULL\t2025-12-28 23:59:00\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

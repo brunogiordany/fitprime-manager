@@ -476,10 +476,10 @@ export default function Schedule() {
         <Card>
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-between">
-              <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="text-center">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
                 <h2 className="text-lg font-semibold capitalize">
                   {viewMode === "month"
                     ? format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
@@ -488,7 +488,7 @@ export default function Schedule() {
                       : format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
                   Hoje
                 </Button>

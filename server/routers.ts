@@ -242,6 +242,58 @@ export const appRouter = router({
         return await db.getStudentInvitesByStudentId(input.studentId);
       }),
     
+    // Validar convite (público - para página de convite)
+    validateInvite: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const invite = await db.getStudentInviteByToken(input.token);
+        if (!invite) {
+          return { valid: false, message: 'Convite não encontrado' };
+        }
+        if (invite.status !== 'pending') {
+          return { valid: false, message: 'Este convite já foi usado ou cancelado' };
+        }
+        if (new Date(invite.expiresAt) < new Date()) {
+          return { valid: false, message: 'Este convite expirou' };
+        }
+        // Buscar nome do personal e aluno
+        // Buscar personal pelo userId (precisamos criar função ou usar outra abordagem)
+        // Por enquanto, vamos retornar um nome genérico
+        const personal = { name: 'Seu Personal Trainer' };
+        const student = await db.getStudentById(invite.studentId, invite.personalId);
+        return { 
+          valid: true, 
+          personalName: personal?.name || 'Personal',
+          studentName: student?.name || '',
+          studentId: invite.studentId,
+          personalId: invite.personalId,
+        };
+      }),
+    
+    // Aceitar convite (requer login)
+    acceptInvite: protectedProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const invite = await db.getStudentInviteByToken(input.token);
+        if (!invite) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Convite não encontrado' });
+        }
+        if (invite.status !== 'pending') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este convite já foi usado ou cancelado' });
+        }
+        if (new Date(invite.expiresAt) < new Date()) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este convite expirou' });
+        }
+        
+        // Vincular usuário ao aluno
+        await db.linkStudentToUser(invite.studentId, ctx.user.id);
+        
+        // Marcar convite como aceito
+        await db.updateStudentInvite(invite.id, { status: 'accepted' });
+        
+        return { success: true };
+      }),
+    
     // Cancelar convite
     cancelInvite: personalProcedure
       .input(z.object({ inviteId: z.number() }))
