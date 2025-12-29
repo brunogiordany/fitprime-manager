@@ -1472,7 +1472,7 @@ export default function Schedule() {
                                       className="w-28 h-8 text-sm"
                                     />
                                   </div>
-                                  <div className="grid grid-cols-2 gap-2">
+                                  <div className="space-y-2">
                                     <Select
                                       value={dayConfig.workoutId}
                                       onValueChange={(value) => {
@@ -1481,8 +1481,8 @@ export default function Schedule() {
                                         setNewSession({ ...newSession, weekDayWorkouts: updated });
                                       }}
                                     >
-                                      <SelectTrigger className="h-8 text-xs">
-                                        <SelectValue placeholder="Treino" />
+                                      <SelectTrigger className="h-9 text-sm">
+                                        <SelectValue placeholder="Selecione o treino" />
                                       </SelectTrigger>
                                       <SelectContent>
                                         <SelectItem value="none">Sem treino</SelectItem>
@@ -1502,13 +1502,13 @@ export default function Schedule() {
                                           setNewSession({ ...newSession, weekDayWorkouts: updated });
                                         }}
                                       >
-                                        <SelectTrigger className="h-8 text-xs">
-                                          <SelectValue placeholder="Dia" />
+                                        <SelectTrigger className="h-9 text-sm">
+                                          <SelectValue placeholder="Selecione o dia do treino" />
                                         </SelectTrigger>
                                         <SelectContent>
                                           {workoutDaysForDay.map((day: any, index: number) => (
                                             <SelectItem key={index} value={index.toString()}>
-                                              Treino {String.fromCharCode(65 + index)}
+                                              Treino {String.fromCharCode(65 + index)} - {day.name || `Dia ${index + 1}`}
                                             </SelectItem>
                                           ))}
                                         </SelectContent>

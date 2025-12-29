@@ -903,3 +903,6 @@
 
 ## Melhoria: Seletor de Dia do Treino (v5.30)
 - [x] Adicionar seletor de dia do treino (A, B, C) no agendamento em lote por dia da semana
+
+## Bug: Layout Seletores de Treino (v5.31)
+- [x] Corrigir layout dos seletores de treino no agendamento em lote (empilhar verticalmente no mobile)
