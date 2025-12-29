@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, studentId, dailyCalories, doesCardio, cardioActivities, weeklyFrequency, sessionDuration, trainingLocation, preferredTime FROM anamneses ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, dailyCalories, doesCardio, cardioActivities, weeklyFrequency, sessionDuration, trainingLocation, preferredTime FROM anamneses ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "studentId": "1",
+      "dailyCalories": "3000",
+      "doesCardio": "1",
+      "cardioActivities": "[{\"activity\":\"caminhada\",\"frequency\":5,\"duration\":35}]",
+      "weeklyFrequency": "NULL",
+      "sessionDuration": "NULL",
+      "trainingLocation": "NULL",
+      "preferredTime": "afternoon"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tdailyCalories\tdoesCardio\tcardioActivities\tweeklyFrequency\tsessionDuration\ttrainingLocation\tpreferredTime\n1\t1\t3000\t1\t[{\"activity\":\"caminhada\",\"frequency\":5,\"duration\":35}]\tNULL\tNULL\tNULL\tafternoon\n",
+  "stderr": "",
+  "execution_time_ms": 151
+}

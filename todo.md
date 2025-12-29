@@ -812,3 +812,8 @@
 ## Correção Mobile Anamnese (v5.14)
 - [x] Corrigir abas da anamnese encavaladas/sobrepostas na versão mobile
 - [x] Adicionar scroll horizontal nas abas para telas pequenas
+
+
+## Bug Persistência Anamnese (v5.15)
+- [x] Corrigir campo de Consumo de kcal diário não sendo salvo/carregado (já estava funcionando)
+- [x] Corrigir campos de Preferências de Treino não sendo salvos/carregados (adicionados weeklyFrequency, sessionDuration, trainingLocation, availableEquipment ao schema)

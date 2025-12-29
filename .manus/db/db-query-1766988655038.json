@@ -1,0 +1,322 @@
+{
+  "query": "DESCRIBE anamneses;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute DESCRIBE anamneses;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "studentId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "personalId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "occupation",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lifestyle",
+      "Type": "enum('sedentary','light','moderate','active','very_active')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sleepHours",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sleepQuality",
+      "Type": "enum('poor','fair','good','excellent')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stressLevel",
+      "Type": "enum('low','moderate','high','very_high')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "medicalHistory",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "injuries",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "surgeries",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "medications",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "allergies",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "mainGoal",
+      "Type": "enum('weight_loss','muscle_gain','recomposition','conditioning','health','rehabilitation','sports','bulking','cutting','other')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "secondaryGoals",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "targetWeight",
+      "Type": "decimal(5,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "motivation",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "mealsPerDay",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "waterIntake",
+      "Type": "decimal(4,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dietRestrictions",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "supplements",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "exerciseExperience",
+      "Type": "enum('none','beginner','intermediate','advanced')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "previousActivities",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "availableDays",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "preferredTime",
+      "Type": "enum('morning','afternoon','evening','flexible')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "observations",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "version",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "trainingLocation",
+      "Type": "enum('full_gym','home_gym','home_basic','outdoor','studio')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "availableEquipment",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "weeklyFrequency",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sessionDuration",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "trainingRestrictions",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "restrictionNotes",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "muscleEmphasis",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dailyCalories",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "doesCardio",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "cardioActivities",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nstudentId\tint(11)\tNO\tMUL\tNULL\t\npersonalId\tint(11)\tNO\tMUL\tNULL\t\noccupation\tvarchar(255)\tYES\t\tNULL\t\nlifestyle\tenum('sedentary','light','moderate','active','very_active')\tYES\t\tNULL\t\nsleepHours\tint(11)\tYES\t\tNULL\t\nsleepQuality\tenum('poor','fair','good','excellent')\tYES\t\tNULL\t\nstressLevel\tenum('low','moderate','high','very_high')\tYES\t\tNULL\t\nmedicalHistory\ttext\tYES\t\tNULL\t\ninjuries\ttext\tYES\t\tNULL\t\nsurgeries\ttext\tYES\t\tNULL\t\nmedications\ttext\tYES\t\tNULL\t\nallergies\ttext\tYES\t\tNULL\t\nmainGoal\tenum('weight_loss','muscle_gain','recomposition','conditioning','health','rehabilitation','sports','bulking','cutting','other')\tYES\t\tNULL\t\nsecondaryGoals\ttext\tYES\t\tNULL\t\ntargetWeight\tdecimal(5,2)\tYES\t\tNULL\t\nmotivation\ttext\tYES\t\tNULL\t\nmealsPerDay\tint(11)\tYES\t\tNULL\t\nwaterIntake\tdecimal(4,2)\tYES\t\tNULL\t\ndietRestrictions\ttext\tYES\t\tNULL\t\nsupplements\ttext\tYES\t\tNULL\t\nexerciseExperience\tenum('none','beginner','intermediate','advanced')\tYES\t\tNULL\t\npreviousActivities\ttext\tYES\t\tNULL\t\navailableDays\ttext\tYES\t\tNULL\t\npreferredTime\tenum('morning','afternoon','evening','flexible')\tYES\t\tNULL\t\nobservations\ttext\tYES\t\tNULL\t\nversion\tint(11)\tNO\t\t1\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\ntrainingLocation\tenum('full_gym','home_gym','home_basic','outdoor','studio')\tYES\t\tNULL\t\navailableEquipment\ttext\tYES\t\tNULL\t\nweeklyFrequency\tint(11)\tYES\t\tNULL\t\nsessionDuration\tint(11)\tYES\t\tNULL\t\ntrainingRestrictions\ttext\tYES\t\tNULL\t\nrestrictionNotes\ttext\tYES\t\tNULL\t\nmuscleEmphasis\ttext\tYES\t\tNULL\t\ndailyCalories\tint(11)\tYES\t\tNULL\t\ndoesCardio\ttinyint(1)\tYES\t\t0\t\ncardioActivities\ttext\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 206
+}
