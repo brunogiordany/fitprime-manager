@@ -432,9 +432,18 @@ export default function Schedule() {
   // Funções para modal de edição de sessão
   const openEditDialog = (session: any) => {
     setEditingSession(session);
+    // Formatar a data usando UTC para evitar conversão de timezone
+    const date = new Date(session.scheduledAt);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const formattedScheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
     setEditForm({
       status: session.status,
-      scheduledAt: format(new Date(session.scheduledAt), "yyyy-MM-dd'T'HH:mm"),
+      scheduledAt: formattedScheduledAt,
       duration: session.duration?.toString() || '60',
       notes: session.notes || '',
       sendReminder: true,
@@ -453,8 +462,14 @@ export default function Schedule() {
     // Garantir que scheduledAt seja válido
     let scheduledAtValue = editForm.scheduledAt;
     if (!scheduledAtValue || !scheduledAtValue.includes('T') || isNaN(new Date(scheduledAtValue).getTime())) {
-      // Usar a data original da sessão se o novo valor for inválido
-      scheduledAtValue = format(new Date(editingSession.scheduledAt), "yyyy-MM-dd'T'HH:mm");
+      // Usar a data original da sessão se o novo valor for inválido (usando UTC)
+      const date = new Date(editingSession.scheduledAt);
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      scheduledAtValue = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
     
     // Atualizar a sessão atual
@@ -1526,13 +1541,18 @@ export default function Schedule() {
                         type="time"
                         value={editForm.scheduledAt?.includes('T') ? editForm.scheduledAt.split('T')[1]?.substring(0, 5) || '' : ''}
                         onChange={(e) => {
-                          // Usar a data da sessão original se disponível
+                          // Usar a data da sessão original se disponível (usando UTC)
                           let date = editForm.scheduledAt?.includes('T') ? editForm.scheduledAt.split('T')[0] : '';
                           if (!date && editingSession?.scheduledAt) {
-                            date = format(new Date(editingSession.scheduledAt), 'yyyy-MM-dd');
+                            const d = new Date(editingSession.scheduledAt);
+                            const year = d.getUTCFullYear();
+                            const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                            const day = String(d.getUTCDate()).padStart(2, '0');
+                            date = `${year}-${month}-${day}`;
                           }
                           if (!date) {
-                            date = format(new Date(), 'yyyy-MM-dd');
+                            const d = new Date();
+                            date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                           }
                           setEditForm({ ...editForm, scheduledAt: `${date}T${e.target.value}:00` });
                         }}

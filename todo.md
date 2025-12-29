@@ -821,3 +821,4 @@
 
 ## Bug Fuso Horário Agendamento (v5.16)
 - [x] Corrigir diferença de 3 horas no agendamento de sessões (UTC vs GMT-3) - usando Date.UTC para armazenar horário correto
+- [x] Corrigir exibição do horário no modal de edição (mostrando 3 horas a menos) - usando getUTC* para formatar
