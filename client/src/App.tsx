@@ -28,6 +28,7 @@ import Reports from "./pages/Reports";
 import PendingChanges from "./pages/PendingChanges";
 import Invite from "./pages/Invite";
 import StudentLogin from "./pages/StudentLogin";
+import StudentPortalPage from "./pages/StudentPortalPage";
 
 function Router() {
   return (
@@ -38,7 +39,7 @@ function Router() {
       <Route path="/login-aluno" component={StudentLogin} />
       <Route path="/portal-aluno" component={StudentDashboard} />
       <Route path="/portal" component={StudentPortal} />
-      <Route path="/meu-portal" component={StudentDashboard} />
+      <Route path="/meu-portal" component={StudentPortalPage} />
       <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />
       
       {/* Personal Trainer routes */}

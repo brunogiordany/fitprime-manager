@@ -38,11 +38,19 @@ export default function Invite() {
       if (data.token) {
         localStorage.setItem("studentToken", data.token);
         localStorage.setItem("studentId", String(data.studentId));
+        localStorage.setItem("studentData", JSON.stringify({
+          id: data.studentId,
+          name: registerForm.name,
+          email: registerForm.email,
+          phone: registerForm.phone,
+          status: 'active',
+          createdAt: Date.now(),
+        }));
       }
       setRegistrationSuccess(true);
       // Redirecionar para o portal do aluno após 2 segundos
       setTimeout(() => {
-        setLocation("/portal-aluno");
+        setLocation("/meu-portal");
       }, 2000);
     },
     onError: (error: any) => {

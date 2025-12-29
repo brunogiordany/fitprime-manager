@@ -556,3 +556,34 @@
   - [x] Página de login para alunos (/login-aluno)
   - [x] Validação de credenciais
   - [x] Redirecionamento para portal do aluno (/portal-aluno)
+
+## Melhorias Portal do Aluno v4.8
+- [ ] Wizard de onboarding para aluno completar anamnese após primeiro login
+  - [ ] Detectar se é primeiro acesso do aluno
+  - [ ] Mostrar wizard com passos para completar perfil
+  - [ ] Indicador de progresso do perfil
+  - [ ] Campos de anamnese simplificados
+- [ ] Notificação ao personal quando aluno completar cadastro
+  - [ ] Enviar notificação via sistema de notificações
+  - [ ] Incluir nome do aluno e data
+- [ ] Seção de anamnese no perfil do aluno
+  - [ ] Permitir aluno visualizar suas informações
+  - [ ] Permitir aluno editar anamnese a qualquer momento
+  - [ ] Sincronizar alterações com dashboard do personal
+
+
+## Portal do Aluno Completo (v4.6)
+- [x] Wizard de onboarding para novos alunos
+  - [x] Guia passo a passo para preencher anamnese
+  - [x] Indicador de progresso visual
+  - [x] Campos de saúde, objetivos e medidas básicas
+- [x] Notificações para o personal trainer
+  - [x] Notificação quando aluno se cadastra via convite
+  - [x] Notificação quando aluno preenche anamnese
+- [x] Portal do aluno com autenticação JWT
+  - [x] Dashboard com próximas sessões e cobranças pendentes
+  - [x] Visualização de treinos atribuídos
+  - [x] Visualização e edição de anamnese
+  - [x] Histórico de pagamentos
+  - [x] Indicador de progresso do perfil
+- [x] Fluxo completo: convite → cadastro → login → onboarding → portal

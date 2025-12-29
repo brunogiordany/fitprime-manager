@@ -333,6 +333,13 @@ export const appRouter = router({
         // Marcar convite como aceito
         await db.updateStudentInvite(invite.id, { status: 'accepted' });
         
+        // Notificar o personal que o aluno se cadastrou
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `🎉 Novo Cadastro - ${input.name}`,
+          content: `O aluno ${input.name} aceitou o convite e criou sua conta!\n\n📧 Email: ${input.email}\n📱 Telefone: ${input.phone}\n\nO aluno agora pode acessar o portal e preencher sua anamnese.`,
+        });
+        
         // Gerar token JWT para login automático
         const jwt = await import('jsonwebtoken');
         const token = jwt.sign(
@@ -759,6 +766,18 @@ export const appRouter = router({
               leftCalf: measurements.leftCalf,
               notes: measurements.notes,
               bmi,
+            });
+          }
+        }
+        
+        // Notificar o personal se for primeiro preenchimento
+        if (!updated) {
+          const student = await db.getStudentById(input.studentId, ctx.personal.id);
+          if (student) {
+            const { notifyOwner } = await import('./_core/notification');
+            await notifyOwner({
+              title: `📋 Anamnese Preenchida - ${student.name}`,
+              content: `O aluno ${student.name} preencheu sua anamnese!\n\n🎯 Objetivo: ${input.mainGoal || 'Não informado'}\n🏋️ Peso: ${measurements?.weight || 'Não informado'} kg\n📏 Altura: ${measurements?.height || 'Não informado'} cm\n\nAcesse o perfil do aluno para ver os detalhes completos.`,
             });
           }
         }

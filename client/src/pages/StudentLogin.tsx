@@ -22,7 +22,7 @@ export default function StudentLogin() {
   useEffect(() => {
     const token = localStorage.getItem("studentToken");
     if (token) {
-      setLocation("/portal-aluno");
+      setLocation("/meu-portal");
     }
   }, []);
 
@@ -32,7 +32,12 @@ export default function StudentLogin() {
       toast.success(`Bem-vindo, ${data.studentName}!`);
       localStorage.setItem("studentToken", data.token);
       localStorage.setItem("studentId", String(data.studentId));
-      setLocation("/portal-aluno");
+      localStorage.setItem("studentData", JSON.stringify({
+        id: data.studentId,
+        name: data.studentName,
+        email: loginForm.email,
+      }));
+      setLocation("/meu-portal");
     },
     onError: (error: any) => {
       toast.error(error.message || "Erro ao fazer login");
