@@ -817,3 +817,7 @@
 ## Bug Persistência Anamnese (v5.15)
 - [x] Corrigir campo de Consumo de kcal diário não sendo salvo/carregado (já estava funcionando)
 - [x] Corrigir campos de Preferências de Treino não sendo salvos/carregados (adicionados weeklyFrequency, sessionDuration, trainingLocation, availableEquipment ao schema)
+
+
+## Bug Fuso Horário Agendamento (v5.16)
+- [x] Corrigir diferença de 3 horas no agendamento de sessões (UTC vs GMT-3) - usando Date.UTC para armazenar horário correto

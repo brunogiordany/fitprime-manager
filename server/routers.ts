@@ -1936,12 +1936,16 @@ Retorne APENAS o JSON, sem texto adicional.`;
       }))
       .mutation(async ({ ctx, input }) => {
         const { scheduledAt, ...data } = input;
-        // Parsear a data local sem conversão de timezone
+        // Parsear a data local e armazenar como UTC
         // O formato esperado é "yyyy-MM-ddTHH:mm" (datetime-local)
+        // O usuário está no Brasil (GMT-3), então precisamos armazenar o horário como se fosse UTC
+        // para que ao exibir (que também interpreta como UTC) mostre o horário correto
         const [datePart, timePart] = scheduledAt.split('T');
         const [year, month, day] = datePart.split('-').map(Number);
         const [hours, minutes] = timePart.split(':').map(Number);
-        const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        // Criar data UTC diretamente com os valores do usuário
+        // Isso evita qualquer conversão de timezone
+        const localDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
         
         // Verificar conflito de horário
         const duration = input.duration || 60;
@@ -1978,14 +1982,15 @@ Retorne APENAS o JSON, sem texto adicional.`;
       .mutation(async ({ ctx, input }) => {
         const { id, scheduledAt, ...data } = input;
         
-        // Parsear a data local sem conversão de timezone
+        // Parsear a data local e armazenar como UTC
         let parsedDate: Date | undefined;
         if (scheduledAt) {
           const [datePart, timePart] = scheduledAt.split('T');
           const [year, month, day] = datePart.split('-').map(Number);
           const timeStr = timePart || '00:00';
           const [hours, minutes] = timeStr.split(':').map(Number);
-          parsedDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+          // Criar data UTC diretamente com os valores do usuário
+          parsedDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
           
           // Verificar conflito de horário (excluindo a sessão atual)
           const duration = input.duration || 60;

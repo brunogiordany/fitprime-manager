@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, studentId, scheduledAt, duration, status FROM sessions ORDER BY scheduledAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, scheduledAt, duration, status FROM sessions ORDER BY scheduledAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "210003",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-28 08:00:00",
+      "duration": "60",
+      "status": "scheduled"
+    },
+    {
+      "id": "210002",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-21 08:00:00",
+      "duration": "60",
+      "status": "scheduled"
+    },
+    {
+      "id": "210005",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-14 08:00:00",
+      "duration": "60",
+      "status": "scheduled"
+    },
+    {
+      "id": "210004",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-07 08:00:00",
+      "duration": "60",
+      "status": "scheduled"
+    },
+    {
+      "id": "120001",
+      "studentId": "30001",
+      "scheduledAt": "2026-01-05 15:00:00",
+      "duration": "60",
+      "status": "scheduled"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tscheduledAt\tduration\tstatus\n210003\t60001\t2026-01-28 08:00:00\t60\tscheduled\n210002\t60001\t2026-01-21 08:00:00\t60\tscheduled\n210005\t60001\t2026-01-14 08:00:00\t60\tscheduled\n210004\t60001\t2026-01-07 08:00:00\t60\tscheduled\n120001\t30001\t2026-01-05 15:00:00\t60\tscheduled\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}
