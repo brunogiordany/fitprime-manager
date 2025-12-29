@@ -58,7 +58,10 @@ import {
   Zap,
   Brain,
   ListChecks,
-  RefreshCw
+  RefreshCw,
+  X,
+  Replace,
+  RotateCcw
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -79,6 +82,7 @@ export default function Workouts() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [aiPreview, setAiPreview] = useState<any>(null);
+  const [editingExercise, setEditingExercise] = useState<{dayIndex: number, exIndex: number, exercise: any} | null>(null);
   const [workoutToDuplicate, setWorkoutToDuplicate] = useState<any>(null);
   const [duplicateTargetStudent, setDuplicateTargetStudent] = useState<string>("");
   const [newWorkout, setNewWorkout] = useState({
@@ -221,6 +225,45 @@ export default function Workouts() {
       studentId: parseInt(selectedStudent),
       workout: aiPreview.preview,
     });
+  };
+
+  // Funções para editar exercícios do treino gerado pela IA
+  const handleDeleteExercise = (dayIndex: number, exIndex: number) => {
+    if (!aiPreview) return;
+    
+    const newPreview = { ...aiPreview };
+    const newDays = [...newPreview.preview.days];
+    const newExercises = [...newDays[dayIndex].exercises];
+    
+    // Remove o exercício
+    newExercises.splice(exIndex, 1);
+    newDays[dayIndex] = { ...newDays[dayIndex], exercises: newExercises };
+    
+    // Se o dia ficou sem exercícios, remove o dia também
+    if (newExercises.length === 0) {
+      newDays.splice(dayIndex, 1);
+      toast.info("Dia removido pois não tinha mais exercícios");
+    }
+    
+    newPreview.preview = { ...newPreview.preview, days: newDays };
+    setAiPreview(newPreview);
+    toast.success("Exercício removido");
+  };
+
+  const handleUpdateExercise = (dayIndex: number, exIndex: number, updatedExercise: any) => {
+    if (!aiPreview) return;
+    
+    const newPreview = { ...aiPreview };
+    const newDays = [...newPreview.preview.days];
+    const newExercises = [...newDays[dayIndex].exercises];
+    
+    newExercises[exIndex] = updatedExercise;
+    newDays[dayIndex] = { ...newDays[dayIndex], exercises: newExercises };
+    newPreview.preview = { ...newPreview.preview, days: newDays };
+    
+    setAiPreview(newPreview);
+    setEditingExercise(null);
+    toast.success("Exercício atualizado");
   };
 
   const handleDuplicate = () => {
@@ -419,17 +462,40 @@ export default function Workouts() {
                                         <th className="text-left py-2 pr-4 font-medium">Grupo</th>
                                         <th className="text-center py-2 px-2 font-medium">Séries</th>
                                         <th className="text-center py-2 px-2 font-medium">Reps</th>
-                                        <th className="text-center py-2 pl-2 font-medium">Descanso</th>
+                                        <th className="text-center py-2 px-2 font-medium">Descanso</th>
+                                        <th className="text-center py-2 pl-2 font-medium w-[80px]">Ações</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {day.exercises.map((ex: any, exIndex: number) => (
-                                        <tr key={exIndex} className="border-b last:border-0">
+                                        <tr key={exIndex} className="border-b last:border-0 group hover:bg-muted/50">
                                           <td className="py-2 pr-4 font-medium">{ex.name}</td>
                                           <td className="py-2 pr-4 text-muted-foreground">{ex.muscleGroup}</td>
                                           <td className="py-2 px-2 text-center">{ex.sets}</td>
                                           <td className="py-2 px-2 text-center">{ex.reps}</td>
-                                          <td className="py-2 pl-2 text-center">{ex.restSeconds}s</td>
+                                          <td className="py-2 px-2 text-center">{ex.restSeconds}s</td>
+                                          <td className="py-2 pl-2 text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => setEditingExercise({ dayIndex, exIndex, exercise: { ...ex } })}
+                                                title="Editar exercício"
+                                              >
+                                                <Edit className="h-3.5 w-3.5" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                onClick={() => handleDeleteExercise(dayIndex, exIndex)}
+                                                title="Remover exercício"
+                                              >
+                                                <X className="h-3.5 w-3.5" />
+                                              </Button>
+                                            </div>
+                                          </td>
                                         </tr>
                                       ))}
                                     </tbody>
@@ -476,6 +542,129 @@ export default function Workouts() {
                       </div>
                     </div>
                   </>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            {/* Modal de Edição de Exercício */}
+            <Dialog open={!!editingExercise} onOpenChange={(open) => !open && setEditingExercise(null)}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Edit className="h-5 w-5 text-blue-600" />
+                    Editar Exercício
+                  </DialogTitle>
+                  <DialogDescription>
+                    Modifique os detalhes do exercício ou substitua por outro
+                  </DialogDescription>
+                </DialogHeader>
+                
+                {editingExercise && (
+                  <div className="space-y-4 py-2">
+                    <div className="grid gap-2">
+                      <Label>Nome do Exercício</Label>
+                      <Input
+                        value={editingExercise.exercise.name}
+                        onChange={(e) => setEditingExercise({
+                          ...editingExercise,
+                          exercise: { ...editingExercise.exercise, name: e.target.value }
+                        })}
+                        placeholder="Ex: Supino Reto com Barra"
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Grupo Muscular</Label>
+                      <Select
+                        value={editingExercise.exercise.muscleGroup}
+                        onValueChange={(value) => setEditingExercise({
+                          ...editingExercise,
+                          exercise: { ...editingExercise.exercise, muscleGroup: value }
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o grupo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Peito">Peito</SelectItem>
+                          <SelectItem value="Costas">Costas</SelectItem>
+                          <SelectItem value="Ombros">Ombros</SelectItem>
+                          <SelectItem value="Bíceps">Bíceps</SelectItem>
+                          <SelectItem value="Tríceps">Tríceps</SelectItem>
+                          <SelectItem value="Antebraço">Antebraço</SelectItem>
+                          <SelectItem value="Abdômen">Abdômen</SelectItem>
+                          <SelectItem value="Core">Core</SelectItem>
+                          <SelectItem value="Glúteos">Glúteos</SelectItem>
+                          <SelectItem value="Quadríceps">Quadríceps</SelectItem>
+                          <SelectItem value="Posterior">Posterior</SelectItem>
+                          <SelectItem value="Panturrilha">Panturrilha</SelectItem>
+                          <SelectItem value="Pernas">Pernas</SelectItem>
+                          <SelectItem value="Geral">Geral</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="grid gap-2">
+                        <Label>Séries</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={editingExercise.exercise.sets}
+                          onChange={(e) => setEditingExercise({
+                            ...editingExercise,
+                            exercise: { ...editingExercise.exercise, sets: parseInt(e.target.value) || 1 }
+                          })}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Repetições</Label>
+                        <Input
+                          value={editingExercise.exercise.reps}
+                          onChange={(e) => setEditingExercise({
+                            ...editingExercise,
+                            exercise: { ...editingExercise.exercise, reps: e.target.value }
+                          })}
+                          placeholder="12 ou 8-12"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Descanso (s)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="300"
+                          value={editingExercise.exercise.restSeconds}
+                          onChange={(e) => setEditingExercise({
+                            ...editingExercise,
+                            exercise: { ...editingExercise.exercise, restSeconds: parseInt(e.target.value) || 60 }
+                          })}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setEditingExercise(null)}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={() => handleUpdateExercise(
+                          editingExercise.dayIndex,
+                          editingExercise.exIndex,
+                          editingExercise.exercise
+                        )}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </DialogContent>
             </Dialog>

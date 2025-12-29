@@ -708,3 +708,11 @@
 - [x] Botões fixos no rodapé do modal (sempre visíveis)
 - [x] Tabela de exercícios com overflow-x-auto para scroll horizontal
 - [x] Cabeçalho e rodapé separados do conteúdo scrollável
+
+
+## Edição de Exercícios no Treino IA (v5.7)
+- [x] Adicionar botão de excluir em cada exercício da lista (botão X vermelho)
+- [x] Adicionar botão de editar em cada exercício da lista (botão lápis azul)
+- [x] Implementar lógica de exclusão (remover do array aiPreview, remove dia se ficar vazio)
+- [x] Implementar modal de edição com campos para nome, grupo, séries, reps, descanso
+- [x] Atualizar estado aiPreview ao modificar exercícios
