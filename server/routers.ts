@@ -2131,12 +2131,13 @@ Retorne APENAS o JSON, sem texto adicional.`;
     cancelFuture: personalProcedure
       .input(z.object({
         studentId: z.number(),
-        fromDate: z.string().optional(), // Se não informado, usa data atual
+        fromDate: z.string().optional(), // Se não informado, cancela todas
         toDate: z.string().optional(), // Se não informado, cancela todas futuras
         reason: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        // Se não informar fromDate, cancela todas as sessões (sem filtro de data)
+        const fromDate = input.fromDate ? new Date(input.fromDate) : undefined;
         const toDate = input.toDate ? new Date(input.toDate) : undefined;
         
         const count = await db.cancelFutureSessions({
@@ -2158,7 +2159,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
         toDate: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        // Se não informar fromDate, exclui todas as sessões (sem filtro de data)
+        const fromDate = input.fromDate ? new Date(input.fromDate) : undefined;
         const toDate = input.toDate ? new Date(input.toDate) : undefined;
         
         const count = await db.deleteFutureSessions({

@@ -36,7 +36,8 @@ import {
   Activity,
   Trash2,
   BarChart3,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -54,6 +55,7 @@ const menuItems = [
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
+  { icon: Eye, label: "Portal do Aluno", path: "/portal-preview" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
   { icon: Trash2, label: "Lixeira", path: "/lixeira" },
 ];

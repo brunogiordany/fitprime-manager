@@ -1,0 +1,136 @@
+{
+  "query": "SELECT id, studentId, scheduledAt, status, deletedAt FROM sessions WHERE status IN ('scheduled', 'confirmed') AND deletedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, scheduledAt, status, deletedAt FROM sessions WHERE status IN ('scheduled', 'confirmed') AND deletedAt IS NULL;",
+  "rows": [
+    {
+      "id": "210001",
+      "studentId": "60001",
+      "scheduledAt": "2025-12-30 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "210002",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-21 08:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "210003",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-28 08:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "210004",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-07 08:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "210005",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-14 08:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240001",
+      "studentId": "60001",
+      "scheduledAt": "2025-12-31 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240002",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-07 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240003",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-05 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240004",
+      "studentId": "60001",
+      "scheduledAt": "2025-12-29 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240005",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-02 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240006",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-09 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240007",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-26 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240008",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-21 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240009",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-23 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240010",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-12 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240011",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-19 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240012",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-14 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "240013",
+      "studentId": "60001",
+      "scheduledAt": "2026-01-16 12:00:00",
+      "status": "scheduled",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tscheduledAt\tstatus\tdeletedAt\n210001\t60001\t2025-12-30 12:00:00\tscheduled\tNULL\n210002\t60001\t2026-01-21 08:00:00\tscheduled\tNULL\n210003\t60001\t2026-01-28 08:00:00\tscheduled\tNULL\n210004\t60001\t2026-01-07 08:00:00\tscheduled\tNULL\n210005\t60001\t2026-01-14 08:00:00\tscheduled\tNULL\n240001\t60001\t2025-12-31 12:00:00\tscheduled\tNULL\n240002\t60001\t2026-01-07 12:00:00\tscheduled\tNULL\n240003\t60001\t2026-01-05 12:00:00\tscheduled\tNULL\n240004\t60001\t2025-12-29 12:00:00\tscheduled\tNULL\n240005\t60001\t2026-01-02 12:00:00\tscheduled\tNULL\n240006\t60001\t2026-01-09 12:00:00\tscheduled\tNULL\n240007\t60001\t2026-01-26 12:00:00\tscheduled\tNULL\n240008\t60001\t2026-01-21 12:00:00\tscheduled\tNULL\n240009\t60001\t2026-01-23 12:00:00\tscheduled\tNULL\n240010\t60001\t2026-01-12 12:00:00\tscheduled\tNULL\n240011\t60001\t2026-01-19 12:00:00\tscheduled\tNULL\n240012\t60001\t2026-01-14 12:00:00\tscheduled\tNULL\n240013\t60001\t2026-01-16 12:00:00\tscheduled\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

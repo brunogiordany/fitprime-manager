@@ -1957,25 +1957,27 @@ export default function StudentProfile() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>A partir de (opcional)</Label>
-                <Input
-                  type="date"
-                  value={batchFromDate}
-                  onChange={(e) => setBatchFromDate(e.target.value)}
-                  placeholder="Deixe vazio para usar data atual"
-                />
-                <p className="text-xs text-muted-foreground">Se não informado, usa a data de hoje</p>
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-sm font-medium mb-1">Deixe os campos de data vazios para afetar TODAS as sessões do aluno.</p>
+                <p className="text-xs text-muted-foreground">Ou preencha para filtrar por período específico.</p>
               </div>
-              <div className="space-y-2">
-                <Label>Até (opcional)</Label>
-                <Input
-                  type="date"
-                  value={batchToDate}
-                  onChange={(e) => setBatchToDate(e.target.value)}
-                  placeholder="Deixe vazio para todas futuras"
-                />
-                <p className="text-xs text-muted-foreground">Se não informado, afeta todas as sessões futuras</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>De (opcional)</Label>
+                  <Input
+                    type="date"
+                    value={batchFromDate}
+                    onChange={(e) => setBatchFromDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Até (opcional)</Label>
+                  <Input
+                    type="date"
+                    value={batchToDate}
+                    onChange={(e) => setBatchToDate(e.target.value)}
+                  />
+                </div>
               </div>
               {batchAction === 'cancel' && (
                 <div className="space-y-2">

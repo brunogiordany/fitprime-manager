@@ -29,6 +29,7 @@ import PendingChanges from "./pages/PendingChanges";
 import Invite from "./pages/Invite";
 import StudentLogin from "./pages/StudentLogin";
 import StudentPortalPage from "./pages/StudentPortalPage";
+import PortalPreview from "./pages/PortalPreview";
 
 function Router() {
   return (
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/lixeira" component={Trash} />
       <Route path="/relatorios" component={Reports} />
       <Route path="/alteracoes-pendentes" component={PendingChanges} />
+      <Route path="/portal-preview" component={PortalPreview} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

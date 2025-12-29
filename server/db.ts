@@ -1748,23 +1748,28 @@ export async function countPendingChangesByPersonalId(personalId: number) {
 export async function cancelFutureSessions(params: {
   personalId: number;
   studentId: number;
-  fromDate: Date;
+  fromDate?: Date;
   toDate?: Date;
   reason?: string;
 }): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const conditions = [
+  // Build base conditions - cancelar sessões agendadas, confirmadas ou com falta
+  const baseConditions = [
     eq(sessions.personalId, params.personalId),
     eq(sessions.studentId, params.studentId),
-    gte(sessions.scheduledAt, params.fromDate),
-    eq(sessions.status, 'scheduled'),
+    inArray(sessions.status, ['scheduled', 'confirmed', 'no_show']),
     isNull(sessions.deletedAt),
   ];
   
+  // Só adicionar filtro de data se fromDate foi informado
+  if (params.fromDate) {
+    baseConditions.push(gte(sessions.scheduledAt, params.fromDate));
+  }
+  
   if (params.toDate) {
-    conditions.push(lte(sessions.scheduledAt, params.toDate));
+    baseConditions.push(lte(sessions.scheduledAt, params.toDate));
   }
   
   const result = await db.update(sessions)
@@ -1772,15 +1777,17 @@ export async function cancelFutureSessions(params: {
       status: 'cancelled',
       cancelReason: params.reason || 'Cancelamento em lote',
     })
-    .where(and(...conditions));
+    .where(and(...baseConditions));
   
-  return result[0]?.affectedRows || 0;
+  // MySQL returns affectedRows in different ways depending on driver
+  const affectedRows = (result as any)[0]?.affectedRows ?? (result as any).rowCount ?? (result as any).changes ?? 0;
+  return affectedRows;
 }
 
 export async function deleteFutureSessions(params: {
   personalId: number;
   studentId: number;
-  fromDate: Date;
+  fromDate?: Date;
   toDate?: Date;
 }): Promise<number> {
   const db = await getDb();
@@ -1789,9 +1796,15 @@ export async function deleteFutureSessions(params: {
   const conditions = [
     eq(sessions.personalId, params.personalId),
     eq(sessions.studentId, params.studentId),
-    gte(sessions.scheduledAt, params.fromDate),
-    inArray(sessions.status, ['scheduled', 'confirmed']),
+    // Excluir todas as sessões exceto as realizadas (completed)
+    inArray(sessions.status, ['scheduled', 'confirmed', 'no_show', 'cancelled']),
+    isNull(sessions.deletedAt),
   ];
+  
+  // Só adicionar filtro de data se fromDate foi informado
+  if (params.fromDate) {
+    conditions.push(gte(sessions.scheduledAt, params.fromDate));
+  }
   
   if (params.toDate) {
     conditions.push(lte(sessions.scheduledAt, params.toDate));
@@ -1802,7 +1815,9 @@ export async function deleteFutureSessions(params: {
     .set({ deletedAt: new Date() })
     .where(and(...conditions));
   
-  return result[0]?.affectedRows || 0;
+  // MySQL returns affectedRows in different ways depending on driver
+  const affectedRows = (result as any)[0]?.affectedRows ?? (result as any).rowCount ?? (result as any).changes ?? 0;
+  return affectedRows;
 }
 
 // ==================== BATCH CHARGE OPERATIONS ====================

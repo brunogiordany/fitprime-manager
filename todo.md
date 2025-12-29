@@ -847,3 +847,14 @@
   - [x] Cancelar todas as cobranças pendentes
   - [x] Excluir todas as cobranças pendentes
   - [x] Cancelar/excluir por período específico
+
+
+## Correções v5.21
+- [ ] Corrigir ações em lote de sessões (cancelar/excluir não funcionando)
+- [ ] Criar aba "Portal do Aluno" no menu lateral para personal visualizar área do aluno
+- [ ] Permitir selecionar aluno e ver como está o portal dele
+
+
+## Correções v5.22
+- [ ] Adicionar opção "Cancelar Todas" e "Excluir Todas" sem necessidade de selecionar datas
+- [ ] Criar aba Portal do Aluno no menu lateral para personal visualizar
