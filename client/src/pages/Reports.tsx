@@ -174,6 +174,7 @@ export default function Reports() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
   
   // Buscar dados do dashboard
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
@@ -187,9 +188,23 @@ export default function Reports() {
   // Buscar todas as cobranças
   const { data: charges, isLoading: chargesLoading } = trpc.charges.list.useQuery({});
 
+  // Filtrar sessões por aluno selecionado
+  const filteredSessions = useMemo(() => {
+    if (!sessions) return [];
+    if (selectedStudentId === "all") return sessions;
+    return sessions.filter((s: any) => s.studentId === parseInt(selectedStudentId));
+  }, [sessions, selectedStudentId]);
+
+  // Filtrar cobranças por aluno selecionado
+  const filteredCharges = useMemo(() => {
+    if (!charges) return [];
+    if (selectedStudentId === "all") return charges;
+    return charges.filter((c: any) => c.studentId === parseInt(selectedStudentId));
+  }, [charges, selectedStudentId]);
+
   // Calcular dados para os gráficos
   const monthlyData = useMemo(() => {
-    if (!sessions || !charges) return [];
+    if (!filteredSessions || !filteredCharges) return [];
     
     const now = new Date();
     let startDate: Date;
@@ -201,8 +216,8 @@ export default function Reports() {
     } else if (period === "all") {
       // Pegar a data mais antiga das sessões ou cobranças
       const allDates = [
-        ...sessions.map((s: any) => new Date(s.date)),
-        ...charges.map((c: any) => new Date(c.dueDate))
+        ...filteredSessions.map((s: any) => new Date(s.date)),
+        ...filteredCharges.map((c: any) => new Date(c.dueDate))
       ].filter(d => !isNaN(d.getTime()));
       startDate = allDates.length > 0 ? new Date(Math.min(...allDates.map(d => d.getTime()))) : subYears(now, 1);
     } else if (period === "0.25") {
@@ -225,12 +240,12 @@ export default function Reports() {
       const monthStart = startOfMonth(month);
       const monthEnd = endOfMonth(month);
       
-      const monthSessions = sessions.filter((s: any) => {
+      const monthSessions = filteredSessions.filter((s: any) => {
         const sessionDate = new Date(s.date);
         return sessionDate >= monthStart && sessionDate <= monthEnd;
       });
       
-      const monthCharges = charges.filter((c: any) => {
+      const monthCharges = filteredCharges.filter((c: any) => {
         const chargeDate = new Date(c.paidAt || c.dueDate);
         return chargeDate >= monthStart && chargeDate <= monthEnd && c.status === 'paid';
       });
@@ -246,30 +261,30 @@ export default function Reports() {
         revenue,
       };
     });
-  }, [sessions, charges, period, customStartDate, customEndDate]);
+  }, [filteredSessions, filteredCharges, period, customStartDate, customEndDate]);
 
   // Calcular estatísticas de presença
   const attendanceStats = useMemo(() => {
-    if (!sessions) return { completed: 0, noShow: 0, cancelled: 0, scheduled: 0 };
+    if (!filteredSessions.length) return { completed: 0, noShow: 0, cancelled: 0, scheduled: 0 };
     
-    const completed = sessions.filter((s: any) => s.status === 'completed').length;
-    const noShow = sessions.filter((s: any) => s.status === 'no_show').length;
-    const cancelled = sessions.filter((s: any) => s.status === 'cancelled').length;
-    const scheduled = sessions.filter((s: any) => s.status === 'scheduled' || s.status === 'confirmed').length;
+    const completed = filteredSessions.filter((s: any) => s.status === 'completed').length;
+    const noShow = filteredSessions.filter((s: any) => s.status === 'no_show').length;
+    const cancelled = filteredSessions.filter((s: any) => s.status === 'cancelled').length;
+    const scheduled = filteredSessions.filter((s: any) => s.status === 'scheduled' || s.status === 'confirmed').length;
     
     return { completed, noShow, cancelled, scheduled };
-  }, [sessions]);
+  }, [filteredSessions]);
 
   // Calcular receita por status
   const revenueStats = useMemo(() => {
-    if (!charges) return { paid: 0, pending: 0, overdue: 0 };
+    if (!filteredCharges.length) return { paid: 0, pending: 0, overdue: 0 };
     
-    const paid = charges.filter((c: any) => c.status === 'paid').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
-    const pending = charges.filter((c: any) => c.status === 'pending').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
-    const overdue = charges.filter((c: any) => c.status === 'overdue').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
+    const paid = filteredCharges.filter((c: any) => c.status === 'paid').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
+    const pending = filteredCharges.filter((c: any) => c.status === 'pending').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
+    const overdue = filteredCharges.filter((c: any) => c.status === 'overdue').reduce((acc: number, c: any) => acc + (parseFloat(c.amount) || 0), 0);
     
     return { paid, pending, overdue };
-  }, [charges]);
+  }, [filteredCharges]);
 
   // Top alunos por frequência
   const topStudentsByAttendance = useMemo(() => {
@@ -327,7 +342,22 @@ export default function Reports() {
               Análise detalhada da evolução e frequência dos alunos
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filtro por aluno */}
+            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Aluno" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os alunos</SelectItem>
+                {students?.map((student: any) => (
+                  <SelectItem key={student.id} value={String(student.id)}>
+                    {student.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select value={period} onValueChange={(val) => {
               setPeriod(val);
               if (val === "custom") {
@@ -336,7 +366,7 @@ export default function Reports() {
                 setShowCustomDatePicker(false);
               }
             }}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>

@@ -950,3 +950,5 @@
 - [x] Calendário abre automaticamente ao editar sessão (remover)
 - [x] Remover opções em massa do menu de 3 pontinhos (Cancelar/Excluir sessões do aluno)
 - [x] Melhorar UX da lista de treinos no mobile - substituir tabela por cards
+- [x] Corrigir relatórios que mostram dados zerados incorretamente
+- [x] Adicionar filtro por aluno nos relatórios
