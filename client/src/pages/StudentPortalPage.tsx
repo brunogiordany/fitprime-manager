@@ -234,7 +234,7 @@ export default function StudentPortalPage() {
     const sessionDate = new Date(s.date);
     sessionDate.setHours(0, 0, 0, 0);
     return sessionDate >= today && s.status !== 'cancelled';
-  }).slice(0, 5) || [];
+  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5) || [];
 
   const pendingCharges = charges?.filter(c => c.status === 'pending') || [];
 

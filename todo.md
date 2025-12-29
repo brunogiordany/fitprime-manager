@@ -996,3 +996,4 @@
 - [x] Filtro por aluno na página de acessos
 - [x] Botão "Liberar Tudo" para cada aluno
 - [x] Integração das permissões no portal do aluno (bloqueios funcionais)
+- [x] Corrigir ordenação das sessões no portal do aluno (mostrar mais próximas primeiro)
