@@ -783,3 +783,27 @@
 - [x] Adicionar opção de logo personalizada nas Configurações (upload/remover)
 - [x] Usar logo do personal no PDF exportado (cabeçalho e rodapé)
 - [x] Rodapé usa nome do personal ou "FitPrime Manager" como fallback
+
+
+## Melhorias Anamnese Nutricional e Medidas (v5.13)
+- [ ] Adicionar campo de consumo calórico (kcal/dia) na seção Nutrição
+- [ ] Adicionar seção de Atividades Aeróbicas/Cardio:
+  - [ ] Se faz cardio (sim/não)
+  - [ ] Lista de atividades (natação, hipismo, corrida, bike, etc.)
+  - [ ] Tempo por sessão
+  - [ ] Frequência semanal
+- [ ] Adicionar gênero nas Medidas para cálculo correto de BF
+- [ ] Calcular Taxa Metabólica Basal (TMB) automaticamente
+- [ ] IA usar kcal e atividades aeróbicas ao gerar treino
+
+
+## Melhorias Anamnese Nutricional e Medidas (v5.13)
+- [x] Adicionar campo de consumo calórico (kcal/dia) na seção Nutrição
+- [x] Adicionar seção de Atividades Aeróbicas/Cardio:
+  - [x] Se faz cardio (sim/não)
+  - [x] Lista de atividades (natação, hipismo, corrida, bike, etc.)
+  - [x] Tempo por sessão
+  - [x] Frequência semanal
+- [x] Gênero já existia no cadastro do aluno - usado para cálculo correto de BF
+- [x] Calcular Taxa Metabólica Basal (TMB) automaticamente (Fórmula Mifflin-St Jeor)
+- [x] IA usar kcal e atividades aeróbicas ao gerar treino

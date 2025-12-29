@@ -102,6 +102,10 @@ export const anamneses = mysqlTable("anamneses", {
   waterIntake: decimal("waterIntake", { precision: 4, scale: 2 }),
   dietRestrictions: text("dietRestrictions"),
   supplements: text("supplements"),
+  dailyCalories: int("dailyCalories"), // Consumo calórico diário (kcal) - opcional para IA
+  // Atividades Aeróbicas/Cardio
+  doesCardio: boolean("doesCardio").default(false), // Faz cardio?
+  cardioActivities: text("cardioActivities"), // JSON array: [{activity: "natação", frequency: 2, duration: 45}, ...]
   // Experiência com exercícios
   exerciseExperience: mysqlEnum("exerciseExperience", ["none", "beginner", "intermediate", "advanced"]),
   previousActivities: text("previousActivities"),
@@ -164,6 +168,8 @@ export const measurements = mysqlTable("measurements", {
   neck: decimal("neck", { precision: 5, scale: 2 }),
   // Calculados
   bmi: decimal("bmi", { precision: 5, scale: 2 }),
+  // TMB - Taxa Metabólica Basal (calculada automaticamente)
+  estimatedBMR: decimal("estimatedBMR", { precision: 7, scale: 2 }), // kcal/dia
   // BF Estimado (calculado com base nas medidas)
   estimatedBodyFat: decimal("estimatedBodyFat", { precision: 5, scale: 2 }),
   estimatedMuscleMass: decimal("estimatedMuscleMass", { precision: 5, scale: 2 }),

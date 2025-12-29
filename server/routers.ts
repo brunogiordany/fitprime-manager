@@ -668,6 +668,9 @@ export const appRouter = router({
         waterIntake: z.string().optional(),
         dietRestrictions: z.string().optional(),
         supplements: z.string().optional(),
+        dailyCalories: z.number().optional(),
+        doesCardio: z.boolean().optional(),
+        cardioActivities: z.string().optional(),
         exerciseExperience: z.enum(['none', 'beginner', 'intermediate', 'advanced']).optional(),
         previousActivities: z.string().optional(),
         availableDays: z.string().optional(),
@@ -726,6 +729,9 @@ export const appRouter = router({
         waterIntake: z.string().optional(),
         dietRestrictions: z.string().optional(),
         supplements: z.string().optional(),
+        dailyCalories: z.number().optional(),
+        doesCardio: z.boolean().optional(),
+        cardioActivities: z.string().optional(),
         exerciseExperience: z.enum(['none', 'beginner', 'intermediate', 'advanced']).optional(),
         previousActivities: z.string().optional(),
         availableDays: z.string().optional(),
@@ -1334,6 +1340,10 @@ export const appRouter = router({
           restricoesTreino: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
           detalhesRestricoes: anamnesis.restrictionNotes,
           enfasesMusculares: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
+          // Novos campos de nutrição e cardio
+          consumoCaloricoDiario: (anamnesis as any).dailyCalories || null,
+          fazCardio: (anamnesis as any).doesCardio || false,
+          atividadesAerobicas: (anamnesis as any).cardioActivities ? JSON.parse((anamnesis as any).cardioActivities) : [],
         } : null;
         
         const measurementInfo = latestMeasurement ? {
@@ -1341,6 +1351,7 @@ export const appRouter = router({
           altura: latestMeasurement.height,
           gorduraCorporal: latestMeasurement.bodyFat,
           massaMuscular: latestMeasurement.muscleMass,
+          tmbEstimado: (latestMeasurement as any).estimatedBMR || null,
         } : null;
         
         const systemPrompt = `Você é um personal trainer experiente e certificado. Sua tarefa é criar um plano de treino personalizado baseado nas informações do aluno.
@@ -1391,6 +1402,25 @@ REGRAS CRÍTICAS - FREQUÊNCIA SEMANAL:
 - Se frequência = 5: Crie 5 treinos (ex: ABCDE - Peito/Costas/Pernas/Ombros/Braços)
 - Se frequência = 6: Crie 6 treinos (ex: Push/Pull/Legs x2)
 - Se não informada, use 3 dias como padrão
+
+REGRAS CRÍTICAS - ATIVIDADES AERÓBICAS/CARDIO:
+- Se o aluno JÁ FAZ cardio regularmente (natação, corrida, ciclismo, etc.):
+  * NÃO adicione cardio extra no treino de musculação
+  * Considere que ele já tem gasto calórico adicional
+  * Ajuste o volume de treino para não sobrecarregar
+  * Se faz muitas atividades aeróbicas, reduza volume de pernas
+- Se o aluno NÃO FAZ cardio e o objetivo é emagrecimento:
+  * Sugira incluir cardio leve ao final do treino (10-15 min)
+  * Ou sugira HIIT em dias alternados
+
+REGRAS CRÍTICAS - NUTRIÇÃO E CALORIAS:
+- Se o consumo calórico diário for informado:
+  * Consumo < 1500 kcal: Treino mais leve, menos volume, evite treinos muito longos
+  * Consumo 1500-2000 kcal: Treino moderado, foco em manutenção
+  * Consumo 2000-2500 kcal: Treino normal, pode ter bom volume
+  * Consumo > 2500 kcal: Pode ter treino intenso, bom para hipertrofia
+- Se TMB for informado, considere para ajustar intensidade
+- Déficit calórico grande + treino intenso = risco de overtraining
 
 Regras adicionais:
 - PRIORIDADE MÁXIMA: Respeite as restrições de treino do aluno (lombar, joelho, ombro, etc.)

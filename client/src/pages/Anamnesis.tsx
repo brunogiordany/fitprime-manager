@@ -61,6 +61,11 @@ export default function Anamnesis() {
     mealsPerDay: "",
     waterIntake: "",
     supplements: "",
+    dailyCalories: "", // Consumo calórico diário (kcal)
+    
+    // Atividades Aeróbicas/Cardio
+    doesCardio: false,
+    cardioActivities: [] as { activity: string; frequency: number; duration: number }[],
     
     // Restrições de Treino
     trainingRestrictions: [] as string[],
@@ -183,6 +188,37 @@ export default function Anamnesis() {
     return '';
   };
 
+  // TMB - Taxa Metabólica Basal (Fórmula Mifflin-St Jeor)
+  // Homens: TMB = (10 × peso em kg) + (6.25 × altura em cm) – (5 × idade) + 5
+  // Mulheres: TMB = (10 × peso em kg) + (6.25 × altura em cm) – (5 × idade) – 161
+  const calculateBMR = (gender: string, weight: string, height: string, birthDate: string | null): string => {
+    const w = parseFloat(weight);
+    const h = parseFloat(height);
+    
+    if (!w || !h || w <= 0 || h <= 0) return '';
+    
+    // Calcular idade a partir da data de nascimento
+    let age = 30; // Valor padrão se não tiver data de nascimento
+    if (birthDate) {
+      const birth = new Date(birthDate);
+      const today = new Date();
+      age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+    }
+    
+    let bmr: number;
+    if (gender === 'female') {
+      bmr = (10 * w) + (6.25 * h) - (5 * age) - 161;
+    } else {
+      bmr = (10 * w) + (6.25 * h) - (5 * age) + 5;
+    }
+    
+    return Math.round(bmr).toString();
+  };
+
   // Valores calculados
   const calculatedIMC = calculateIMC(formData.weight, formData.height);
   const imcClassification = getIMCClassification(calculatedIMC);
@@ -196,6 +232,12 @@ export default function Anamnesis() {
   const usedBF = formData.bodyFat || calculatedBF;
   const calculatedFatMass = calculateFatMass(formData.weight, usedBF);
   const calculatedLeanMass = calculateLeanMass(formData.weight, usedBF);
+  const calculatedBMR = calculateBMR(
+    student?.gender || 'male',
+    formData.weight,
+    formData.height,
+    student?.birthDate ? String(student.birthDate) : null
+  );
 
   useEffect(() => {
     if (anamnesis) {
@@ -218,6 +260,9 @@ export default function Anamnesis() {
         mealsPerDay: anamnesis.mealsPerDay?.toString() || "",
         waterIntake: anamnesis.waterIntake?.toString() || "",
         supplements: anamnesis.supplements || "",
+        dailyCalories: (anamnesis as any).dailyCalories?.toString() || "",
+        doesCardio: (anamnesis as any).doesCardio || false,
+        cardioActivities: (anamnesis as any).cardioActivities ? JSON.parse((anamnesis as any).cardioActivities) : [],
         trainingRestrictions: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
         restrictionNotes: anamnesis.restrictionNotes || "",
         muscleEmphasis: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
@@ -276,6 +321,9 @@ export default function Anamnesis() {
       mealsPerDay: formData.mealsPerDay ? parseInt(formData.mealsPerDay) : undefined,
       waterIntake: formData.waterIntake || undefined,
       supplements: formData.supplements || undefined,
+      dailyCalories: formData.dailyCalories ? parseInt(formData.dailyCalories) : undefined,
+      doesCardio: formData.doesCardio,
+      cardioActivities: formData.cardioActivities?.length > 0 ? JSON.stringify(formData.cardioActivities) : undefined,
       trainingRestrictions: formData.trainingRestrictions?.length > 0 ? JSON.stringify(formData.trainingRestrictions) : undefined,
       restrictionNotes: formData.restrictionNotes || undefined,
       muscleEmphasis: formData.muscleEmphasis?.length > 0 ? JSON.stringify(formData.muscleEmphasis) : undefined,
@@ -446,7 +494,7 @@ export default function Anamnesis() {
                   </div>
 
                   {/* Cálculos Automáticos */}
-                  {(calculatedIMC || calculatedBF) && (
+                  {(calculatedIMC || calculatedBF || calculatedBMR) && (
                     <Card className="bg-emerald-50 border-emerald-200">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center gap-2">
@@ -455,7 +503,7 @@ export default function Anamnesis() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                           {calculatedIMC && (
                             <div>
                               <p className={`text-2xl font-bold ${imcClassification.color}`}>{calculatedIMC}</p>
@@ -484,9 +532,16 @@ export default function Anamnesis() {
                               <p className="text-xs text-green-500">Massa Magra Est.</p>
                             </div>
                           )}
+                          {calculatedBMR && (
+                            <div>
+                              <p className="text-2xl font-bold text-purple-500">{calculatedBMR}</p>
+                              <p className="text-xs text-muted-foreground">kcal/dia</p>
+                              <p className="text-xs text-purple-500">TMB (Mifflin)</p>
+                            </div>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-3 text-center">
-                          * BF estimado requer: altura, pescoço, cintura{student?.gender === 'female' ? ', quadril' : ''}
+                          * BF estimado requer: altura, pescoço, cintura{student?.gender === 'female' ? ', quadril' : ''} | TMB usa idade do aluno
                         </p>
                       </CardContent>
                     </Card>
@@ -1051,7 +1106,7 @@ export default function Anamnesis() {
                 <CardDescription>Hábitos alimentares e suplementação</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label>Refeições por Dia</Label>
                     <Input
@@ -1071,6 +1126,16 @@ export default function Anamnesis() {
                       onChange={(e) => setFormData({ ...formData, waterIntake: e.target.value })}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Consumo Calórico Diário (kcal)</Label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 2000"
+                      value={formData.dailyCalories}
+                      onChange={(e) => setFormData({ ...formData, dailyCalories: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">Opcional - A IA usará para personalizar o treino</p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -1089,6 +1154,147 @@ export default function Anamnesis() {
                     value={formData.supplements}
                     onChange={(e) => setFormData({ ...formData, supplements: e.target.value })}
                   />
+                </div>
+
+                {/* Atividades Aeróbicas/Cardio */}
+                <div className="pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                    Atividades Aeróbicas / Cardio
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Informe se o aluno pratica atividades aeróbicas além da musculação. A IA considerará essas atividades ao gerar treinos.
+                  </p>
+                  
+                  <div className="flex items-center gap-3 mb-4">
+                    <Label>O aluno faz cardio/atividades aeróbicas?</Label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, doesCardio: true })}
+                        className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                          formData.doesCardio
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        Sim
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, doesCardio: false, cardioActivities: [] })}
+                        className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                          !formData.doesCardio
+                            ? 'border-gray-500 bg-gray-50 text-gray-700'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        Não
+                      </button>
+                    </div>
+                  </div>
+
+                  {formData.doesCardio && (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <Label>Atividades Praticadas</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData({
+                            ...formData,
+                            cardioActivities: [...formData.cardioActivities, { activity: '', frequency: 2, duration: 30 }]
+                          })}
+                        >
+                          + Adicionar Atividade
+                        </Button>
+                      </div>
+                      
+                      {formData.cardioActivities.length === 0 && (
+                        <p className="text-sm text-muted-foreground italic">Clique em "+ Adicionar Atividade" para incluir atividades aeróbicas</p>
+                      )}
+
+                      {formData.cardioActivities.map((cardio, index) => (
+                        <div key={index} className="grid gap-4 md:grid-cols-4 p-4 bg-gray-50 rounded-lg items-end">
+                          <div className="space-y-2">
+                            <Label>Atividade</Label>
+                            <Select
+                              value={cardio.activity}
+                              onValueChange={(value) => {
+                                const updated = [...formData.cardioActivities];
+                                updated[index].activity = value;
+                                setFormData({ ...formData, cardioActivities: updated });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="corrida">Corrida</SelectItem>
+                                <SelectItem value="caminhada">Caminhada</SelectItem>
+                                <SelectItem value="ciclismo">Ciclismo / Bike</SelectItem>
+                                <SelectItem value="natacao">Natação</SelectItem>
+                                <SelectItem value="hidroginastica">Hidroginástica</SelectItem>
+                                <SelectItem value="danca">Dança</SelectItem>
+                                <SelectItem value="luta">Lutas / Artes Marciais</SelectItem>
+                                <SelectItem value="crossfit">CrossFit / Funcional</SelectItem>
+                                <SelectItem value="hipismo">Hipismo / Equitação</SelectItem>
+                                <SelectItem value="remo">Remo</SelectItem>
+                                <SelectItem value="surf">Surf</SelectItem>
+                                <SelectItem value="tenis">Tênis</SelectItem>
+                                <SelectItem value="futebol">Futebol</SelectItem>
+                                <SelectItem value="volei">Vôlei</SelectItem>
+                                <SelectItem value="basquete">Basquete</SelectItem>
+                                <SelectItem value="yoga">Yoga / Pilates</SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Frequência (x/semana)</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="7"
+                              value={cardio.frequency}
+                              onChange={(e) => {
+                                const updated = [...formData.cardioActivities];
+                                updated[index].frequency = parseInt(e.target.value) || 1;
+                                setFormData({ ...formData, cardioActivities: updated });
+                              }}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Duração (min)</Label>
+                            <Input
+                              type="number"
+                              min="10"
+                              step="5"
+                              value={cardio.duration}
+                              onChange={(e) => {
+                                const updated = [...formData.cardioActivities];
+                                updated[index].duration = parseInt(e.target.value) || 30;
+                                setFormData({ ...formData, cardioActivities: updated });
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              const updated = formData.cardioActivities.filter((_, i) => i !== index);
+                              setFormData({ ...formData, cardioActivities: updated });
+                            }}
+                          >
+                            Remover
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
