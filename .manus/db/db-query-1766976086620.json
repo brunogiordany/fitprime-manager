@@ -1,0 +1,70 @@
+{
+  "query": "SELECT * FROM student_invites ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM student_invites ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "8",
+      "personalId": "1",
+      "studentId": "60001",
+      "inviteToken": "9zU6rg80br_3E31Bxjm_CarBRFeAu76w",
+      "email": "agenteiaoficial@gmail.com",
+      "phone": "13996442512",
+      "status": "pending",
+      "expiresAt": "2026-01-05 02:07:51",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-29 02:07:50"
+    },
+    {
+      "id": "7",
+      "personalId": "1",
+      "studentId": "30001",
+      "inviteToken": "j20_cfypCh7IJcpP3T2S65_Kh1yyGWKg",
+      "email": "lauracriger03@gmail.com",
+      "phone": "15996442324",
+      "status": "pending",
+      "expiresAt": "2026-01-05 02:07:46",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-29 02:07:46"
+    },
+    {
+      "id": "6",
+      "personalId": "1",
+      "studentId": "1",
+      "inviteToken": "MhbfcMACUVDttHVXvEjCcKTrEEuaLixP",
+      "email": "brunogiordany@gmail.com",
+      "phone": "15997612063",
+      "status": "pending",
+      "expiresAt": "2026-01-05 02:07:37",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-29 02:07:37"
+    },
+    {
+      "id": "5",
+      "personalId": "1",
+      "studentId": "60001",
+      "inviteToken": "tIukxGe-B7jyCjHr8h6AZhxqlf3-BR0c",
+      "email": "agenteiaoficial@gmail.com",
+      "phone": "13996442512",
+      "status": "pending",
+      "expiresAt": "2026-01-05 02:07:26",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-29 02:07:26"
+    },
+    {
+      "id": "4",
+      "personalId": "1",
+      "studentId": "60001",
+      "inviteToken": "YNwZJv4cVwE1SY_c7mCyB9UcOGDeuIG-",
+      "email": "agenteiaoficial@gmail.com",
+      "phone": "NULL",
+      "status": "accepted",
+      "expiresAt": "2026-01-05 01:47:41",
+      "acceptedAt": "NULL",
+      "createdAt": "2025-12-29 01:47:40"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tstudentId\tinviteToken\temail\tphone\tstatus\texpiresAt\tacceptedAt\tcreatedAt\n8\t1\t60001\t9zU6rg80br_3E31Bxjm_CarBRFeAu76w\tagenteiaoficial@gmail.com\t13996442512\tpending\t2026-01-05 02:07:51\tNULL\t2025-12-29 02:07:50\n7\t1\t30001\tj20_cfypCh7IJcpP3T2S65_Kh1yyGWKg\tlauracriger03@gmail.com\t15996442324\tpending\t2026-01-05 02:07:46\tNULL\t2025-12-29 02:07:46\n6\t1\t1\tMhbfcMACUVDttHVXvEjCcKTrEEuaLixP\tbrunogiordany@gmail.com\t15997612063\tpending\t2026-01-05 02:07:37\tNULL\t2025-12-29 02:07:37\n5\t1\t60001\ttIukxGe-B7jyCjHr8h6AZhxqlf3-BR0c\tagenteiaoficial@gmail.com\t13996442512\tpending\t2026-01-05 02:07:26\tNULL\t2025-12-29 02:07:26\n4\t1\t60001\tYNwZJv4cVwE1SY_c7mCyB9UcOGDeuIG-\tagenteiaoficial@gmail.com\tNULL\taccepted\t2026-01-05 01:47:41\tNULL\t2025-12-29 01:47:40\n",
+  "stderr": "",
+  "execution_time_ms": 100
+}

@@ -621,3 +621,9 @@
 - [x] Configurar API key do Resend para envio de emails
 - [x] Corrigir problema de login do portal do aluno (erro jwt.sign)
 - [x] Atualizar email remetente para usar domínio do Resend (onboarding@resend.dev)
+
+
+## Bugs Reportados (v5.0)
+- [x] Cadastro via link de convite não funciona (erro ao finalizar) - FUNCIONANDO
+- [x] Agenda diária não mostra sessões agendadas
+- [x] Reorganizar layout da agenda: data e botões de navegação juntos

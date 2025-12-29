@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, studentId, scheduledAt, status FROM sessions ORDER BY scheduledAt DESC LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, scheduledAt, status FROM sessions ORDER BY scheduledAt DESC LIMIT 15;",
+  "rows": [
+    {
+      "id": "120001",
+      "studentId": "30001",
+      "scheduledAt": "2026-01-05 15:00:00",
+      "status": "scheduled"
+    },
+    {
+      "id": "90001",
+      "studentId": "1",
+      "scheduledAt": "2025-12-29 10:00:00",
+      "status": "no_show"
+    },
+    {
+      "id": "150001",
+      "studentId": "1",
+      "scheduledAt": "2025-12-28 14:58:00",
+      "status": "no_show"
+    },
+    {
+      "id": "90003",
+      "studentId": "1",
+      "scheduledAt": "2025-12-26 13:00:00",
+      "status": "no_show"
+    },
+    {
+      "id": "1",
+      "studentId": "1",
+      "scheduledAt": "2025-12-26 11:30:00",
+      "status": "cancelled"
+    },
+    {
+      "id": "90002",
+      "studentId": "1",
+      "scheduledAt": "2025-12-24 13:00:00",
+      "status": "no_show"
+    },
+    {
+      "id": "60001",
+      "studentId": "1",
+      "scheduledAt": "2025-12-24 12:27:00",
+      "status": "no_show"
+    },
+    {
+      "id": "30001",
+      "studentId": "1",
+      "scheduledAt": "2025-12-24 09:18:00",
+      "status": "no_show"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tscheduledAt\tstatus\n120001\t30001\t2026-01-05 15:00:00\tscheduled\n90001\t1\t2025-12-29 10:00:00\tno_show\n150001\t1\t2025-12-28 14:58:00\tno_show\n90003\t1\t2025-12-26 13:00:00\tno_show\n1\t1\t2025-12-26 11:30:00\tcancelled\n90002\t1\t2025-12-24 13:00:00\tno_show\n60001\t1\t2025-12-24 12:27:00\tno_show\n30001\t1\t2025-12-24 09:18:00\tno_show\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

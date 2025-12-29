@@ -157,7 +157,7 @@ export default function Schedule() {
       ? format(calendarEnd, "yyyy-MM-dd")
       : viewMode === "week"
         ? format(weekEnd, "yyyy-MM-dd")
-        : format(currentDate, "yyyy-MM-dd"),
+        : format(addDays(currentDate, 1), "yyyy-MM-dd"),
   });
 
   const { data: students } = trpc.students.list.useQuery({});
@@ -475,27 +475,23 @@ export default function Schedule() {
         {/* Navigation */}
         <Card>
           <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <h2 className="text-lg font-semibold capitalize">
-                  {viewMode === "month"
-                    ? format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
-                    : viewMode === "week" 
-                      ? `${format(weekStart, "dd MMM", { locale: ptBR })} - ${format(weekEnd, "dd MMM yyyy", { locale: ptBR })}`
-                      : format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
-                  Hoje
-                </Button>
-                <Button variant="outline" size="icon" onClick={() => navigateDate("next")}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex items-center justify-center gap-3">
+              <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h2 className="text-lg font-semibold capitalize min-w-[280px] text-center">
+                {viewMode === "month"
+                  ? format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
+                  : viewMode === "week" 
+                    ? `${format(weekStart, "dd MMM", { locale: ptBR })} - ${format(weekEnd, "dd MMM yyyy", { locale: ptBR })}`
+                    : format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </h2>
+              <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
+                Hoje
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => navigateDate("next")}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
             
             {/* Filtros de Status */}
