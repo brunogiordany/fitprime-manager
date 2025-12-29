@@ -30,6 +30,7 @@ import Invite from "./pages/Invite";
 import StudentLogin from "./pages/StudentLogin";
 import StudentPortalPage from "./pages/StudentPortalPage";
 import PortalPreview from "./pages/PortalPreview";
+import Sessions from "./pages/Sessions";
 
 function Router() {
   return (
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/alunos" component={Students} />
       <Route path="/alunos/:id" component={StudentProfile} />
       <Route path="/agenda" component={Schedule} />
+      <Route path="/sessoes" component={Sessions} />
       <Route path="/treinos" component={Workouts} />
       <Route path="/treinos/:id" component={WorkoutDetail} />
             <Route path="/sessao/:sessionId/treino" component={WorkoutLog} />

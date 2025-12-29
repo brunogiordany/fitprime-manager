@@ -878,3 +878,6 @@
 - [x] Corrigir layout do Modal de Excluir Sessões (campos de data sobrepostos)
 - [x] Implementar restauração em massa de sessões na Lixeira (por aluno ou todas)
 - [x] Corrigir erros TypeScript na página Sessions (markCompleted/markNoShow)
+
+## Bug: Página Sessões 404 (v5.25)
+- [x] Registrar rota /sessoes no App.tsx
