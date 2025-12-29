@@ -1015,111 +1015,90 @@ export default function Workouts() {
             </CardContent>
           </Card>
         ) : filteredWorkouts && filteredWorkouts.length > 0 ? (
-          <Card>
-            <CardContent className="pt-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Objetivo</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Dificuldade</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredWorkouts.map((workout) => {
-                    const typeBadge = getTypeBadge(workout.type);
-                    const difficultyBadge = getDifficultyBadge(workout.difficulty);
-                    const goalBadge = getGoalBadge((workout as any).goal);
-                    return (
-                      <TableRow key={workout.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {(workout as any).generatedByAI && (
-                              <Sparkles className="h-4 w-4 text-purple-500" />
-                            )}
-                            <div>
-                              <p className="font-medium">{workout.name}</p>
-                              {workout.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-1">
-                                  {workout.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={goalBadge.className}>
+          <div className="space-y-3">
+            {filteredWorkouts.map((workout) => {
+              const typeBadge = getTypeBadge(workout.type);
+              const difficultyBadge = getDifficultyBadge(workout.difficulty);
+              const goalBadge = getGoalBadge((workout as any).goal);
+              return (
+                <Card key={workout.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setLocation(`/treinos/${workout.id}`)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {(workout as any).generatedByAI && (
+                            <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                          )}
+                          <h3 className="font-medium truncate">{workout.name}</h3>
+                        </div>
+                        {workout.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {workout.description}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          <Badge className={goalBadge.className} variant="outline">
                             {goalBadge.label}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={typeBadge.className}>
+                          <Badge className={typeBadge.className} variant="outline">
                             {typeBadge.label}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={difficultyBadge.className}>
+                          <Badge className={difficultyBadge.className} variant="outline">
                             {difficultyBadge.label}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
                           <Badge variant={workout.status === 'active' ? 'default' : 'secondary'}>
                             {workout.status === 'active' ? 'Ativo' : 'Inativo'}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {format(new Date(workout.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setLocation(`/treinos/${workout.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver Detalhes
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setLocation(`/treinos/${workout.id}`)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => {
-                                setWorkoutToDuplicate(workout);
-                                setIsDuplicateDialogOpen(true);
-                              }}>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicar para Outro Aluno
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={() => {
-                                  if (confirm("Mover treino para a lixeira?")) {
-                                    deleteMutation.mutate({ id: workout.id });
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Criado em {format(new Date(workout.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="flex-shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}`); }}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}`); }}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            setWorkoutToDuplicate(workout);
+                            setIsDuplicateDialogOpen(true);
+                          }}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicar para Outro Aluno
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm("Mover treino para a lixeira?")) {
+                                deleteMutation.mutate({ id: workout.id });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">

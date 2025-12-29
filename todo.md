@@ -949,3 +949,4 @@
 - [x] Corrigir erro "Load failed" ao excluir sessão
 - [x] Calendário abre automaticamente ao editar sessão (remover)
 - [x] Remover opções em massa do menu de 3 pontinhos (Cancelar/Excluir sessões do aluno)
+- [x] Melhorar UX da lista de treinos no mobile - substituir tabela por cards
