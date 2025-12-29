@@ -807,3 +807,8 @@
 - [x] Gênero já existia no cadastro do aluno - usado para cálculo correto de BF
 - [x] Calcular Taxa Metabólica Basal (TMB) automaticamente (Fórmula Mifflin-St Jeor)
 - [x] IA usar kcal e atividades aeróbicas ao gerar treino
+
+
+## Correção Mobile Anamnese (v5.14)
+- [x] Corrigir abas da anamnese encavaladas/sobrepostas na versão mobile
+- [x] Adicionar scroll horizontal nas abas para telas pequenas

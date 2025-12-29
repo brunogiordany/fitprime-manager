@@ -409,32 +409,36 @@ export default function Anamnesis() {
 
         {/* Form Tabs */}
         <Tabs defaultValue="measurements" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="measurements" className="gap-2">
-              <Scale className="h-4 w-4 hidden sm:block" />
-              Medidas
-            </TabsTrigger>
-            <TabsTrigger value="lifestyle" className="gap-2">
-              <User className="h-4 w-4 hidden sm:block" />
-              Estilo de Vida
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="gap-2">
-              <Target className="h-4 w-4 hidden sm:block" />
-              Objetivos
-            </TabsTrigger>
-            <TabsTrigger value="health" className="gap-2">
-              <Heart className="h-4 w-4 hidden sm:block" />
-              Saúde
-            </TabsTrigger>
-            <TabsTrigger value="nutrition" className="gap-2">
-              <Utensils className="h-4 w-4 hidden sm:block" />
-              Nutrição
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="gap-2">
-              <Activity className="h-4 w-4 hidden sm:block" />
-              Observações
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <TabsList className="inline-flex w-max min-w-full md:grid md:w-full md:grid-cols-6 gap-1">
+              <TabsTrigger value="measurements" className="gap-2 whitespace-nowrap px-3">
+                <Scale className="h-4 w-4 hidden sm:block" />
+                Medidas
+              </TabsTrigger>
+              <TabsTrigger value="lifestyle" className="gap-2 whitespace-nowrap px-3">
+                <User className="h-4 w-4 hidden sm:block" />
+                <span className="hidden sm:inline">Estilo de Vida</span>
+                <span className="sm:hidden">Estilo</span>
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="gap-2 whitespace-nowrap px-3">
+                <Target className="h-4 w-4 hidden sm:block" />
+                Objetivos
+              </TabsTrigger>
+              <TabsTrigger value="health" className="gap-2 whitespace-nowrap px-3">
+                <Heart className="h-4 w-4 hidden sm:block" />
+                Saúde
+              </TabsTrigger>
+              <TabsTrigger value="nutrition" className="gap-2 whitespace-nowrap px-3">
+                <Utensils className="h-4 w-4 hidden sm:block" />
+                Nutrição
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="gap-2 whitespace-nowrap px-3">
+                <Activity className="h-4 w-4 hidden sm:block" />
+                <span className="hidden sm:inline">Observações</span>
+                <span className="sm:hidden">Obs.</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Medidas Corporais (Nova aba) */}
           <TabsContent value="measurements">
