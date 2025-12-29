@@ -142,6 +142,57 @@ export const appRouter = router({
     }),
   }),
 
+  // ==================== CHAT (Personal side) ====================
+  chat: router({
+    // Listar mensagens com um aluno
+    messages: personalProcedure
+      .input(z.object({ studentId: z.number(), limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        const messages = await db.getChatMessages(ctx.personal.id, input.studentId, input.limit || 50);
+        // Marcar mensagens do aluno como lidas
+        await db.markChatMessagesAsRead(ctx.personal.id, input.studentId, 'personal');
+        return messages.reverse(); // Retornar em ordem cronológica
+      }),
+    
+    // Enviar mensagem para um aluno
+    send: personalProcedure
+      .input(z.object({ studentId: z.number(), message: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o aluno pertence ao personal
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Aluno não encontrado' });
+        }
+        
+        const messageId = await db.createChatMessage({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          senderType: 'personal',
+          message: input.message,
+        });
+        
+        return { success: true, messageId };
+      }),
+    
+    // Contagem de mensagens não lidas por aluno
+    unreadCount: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUnreadChatCount(ctx.personal.id, input.studentId, 'personal');
+      }),
+    
+    // Listar alunos com mensagens não lidas
+    studentsWithUnread: personalProcedure.query(async ({ ctx }) => {
+      return await db.getStudentsWithUnreadMessages(ctx.personal.id);
+    }),
+    
+    // Total de mensagens não lidas
+    totalUnread: personalProcedure.query(async ({ ctx }) => {
+      const unreadCounts = await db.getAllUnreadChatCountForPersonal(ctx.personal.id);
+      return unreadCounts.reduce((sum, item) => sum + item.count, 0);
+    }),
+  }),
+
   // ==================== STUDENTS ====================
   students: router({
     list: personalProcedure
@@ -206,6 +257,8 @@ export const appRouter = router({
         notes: z.string().optional(),
         status: z.enum(['active', 'inactive', 'pending']).optional(),
         whatsappOptIn: z.boolean().optional(),
+        canEditAnamnesis: z.boolean().optional(),
+        canEditMeasurements: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, birthDate, ...data } = input;
@@ -3433,6 +3486,379 @@ Retorne APENAS o JSON, sem texto adicional.`;
             'cancelled'
           );
         }
+        
+        return { success: true };
+      }),
+    
+    // Verificar permissões de edição do aluno
+    editPermissions: studentProcedure.query(async ({ ctx }) => {
+      return {
+        canEditAnamnesis: ctx.student.canEditAnamnesis ?? false,
+        canEditMeasurements: ctx.student.canEditMeasurements ?? false,
+      };
+    }),
+    
+    // Adicionar nova medida pelo aluno
+    addMeasurement: studentProcedure
+      .input(z.object({
+        measureDate: z.string(),
+        weight: z.string().optional(),
+        height: z.string().optional(),
+        bodyFat: z.string().optional(),
+        muscleMass: z.string().optional(),
+        neck: z.string().optional(),
+        chest: z.string().optional(),
+        waist: z.string().optional(),
+        hip: z.string().optional(),
+        rightArm: z.string().optional(),
+        leftArm: z.string().optional(),
+        rightThigh: z.string().optional(),
+        leftThigh: z.string().optional(),
+        rightCalf: z.string().optional(),
+        leftCalf: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar permissão
+        if (!ctx.student.canEditMeasurements) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Você não tem permissão para adicionar medidas. Solicite ao seu personal.' });
+        }
+        
+        const { measureDate, ...measurements } = input;
+        
+        // Calcular IMC se tiver peso e altura
+        let bmi: string | undefined;
+        if (measurements.weight && measurements.height) {
+          const w = parseFloat(measurements.weight);
+          const h = parseFloat(measurements.height) / 100;
+          if (w > 0 && h > 0) {
+            bmi = (w / (h * h)).toFixed(1);
+          }
+        }
+        
+        const id = await db.createMeasurement({
+          studentId: ctx.student.id,
+          personalId: ctx.student.personalId,
+          measureDate: new Date(measureDate + 'T12:00:00'),
+          ...measurements,
+          bmi,
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `📏 Nova Medida Registrada - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} registrou novas medidas:
+
+📅 Data: ${new Date(measureDate).toLocaleDateString('pt-BR')}${measurements.weight ? `\n⚖️ Peso: ${measurements.weight} kg` : ''}${measurements.bodyFat ? `\n📉 Gordura: ${measurements.bodyFat}%` : ''}${measurements.waist ? `\n📏 Cintura: ${measurements.waist} cm` : ''}\n\nAcesse o sistema para ver os detalhes.`,
+        });
+        
+        return { id };
+      }),
+    
+    // Atualizar medida existente pelo aluno
+    updateMeasurement: studentProcedure
+      .input(z.object({
+        id: z.number(),
+        measureDate: z.string().optional(),
+        weight: z.string().optional(),
+        height: z.string().optional(),
+        bodyFat: z.string().optional(),
+        muscleMass: z.string().optional(),
+        neck: z.string().optional(),
+        chest: z.string().optional(),
+        waist: z.string().optional(),
+        hip: z.string().optional(),
+        rightArm: z.string().optional(),
+        leftArm: z.string().optional(),
+        rightThigh: z.string().optional(),
+        leftThigh: z.string().optional(),
+        rightCalf: z.string().optional(),
+        leftCalf: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar permissão
+        if (!ctx.student.canEditMeasurements) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Você não tem permissão para editar medidas. Solicite ao seu personal.' });
+        }
+        
+        const { id, measureDate, ...measurements } = input;
+        
+        // Verificar se a medida pertence ao aluno
+        const existingMeasurement = await db.getMeasurementById(id);
+        if (!existingMeasurement || existingMeasurement.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Medida não encontrada' });
+        }
+        
+        // Calcular IMC se tiver peso e altura
+        let bmi: string | undefined;
+        const weight = measurements.weight || existingMeasurement.weight;
+        const height = measurements.height || existingMeasurement.height;
+        if (weight && height) {
+          const w = parseFloat(weight);
+          const h = parseFloat(height) / 100;
+          if (w > 0 && h > 0) {
+            bmi = (w / (h * h)).toFixed(1);
+          }
+        }
+        
+        await db.updateMeasurement(id, {
+          ...measurements,
+          measureDate: measureDate ? new Date(measureDate + 'T12:00:00') : undefined,
+          bmi,
+        } as any);
+        
+        return { success: true };
+      }),
+    
+    // Atualizar anamnese pelo aluno
+    updateAnamnesis: studentProcedure
+      .input(z.object({
+        occupation: z.string().optional(),
+        sleepHours: z.number().optional(),
+        stressLevel: z.enum(['low', 'moderate', 'high', 'very_high']).optional(),
+        medicalHistory: z.string().optional(),
+        medications: z.string().optional(),
+        injuries: z.string().optional(),
+        allergies: z.string().optional(),
+        mainGoal: z.enum(['weight_loss', 'muscle_gain', 'conditioning', 'health', 'rehabilitation', 'sports', 'other']).optional(),
+        secondaryGoals: z.string().optional(),
+        targetWeight: z.string().optional(),
+        observations: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar permissão
+        if (!ctx.student.canEditAnamnesis) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Você não tem permissão para editar a anamnese. Solicite ao seu personal.' });
+        }
+        
+        // Verificar se já existe anamnese
+        const existing = await db.getAnamnesisByStudentId(ctx.student.id);
+        
+        if (existing) {
+          // Atualizar anamnese existente
+          await db.updateAnamnesis(existing.id, input as any);
+        } else {
+          // Criar nova anamnese
+          await db.createAnamnesis({
+            studentId: ctx.student.id,
+            personalId: ctx.student.personalId,
+            ...input,
+          } as any);
+        }
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `📋 Anamnese Atualizada - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} atualizou sua anamnese.\n\nAcesse o sistema para ver os detalhes.`,
+        });
+        
+        return { success: true };
+      }),
+    
+    // Chat com o personal
+    chatMessages: studentProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        const messages = await db.getChatMessages(ctx.student.personalId, ctx.student.id, input.limit || 50);
+        // Marcar mensagens do personal como lidas
+        await db.markChatMessagesAsRead(ctx.student.personalId, ctx.student.id, 'student');
+        return messages.reverse(); // Retornar em ordem cronológica
+      }),
+    
+    sendChatMessage: studentProcedure
+      .input(z.object({ message: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        const messageId = await db.createChatMessage({
+          personalId: ctx.student.personalId,
+          studentId: ctx.student.id,
+          senderType: 'student',
+          message: input.message,
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `💬 Nova mensagem de ${ctx.student.name}`,
+          content: input.message.substring(0, 200) + (input.message.length > 200 ? '...' : ''),
+        });
+        
+        return { success: true, messageId };
+      }),
+    
+    unreadChatCount: studentProcedure.query(async ({ ctx }) => {
+      return await db.getUnreadChatCount(ctx.student.personalId, ctx.student.id, 'student');
+    }),
+    
+    // Badges/Conquistas
+    badges: studentProcedure.query(async ({ ctx }) => {
+      // Verificar e conceder novos badges
+      await db.checkAndAwardBadges(ctx.student.id, ctx.student.personalId);
+      // Retornar todos os badges
+      const badges = await db.getStudentBadges(ctx.student.id);
+      return badges.map(badge => ({
+        ...badge,
+        info: db.BADGE_INFO[badge.badgeType] || { name: badge.badgeType, description: '', icon: '🏅', color: 'gray' }
+      }));
+    }),
+    
+    badgeInfo: studentProcedure.query(async () => {
+      return db.BADGE_INFO;
+    }),
+    
+    // Sessões que precisam de feedback
+    sessionsNeedingFeedback: studentProcedure.query(async ({ ctx }) => {
+      return await db.getSessionsNeedingFeedback(ctx.student.id);
+    }),
+    
+    // Enviar feedback de sessão
+    submitFeedback: studentProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        energyLevel: z.number().min(1).max(5).optional(),
+        painLevel: z.number().min(1).max(5).optional(),
+        satisfactionLevel: z.number().min(1).max(5).optional(),
+        difficultyLevel: z.number().min(1).max(5).optional(),
+        mood: z.enum(['great', 'good', 'neutral', 'tired', 'exhausted']).optional(),
+        highlights: z.string().optional(),
+        improvements: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se a sessão pertence ao aluno
+        const session = await db.getSessionById(input.sessionId);
+        if (!session || session.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        
+        if (session.status !== 'completed') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Só é possível dar feedback em sessões realizadas' });
+        }
+        
+        const { sessionId, ...feedbackData } = input;
+        const feedbackId = await db.createSessionFeedback({
+          sessionId,
+          studentId: ctx.student.id,
+          personalId: ctx.student.personalId,
+          ...feedbackData,
+        });
+        
+        // Notificar o personal se houver feedback negativo
+        if (input.satisfactionLevel && input.satisfactionLevel <= 2) {
+          const { notifyOwner } = await import('./_core/notification');
+          await notifyOwner({
+            title: `⚠️ Feedback de ${ctx.student.name}`,
+            content: `O aluno ${ctx.student.name} deu um feedback com baixa satisfação (${input.satisfactionLevel}/5).\n\n${input.improvements ? `Sugestões: ${input.improvements}` : ''}`,
+          });
+        }
+        
+        return { success: true, feedbackId };
+      }),
+    
+    // Histórico de feedbacks
+    feedbackHistory: studentProcedure.query(async ({ ctx }) => {
+      return await db.getStudentFeedbacks(ctx.student.id);
+    }),
+    
+    // Sugerir horários disponíveis para reagendamento
+    suggestReschedule: studentProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        preferredDays: z.array(z.number()).optional(), // 0-6, domingo-sábado
+      }))
+      .query(async ({ ctx, input }) => {
+        // Buscar sessão original
+        const session = await db.getSessionById(input.sessionId);
+        if (!session || session.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        
+        // Buscar sessões existentes do personal nos próximos 14 dias
+        const now = new Date();
+        const twoWeeksLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        
+        const existingSessions = await db.getSessionsByPersonalIdAndDateRange(
+          ctx.student.personalId,
+          now,
+          twoWeeksLater
+        );
+        
+        // Gerar slots disponíveis (8h-20h, a cada hora)
+        const availableSlots: { date: Date; dayOfWeek: string; time: string }[] = [];
+        const daysOfWeek = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        
+        for (let day = 1; day <= 14; day++) {
+          const date = new Date(now.getTime() + day * 24 * 60 * 60 * 1000);
+          const dayOfWeek = date.getDay();
+          
+          // Filtrar por dias preferidos se informado
+          if (input.preferredDays && input.preferredDays.length > 0) {
+            if (!input.preferredDays.includes(dayOfWeek)) continue;
+          }
+          
+          // Gerar slots de 6h às 21h
+          for (let hour = 6; hour <= 21; hour++) {
+            const slotDate = new Date(date);
+            slotDate.setHours(hour, 0, 0, 0);
+            
+            // Verificar se o slot está ocupado
+            const isOccupied = existingSessions.some((s: any) => {
+              const sessionDate = new Date(s.scheduledAt);
+              return Math.abs(sessionDate.getTime() - slotDate.getTime()) < 60 * 60 * 1000; // Dentro de 1 hora
+            });
+            
+            if (!isOccupied) {
+              availableSlots.push({
+                date: slotDate,
+                dayOfWeek: daysOfWeek[dayOfWeek],
+                time: `${hour.toString().padStart(2, '0')}:00`,
+              });
+            }
+          }
+        }
+        
+        // Retornar os primeiros 20 slots disponíveis
+        return availableSlots.slice(0, 20);
+      }),
+    
+    // Solicitar reagendamento
+    requestReschedule: studentProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        newDate: z.string(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Buscar sessão original
+        const session = await db.getSessionById(input.sessionId);
+        if (!session || session.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        
+        if (session.status !== 'scheduled' && session.status !== 'confirmed') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Esta sessão não pode ser reagendada' });
+        }
+        
+        const newDate = new Date(input.newDate);
+        const oldDate = new Date(session.scheduledAt);
+        
+        // Atualizar sessão
+        const notes = `Reagendado pelo aluno de ${oldDate.toLocaleDateString('pt-BR')} ${oldDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} para ${newDate.toLocaleDateString('pt-BR')} ${newDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}${input.reason ? `. Motivo: ${input.reason}` : ''}`;
+        
+        await db.updateSession(input.sessionId, {
+          scheduledAt: newDate,
+          status: 'scheduled', // Volta para agendada
+          notes: session.notes ? `${session.notes}\n${notes}` : notes,
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `📅 Reagendamento - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} reagendou uma sessão:\n\n📅 Data anterior: ${oldDate.toLocaleDateString('pt-BR')} às ${oldDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}\n📅 Nova data: ${newDate.toLocaleDateString('pt-BR')} às ${newDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}\n📝 Motivo: ${input.reason || 'Não informado'}`,
+        });
         
         return { success: true };
       }),

@@ -58,5 +58,21 @@
     }
   ],
   "categories": ["business", "productivity", "fitness"],
-  "lang": "pt-BR"
+  "lang": "pt-BR",
+  "shortcuts": [
+    {
+      "name": "Portal do Aluno",
+      "short_name": "Portal",
+      "description": "Acesse seu portal de treinos",
+      "url": "/portal",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Agenda",
+      "short_name": "Agenda",
+      "description": "Veja sua agenda de sessões",
+      "url": "/schedule",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ]
 }

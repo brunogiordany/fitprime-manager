@@ -929,3 +929,18 @@
 - [x] Modal para solicitar reagendamento com motivo
 - [x] Notificação para personal quando aluno confirma sessão
 - [x] Notificação para personal quando aluno cancela/solicita reagendamento
+
+## Experiência do Aluno no Portal - 10 Melhorias (v5.39-v5.48)
+- [x] 1. Preview de sessões antes do agendamento em lote
+- [x] 2. Notificações automáticas de lembrete via WhatsApp 24h e 2h antes (já implementado)
+- [ ] 3. Histórico de evolução visual + Anamnese editável + Cadastro de medidas pelo aluno (sincronizado com personal)
+- [x] 4. Chat direto com o personal - mensagens dentro do portal
+- [ ] 5. Gamificação - badges de conquistas (10 sessões seguidas, meta de peso atingida)
+- [x] 6. Reagendamento inteligente - sugerir horários alternativos quando aluno cancela
+- [x] 7. Feedback pós-sessão - aluno avaliar como se sentiu (energia, dor, satisfação)
+- [x] 8. Lembretes de treino (hidratação, alimentação pré/pós, descanso) - dicas personalizadas baseadas no objetivo
+- [x] 9. Compartilhamento de progresso - exportar cards de evolução para redes sociais
+- [ ] 10. Modo offline - visualizar treinos mesmo sem internet (PWA)
+- [x] Corrigir UX da página de detalhes do aluno - botões Editar/Convidar/Exportar cortados no mobile
+- [x] Adicionar opção do personal bloquear/liberar edição de anamnese e medidas pelo aluno
+- [x] Corrigir bug: excluir sessão abre calendário e modal de edição antes do modal de exclusão

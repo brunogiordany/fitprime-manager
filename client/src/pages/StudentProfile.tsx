@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -46,7 +47,9 @@ import {
   AlertTriangle,
   MoreVertical,
   Trash2,
-  Ban
+  Ban,
+  Shield,
+  Ruler
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -559,49 +562,54 @@ export default function StudentProfile() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => setLocation('/alunos')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xl font-bold">
-                {student.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight">{student.name}</h1>
-                  {student.status === 'paused' && (
-                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                      <Pause className="h-3 w-3 mr-1" />
-                      Pausado
-                    </Badge>
-                  )}
-                  {student.status === 'inactive' && (
-                    <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Cancelado
-                    </Badge>
-                  )}
+        <div className="flex flex-col gap-4">
+          {/* Linha superior: voltar + info do aluno */}
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => setLocation('/alunos')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xl font-bold shrink-0">
+                  {student.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  {student.phone && (
-                    <span className="flex items-center gap-1 text-sm">
-                      <Phone className="h-3 w-3" />
-                      {student.phone}
-                    </span>
-                  )}
-                  {student.email && (
-                    <span className="flex items-center gap-1 text-sm">
-                      <Mail className="h-3 w-3" />
-                      {student.email}
-                    </span>
-                  )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">{student.name}</h1>
+                    {student.status === 'paused' && (
+                      <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 shrink-0">
+                        <Pause className="h-3 w-3 mr-1" />
+                        Pausado
+                      </Badge>
+                    )}
+                    {student.status === 'inactive' && (
+                      <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 shrink-0">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Cancelado
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
+                    {student.phone && (
+                      <span className="flex items-center gap-1 text-sm">
+                        <Phone className="h-3 w-3" />
+                        {student.phone}
+                      </span>
+                    )}
+                    {student.email && (
+                      <span className="flex items-center gap-1 text-sm truncate">
+                        <Mail className="h-3 w-3" />
+                        {student.email}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          
+          {/* Linha inferior: botões de ação (centralizada no mobile) */}
+          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
             {isEditing ? (
               <>
                 <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -1106,6 +1114,66 @@ export default function StudentProfile() {
                       </Button>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              {/* Card de Permissões do Aluno */}
+              <Card className="border-2 border-blue-200 bg-blue-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    Permissões do Aluno
+                  </CardTitle>
+                  <CardDescription>
+                    Controle o que o aluno pode editar no portal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Editar Anamnese</p>
+                        <p className="text-sm text-muted-foreground">
+                          Permite o aluno atualizar dados de saúde e objetivos
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={student.canEditAnamnesis || false}
+                      onCheckedChange={(checked) => {
+                        updateMutation.mutate({ id: studentId, canEditAnamnesis: checked });
+                      }}
+                      disabled={updateMutation.isPending}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                        <Ruler className="h-5 w-5 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Editar Medidas</p>
+                        <p className="text-sm text-muted-foreground">
+                          Permite o aluno registrar e atualizar suas medidas corporais
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={student.canEditMeasurements || false}
+                      onCheckedChange={(checked) => {
+                        updateMutation.mutate({ id: studentId, canEditMeasurements: checked });
+                      }}
+                      disabled={updateMutation.isPending}
+                    />
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    Quando desabilitado, o aluno só poderá visualizar os dados
+                  </p>
                 </CardContent>
               </Card>
             </div>

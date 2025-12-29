@@ -25,6 +25,9 @@ import {
   studentInvites, InsertStudentInvite, StudentInvite,
   passwordResetTokens, InsertPasswordResetToken, PasswordResetToken,
   pendingChanges, InsertPendingChange, PendingChange,
+  chatMessages, InsertChatMessage, ChatMessage,
+  studentBadges, InsertStudentBadge, StudentBadge,
+  sessionFeedback, InsertSessionFeedback, SessionFeedback,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -288,6 +291,13 @@ export async function getMeasurementsByStudentId(studentId: number) {
   return await db.select().from(measurements)
     .where(eq(measurements.studentId, studentId))
     .orderBy(desc(measurements.measureDate));
+}
+
+export async function getMeasurementById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(measurements).where(eq(measurements.id, id));
+  return result[0] || null;
 }
 
 export async function createMeasurement(data: InsertMeasurement) {
@@ -1872,4 +1882,310 @@ export async function deleteFutureCharges(params: {
     .where(and(...conditions));
   
   return result[0]?.affectedRows || 0;
+}
+
+
+// ==================== CHAT MESSAGE FUNCTIONS ====================
+export async function getChatMessages(personalId: number, studentId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(chatMessages)
+    .where(and(
+      eq(chatMessages.personalId, personalId),
+      eq(chatMessages.studentId, studentId)
+    ))
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(limit);
+}
+
+export async function createChatMessage(data: InsertChatMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(chatMessages).values(data);
+  return result[0].insertId;
+}
+
+export async function markChatMessagesAsRead(personalId: number, studentId: number, senderType: 'personal' | 'student') {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Marcar como lidas as mensagens do outro remetente
+  const otherSender = senderType === 'personal' ? 'student' : 'personal';
+  await db.update(chatMessages)
+    .set({ isRead: true, readAt: new Date() })
+    .where(and(
+      eq(chatMessages.personalId, personalId),
+      eq(chatMessages.studentId, studentId),
+      eq(chatMessages.senderType, otherSender),
+      eq(chatMessages.isRead, false)
+    ));
+}
+
+export async function getUnreadChatCount(personalId: number, studentId: number, senderType: 'personal' | 'student') {
+  const db = await getDb();
+  if (!db) return 0;
+  // Contar mensagens não lidas do outro remetente
+  const otherSender = senderType === 'personal' ? 'student' : 'personal';
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(chatMessages)
+    .where(and(
+      eq(chatMessages.personalId, personalId),
+      eq(chatMessages.studentId, studentId),
+      eq(chatMessages.senderType, otherSender),
+      eq(chatMessages.isRead, false)
+    ));
+  return result[0]?.count || 0;
+}
+
+export async function getAllUnreadChatCountForPersonal(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Retornar contagem de mensagens não lidas por aluno
+  const result = await db.select({
+    studentId: chatMessages.studentId,
+    count: sql<number>`count(*)`
+  })
+    .from(chatMessages)
+    .where(and(
+      eq(chatMessages.personalId, personalId),
+      eq(chatMessages.senderType, 'student'),
+      eq(chatMessages.isRead, false)
+    ))
+    .groupBy(chatMessages.studentId);
+  return result;
+}
+
+export async function getStudentsWithUnreadMessages(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar alunos com mensagens não lidas
+  const unreadCounts = await getAllUnreadChatCountForPersonal(personalId);
+  const studentIds = unreadCounts.map(u => u.studentId);
+  
+  if (studentIds.length === 0) return [];
+  
+  const studentsList = await db.select().from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      inArray(students.id, studentIds)
+    ));
+  
+  return studentsList.map(student => ({
+    ...student,
+    unreadCount: unreadCounts.find(u => u.studentId === student.id)?.count || 0
+  }));
+}
+
+
+// ==================== STUDENT BADGES FUNCTIONS ====================
+export async function getStudentBadges(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(studentBadges)
+    .where(eq(studentBadges.studentId, studentId))
+    .orderBy(desc(studentBadges.earnedAt));
+}
+
+export async function createStudentBadge(data: InsertStudentBadge) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se já tem esse badge
+  const existing = await db.select().from(studentBadges)
+    .where(and(
+      eq(studentBadges.studentId, data.studentId),
+      eq(studentBadges.badgeType, data.badgeType)
+    ))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    return existing[0].id; // Já tem o badge
+  }
+  
+  const result = await db.insert(studentBadges).values(data);
+  return result[0].insertId;
+}
+
+export async function checkAndAwardBadges(studentId: number, personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const newBadges: string[] = [];
+  
+  // Buscar dados do aluno
+  const studentSessions = await db.select().from(sessions)
+    .where(and(
+      eq(sessions.studentId, studentId),
+      eq(sessions.status, 'completed')
+    ));
+  
+  const studentMeasurements = await db.select().from(measurements)
+    .where(eq(measurements.studentId, studentId));
+  
+  const existingBadges = await getStudentBadges(studentId);
+  const hasBadge = (type: string) => existingBadges.some(b => b.badgeType === type);
+  
+  // Primeira sessão
+  if (studentSessions.length >= 1 && !hasBadge('first_session')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'first_session' });
+    newBadges.push('first_session');
+  }
+  
+  // 10 sessões
+  if (studentSessions.length >= 10 && !hasBadge('sessions_10')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'sessions_10' });
+    newBadges.push('sessions_10');
+  }
+  
+  // 50 sessões
+  if (studentSessions.length >= 50 && !hasBadge('sessions_50')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'sessions_50' });
+    newBadges.push('sessions_50');
+  }
+  
+  // 100 sessões
+  if (studentSessions.length >= 100 && !hasBadge('sessions_100')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'sessions_100' });
+    newBadges.push('sessions_100');
+  }
+  
+  // Primeira medição
+  if (studentMeasurements.length >= 1 && !hasBadge('first_measurement')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'first_measurement' });
+    newBadges.push('first_measurement');
+  }
+  
+  // Verificar perfil completo
+  const anamnesis = await db.select().from(anamneses)
+    .where(eq(anamneses.studentId, studentId))
+    .limit(1);
+  
+  if (anamnesis.length > 0 && anamnesis[0].mainGoal && anamnesis[0].occupation && !hasBadge('profile_complete')) {
+    await createStudentBadge({ studentId, personalId, badgeType: 'profile_complete' });
+    newBadges.push('profile_complete');
+  }
+  
+  // Verificar streak de 7 dias
+  const recentSessions = studentSessions
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+    .slice(0, 7);
+  
+  if (recentSessions.length >= 7 && !hasBadge('streak_7')) {
+    // Verificar se são consecutivas (dentro de 10 dias)
+    const firstDate = new Date(recentSessions[recentSessions.length - 1].scheduledAt);
+    const lastDate = new Date(recentSessions[0].scheduledAt);
+    const daysDiff = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (daysDiff <= 14) { // 7 sessões em 14 dias = consistente
+      await createStudentBadge({ studentId, personalId, badgeType: 'streak_7' });
+      newBadges.push('streak_7');
+    }
+  }
+  
+  return newBadges;
+}
+
+// Badge info helper
+export const BADGE_INFO: Record<string, { name: string; description: string; icon: string; color: string }> = {
+  first_session: { name: "Primeiro Passo", description: "Completou sua primeira sessão de treino", icon: "🎯", color: "emerald" },
+  streak_7: { name: "Consistência", description: "7 sessões de treino consistentes", icon: "🔥", color: "orange" },
+  streak_30: { name: "Dedicação", description: "30 dias de treino consistente", icon: "💪", color: "red" },
+  streak_90: { name: "Lenda", description: "90 dias de treino consistente", icon: "🏆", color: "yellow" },
+  perfect_month: { name: "Mês Perfeito", description: "Um mês inteiro sem faltas", icon: "⭐", color: "purple" },
+  sessions_10: { name: "Aquecendo", description: "10 sessões realizadas", icon: "🌟", color: "blue" },
+  sessions_50: { name: "Em Forma", description: "50 sessões realizadas", icon: "💎", color: "cyan" },
+  sessions_100: { name: "Centurião", description: "100 sessões realizadas", icon: "👑", color: "gold" },
+  first_measurement: { name: "Ponto de Partida", description: "Primeira avaliação física registrada", icon: "📏", color: "teal" },
+  weight_goal: { name: "Meta Alcançada", description: "Atingiu sua meta de peso", icon: "🎉", color: "green" },
+  body_fat_goal: { name: "Definição", description: "Atingiu sua meta de gordura corporal", icon: "💯", color: "pink" },
+  muscle_gain: { name: "Hipertrofia", description: "Ganho significativo de massa muscular", icon: "💪", color: "red" },
+  profile_complete: { name: "Perfil Completo", description: "Preencheu toda a anamnese", icon: "✅", color: "green" },
+  early_bird: { name: "Madrugador", description: "5 treinos antes das 7h", icon: "🌅", color: "amber" },
+  night_owl: { name: "Coruja", description: "5 treinos depois das 20h", icon: "🌙", color: "indigo" },
+  weekend_warrior: { name: "Guerreiro de Fim de Semana", description: "10 treinos no fim de semana", icon: "⚔️", color: "slate" },
+  anniversary_1: { name: "Aniversário", description: "1 ano de treino", icon: "🎂", color: "pink" },
+  comeback: { name: "Retorno Triunfal", description: "Voltou após período de inatividade", icon: "🔄", color: "blue" },
+};
+
+
+// ==================== SESSION RANGE QUERY ====================
+export async function getSessionsByPersonalIdAndDateRange(personalId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      gte(sessions.scheduledAt, startDate),
+      lte(sessions.scheduledAt, endDate),
+      isNull(sessions.deletedAt),
+      not(eq(sessions.status, 'cancelled'))
+    ))
+    .orderBy(asc(sessions.scheduledAt));
+}
+
+
+// ==================== SESSION FEEDBACK FUNCTIONS ====================
+export async function getSessionFeedback(sessionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(sessionFeedback)
+    .where(eq(sessionFeedback.sessionId, sessionId))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function createSessionFeedback(data: InsertSessionFeedback) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se já existe feedback para esta sessão
+  const existing = await getSessionFeedback(data.sessionId);
+  if (existing) {
+    // Atualizar feedback existente
+    await db.update(sessionFeedback)
+      .set(data)
+      .where(eq(sessionFeedback.id, existing.id));
+    return existing.id;
+  }
+  
+  const result = await db.insert(sessionFeedback).values(data);
+  return result[0].insertId;
+}
+
+export async function getStudentFeedbacks(studentId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(sessionFeedback)
+    .where(eq(sessionFeedback.studentId, studentId))
+    .orderBy(desc(sessionFeedback.createdAt))
+    .limit(limit);
+}
+
+export async function getSessionsNeedingFeedback(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar sessões completadas nos últimos 7 dias sem feedback
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  const completedSessions = await db.select().from(sessions)
+    .where(and(
+      eq(sessions.studentId, studentId),
+      eq(sessions.status, 'completed'),
+      gte(sessions.scheduledAt, sevenDaysAgo),
+      isNull(sessions.deletedAt)
+    ))
+    .orderBy(desc(sessions.scheduledAt));
+  
+  // Filtrar sessões que não têm feedback
+  const sessionsWithoutFeedback = [];
+  for (const session of completedSessions) {
+    const feedback = await getSessionFeedback(session.id);
+    if (!feedback) {
+      sessionsWithoutFeedback.push(session);
+    }
+  }
+  
+  return sessionsWithoutFeedback;
 }

@@ -67,6 +67,8 @@ export const students = mysqlTable("students", {
   messagePausedUntil: timestamp("messagePausedUntil"), // Pausa de mensagens até esta data
   messagePauseReason: varchar("messagePauseReason", { length: 255 }), // Motivo da pausa (férias, viagem, etc)
   passwordHash: varchar("passwordHash", { length: 255 }), // Senha hash para login direto do aluno
+  canEditAnamnesis: boolean("canEditAnamnesis").default(false), // Permite aluno editar anamnese
+  canEditMeasurements: boolean("canEditMeasurements").default(false), // Permite aluno editar medidas
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -585,3 +587,84 @@ export const pendingChanges = mysqlTable("pending_changes", {
 
 export type PendingChange = typeof pendingChanges.$inferSelect;
 export type InsertPendingChange = typeof pendingChanges.$inferInsert;
+
+
+// ==================== CHAT MESSAGES (Mensagens entre Aluno e Personal) ====================
+export const chatMessages = mysqlTable("chat_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  senderType: mysqlEnum("senderType", ["personal", "student"]).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("isRead").default(false),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+
+
+// ==================== STUDENT BADGES (Conquistas/Gamificação) ====================
+export const studentBadges = mysqlTable("student_badges", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  badgeType: mysqlEnum("badgeType", [
+    // Frequência
+    "first_session", // Primeira sessão realizada
+    "streak_7", // 7 sessões seguidas sem falta
+    "streak_30", // 30 dias de treino consistente
+    "streak_90", // 90 dias de treino consistente
+    "perfect_month", // Mês perfeito (sem faltas)
+    "sessions_10", // 10 sessões realizadas
+    "sessions_50", // 50 sessões realizadas
+    "sessions_100", // 100 sessões realizadas
+    // Evolução
+    "first_measurement", // Primeira medição registrada
+    "weight_goal", // Meta de peso atingida
+    "body_fat_goal", // Meta de gordura corporal atingida
+    "muscle_gain", // Ganho de massa muscular
+    // Engajamento
+    "profile_complete", // Perfil completo (anamnese preenchida)
+    "early_bird", // 5 treinos antes das 7h
+    "night_owl", // 5 treinos depois das 20h
+    "weekend_warrior", // 10 treinos no fim de semana
+    // Especiais
+    "anniversary_1", // 1 ano de treino
+    "comeback", // Voltou após 30 dias de inatividade
+  ]).notNull(),
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+  metadata: text("metadata"), // JSON com dados extras (ex: peso inicial/final)
+});
+
+export type StudentBadge = typeof studentBadges.$inferSelect;
+export type InsertStudentBadge = typeof studentBadges.$inferInsert;
+
+
+// ==================== SESSION FEEDBACK (Feedback pós-sessão) ====================
+export const sessionFeedback = mysqlTable("session_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").notNull().references(() => sessions.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Avaliações (1-5)
+  energyLevel: int("energyLevel"), // Nível de energia após o treino
+  painLevel: int("painLevel"), // Nível de dor/desconforto
+  satisfactionLevel: int("satisfactionLevel"), // Satisfação com o treino
+  difficultyLevel: int("difficultyLevel"), // Dificuldade percebida
+  
+  // Campos de texto
+  highlights: text("highlights"), // O que mais gostou
+  improvements: text("improvements"), // O que pode melhorar
+  notes: text("notes"), // Observações gerais
+  
+  // Humor
+  mood: mysqlEnum("mood", ["great", "good", "neutral", "tired", "exhausted"]),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SessionFeedback = typeof sessionFeedback.$inferSelect;
+export type InsertSessionFeedback = typeof sessionFeedback.$inferInsert;

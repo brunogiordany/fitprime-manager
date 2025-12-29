@@ -14,6 +14,11 @@ import { ptBR } from "date-fns/locale";
 import StudentOnboarding from "@/components/StudentOnboarding";
 import StudentEvolutionCharts from "@/components/StudentEvolutionCharts";
 import StudentSessionManager from "@/components/StudentSessionManager";
+import StudentChat from "@/components/StudentChat";
+import StudentBadges from "@/components/StudentBadges";
+import StudentFeedback from "@/components/StudentFeedback";
+import StudentTrainingTips from "@/components/StudentTrainingTips";
+import StudentProgressShare from "@/components/StudentProgressShare";
 import { 
   Calendar, 
   Dumbbell, 
@@ -31,7 +36,9 @@ import {
   LogOut,
   Edit,
   Save,
-  Loader2
+  Loader2,
+  MessageCircle,
+  Trophy
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -43,6 +50,7 @@ interface StudentData {
   phone: string | null;
   status: string;
   createdAt: number;
+  goal?: string | null;
 }
 
 interface AnamnesisData {
@@ -100,7 +108,13 @@ export default function StudentPortalPage() {
   );
 
   // Buscar medidas do aluno
-  const { data: measurements } = trpc.studentPortal.measurements.useQuery(
+  const { data: measurements, refetch: refetchMeasurements } = trpc.studentPortal.measurements.useQuery(
+    undefined,
+    { enabled: !!studentData?.id }
+  );
+
+  // Buscar permissões de edição do aluno
+  const { data: editPermissions } = trpc.studentPortal.editPermissions.useQuery(
     undefined,
     { enabled: !!studentData?.id }
   );
@@ -342,10 +356,41 @@ export default function StudentPortalPage() {
               <CreditCard className="h-4 w-4 mr-2" />
               Pagamentos
             </TabsTrigger>
+            <TabsTrigger value="chat">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="badges">
+              <Trophy className="h-4 w-4 mr-2" />
+              Conquistas
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
+            {/* Feedback pendente */}
+            <StudentFeedback />
+            
+            {/* Lembretes de Treino */}
+            <StudentTrainingTips 
+              nextSession={upcomingSessions[0]} 
+              studentGoal={studentData?.goal || undefined}
+            />
+            
+            {/* Compartilhar Progresso */}
+            {studentData && (
+              <StudentProgressShare
+                studentName={studentData.name}
+                progressData={{
+                  totalSessions: upcomingSessions.length + (sessions?.filter((s: any) => s.status === 'completed').length || 0),
+                  completedSessions: sessions?.filter((s: any) => s.status === 'completed').length || 0,
+                  currentStreak: 0, // Calculado baseado em sessões consecutivas
+                  totalBadges: 0, // Seria buscado via query
+                  memberSince: new Date(studentData.createdAt),
+                }}
+              />
+            )}
+            
             <div className="grid md:grid-cols-2 gap-6">
               {/* Próximas Sessões */}
               <Card>
@@ -419,6 +464,8 @@ export default function StudentPortalPage() {
             <StudentEvolutionCharts
               measurements={measurements || []}
               sessions={sessions || []}
+              canEditMeasurements={editPermissions?.canEditMeasurements || false}
+              onMeasurementsUpdate={() => refetchMeasurements()}
             />
           </TabsContent>
 
@@ -476,31 +523,48 @@ export default function StudentPortalPage() {
 
           {/* Anamnesis Tab */}
           <TabsContent value="anamnesis" className="space-y-6">
+            {/* Aviso de permissão bloqueada */}
+            {!editPermissions?.canEditAnamnesis && (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                    <div>
+                      <p className="font-medium text-amber-800">Edição de anamnese bloqueada</p>
+                      <p className="text-sm text-amber-700">Solicite ao seu personal para liberar a edição da anamnese</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Minha Anamnese</CardTitle>
                   <CardDescription>Suas informações de saúde e objetivos</CardDescription>
                 </div>
-                {!isEditingAnamnesis ? (
-                  <Button onClick={handleEditAnamnesis} variant="outline">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setIsEditingAnamnesis(false)}>
-                      Cancelar
+                {editPermissions?.canEditAnamnesis && (
+                  !isEditingAnamnesis ? (
+                    <Button onClick={handleEditAnamnesis} variant="outline">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
                     </Button>
-                    <Button onClick={handleSaveAnamnesis} disabled={updateAnamneseMutation.isPending}>
-                      {updateAnamneseMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Save className="h-4 w-4 mr-2" />
-                      )}
-                      Salvar
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setIsEditingAnamnesis(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveAnamnesis} disabled={updateAnamneseMutation.isPending}>
+                        {updateAnamneseMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-2" />
+                        )}
+                        Salvar
+                      </Button>
+                    </div>
+                  )
                 )}
               </CardHeader>
               <CardContent>
@@ -781,6 +845,16 @@ export default function StudentPortalPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Chat Tab */}
+          <TabsContent value="chat" className="space-y-6">
+            <StudentChat />
+          </TabsContent>
+
+          {/* Badges Tab */}
+          <TabsContent value="badges" className="space-y-6">
+            <StudentBadges />
           </TabsContent>
         </Tabs>
       </main>

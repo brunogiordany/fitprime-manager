@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import StudentMeasurementForm from "./StudentMeasurementForm";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -28,6 +30,8 @@ import {
   Target,
   Calendar,
   Dumbbell,
+  Plus,
+  Lock,
 } from "lucide-react";
 
 interface Measurement {
@@ -60,11 +64,15 @@ interface Session {
 interface StudentEvolutionChartsProps {
   measurements: Measurement[];
   sessions: Session[];
+  canEditMeasurements?: boolean;
+  onMeasurementsUpdate?: () => void;
 }
 
 export default function StudentEvolutionCharts({
   measurements,
   sessions,
+  canEditMeasurements = false,
+  onMeasurementsUpdate,
 }: StudentEvolutionChartsProps) {
   // Processar dados de peso
   const weightData = useMemo(() => {
@@ -261,6 +269,26 @@ export default function StudentEvolutionCharts({
           </CardContent>
         </Card>
       </div>
+
+      {/* Seção de Cadastro de Medidas */}
+      {canEditMeasurements ? (
+        <StudentMeasurementForm
+          measurements={measurements}
+          onUpdate={onMeasurementsUpdate || (() => {})}
+        />
+      ) : (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <Lock className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-800">Edição de medidas bloqueada</p>
+                <p className="text-sm text-amber-700">Solicite ao seu personal para liberar a edição de medidas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Gráficos */}
       <Tabs defaultValue="weight" className="space-y-4">

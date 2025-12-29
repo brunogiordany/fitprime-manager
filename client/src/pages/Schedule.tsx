@@ -158,6 +158,10 @@ export default function Schedule() {
   const [selectedDaySessions, setSelectedDaySessions] = useState<any[]>([]);
   const [selectedDayDate, setSelectedDayDate] = useState<Date | null>(null);
 
+  // Preview de sessões em lote
+  const [showBatchPreview, setShowBatchPreview] = useState(false);
+  const [batchPreviewSessions, setBatchPreviewSessions] = useState<Array<{ date: Date; dayOfWeek: number; time: string; workoutName?: string; workoutDay?: string }>>([]);
+
   const utils = trpc.useUtils();
 
   // Calculate date ranges based on view mode
@@ -307,11 +311,94 @@ export default function Schedule() {
     setStudentSearch("");
   };
 
+  // Função para gerar preview das sessões em lote
+  const generateBatchPreview = () => {
+    if (!newSession.studentId || newSession.recurrenceFrequency === 'none' || !newSession.weekDays || newSession.weekDays.length === 0) {
+      return [];
+    }
+
+    let totalDays = 0;
+    switch (newSession.recurrenceFrequency) {
+      case '1week': totalDays = 7; break;
+      case '2weeks': totalDays = 14; break;
+      case '3weeks': totalDays = 21; break;
+      case '1month': totalDays = 30; break;
+      case '2months': totalDays = 60; break;
+      case '3months': totalDays = 90; break;
+      case '4months': totalDays = 120; break;
+      case '5months': totalDays = 150; break;
+      case '6months': totalDays = 180; break;
+      case '1year': totalDays = 365; break;
+    }
+
+    const startDate = new Date(newSession.scheduledAt.split('T')[0]);
+    const endDate = addDays(startDate, totalDays);
+    const hasCustomWorkouts = Object.keys(newSession.weekDayWorkouts).length > 0;
+    const selectedWorkout = studentWorkouts?.find(w => w.id.toString() === newSession.workoutId);
+    const workoutDays = selectedWorkout?.days ? (typeof selectedWorkout.days === 'string' ? JSON.parse(selectedWorkout.days) : selectedWorkout.days) : [];
+
+    const previewSessions: Array<{ date: Date; dayOfWeek: number; time: string; workoutName?: string; workoutDay?: string }> = [];
+    let currentDate = startDate;
+    let sessionIndex = 0;
+
+    while (currentDate <= endDate) {
+      const dayOfWeek = getDay(currentDate);
+      if (newSession.weekDays.includes(dayOfWeek)) {
+        const dayConfig = newSession.weekDayWorkouts[dayOfWeek];
+        let sessionTime = newSession.startTime;
+        let workoutName = selectedWorkout?.name;
+        let workoutDay = '';
+
+        if (hasCustomWorkouts && dayConfig) {
+          sessionTime = dayConfig.time || newSession.startTime;
+          const configWorkout = studentWorkouts?.find(w => w.id.toString() === dayConfig.workoutId);
+          workoutName = configWorkout?.name;
+          const configDays = configWorkout?.days ? (typeof configWorkout.days === 'string' ? JSON.parse(configWorkout.days) : configWorkout.days) : [];
+          workoutDay = configDays[parseInt(dayConfig.workoutDayIndex)]?.name || `Dia ${parseInt(dayConfig.workoutDayIndex) + 1}`;
+        } else if (workoutDays.length > 0) {
+          const dayIndex = sessionIndex % workoutDays.length;
+          workoutDay = workoutDays[dayIndex]?.name || `Dia ${dayIndex + 1}`;
+        }
+
+        previewSessions.push({
+          date: new Date(currentDate),
+          dayOfWeek,
+          time: sessionTime,
+          workoutName,
+          workoutDay,
+        });
+        sessionIndex++;
+      }
+      currentDate = addDays(currentDate, 1);
+    }
+
+    return previewSessions;
+  };
+
+  // Função para mostrar preview antes de criar
+  const handleShowBatchPreview = () => {
+    if (!newSession.studentId) {
+      toast.error("Selecione um aluno");
+      return;
+    }
+    if (newSession.recurrenceFrequency === 'none' || !newSession.weekDays || newSession.weekDays.length === 0) {
+      // Sessão única, criar diretamente
+      handleCreateSession();
+      return;
+    }
+    const preview = generateBatchPreview();
+    setBatchPreviewSessions(preview);
+    setShowBatchPreview(true);
+  };
+
   const handleCreateSession = async () => {
     if (!newSession.studentId) {
       toast.error("Selecione um aluno");
       return;
     }
+    
+    // Fechar preview se estiver aberto
+    setShowBatchPreview(false);
     
     // Se tem recorrência com dias da semana selecionados
     if (newSession.recurrenceFrequency !== 'none' && newSession.weekDays && newSession.weekDays.length > 0) {
@@ -1553,12 +1640,90 @@ export default function Schedule() {
                   <Button variant="outline" onClick={() => setDialogStep("select")}>
                     Voltar
                   </Button>
-                  <Button onClick={handleCreateSession} disabled={createSessionMutation.isPending}>
-                    {createSessionMutation.isPending ? "Agendando..." : "Agendar"}
-                  </Button>
+                  {newSession.recurrenceFrequency !== 'none' && newSession.weekDays && newSession.weekDays.length > 0 ? (
+                    <Button onClick={handleShowBatchPreview} disabled={createSessionMutation.isPending}>
+                      {createSessionMutation.isPending ? "Agendando..." : "Ver Preview"}
+                    </Button>
+                  ) : (
+                    <Button onClick={handleCreateSession} disabled={createSessionMutation.isPending}>
+                      {createSessionMutation.isPending ? "Agendando..." : "Agendar"}
+                    </Button>
+                  )}
                 </DialogFooter>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Preview de Sessões em Lote */}
+        <Dialog open={showBatchPreview} onOpenChange={setShowBatchPreview}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-emerald-500" />
+                Preview das Sessões
+              </DialogTitle>
+              <DialogDescription>
+                Confira as {batchPreviewSessions.length} sessões que serão criadas antes de confirmar
+              </DialogDescription>
+            </DialogHeader>
+            
+            <ScrollArea className="flex-1 max-h-[50vh] pr-4">
+              <div className="space-y-2">
+                {batchPreviewSessions.map((session, index) => (
+                  <div 
+                    key={index} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                          {format(session.date, 'dd')}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">
+                          {format(session.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.time} - {newSession.duration} min
+                          {session.workoutName && (
+                            <span className="ml-2 text-emerald-600 dark:text-emerald-400">
+                              • {session.workoutName} {session.workoutDay && `(${session.workoutDay})`}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                      #{index + 1}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            <div className="pt-4 border-t space-y-3">
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  <AlertCircle className="h-4 w-4 inline mr-1" />
+                  Após confirmar, todas as {batchPreviewSessions.length} sessões serão criadas automaticamente.
+                </p>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowBatchPreview(false)}>
+                  Voltar e Editar
+                </Button>
+                <Button 
+                  onClick={handleCreateSession} 
+                  disabled={createSessionMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {createSessionMutation.isPending ? "Criando..." : `Confirmar ${batchPreviewSessions.length} Sessões`}
+                </Button>
+              </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
 

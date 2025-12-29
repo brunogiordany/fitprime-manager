@@ -508,7 +508,7 @@ export default function Sessions() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditDialog(session)}>
+                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(session); }}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar sessão
                               </DropdownMenuItem>
@@ -520,7 +520,7 @@ export default function Sessions() {
                               </DropdownMenuItem>
                               {session.status === 'scheduled' && (
                                 <DropdownMenuItem 
-                                  onClick={() => updateSession.mutate({ id: session.id, status: 'cancelled' })}
+                                  onClick={(e) => { e.stopPropagation(); updateSession.mutate({ id: session.id, status: 'cancelled' }); }}
                                   className="text-amber-600"
                                 >
                                   <Ban className="h-4 w-4 mr-2" />
@@ -528,7 +528,11 @@ export default function Sessions() {
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem 
-                                onClick={() => setSessionToDelete(session.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  setSessionToDelete(session.id);
+                                }}
                                 className="text-red-600"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -536,7 +540,8 @@ export default function Sessions() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setStudentFilter(session.studentId.toString());
                                   openBatchModal('cancel');
                                 }}
@@ -546,7 +551,8 @@ export default function Sessions() {
                                 Cancelar sessões do aluno
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setStudentFilter(session.studentId.toString());
                                   openBatchModal('delete');
                                 }}

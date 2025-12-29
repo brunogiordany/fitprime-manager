@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, isBefore, addHours } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { trpc } from "@/lib/trpc";
@@ -17,6 +18,7 @@ import {
   AlertCircle,
   MessageSquare,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 interface Session {
@@ -39,7 +41,10 @@ export default function StudentSessionManager({
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [rescheduleReason, setRescheduleReason] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState<{ date: Date; dayOfWeek: string; time: string } | null>(null);
 
   // Mutation para confirmar sessão
   const confirmSessionMutation = trpc.studentPortal.confirmSession.useMutation({
@@ -68,6 +73,27 @@ export default function StudentSessionManager({
     },
   });
 
+  // Query para sugestões de reagendamento
+  const { data: rescheduleSlots, isLoading: loadingSlots } = trpc.studentPortal.suggestReschedule.useQuery(
+    { sessionId: selectedSession?.id || 0 },
+    { enabled: rescheduleDialogOpen && !!selectedSession }
+  );
+
+  // Mutation para reagendar
+  const rescheduleMutation = trpc.studentPortal.requestReschedule.useMutation({
+    onSuccess: () => {
+      toast.success("Sessão reagendada com sucesso!");
+      setRescheduleDialogOpen(false);
+      setSelectedSession(null);
+      setSelectedSlot(null);
+      setRescheduleReason("");
+      onUpdate();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao reagendar sessão");
+    },
+  });
+
   const handleConfirm = (session: Session) => {
     setSelectedSession(session);
     setConfirmDialogOpen(true);
@@ -76,6 +102,22 @@ export default function StudentSessionManager({
   const handleCancel = (session: Session) => {
     setSelectedSession(session);
     setCancelDialogOpen(true);
+  };
+
+  const handleReschedule = (session: Session) => {
+    setSelectedSession(session);
+    setSelectedSlot(null);
+    setRescheduleReason("");
+    setRescheduleDialogOpen(true);
+  };
+
+  const submitReschedule = () => {
+    if (!selectedSession || !selectedSlot) return;
+    rescheduleMutation.mutate({
+      sessionId: selectedSession.id,
+      newDate: selectedSlot.date.toISOString(),
+      reason: rescheduleReason || undefined,
+    });
   };
 
   const submitConfirm = () => {
@@ -159,6 +201,13 @@ export default function StudentSessionManager({
     return (session.status === "scheduled" || session.status === "confirmed") && hoursUntil > 24;
   };
 
+  const canReschedule = (session: Session) => {
+    const sessionDate = new Date(session.date);
+    const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    // Pode reagendar até 24h antes
+    return (session.status === "scheduled" || session.status === "confirmed") && hoursUntil > 24;
+  };
+
   return (
     <div className="space-y-6">
       {/* Próximas Sessões */}
@@ -228,6 +277,18 @@ export default function StudentSessionManager({
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Cancelar
+                        </Button>
+                      )}
+
+                      {canReschedule(session) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleReschedule(session)}
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Reagendar
                         </Button>
                       )}
 
@@ -395,6 +456,100 @@ export default function StudentSessionManager({
                 <XCircle className="h-4 w-4 mr-2" />
               )}
               Confirmar Cancelamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Reagendamento */}
+      <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-blue-500" />
+              Reagendar Sessão
+            </DialogTitle>
+            <DialogDescription>
+              Escolha um novo horário disponível
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedSession && (
+            <div className="space-y-4 py-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-blue-700">Sessão atual:</p>
+                <p className="font-medium">
+                  {format(new Date(selectedSession.date), "EEEE, dd 'de' MMMM", {
+                    locale: ptBR,
+                  })}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {format(new Date(selectedSession.date), "HH:mm")} -{" "}
+                  {selectedSession.duration} min
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Horários disponíveis</Label>
+                {loadingSlots ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                  </div>
+                ) : rescheduleSlots && rescheduleSlots.length > 0 ? (
+                  <ScrollArea className="h-[200px] rounded-md border p-2">
+                    <div className="space-y-2">
+                      {rescheduleSlots.map((slot: any, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedSlot({ ...slot, date: new Date(slot.date) })}
+                          className={`w-full p-3 rounded-lg text-left transition-colors ${
+                            selectedSlot && new Date(selectedSlot.date).getTime() === new Date(slot.date).getTime()
+                              ? "bg-blue-100 border-2 border-blue-500"
+                              : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
+                          }`}
+                        >
+                          <p className="font-medium text-sm">{slot.dayOfWeek}</p>
+                          <p className="text-xs text-gray-600">
+                            {format(new Date(slot.date), "dd/MM")} às {slot.time}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nenhum horário disponível nos próximos 14 dias
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rescheduleReason">Motivo (opcional)</Label>
+                <Textarea
+                  id="rescheduleReason"
+                  placeholder="Ex: Compromisso de trabalho..."
+                  value={rescheduleReason}
+                  onChange={(e) => setRescheduleReason(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRescheduleDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={submitReschedule}
+              disabled={!selectedSlot || rescheduleMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {rescheduleMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Confirmar Reagendamento
             </Button>
           </DialogFooter>
         </DialogContent>
