@@ -716,3 +716,12 @@
 - [x] Implementar lógica de exclusão (remover do array aiPreview, remove dia se ficar vazio)
 - [x] Implementar modal de edição com campos para nome, grupo, séries, reps, descanso
 - [x] Atualizar estado aiPreview ao modificar exercícios
+
+
+## Bugs Agenda v5.8
+- [x] Bug: Horário salva incorretamente - CORRIGIDO (parsing de data local sem conversão de timezone)
+- [x] Modal Nova Sessão agora tem mesmas opções do modal de Edição:
+  - [x] Seletor de data e hora (datetime-local)
+  - [x] Status inicial (Não confirmado, Confirmado)
+  - [x] Ações (Enviar lembrete, Encaixar agendamento)
+  - [x] Recorrência (Repetir por período - 1 semana a 1 ano)

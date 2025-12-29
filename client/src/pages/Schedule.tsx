@@ -97,6 +97,10 @@ export default function Schedule() {
     planId: "",
     generateCharges: false,
     billingDay: "5",
+    status: "scheduled" as "scheduled" | "confirmed",
+    sendReminder: true,
+    encaixar: false,
+    recurrenceFrequency: "none",
   });
 
   const [newStudent, setNewStudent] = useState({
@@ -238,18 +242,22 @@ export default function Schedule() {
       planId: "",
       generateCharges: false,
       billingDay: "5",
+      status: "scheduled",
+      sendReminder: true,
+      encaixar: false,
+      recurrenceFrequency: "none",
     });
     setDialogStep("select");
     setStudentSearch("");
   };
 
-  const handleCreateSession = () => {
+  const handleCreateSession = async () => {
     if (!newSession.studentId) {
       toast.error("Selecione um aluno");
       return;
     }
     
-    // Criar sessão
+    // Criar sessão principal
     createSessionMutation.mutate({
       studentId: parseInt(newSession.studentId),
       scheduledAt: newSession.scheduledAt,
@@ -257,6 +265,42 @@ export default function Schedule() {
       type: newSession.type,
       location: newSession.location || undefined,
       notes: newSession.notes || undefined,
+    }, {
+      onSuccess: () => {
+        // Criar sessões recorrentes se selecionado
+        if (newSession.recurrenceFrequency !== 'none') {
+          const baseDate = new Date(newSession.scheduledAt.replace('T', ' '));
+          let weeksToCreate = 0;
+          
+          switch (newSession.recurrenceFrequency) {
+            case '1week': weeksToCreate = 1; break;
+            case '2weeks': weeksToCreate = 2; break;
+            case '3weeks': weeksToCreate = 3; break;
+            case '1month': weeksToCreate = 4; break;
+            case '2months': weeksToCreate = 8; break;
+            case '3months': weeksToCreate = 12; break;
+            case '4months': weeksToCreate = 16; break;
+            case '5months': weeksToCreate = 20; break;
+            case '6months': weeksToCreate = 24; break;
+            case '1year': weeksToCreate = 52; break;
+          }
+          
+          // Criar sessões para cada semana
+          for (let i = 1; i <= weeksToCreate; i++) {
+            const newDate = addWeeks(baseDate, i);
+            createSessionMutation.mutate({
+              studentId: parseInt(newSession.studentId),
+              scheduledAt: format(newDate, "yyyy-MM-dd'T'HH:mm"),
+              duration: parseInt(newSession.duration),
+              type: newSession.type,
+              location: newSession.location || undefined,
+              notes: newSession.notes || undefined,
+            });
+          }
+          
+          toast.success(`Criadas ${weeksToCreate + 1} sessões recorrentes`);
+        }
+      }
     });
     
     // Gerar cobranças automáticas se selecionado
@@ -1044,6 +1088,96 @@ export default function Schedule() {
                     value={newSession.notes}
                     onChange={(e) => setNewSession({ ...newSession, notes: e.target.value })}
                   />
+                </div>
+
+                {/* Seção de Status */}
+                <div className="p-4 border rounded-lg space-y-3">
+                  <Label className="text-sm font-semibold">Status Inicial</Label>
+                  <Select
+                    value={newSession.status}
+                    onValueChange={(value: "scheduled" | "confirmed") => 
+                      setNewSession({ ...newSession, status: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="scheduled">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                          Não confirmado
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="confirmed">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                          Confirmado
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Seção de Ações */}
+                <div className="p-4 border rounded-lg space-y-4">
+                  <Label className="text-sm font-semibold">Ações</Label>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Enviar lembrete</span>
+                    </div>
+                    <Switch
+                      checked={newSession.sendReminder}
+                      onCheckedChange={(checked) => setNewSession({ ...newSession, sendReminder: checked })}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Encaixar agendamento</span>
+                    </div>
+                    <Switch
+                      checked={newSession.encaixar}
+                      onCheckedChange={(checked) => setNewSession({ ...newSession, encaixar: checked })}
+                    />
+                  </div>
+                </div>
+
+                {/* Seção de Recorrência */}
+                <div className="p-4 border rounded-lg space-y-3">
+                  <Label className="text-sm font-semibold">Recorrência</Label>
+                  <div className="grid gap-2">
+                    <Label className="text-xs text-muted-foreground">Repetir por</Label>
+                    <Select
+                      value={newSession.recurrenceFrequency}
+                      onValueChange={(value) => setNewSession({ ...newSession, recurrenceFrequency: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Agendamento não se repete</SelectItem>
+                        <SelectItem value="1week">1 semana</SelectItem>
+                        <SelectItem value="2weeks">2 semanas</SelectItem>
+                        <SelectItem value="3weeks">3 semanas</SelectItem>
+                        <SelectItem value="1month">1 mês</SelectItem>
+                        <SelectItem value="2months">2 meses</SelectItem>
+                        <SelectItem value="3months">3 meses</SelectItem>
+                        <SelectItem value="4months">4 meses</SelectItem>
+                        <SelectItem value="5months">5 meses</SelectItem>
+                        <SelectItem value="6months">6 meses</SelectItem>
+                        <SelectItem value="1year">1 ano</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {newSession.recurrenceFrequency !== 'none' && (
+                    <p className="text-xs text-muted-foreground">
+                      Serão criadas sessões semanais no mesmo dia e horário pelo período selecionado.
+                    </p>
+                  )}
                 </div>
 
                 <DialogFooter className="pt-4">

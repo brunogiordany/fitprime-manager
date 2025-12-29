@@ -1836,10 +1836,17 @@ Retorne APENAS o JSON, sem texto adicional.`;
       }))
       .mutation(async ({ ctx, input }) => {
         const { scheduledAt, ...data } = input;
+        // Parsear a data local sem conversão de timezone
+        // O formato esperado é "yyyy-MM-ddTHH:mm" (datetime-local)
+        const [datePart, timePart] = scheduledAt.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+        const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        
         const id = await db.createSession({
           ...data,
           personalId: ctx.personal.id,
-          scheduledAt: new Date(scheduledAt),
+          scheduledAt: localDate,
         });
         return { id };
       }),
@@ -1857,9 +1864,20 @@ Retorne APENAS o JSON, sem texto adicional.`;
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, scheduledAt, ...data } = input;
+        
+        // Parsear a data local sem conversão de timezone
+        let parsedDate: Date | undefined;
+        if (scheduledAt) {
+          const [datePart, timePart] = scheduledAt.split('T');
+          const [year, month, day] = datePart.split('-').map(Number);
+          const timeStr = timePart || '00:00';
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          parsedDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        }
+        
         await db.updateSession(id, {
           ...data,
-          scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
+          scheduledAt: parsedDate,
           completedAt: data.status === 'completed' ? new Date() : undefined,
         });
         return { success: true };
