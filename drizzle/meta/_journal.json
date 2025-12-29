@@ -127,6 +127,20 @@
       "when": 1766971322911,
       "tag": "0017_new_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1766976728714,
+      "tag": "0018_concerned_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1766976757530,
+      "tag": "0019_clear_the_initiative",
+      "breakpoints": true
     }
   ]
 }

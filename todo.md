@@ -627,3 +627,31 @@
 - [x] Cadastro via link de convite não funciona (erro ao finalizar) - FUNCIONANDO
 - [x] Agenda diária não mostra sessões agendadas
 - [x] Reorganizar layout da agenda: data e botões de navegação juntos
+
+
+## Sistema de Treinos com IA (v5.1)
+- [x] Atualizar anamnese com campos para IA
+  - [x] Objetivo principal (hipertrofia, emagrecimento, recomposição, bulking, cutting, etc.)
+  - [x] Nível de experiência (iniciante, intermediário, avançado)
+  - [x] Frequência semanal disponível
+  - [x] Lesões e limitações físicas (já existia)
+  - [x] Local de treino e equipamentos disponíveis
+- [x] Templates de treinos pré-programados
+  - [x] Treino A/B/C para Hipertrofia (Iniciante e Intermediário)
+  - [x] Treino para Emagrecimento (Circuito Metabólico)
+  - [x] Treino para Recomposição Corporal
+  - [x] Treino para Iniciantes (Full Body)
+  - [x] Treino para Bulking
+  - [x] Treino para Cutting
+- [x] Geração de treino com IA
+  - [x] Endpoint para gerar treino baseado na anamnese
+  - [x] Botão "Gerar Treino com IA" na página de treinos
+  - [x] Preview do treino antes de salvar
+  - [x] Campo para instruções adicionais do personal
+- [x] Duplicar treino para outros alunos
+  - [x] Dialog para selecionar aluno de destino
+  - [x] Copia completa do treino com exercícios
+- [x] Organização por objetivos com filtros
+  - [x] Filtro por objetivo (Hipertrofia, Emagrecimento, etc.)
+  - [x] Badge de objetivo na lista de treinos
+  - [x] Indicador visual de treino gerado por IA

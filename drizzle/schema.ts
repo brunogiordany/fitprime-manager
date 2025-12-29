@@ -92,7 +92,7 @@ export const anamneses = mysqlTable("anamneses", {
   medications: text("medications"),
   allergies: text("allergies"),
   // Objetivos
-  mainGoal: mysqlEnum("mainGoal", ["weight_loss", "muscle_gain", "conditioning", "health", "rehabilitation", "sports", "other"]),
+  mainGoal: mysqlEnum("mainGoal", ["weight_loss", "muscle_gain", "recomposition", "conditioning", "health", "rehabilitation", "sports", "bulking", "cutting", "other"]),
   secondaryGoals: text("secondaryGoals"),
   targetWeight: decimal("targetWeight", { precision: 5, scale: 2 }),
   motivation: text("motivation"),
@@ -106,6 +106,11 @@ export const anamneses = mysqlTable("anamneses", {
   previousActivities: text("previousActivities"),
   availableDays: text("availableDays"), // JSON array
   preferredTime: mysqlEnum("preferredTime", ["morning", "afternoon", "evening", "flexible"]),
+  // Equipamentos e Local de Treino
+  trainingLocation: mysqlEnum("trainingLocation", ["full_gym", "home_gym", "home_basic", "outdoor", "studio"]),
+  availableEquipment: text("availableEquipment"), // JSON array of equipment
+  weeklyFrequency: int("weeklyFrequency"), // Quantos dias por semana
+  sessionDuration: int("sessionDuration"), // Duração preferida em minutos
   // Observações
   observations: text("observations"),
   version: int("version").default(1).notNull(),
@@ -206,7 +211,10 @@ export const workouts = mysqlTable("workouts", {
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   type: mysqlEnum("type", ["strength", "cardio", "flexibility", "functional", "mixed"]).default("strength"),
+  goal: mysqlEnum("goal", ["hypertrophy", "weight_loss", "recomposition", "conditioning", "strength", "bulking", "cutting", "general"]).default("general"),
   difficulty: mysqlEnum("difficulty", ["beginner", "intermediate", "advanced"]).default("intermediate"),
+  isTemplate: boolean("isTemplate").default(false), // Se é um template pré-programado
+  generatedByAI: boolean("generatedByAI").default(false), // Se foi gerado por IA
   status: mysqlEnum("status", ["active", "inactive", "completed"]).default("active").notNull(),
   startDate: date("startDate"),
   endDate: date("endDate"),

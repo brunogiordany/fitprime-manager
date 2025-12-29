@@ -1176,6 +1176,371 @@ export const appRouter = router({
         await db.permanentlyDeleteWorkout(input.id);
         return { success: true };
       }),
+    
+    // Templates pré-programados
+    templates: publicProcedure
+      .query(async () => {
+        const { allWorkoutTemplates, goalLabels, levelLabels } = await import('../shared/workout-templates');
+        return { templates: allWorkoutTemplates, goalLabels, levelLabels };
+      }),
+    
+    // Criar treino a partir de template
+    createFromTemplate: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        templateId: z.string(),
+        customName: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getTemplateById } = await import('../shared/workout-templates');
+        const template = getTemplateById(input.templateId);
+        
+        if (!template) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Template não encontrado' });
+        }
+        
+        // Criar o treino principal
+        const workoutId = await db.createWorkout({
+          studentId: input.studentId,
+          personalId: ctx.personal.id,
+          name: input.customName || template.name,
+          description: template.description,
+          type: template.type,
+          goal: template.goal as any,
+          difficulty: template.difficulty === 'none' ? 'beginner' : template.difficulty,
+          isTemplate: false,
+          generatedByAI: false,
+        });
+        
+        // Criar os dias e exercícios
+        const dayOfWeekMap = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        for (let i = 0; i < template.days.length; i++) {
+          const day = template.days[i];
+          const dayId = await db.createWorkoutDay({
+            workoutId,
+            dayOfWeek: dayOfWeekMap[i % 7] as any,
+            name: day.name,
+            order: i,
+          });
+          
+          // Criar exercícios do dia
+          for (let j = 0; j < day.exercises.length; j++) {
+            const exercise = day.exercises[j];
+            await db.createExercise({
+              workoutDayId: dayId,
+              name: exercise.name,
+              muscleGroup: exercise.muscleGroup,
+              sets: exercise.sets,
+              reps: exercise.reps,
+              restSeconds: exercise.restSeconds,
+              notes: exercise.notes,
+              order: j,
+            });
+          }
+        }
+        
+        return { id: workoutId, name: template.name };
+      }),
+    
+    // Gerar treino com IA baseado na anamnese
+    generateWithAI: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        customPrompt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese do aluno
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        
+        // Buscar últimas medidas
+        const measurements = await db.getMeasurementsByStudentId(input.studentId);
+        const latestMeasurement = measurements[0];
+        
+        // Montar prompt para a IA
+        const studentInfo = {
+          nome: student.name,
+          genero: student.gender === 'male' ? 'masculino' : student.gender === 'female' ? 'feminino' : 'não informado',
+          idade: student.birthDate ? Math.floor((Date.now() - new Date(student.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 'não informada',
+        };
+        
+        const anamnesisInfo = anamnesis ? {
+          objetivo: anamnesis.mainGoal,
+          nivelExperiencia: anamnesis.exerciseExperience,
+          estiloVida: anamnesis.lifestyle,
+          horasSono: anamnesis.sleepHours,
+          nivelEstresse: anamnesis.stressLevel,
+          lesoes: anamnesis.injuries,
+          medicamentos: anamnesis.medications,
+          diasDisponiveis: anamnesis.availableDays,
+          horarioPreferido: anamnesis.preferredTime,
+          localTreino: anamnesis.trainingLocation,
+          equipamentosDisponiveis: anamnesis.availableEquipment,
+          frequenciaSemanal: anamnesis.weeklyFrequency,
+          duracaoSessao: anamnesis.sessionDuration,
+        } : null;
+        
+        const measurementInfo = latestMeasurement ? {
+          peso: latestMeasurement.weight,
+          altura: latestMeasurement.height,
+          gorduraCorporal: latestMeasurement.bodyFat,
+          massaMuscular: latestMeasurement.muscleMass,
+        } : null;
+        
+        const systemPrompt = `Você é um personal trainer experiente e certificado. Sua tarefa é criar um plano de treino personalizado baseado nas informações do aluno.
+
+Você DEVE retornar um JSON válido no seguinte formato:
+{
+  "name": "Nome do Treino",
+  "description": "Descrição do treino",
+  "goal": "hypertrophy|weight_loss|recomposition|conditioning|strength|bulking|cutting|general",
+  "difficulty": "beginner|intermediate|advanced",
+  "type": "strength|cardio|flexibility|functional|mixed",
+  "days": [
+    {
+      "name": "Nome do Dia (ex: Treino A - Peito e Tríceps)",
+      "exercises": [
+        {
+          "name": "Nome do Exercício",
+          "muscleGroup": "Grupo Muscular",
+          "sets": 3,
+          "reps": "10-12",
+          "restSeconds": 60,
+          "notes": "Observações opcionais"
+        }
+      ]
+    }
+  ]
+}
+
+Regras importantes:
+- Considere as lesões e limitações do aluno
+- Adapte o volume e intensidade ao nível de experiência
+- Considere os equipamentos disponíveis
+- Respeite a frequência semanal desejada
+- Inclua aquecimento e alongamento quando apropriado
+- Para iniciantes, priorize exercícios em máquinas
+- Para avançados, inclua técnicas avançadas como drop-sets`;
+        
+        const userPrompt = `Crie um treino personalizado para este aluno:
+
+Informações do Aluno:
+${JSON.stringify(studentInfo, null, 2)}
+
+Anamnese:
+${anamnesisInfo ? JSON.stringify(anamnesisInfo, null, 2) : 'Não preenchida - crie um treino genérico para iniciantes'}
+
+Medidas Atuais:
+${measurementInfo ? JSON.stringify(measurementInfo, null, 2) : 'Não informadas'}
+
+${input.customPrompt ? `Instruções adicionais do personal: ${input.customPrompt}` : ''}
+
+Retorne APENAS o JSON, sem texto adicional.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'workout_plan',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  goal: { type: 'string', enum: ['hypertrophy', 'weight_loss', 'recomposition', 'conditioning', 'strength', 'bulking', 'cutting', 'general'] },
+                  difficulty: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'] },
+                  type: { type: 'string', enum: ['strength', 'cardio', 'flexibility', 'functional', 'mixed'] },
+                  days: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string' },
+                        exercises: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              name: { type: 'string' },
+                              muscleGroup: { type: 'string' },
+                              sets: { type: 'integer' },
+                              reps: { type: 'string' },
+                              restSeconds: { type: 'integer' },
+                              notes: { type: 'string' },
+                            },
+                            required: ['name', 'muscleGroup', 'sets', 'reps', 'restSeconds'],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ['name', 'exercises'],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ['name', 'description', 'goal', 'difficulty', 'type', 'days'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino com IA' });
+        }
+        
+        const workoutPlan = JSON.parse(content);
+        
+        // Retornar o plano para preview (não salva automaticamente)
+        return {
+          preview: workoutPlan,
+          studentId: input.studentId,
+          studentName: student.name,
+        };
+      }),
+    
+    // Salvar treino gerado pela IA
+    saveAIGenerated: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        workout: z.object({
+          name: z.string(),
+          description: z.string(),
+          goal: z.string(),
+          difficulty: z.string(),
+          type: z.string(),
+          days: z.array(z.object({
+            name: z.string(),
+            exercises: z.array(z.object({
+              name: z.string(),
+              muscleGroup: z.string(),
+              sets: z.number(),
+              reps: z.string(),
+              restSeconds: z.number(),
+              notes: z.string().optional(),
+            })),
+          })),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { workout } = input;
+        
+        // Criar o treino principal
+        const workoutId = await db.createWorkout({
+          studentId: input.studentId,
+          personalId: ctx.personal.id,
+          name: workout.name,
+          description: workout.description,
+          type: workout.type as any,
+          goal: workout.goal as any,
+          difficulty: workout.difficulty as any,
+          isTemplate: false,
+          generatedByAI: true,
+        });
+        
+        // Criar os dias e exercícios
+        const dayOfWeekMap = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        for (let i = 0; i < workout.days.length; i++) {
+          const day = workout.days[i];
+          const dayId = await db.createWorkoutDay({
+            workoutId,
+            dayOfWeek: dayOfWeekMap[i % 7] as any,
+            name: day.name,
+            order: i,
+          });
+          
+          for (let j = 0; j < day.exercises.length; j++) {
+            const exercise = day.exercises[j];
+            await db.createExercise({
+              workoutDayId: dayId,
+              name: exercise.name,
+              muscleGroup: exercise.muscleGroup,
+              sets: exercise.sets,
+              reps: exercise.reps,
+              restSeconds: exercise.restSeconds,
+              notes: exercise.notes,
+              order: j,
+            });
+          }
+        }
+        
+        return { id: workoutId, name: workout.name };
+      }),
+    
+    // Duplicar treino para outro aluno
+    duplicate: personalProcedure
+      .input(z.object({
+        workoutId: z.number(),
+        targetStudentId: z.number(),
+        customName: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Buscar treino original com dias e exercícios
+        const originalWorkout = await db.getWorkoutById(input.workoutId);
+        if (!originalWorkout) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Treino não encontrado' });
+        }
+        
+        const days = await db.getWorkoutDaysByWorkoutId(input.workoutId);
+        
+        // Criar novo treino
+        const newWorkoutId = await db.createWorkout({
+          studentId: input.targetStudentId,
+          personalId: ctx.personal.id,
+          name: input.customName || `${originalWorkout.name} (Cópia)`,
+          description: originalWorkout.description,
+          type: originalWorkout.type,
+          goal: originalWorkout.goal as any,
+          difficulty: originalWorkout.difficulty,
+          isTemplate: false,
+          generatedByAI: originalWorkout.generatedByAI,
+        });
+        
+        // Duplicar dias e exercícios
+        for (const day of days) {
+          const newDayId = await db.createWorkoutDay({
+            workoutId: newWorkoutId,
+            dayOfWeek: day.dayOfWeek,
+            name: day.name,
+            notes: day.notes,
+            order: day.order,
+          });
+          
+          const exercises = await db.getExercisesByWorkoutDayId(day.id);
+          for (const exercise of exercises) {
+            await db.createExercise({
+              workoutDayId: newDayId,
+              name: exercise.name,
+              muscleGroup: exercise.muscleGroup,
+              sets: exercise.sets,
+              reps: exercise.reps,
+              weight: exercise.weight,
+              restSeconds: exercise.restSeconds,
+              tempo: exercise.tempo,
+              notes: exercise.notes,
+              videoUrl: exercise.videoUrl,
+              order: exercise.order,
+            });
+          }
+        }
+        
+        return { id: newWorkoutId, name: input.customName || `${originalWorkout.name} (Cópia)` };
+      }),
   }),
 
   // ==================== WORKOUT DAYS ====================
