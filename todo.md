@@ -897,3 +897,6 @@
 - [x] Adicionar botão "Nova Sessão" na página Sessões
 - [x] Criar componente NewSessionModal reutilizável para Agenda e Sessões
 - [x] Manter funcionalidade idêntica em ambas as páginas
+
+## Bug: Clique no Card de Sessão (v5.29)
+- [x] Corrigir clique no card de sessão para abrir popup de detalhes (não portal do aluno)

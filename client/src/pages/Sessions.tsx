@@ -423,7 +423,8 @@ export default function Sessions() {
                   return (
                     <div
                       key={session.id}
-                      className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors ${
+                      onClick={() => openEditDialog(session)}
+                      className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer ${
                         isToday ? "ring-2 ring-primary/50" : ""
                       }`}
                     >
@@ -435,11 +436,12 @@ export default function Sessions() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <Link href={`/alunos/${session.studentId}`}>
-                            <p className="font-medium truncate hover:text-primary cursor-pointer">
+                          <span
+                            onClick={(e) => { e.stopPropagation(); window.location.href = `/alunos/${session.studentId}`; }}
+                            className="font-medium truncate hover:text-primary cursor-pointer hover:underline"
+                          >
                               {session.student?.name || "Aluno"}
-                            </p>
-                          </Link>
+                          </span>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar className="h-3.5 w-3.5" />
                             <span>
@@ -467,7 +469,7 @@ export default function Sessions() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                onClick={() => handleMarkCompleted(session.id)}
+                                onClick={(e) => { e.stopPropagation(); handleMarkCompleted(session.id); }}
                                 title="Marcar como realizada"
                               >
                                 <CheckCircle className="h-4 w-4" />
@@ -476,7 +478,7 @@ export default function Sessions() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => handleMarkNoShow(session.id)}
+                                onClick={(e) => { e.stopPropagation(); handleMarkNoShow(session.id); }}
                                 title="Marcar como falta"
                               >
                                 <XCircle className="h-4 w-4" />
@@ -485,7 +487,7 @@ export default function Sessions() {
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
