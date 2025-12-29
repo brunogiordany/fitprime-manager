@@ -864,3 +864,17 @@
 - [x] Adicionar filtro de alunos na visualização mensal do calendário
 - [x] Opção "Todos os alunos" como padrão
 - [x] Ao selecionar um aluno, mostrar apenas as sessões dele
+
+
+## Sessões no Menu Lateral (v5.24)
+- [ ] Adicionar item "Sessões" na barra lateral esquerda
+- [ ] Criar página de Sessões com lista de todas as sessões de todos os alunos
+- [ ] Filtros por aluno, status e período
+- [ ] Ações rápidas (editar, cancelar, marcar como realizada)
+
+
+## Correções de Layout Mobile (v5.24)
+- [x] Corrigir layout da Lixeira (cards de sessões cortados no mobile)
+- [x] Corrigir layout do Modal de Excluir Sessões (campos de data sobrepostos)
+- [x] Implementar restauração em massa de sessões na Lixeira (por aluno ou todas)
+- [x] Corrigir erros TypeScript na página Sessions (markCompleted/markNoShow)

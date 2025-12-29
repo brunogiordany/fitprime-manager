@@ -1,0 +1,486 @@
+import { useState, useMemo } from "react";
+import { trpc } from "@/lib/trpc";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { format, isSameDay, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { 
+  Search, 
+  Filter, 
+  Calendar,
+  Clock,
+  User,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  MoreHorizontal,
+  X
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link } from "wouter";
+
+// Helper para formatar horário em UTC
+const formatTimeUTC = (date: Date) => {
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+  scheduled: { label: "Agendada", color: "bg-blue-500", icon: Calendar },
+  confirmed: { label: "Confirmada", color: "bg-emerald-500", icon: CheckCircle },
+  completed: { label: "Realizada", color: "bg-green-500", icon: CheckCircle },
+  no_show: { label: "Falta", color: "bg-red-500", icon: XCircle },
+  cancelled: { label: "Cancelada", color: "bg-gray-400", icon: AlertCircle },
+};
+
+export default function Sessions() {
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [studentFilter, setStudentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  // Modal de edição
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    scheduledAt: "",
+    duration: 60,
+    status: "scheduled",
+    notes: "",
+  });
+
+  const utils = trpc.useUtils();
+  
+  // Buscar sessões do mês atual
+  const startDate = startOfMonth(currentMonth);
+  const endDate = endOfMonth(currentMonth);
+  
+  const { data: sessions, isLoading } = trpc.sessions.list.useQuery({
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
+  
+  const { data: students } = trpc.students.list.useQuery();
+  
+  const updateSession = trpc.sessions.update.useMutation({
+    onSuccess: () => {
+      toast.success("Sessão atualizada com sucesso!");
+      utils.sessions.list.invalidate();
+      setIsEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar sessão", { description: error.message });
+    },
+  });
+
+  // Funções para marcar sessão como realizada ou falta
+  const handleMarkCompleted = (sessionId: number) => {
+    updateSession.mutate({ id: sessionId, status: "completed" });
+  };
+
+  const handleMarkNoShow = (sessionId: number) => {
+    updateSession.mutate({ id: sessionId, status: "no_show" });
+  };
+
+  // Filtrar sessões
+  const filteredSessions = useMemo(() => {
+    if (!sessions) return [];
+    
+    let result = [...sessions];
+    
+    // Filtro por aluno
+    if (studentFilter !== "all") {
+      result = result.filter(s => s.studentId === parseInt(studentFilter));
+    }
+    
+    // Filtro por status
+    if (statusFilter.length > 0) {
+      result = result.filter(s => statusFilter.includes(s.status));
+    }
+    
+    // Filtro por busca (nome do aluno)
+    if (searchTerm) {
+      result = result.filter(s => 
+        s.student?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Ordenar por data
+    result.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    
+    return result;
+  }, [sessions, studentFilter, statusFilter, searchTerm]);
+
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilter(prev => 
+      prev.includes(status) 
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const clearFilters = () => {
+    setStatusFilter([]);
+    setStudentFilter("all");
+    setSearchTerm("");
+  };
+
+  const openEditDialog = (session: any) => {
+    setEditingSession(session);
+    const date = new Date(session.scheduledAt);
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    
+    setEditForm({
+      scheduledAt: `${year}-${month}-${day}T${hours}:${minutes}`,
+      duration: session.duration,
+      status: session.status,
+      notes: session.notes || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateSession = () => {
+    if (!editingSession) return;
+    
+    const [datePart, timePart] = editForm.scheduledAt.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    const scheduledAt = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+    
+    updateSession.mutate({
+      id: editingSession.id,
+      scheduledAt: scheduledAt.toISOString(),
+      duration: editForm.duration,
+      status: editForm.status as any,
+      notes: editForm.notes || undefined,
+    });
+  };
+
+  const navigateMonth = (direction: "prev" | "next") => {
+    setCurrentMonth(prev => direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1));
+  };
+
+  const hasActiveFilters = statusFilter.length > 0 || studentFilter !== "all" || searchTerm !== "";
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Sessões</h1>
+            <p className="text-muted-foreground">
+              Gerencie todas as sessões de treino
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => navigateMonth("prev")}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium min-w-[140px] text-center">
+              {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+            </span>
+            <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-4">
+              {/* Busca e filtro de aluno */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome do aluno..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={studentFilter} onValueChange={setStudentFilter}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <User className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Todos os alunos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os alunos</SelectItem>
+                    {students?.map((student) => (
+                      <SelectItem key={student.id} value={student.id.toString()}>
+                        {student.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtros de status */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Filter className="h-4 w-4" />
+                  <span>Status:</span>
+                </div>
+                {Object.entries(statusConfig).map(([value, config]) => (
+                  <button
+                    key={value}
+                    onClick={() => toggleStatusFilter(value)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      statusFilter.includes(value)
+                        ? `${config.color} text-white shadow-sm`
+                        : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${statusFilter.includes(value) ? 'bg-white' : config.color}`} />
+                    {config.label}
+                  </button>
+                ))}
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                  >
+                    <X className="h-3 w-3" />
+                    Limpar filtros
+                  </button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Lista de sessões */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Sessões do Mês
+            </CardTitle>
+            <CardDescription>
+              {filteredSessions.length} sessões encontradas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-20" />
+                ))}
+              </div>
+            ) : filteredSessions.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhuma sessão encontrada</p>
+                {hasActiveFilters && (
+                  <Button variant="link" onClick={clearFilters} className="mt-2">
+                    Limpar filtros
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredSessions.map((session) => {
+                  const config = statusConfig[session.status] || statusConfig.scheduled;
+                  const StatusIcon = config.icon;
+                  const sessionDate = new Date(session.scheduledAt);
+                  const isToday = isSameDay(sessionDate, new Date());
+                  
+                  return (
+                    <div
+                      key={session.id}
+                      className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors ${
+                        isToday ? "ring-2 ring-primary/50" : ""
+                      }`}
+                    >
+                      {/* Avatar e info do aluno */}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 shrink-0">
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {session.student?.name?.charAt(0) || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <Link href={`/alunos/${session.studentId}`}>
+                            <p className="font-medium truncate hover:text-primary cursor-pointer">
+                              {session.student?.name || "Aluno"}
+                            </p>
+                          </Link>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>
+                              {format(sessionDate, "EEE, dd/MM", { locale: ptBR })}
+                            </span>
+                            <Clock className="h-3.5 w-3.5 ml-1" />
+                            <span>
+                              {formatTimeUTC(sessionDate)} - {session.duration}min
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status e ações */}
+                      <div className="flex items-center gap-2 justify-between sm:justify-end">
+                        <Badge className={`${config.color} text-white shrink-0`}>
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {config.label}
+                        </Badge>
+                        
+                        <div className="flex items-center gap-1">
+                          {(session.status === "scheduled" || session.status === "confirmed") && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                onClick={() => handleMarkCompleted(session.id)}
+                                title="Marcar como realizada"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleMarkNoShow(session.id)}
+                                title="Marcar como falta"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(session)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/alunos/${session.studentId}`}>
+                                  <User className="h-4 w-4 mr-2" />
+                                  Ver aluno
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal de edição */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Sessão</DialogTitle>
+            <DialogDescription>
+              {editingSession?.student?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Data e Hora</Label>
+              <Input
+                type="datetime-local"
+                value={editForm.scheduledAt}
+                onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Duração</Label>
+                <Select
+                  value={editForm.duration.toString()}
+                  onValueChange={(v) => setEditForm({ ...editForm, duration: parseInt(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 min</SelectItem>
+                    <SelectItem value="45">45 min</SelectItem>
+                    <SelectItem value="60">1h</SelectItem>
+                    <SelectItem value="75">1h15</SelectItem>
+                    <SelectItem value="90">1h30</SelectItem>
+                    <SelectItem value="120">2h</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={editForm.status}
+                  onValueChange={(v) => setEditForm({ ...editForm, status: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(statusConfig).map(([value, config]) => (
+                      <SelectItem key={value} value={value}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Observações</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="Notas sobre a sessão..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateSession} disabled={updateSession.isPending}>
+              {updateSession.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </DashboardLayout>
+  );
+}

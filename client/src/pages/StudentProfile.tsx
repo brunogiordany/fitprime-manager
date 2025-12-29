@@ -1961,13 +1961,14 @@ export default function StudentProfile() {
                 <p className="text-sm font-medium mb-1">Deixe os campos de data vazios para afetar TODAS as sessões do aluno.</p>
                 <p className="text-xs text-muted-foreground">Ou preencha para filtrar por período específico.</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>De (opcional)</Label>
                   <Input
                     type="date"
                     value={batchFromDate}
                     onChange={(e) => setBatchFromDate(e.target.value)}
+                    className="w-full"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1976,6 +1977,7 @@ export default function StudentProfile() {
                     type="date"
                     value={batchToDate}
                     onChange={(e) => setBatchToDate(e.target.value)}
+                    className="w-full"
                   />
                 </div>
               </div>
