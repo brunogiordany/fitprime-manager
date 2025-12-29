@@ -554,7 +554,7 @@ export default function Sessions() {
 
       {/* Modal de edição */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Editar Sessão</DialogTitle>
             <DialogDescription>
@@ -581,7 +581,7 @@ export default function Sessions() {
                     value={editForm.scheduledDate}
                     onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
                     className="w-full"
-                    autoFocus={false}
+                    tabIndex={-1}
                   />
                 </div>
                 <div className="space-y-1">
@@ -591,7 +591,7 @@ export default function Sessions() {
                     value={editForm.scheduledTime}
                     onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
                     className="w-full"
-                    autoFocus={false}
+                    tabIndex={-1}
                   />
                 </div>
               </div>
