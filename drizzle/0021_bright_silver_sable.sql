@@ -1,0 +1,1 @@
+ALTER TABLE `anamneses` ADD `muscleEmphasis` text;

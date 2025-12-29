@@ -698,6 +698,7 @@ export const appRouter = router({
         preferredTime: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
         trainingRestrictions: z.string().optional(),
         restrictionNotes: z.string().optional(),
+        muscleEmphasis: z.string().optional(),
         observations: z.string().optional(),
         // Medidas corporais
         measurements: z.object({
@@ -1290,6 +1291,7 @@ export const appRouter = router({
           duracaoSessao: anamnesis.sessionDuration,
           restricoesTreino: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
           detalhesRestricoes: anamnesis.restrictionNotes,
+          enfasesMusculares: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
         } : null;
         
         const measurementInfo = latestMeasurement ? {
@@ -1329,6 +1331,8 @@ Regras importantes:
 - PRIORIDADE MÁXIMA: Respeite as restrições de treino do aluno (lombar, joelho, ombro, etc.)
 - Se houver restrições, EVITE exercícios que sobrecarreguem essas regiões
 - Substitua exercícios problemáticos por alternativas mais seguras
+- PRIORIZE os grupos musculares indicados nas ênfases musculares do aluno
+- Se houver ênfases musculares, inclua mais exercícios e volume para esses grupos
 - Considere as lesões e limitações do aluno
 - Adapte o volume e intensidade ao nível de experiência
 - Considere os equipamentos disponíveis

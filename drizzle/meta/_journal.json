@@ -148,6 +148,13 @@
       "when": 1766978634515,
       "tag": "0020_wise_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1766980461183,
+      "tag": "0021_bright_silver_sable",
+      "breakpoints": true
     }
   ]
 }

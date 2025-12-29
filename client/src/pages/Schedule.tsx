@@ -352,7 +352,7 @@ export default function Schedule() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingSession) return;
     
     // Garantir que scheduledAt seja válido
@@ -362,6 +362,7 @@ export default function Schedule() {
       scheduledAtValue = format(new Date(editingSession.scheduledAt), "yyyy-MM-dd'T'HH:mm");
     }
     
+    // Atualizar a sessão atual
     updateMutation.mutate({
       id: editingSession.id,
       status: editForm.status as any,
@@ -369,7 +370,41 @@ export default function Schedule() {
       duration: parseInt(editForm.duration),
       notes: editForm.notes || undefined,
     }, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        // Criar sessões recorrentes se selecionado
+        if (editForm.recurrenceFrequency !== 'none') {
+          const baseDate = new Date(scheduledAtValue);
+          let weeksToCreate = 0;
+          
+          // Calcular quantas semanas criar baseado no período
+          switch (editForm.recurrenceFrequency) {
+            case '1week': weeksToCreate = 1; break;
+            case '2weeks': weeksToCreate = 2; break;
+            case '3weeks': weeksToCreate = 3; break;
+            case '1month': weeksToCreate = 4; break;
+            case '2months': weeksToCreate = 8; break;
+            case '3months': weeksToCreate = 12; break;
+            case '4months': weeksToCreate = 16; break;
+            case '5months': weeksToCreate = 20; break;
+            case '6months': weeksToCreate = 24; break;
+            case '1year': weeksToCreate = 52; break;
+          }
+          
+          // Criar sessões para cada semana
+          for (let i = 1; i <= weeksToCreate; i++) {
+            const newDate = addWeeks(baseDate, i);
+            createSessionMutation.mutate({
+              studentId: editingSession.studentId,
+              scheduledAt: format(newDate, "yyyy-MM-dd'T'HH:mm"),
+              duration: parseInt(editForm.duration),
+              type: editingSession.type || 'regular',
+              notes: editForm.notes || undefined,
+            });
+          }
+          
+          toast.success(`Criadas ${weeksToCreate} sessões recorrentes!`);
+        }
+        
         setIsEditDialogOpen(false);
         setEditingSession(null);
       }
@@ -1223,11 +1258,6 @@ export default function Schedule() {
                       </Select>
                     </div>
                   </div>
-
-                  <Button variant="ghost" size="sm" className="text-primary p-0 h-auto">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Adicionar Serviço
-                  </Button>
                 </div>
 
                 {/* Ações */}
@@ -1260,7 +1290,7 @@ export default function Schedule() {
                   <h4 className="font-semibold text-sm">Recorrência</h4>
                   
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Frequência</Label>
+                    <Label className="text-xs text-muted-foreground">Repetir por</Label>
                     <Select
                       value={editForm.recurrenceFrequency}
                       onValueChange={(value) => setEditForm({ ...editForm, recurrenceFrequency: value })}
@@ -1270,35 +1300,24 @@ export default function Schedule() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Agendamento não se repete</SelectItem>
-                        <SelectItem value="daily">Diário</SelectItem>
-                        <SelectItem value="weekly">Semanal</SelectItem>
-                        <SelectItem value="biweekly">Quinzenal</SelectItem>
-                        <SelectItem value="monthly">Mensal</SelectItem>
+                        <SelectItem value="1week">1 semana</SelectItem>
+                        <SelectItem value="2weeks">2 semanas</SelectItem>
+                        <SelectItem value="3weeks">3 semanas</SelectItem>
+                        <SelectItem value="1month">1 mês</SelectItem>
+                        <SelectItem value="2months">2 meses</SelectItem>
+                        <SelectItem value="3months">3 meses</SelectItem>
+                        <SelectItem value="4months">4 meses</SelectItem>
+                        <SelectItem value="5months">5 meses</SelectItem>
+                        <SelectItem value="6months">6 meses</SelectItem>
+                        <SelectItem value="1year">1 ano</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {editForm.recurrenceFrequency !== 'none' && (
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Além deste, repetir mais</Label>
-                      <Select
-                        value={editForm.recurrenceRepeat}
-                        onValueChange={(value) => setEditForm({ ...editForm, recurrenceRepeat: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 vez</SelectItem>
-                          <SelectItem value="2">2 vezes</SelectItem>
-                          <SelectItem value="3">3 vezes</SelectItem>
-                          <SelectItem value="4">4 vezes</SelectItem>
-                          <SelectItem value="5">5 vezes</SelectItem>
-                          <SelectItem value="10">10 vezes</SelectItem>
-                          <SelectItem value="20">20 vezes</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Serão criadas sessões semanais no mesmo dia e horário pelo período selecionado.
+                    </p>
                   )}
                 </div>
 
@@ -1353,12 +1372,7 @@ export default function Schedule() {
                   >
                     {updateMutation.isPending ? "Salvando..." : "Salvar"}
                   </Button>
-                  <Button 
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                    onClick={() => toast.info('Funcionalidade em desenvolvimento')}
-                  >
-                    Criar comanda
-                  </Button>
+
                 </div>
               </div>
             )}

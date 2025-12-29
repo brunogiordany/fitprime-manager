@@ -114,6 +114,8 @@ export const anamneses = mysqlTable("anamneses", {
   // Restrições de Treino (regiões a evitar ou cuidar)
   trainingRestrictions: text("trainingRestrictions"), // JSON array: ["lombar", "joelho", "ombro", etc.]
   restrictionNotes: text("restrictionNotes"), // Detalhes sobre as restrições
+  // Ênfases Musculares (grupos que o aluno quer priorizar)
+  muscleEmphasis: text("muscleEmphasis"), // JSON array: ["peito", "costas", "pernas", etc.]
   // Observações
   observations: text("observations"),
   version: int("version").default(1).notNull(),

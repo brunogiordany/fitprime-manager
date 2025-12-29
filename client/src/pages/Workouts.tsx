@@ -303,7 +303,7 @@ export default function Workouts() {
                   Gerar com IA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5 text-purple-600" />
@@ -478,7 +478,7 @@ export default function Workouts() {
                   Templates
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl h-[85vh] overflow-hidden flex flex-col">
+              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Templates de Treino</DialogTitle>
                   <DialogDescription>

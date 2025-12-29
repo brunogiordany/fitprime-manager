@@ -671,3 +671,19 @@
   - [x] Campo de detalhes das restrições
 - [x] IA puxa restrições da anamnese automaticamente
 - [x] Prompt da IA atualizado com regras específicas para cada restrição
+
+
+## Bugs e Melhorias v5.3 - CHECKLIST
+- [x] Adicionar Serviço não funciona na agenda - REMOVIDO (botão desnecessário)
+- [x] Horário salva errado - CORRIGIDO (validação melhorada)
+- [x] Remover botão "Criar comanda" - REMOVIDO
+- [x] Recorrência não agenda corretamente - CORRIGIDO (cria sessões semanais)
+- [x] Mudar opções de frequência para períodos:
+  - [x] 1 semana, 2 semanas, 3 semanas
+  - [x] 1 mês, 2 meses, 3 meses, 4 meses, 5 meses, 6 meses
+  - [x] 1 ano
+- [x] Modal de Templates não rola - CORRIGIDO (overflow-y-auto)
+- [x] Modal de Treino com IA não rola - CORRIGIDO (overflow-y-auto)
+- [x] Adicionar ênfases em grupos musculares na anamnese:
+  - [x] Preferências de grupos musculares (12 grupos: peito, costas, ombros, bíceps, tríceps, antebraço, abdômen, glúteos, quadríceps, posterior, panturrilha, core)
+  - [x] IA usa preferências ao gerar treino (prompt atualizado)

@@ -66,6 +66,9 @@ export default function Anamnesis() {
     trainingRestrictions: [] as string[],
     restrictionNotes: "",
     
+    // Ênfases Musculares
+    muscleEmphasis: [] as string[],
+    
     // Observações
     observations: "",
     
@@ -210,6 +213,7 @@ export default function Anamnesis() {
         supplements: anamnesis.supplements || "",
         trainingRestrictions: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
         restrictionNotes: anamnesis.restrictionNotes || "",
+        muscleEmphasis: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
         observations: anamnesis.observations || "",
       }));
     }
@@ -262,6 +266,7 @@ export default function Anamnesis() {
       supplements: formData.supplements || undefined,
       trainingRestrictions: formData.trainingRestrictions?.length > 0 ? JSON.stringify(formData.trainingRestrictions) : undefined,
       restrictionNotes: formData.restrictionNotes || undefined,
+      muscleEmphasis: formData.muscleEmphasis?.length > 0 ? JSON.stringify(formData.muscleEmphasis) : undefined,
       observations: formData.observations || undefined,
       // Medidas corporais
       measurements: {
@@ -867,6 +872,62 @@ export default function Anamnesis() {
                       onChange={(e) => setFormData({ ...formData, restrictionNotes: e.target.value })}
                       rows={3}
                     />
+                  </div>
+                </div>
+
+                {/* Ênfases Musculares */}
+                <div className="pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Target className="h-5 w-5 text-emerald-500" />
+                    Ênfases Musculares
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Selecione os grupos musculares que o aluno quer priorizar nos treinos.
+                    A IA usará essas preferências para criar treinos mais personalizados.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                    {[
+                      { id: "peito", label: "Peito", icon: "💪" },
+                      { id: "costas", label: "Costas", icon: "🦴" },
+                      { id: "ombros", label: "Ombros", icon: "🏋️" },
+                      { id: "biceps", label: "Bíceps", icon: "💪" },
+                      { id: "triceps", label: "Tríceps", icon: "💪" },
+                      { id: "antebraco", label: "Antebraço", icon: "✋" },
+                      { id: "abdomen", label: "Abdômen", icon: "🪴" },
+                      { id: "gluteos", label: "Glúteos", icon: "🍑" },
+                      { id: "quadriceps", label: "Quadríceps", icon: "🦵" },
+                      { id: "posterior", label: "Posterior", icon: "🦵" },
+                      { id: "panturrilha", label: "Panturrilha", icon: "🦶" },
+                      { id: "core", label: "Core", icon: "🎯" },
+                    ].map((muscle) => (
+                      <button
+                        key={muscle.id}
+                        type="button"
+                        onClick={() => {
+                          const current = formData.muscleEmphasis || [];
+                          if (current.includes(muscle.id)) {
+                            setFormData({
+                              ...formData,
+                              muscleEmphasis: current.filter(m => m !== muscle.id)
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              muscleEmphasis: [...current, muscle.id]
+                            });
+                          }
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                          (formData.muscleEmphasis || []).includes(muscle.id)
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <span>{muscle.icon}</span>
+                        <span className="text-sm font-medium">{muscle.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </CardContent>
