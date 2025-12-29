@@ -754,3 +754,10 @@
   - [x] Horário padrão para todas as sessões
   - [x] Criar múltiplas sessões automaticamente pelo período selecionado
   - [x] Vincular treinos em sequência (A, B, C...) automaticamente
+
+
+## Bugs Críticos Agenda (v5.11)
+- [x] Bug: Horário alterado ao salvar sessão - CORRIGIDO (parsing de data local sem conversão de timezone)
+- [x] Bug: Sessões excluídas filtradas do calendário (isNull(deletedAt))
+- [x] Bug: Aba Sessões do aluno agora mostra todas as sessões (incluindo futuras)
+- [x] Validação de conflito de horário implementada (verifica sobreposição de sessões)

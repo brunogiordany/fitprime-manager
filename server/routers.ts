@@ -1875,6 +1875,17 @@ Retorne APENAS o JSON, sem texto adicional.`;
         const [hours, minutes] = timePart.split(':').map(Number);
         const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
         
+        // Verificar conflito de horário
+        const duration = input.duration || 60;
+        const endTime = new Date(localDate.getTime() + duration * 60 * 1000);
+        const conflict = await db.checkSessionConflict(ctx.personal.id, localDate, endTime);
+        if (conflict) {
+          throw new TRPCError({ 
+            code: 'CONFLICT', 
+            message: `Conflito de horário! Já existe uma sessão agendada para ${conflict.studentName} às ${conflict.time}` 
+          });
+        }
+        
         const id = await db.createSession({
           ...data,
           personalId: ctx.personal.id,
@@ -1907,6 +1918,17 @@ Retorne APENAS o JSON, sem texto adicional.`;
           const timeStr = timePart || '00:00';
           const [hours, minutes] = timeStr.split(':').map(Number);
           parsedDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+          
+          // Verificar conflito de horário (excluindo a sessão atual)
+          const duration = input.duration || 60;
+          const endTime = new Date(parsedDate.getTime() + duration * 60 * 1000);
+          const conflict = await db.checkSessionConflict(ctx.personal.id, parsedDate, endTime, id);
+          if (conflict) {
+            throw new TRPCError({ 
+              code: 'CONFLICT', 
+              message: `Conflito de horário! Já existe uma sessão agendada para ${conflict.studentName} às ${conflict.time}` 
+            });
+          }
         }
         
         await db.updateSession(id, {

@@ -488,7 +488,10 @@ export async function getSessionsByPersonalId(personalId: number, filters?: { st
   const db = await getDb();
   if (!db) return [];
   
-  const conditions = [eq(sessions.personalId, personalId)];
+  const conditions = [
+    eq(sessions.personalId, personalId),
+    isNull(sessions.deletedAt), // Filtrar sessões excluídas
+  ];
   
   if (filters?.startDate) {
     conditions.push(gte(sessions.scheduledAt, filters.startDate));
@@ -512,7 +515,10 @@ export async function getSessionsByStudentId(studentId: number) {
   const db = await getDb();
   if (!db) return [];
   return await db.select().from(sessions)
-    .where(eq(sessions.studentId, studentId))
+    .where(and(
+      eq(sessions.studentId, studentId),
+      isNull(sessions.deletedAt) // Filtrar sessões excluídas
+    ))
     .orderBy(desc(sessions.scheduledAt));
 }
 
@@ -565,6 +571,54 @@ export async function deleteSession(id: number) {
   if (!db) throw new Error("Database not available");
   // Soft delete - mover para lixeira
   await db.update(sessions).set({ deletedAt: new Date() }).where(eq(sessions.id, id));
+}
+
+// Verificar conflito de horário para sessões
+export async function checkSessionConflict(
+  personalId: number, 
+  startTime: Date, 
+  endTime: Date, 
+  excludeSessionId?: number
+): Promise<{ studentName: string; time: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Buscar sessões que se sobreponham ao horário
+  // Uma sessão conflita se: (inicio_nova < fim_existente) AND (fim_nova > inicio_existente)
+  const conditions = [
+    eq(sessions.personalId, personalId),
+    isNull(sessions.deletedAt),
+    not(eq(sessions.status, 'cancelled')),
+    lte(sessions.scheduledAt, endTime),
+  ];
+  
+  if (excludeSessionId) {
+    conditions.push(not(eq(sessions.id, excludeSessionId)));
+  }
+  
+  const conflictingSessions = await db.select({
+    session: sessions,
+    student: students
+  }).from(sessions)
+    .innerJoin(students, eq(sessions.studentId, students.id))
+    .where(and(...conditions));
+  
+  // Verificar se alguma sessão realmente conflita
+  for (const { session, student } of conflictingSessions) {
+    const sessionStart = new Date(session.scheduledAt);
+    const sessionDuration = session.duration || 60;
+    const sessionEnd = new Date(sessionStart.getTime() + sessionDuration * 60 * 1000);
+    
+    // Verifica sobreposição: nova sessão começa antes do fim da existente E termina depois do início da existente
+    if (startTime < sessionEnd && endTime > sessionStart) {
+      return {
+        studentName: student.name,
+        time: sessionStart.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+    }
+  }
+  
+  return null;
 }
 
 export async function countSessionsThisMonth(personalId: number) {
