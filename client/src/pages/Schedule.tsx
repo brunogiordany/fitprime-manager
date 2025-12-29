@@ -101,6 +101,8 @@ export default function Schedule() {
     sendReminder: true,
     encaixar: false,
     recurrenceFrequency: "none",
+    workoutId: "",
+    workoutDayIndex: "",
   });
 
   const [newStudent, setNewStudent] = useState({
@@ -132,6 +134,8 @@ export default function Schedule() {
     encaixar: false,
     recurrenceFrequency: 'none',
     recurrenceRepeat: '1',
+    workoutId: '',
+    workoutDayIndex: '',
   });
 
   // Modal de lista de sessões do dia (+X more)
@@ -166,6 +170,20 @@ export default function Schedule() {
 
   const { data: students } = trpc.students.list.useQuery({});
   const { data: plans } = trpc.plans.list.useQuery();
+  
+  // Buscar treinos do aluno selecionado para vincular à sessão (nova sessão)
+  const selectedStudentId = newSession.studentId ? parseInt(newSession.studentId) : null;
+  const { data: studentWorkouts } = trpc.workouts.list.useQuery(
+    { studentId: selectedStudentId! },
+    { enabled: !!selectedStudentId }
+  );
+  
+  // Buscar treinos do aluno da sessão em edição
+  const editingStudentId = editingSession?.studentId;
+  const { data: editingStudentWorkouts } = trpc.workouts.list.useQuery(
+    { studentId: editingStudentId! },
+    { enabled: !!editingStudentId }
+  );
 
   const createSessionMutation = trpc.sessions.create.useMutation({
     onSuccess: () => {
@@ -246,6 +264,8 @@ export default function Schedule() {
       sendReminder: true,
       encaixar: false,
       recurrenceFrequency: "none",
+      workoutId: "",
+      workoutDayIndex: "",
     });
     setDialogStep("select");
     setStudentSearch("");
@@ -265,6 +285,8 @@ export default function Schedule() {
       type: newSession.type,
       location: newSession.location || undefined,
       notes: newSession.notes || undefined,
+      workoutId: newSession.workoutId ? parseInt(newSession.workoutId) : undefined,
+      workoutDayIndex: newSession.workoutDayIndex !== '' ? parseInt(newSession.workoutDayIndex) : undefined,
     }, {
       onSuccess: () => {
         // Criar sessões recorrentes se selecionado
@@ -295,6 +317,8 @@ export default function Schedule() {
               type: newSession.type,
               location: newSession.location || undefined,
               notes: newSession.notes || undefined,
+              workoutId: newSession.workoutId ? parseInt(newSession.workoutId) : undefined,
+              workoutDayIndex: newSession.workoutDayIndex !== '' ? parseInt(newSession.workoutDayIndex) : undefined,
             });
           }
           
@@ -392,6 +416,8 @@ export default function Schedule() {
       encaixar: false,
       recurrenceFrequency: 'none',
       recurrenceRepeat: '1',
+      workoutId: session.workoutId?.toString() || '',
+      workoutDayIndex: session.workoutDayIndex?.toString() || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -413,6 +439,8 @@ export default function Schedule() {
       scheduledAt: scheduledAtValue,
       duration: parseInt(editForm.duration),
       notes: editForm.notes || undefined,
+      workoutId: editForm.workoutId && editForm.workoutId !== 'none' ? parseInt(editForm.workoutId) : null,
+      workoutDayIndex: editForm.workoutDayIndex !== '' ? parseInt(editForm.workoutDayIndex) : null,
     }, {
       onSuccess: async () => {
         // Criar sessões recorrentes se selecionado
@@ -443,6 +471,8 @@ export default function Schedule() {
               duration: parseInt(editForm.duration),
               type: editingSession.type || 'regular',
               notes: editForm.notes || undefined,
+              workoutId: editForm.workoutId && editForm.workoutId !== 'none' ? parseInt(editForm.workoutId) : undefined,
+              workoutDayIndex: editForm.workoutDayIndex !== '' ? parseInt(editForm.workoutDayIndex) : undefined,
             });
           }
           
@@ -1042,6 +1072,72 @@ export default function Schedule() {
                   />
                 </div>
 
+                {/* Seleção de Treino */}
+                {studentWorkouts && studentWorkouts.length > 0 && (
+                  <div className="p-4 border rounded-lg bg-emerald-50 dark:bg-emerald-950/20 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell className="h-4 w-4 text-emerald-600" />
+                      <Label className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Treino da Sessão</Label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
+                        <Select
+                          value={newSession.workoutId}
+                          onValueChange={(value) => {
+                            setNewSession({ 
+                              ...newSession, 
+                              workoutId: value,
+                              workoutDayIndex: '' // Reset day when workout changes
+                            });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Escolha um treino" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Sem treino vinculado</SelectItem>
+                            {studentWorkouts.map((workout) => (
+                              <SelectItem key={workout.id} value={workout.id.toString()}>
+                                {workout.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {newSession.workoutId && newSession.workoutId !== 'none' && (() => {
+                        const selectedWorkout = studentWorkouts.find(w => w.id.toString() === newSession.workoutId);
+                        const days = selectedWorkout?.days || [];
+                        return days.length > 0 ? (
+                          <div className="grid gap-2">
+                            <Label className="text-xs text-muted-foreground">Dia do treino</Label>
+                            <Select
+                              value={newSession.workoutDayIndex}
+                              onValueChange={(value) => setNewSession({ ...newSession, workoutDayIndex: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Escolha o dia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {days.map((day: any, index: number) => (
+                                  <SelectItem key={index} value={index.toString()}>
+                                    Treino {String.fromCharCode(65 + index)} - {day.name || `Dia ${index + 1}`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                    {newSession.workoutId && newSession.workoutId !== 'none' && newSession.workoutDayIndex !== '' && (
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                        O aluno verá este treino detalhado no portal dele.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Opção de gerar cobranças automáticas */}
                 {newSession.planId && newSession.planId !== "none" && (
                   <div className="p-4 border rounded-lg bg-accent/30 space-y-4">
@@ -1454,6 +1550,77 @@ export default function Schedule() {
                     </p>
                   )}
                 </div>
+
+                {/* Seleção de Treino */}
+                {editingSession && (() => {
+                  const editStudentWorkouts = editingStudentWorkouts;
+                  if (!editStudentWorkouts || editStudentWorkouts.length === 0) return null;
+                  
+                  return (
+                    <div className="p-4 mx-4 mt-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Dumbbell className="h-4 w-4 text-emerald-600" />
+                        <h4 className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">Treino da Sessão</h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
+                          <Select
+                            value={editForm.workoutId}
+                            onValueChange={(value) => {
+                              setEditForm({ 
+                                ...editForm, 
+                                workoutId: value,
+                                workoutDayIndex: '' // Reset day when workout changes
+                              });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Escolha um treino" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sem treino vinculado</SelectItem>
+                              {editStudentWorkouts.map((workout) => (
+                                <SelectItem key={workout.id} value={workout.id.toString()}>
+                                  {workout.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {editForm.workoutId && editForm.workoutId !== 'none' && (() => {
+                          const selectedWorkout = editStudentWorkouts.find(w => w.id.toString() === editForm.workoutId);
+                          const days = selectedWorkout?.days || [];
+                          return days.length > 0 ? (
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Dia do treino</Label>
+                              <Select
+                                value={editForm.workoutDayIndex}
+                                onValueChange={(value) => setEditForm({ ...editForm, workoutDayIndex: value })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Escolha o dia" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {days.map((day: any, index: number) => (
+                                    <SelectItem key={index} value={index.toString()}>
+                                      Treino {String.fromCharCode(65 + index)} - {day.name || `Dia ${index + 1}`}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                      {editForm.workoutId && editForm.workoutId !== 'none' && editForm.workoutDayIndex !== '' && (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                          O aluno verá este treino detalhado no portal dele.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Observação */}
                 <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-2">

@@ -1087,7 +1087,15 @@ export const appRouter = router({
     list: personalProcedure
       .input(z.object({ studentId: z.number() }))
       .query(async ({ ctx, input }) => {
-        return await db.getWorkoutsByStudentId(input.studentId);
+        const workouts = await db.getWorkoutsByStudentId(input.studentId);
+        // Incluir os dias de cada treino para o seletor de sessão
+        const workoutsWithDays = await Promise.all(
+          workouts.map(async (workout) => {
+            const days = await db.getWorkoutDaysByWorkoutId(workout.id);
+            return { ...workout, days };
+          })
+        );
+        return workoutsWithDays;
       }),
     
     get: personalProcedure
@@ -1833,6 +1841,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
         location: z.string().optional(),
         notes: z.string().optional(),
         packageId: z.number().optional(),
+        workoutId: z.number().optional(),
+        workoutDayIndex: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { scheduledAt, ...data } = input;
@@ -1861,6 +1871,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
         location: z.string().optional(),
         notes: z.string().optional(),
         cancelReason: z.string().optional(),
+        workoutId: z.number().nullable().optional(),
+        workoutDayIndex: z.number().nullable().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, scheduledAt, ...data } = input;
@@ -2956,7 +2968,39 @@ Retorne APENAS o JSON, sem texto adicional.`;
     }),
     
     sessions: studentProcedure.query(async ({ ctx }) => {
-      return await db.getSessionsByStudentId(ctx.student.id);
+      const sessions = await db.getSessionsByStudentId(ctx.student.id);
+      
+      // Adicionar informações do treino vinculado a cada sessão
+      const sessionsWithWorkoutInfo = await Promise.all(
+        sessions.map(async (session: any) => {
+          if (session.workoutId && session.workoutDayIndex !== null) {
+            const workout = await db.getWorkoutById(session.workoutId);
+            if (workout) {
+              const days = await db.getWorkoutDaysByWorkoutId(session.workoutId);
+              const day = days[session.workoutDayIndex];
+              if (day) {
+                const exercises = await db.getExercisesByWorkoutDayId(day.id);
+                return {
+                  ...session,
+                  workoutInfo: {
+                    workoutName: workout.name,
+                    dayName: day.name,
+                    exercises: exercises.map(ex => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest: ex.restSeconds,
+                    })),
+                  },
+                };
+              }
+            }
+          }
+          return session;
+        })
+      );
+      
+      return sessionsWithWorkoutInfo;
     }),
     
     charges: studentProcedure.query(async ({ ctx }) => {

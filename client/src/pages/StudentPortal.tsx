@@ -320,7 +320,7 @@ export default function StudentPortal() {
               </div>
             ) : sessions && sessions.length > 0 ? (
               <div className="space-y-3">
-                {sessions.map((session) => (
+                {sessions.map((session: any) => (
                   <Card key={session.id}>
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between">
@@ -350,6 +350,30 @@ export default function StudentPortal() {
                         </div>
                         {getStatusBadge(session.status)}
                       </div>
+                      
+                      {/* Treino Vinculado */}
+                      {session.workoutInfo && (
+                        <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Dumbbell className="h-4 w-4 text-emerald-600" />
+                            <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                              Treino {String.fromCharCode(65 + (session.workoutDayIndex || 0))}: {session.workoutInfo.dayName || 'Treino do Dia'}
+                            </span>
+                          </div>
+                          {session.workoutInfo.exercises && session.workoutInfo.exercises.length > 0 && (
+                            <div className="space-y-1">
+                              {session.workoutInfo.exercises.map((exercise: any, idx: number) => (
+                                <div key={idx} className="text-sm flex justify-between items-center py-1 border-b border-emerald-100 dark:border-emerald-900 last:border-0">
+                                  <span className="text-gray-700 dark:text-gray-300">{exercise.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {exercise.sets}x{exercise.reps} {exercise.rest && `• ${exercise.rest}s`}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}

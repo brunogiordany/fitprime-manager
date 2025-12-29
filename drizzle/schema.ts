@@ -272,6 +272,8 @@ export const sessions = mysqlTable("sessions", {
   studentId: int("studentId").notNull().references(() => students.id),
   personalId: int("personalId").notNull().references(() => personals.id),
   packageId: int("packageId").references(() => packages.id),
+  workoutId: int("workoutId").references(() => workouts.id), // Treino vinculado
+  workoutDayIndex: int("workoutDayIndex"), // Índice do dia do treino (0=A, 1=B, 2=C...)
   scheduledAt: timestamp("scheduledAt").notNull(),
   duration: int("duration").default(60), // minutos
   status: mysqlEnum("status", ["scheduled", "confirmed", "completed", "cancelled", "no_show"]).default("scheduled").notNull(),

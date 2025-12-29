@@ -725,3 +725,11 @@
   - [x] Status inicial (Não confirmado, Confirmado)
   - [x] Ações (Enviar lembrete, Encaixar agendamento)
   - [x] Recorrência (Repetir por período - 1 semana a 1 ano)
+
+
+## Vinculação de Treino à Sessão (v5.9)
+- [x] Adicionar campo workoutId e workoutDayIndex na tabela sessions
+- [x] Atualizar rotas de create/update session para aceitar treino
+- [x] Adicionar seletor de treino no modal de Nova Sessão
+- [x] Adicionar seletor de treino no modal de Edição de Sessão
+- [x] Exibir treino vinculado no Portal do Aluno com exercícios detalhados
