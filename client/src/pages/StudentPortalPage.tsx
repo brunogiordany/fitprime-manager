@@ -58,14 +58,35 @@ interface AnamnesisData {
   occupation: string | null;
   sleepHours: number | null;
   stressLevel: string | null;
+  lifestyle: string | null;
   medicalHistory: string | null;
   medications: string | null;
   injuries: string | null;
+  surgeries: string | null;
   allergies: string | null;
   mainGoal: string | null;
   secondaryGoals: string | null;
   targetWeight: string | null;
+  exerciseExperience: string | null;
   observations: string | null;
+  // Nutrição
+  mealsPerDay: number | null;
+  waterIntake: string | null;
+  dailyCalories: number | null;
+  dietRestrictions: string | null;
+  supplements: string | null;
+  doesCardio: boolean;
+  cardioActivities: string | null;
+  // Preferências de treino
+  weeklyFrequency: number | null;
+  sessionDuration: number | null;
+  preferredTime: string | null;
+  trainingLocation: string | null;
+  availableEquipment: string | null;
+  // Restrições e ênfases
+  trainingRestrictions: string | null;
+  restrictionNotes: string | null;
+  muscleEmphasis: string | null;
 }
 
 export default function StudentPortalPage() {
@@ -172,18 +193,40 @@ export default function StudentPortalPage() {
 
   const handleEditAnamnesis = () => {
     if (anamnesis) {
+      const anamnesisAny = anamnesis as any;
       setAnamnesisForm({
         occupation: anamnesis.occupation || "",
         sleepHours: anamnesis.sleepHours || undefined,
         stressLevel: anamnesis.stressLevel || "",
+        lifestyle: anamnesisAny.lifestyle || "",
         medicalHistory: anamnesis.medicalHistory || "",
         medications: anamnesis.medications || "",
         injuries: anamnesis.injuries || "",
+        surgeries: anamnesisAny.surgeries || "",
         allergies: anamnesis.allergies || "",
         mainGoal: anamnesis.mainGoal || "",
         secondaryGoals: anamnesis.secondaryGoals || "",
         targetWeight: anamnesis.targetWeight || "",
+        exerciseExperience: anamnesisAny.exerciseExperience || "",
         observations: anamnesis.observations || "",
+        // Nutrição
+        mealsPerDay: anamnesisAny.mealsPerDay || undefined,
+        waterIntake: anamnesisAny.waterIntake || "",
+        dailyCalories: anamnesisAny.dailyCalories || undefined,
+        dietRestrictions: anamnesisAny.dietRestrictions || "",
+        supplements: anamnesisAny.supplements || "",
+        doesCardio: anamnesisAny.doesCardio || false,
+        cardioActivities: anamnesisAny.cardioActivities || null,
+        // Preferências de treino
+        weeklyFrequency: anamnesisAny.weeklyFrequency || undefined,
+        sessionDuration: anamnesisAny.sessionDuration || undefined,
+        preferredTime: anamnesisAny.preferredTime || "",
+        trainingLocation: anamnesisAny.trainingLocation || "",
+        availableEquipment: anamnesisAny.availableEquipment || null,
+        // Restrições e ênfases
+        trainingRestrictions: anamnesisAny.trainingRestrictions || null,
+        restrictionNotes: anamnesisAny.restrictionNotes || "",
+        muscleEmphasis: anamnesisAny.muscleEmphasis || null,
       });
     }
     setIsEditingAnamnesis(true);
@@ -197,14 +240,35 @@ export default function StudentPortalPage() {
       occupation: anamnesisForm.occupation || undefined,
       sleepHours: anamnesisForm.sleepHours || undefined,
       stressLevel: anamnesisForm.stressLevel as any || undefined,
+      lifestyle: anamnesisForm.lifestyle as any || undefined,
       medicalHistory: anamnesisForm.medicalHistory || undefined,
       medications: anamnesisForm.medications || undefined,
       injuries: anamnesisForm.injuries || undefined,
+      surgeries: anamnesisForm.surgeries || undefined,
       allergies: anamnesisForm.allergies || undefined,
       mainGoal: anamnesisForm.mainGoal as any || undefined,
       secondaryGoals: anamnesisForm.secondaryGoals || undefined,
       targetWeight: anamnesisForm.targetWeight || undefined,
+      exerciseExperience: anamnesisForm.exerciseExperience as any || undefined,
       observations: anamnesisForm.observations || undefined,
+      // Nutrição
+      mealsPerDay: anamnesisForm.mealsPerDay || undefined,
+      waterIntake: anamnesisForm.waterIntake as any || undefined,
+      dailyCalories: anamnesisForm.dailyCalories || undefined,
+      dietRestrictions: anamnesisForm.dietRestrictions || undefined,
+      supplements: anamnesisForm.supplements || undefined,
+      doesCardio: anamnesisForm.doesCardio || false,
+      cardioActivities: anamnesisForm.cardioActivities || undefined,
+      // Preferências de treino
+      weeklyFrequency: anamnesisForm.weeklyFrequency || undefined,
+      sessionDuration: anamnesisForm.sessionDuration || undefined,
+      preferredTime: anamnesisForm.preferredTime as any || undefined,
+      trainingLocation: anamnesisForm.trainingLocation as any || undefined,
+      availableEquipment: anamnesisForm.availableEquipment || undefined,
+      // Restrições e ênfases
+      trainingRestrictions: anamnesisForm.trainingRestrictions || undefined,
+      restrictionNotes: anamnesisForm.restrictionNotes || undefined,
+      muscleEmphasis: anamnesisForm.muscleEmphasis || undefined,
     });
   };
 
@@ -416,17 +480,30 @@ export default function StudentPortalPage() {
                 <CardContent>
                   {upcomingSessions.length > 0 ? (
                     <div className="space-y-3">
-                      {upcomingSessions.map((session) => (
-                        <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium">
-                              {format(new Date(session.date), "EEEE, dd/MM", { locale: ptBR })}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {format(new Date(session.date), "HH:mm")} - {session.duration} min
-                            </p>
+                      {upcomingSessions.map((session: any) => (
+                        <div key={session.id} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">
+                                {format(new Date(session.date), "EEEE, dd/MM", { locale: ptBR })}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {format(new Date(session.date), "HH:mm")} - {session.duration} min
+                              </p>
+                            </div>
+                            {getStatusBadge(session.status)}
                           </div>
-                          {getStatusBadge(session.status)}
+                          {(session.workoutName || session.workoutDayName) && (
+                            <div className="mt-2 pt-2 border-t border-gray-200">
+                              <p className="text-sm text-emerald-600 font-medium flex items-center gap-1">
+                                <Dumbbell className="h-3 w-3" />
+                                {session.workoutDayName || session.workoutName}
+                              </p>
+                              {session.workoutDayName && session.workoutName && (
+                                <p className="text-xs text-gray-500">{session.workoutName}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -738,6 +815,281 @@ export default function StudentPortalPage() {
                       </div>
                     </div>
 
+                    {/* Estilo de Vida */}
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        Estilo de Vida
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Nível de atividade</Label>
+                          <Select
+                            value={anamnesisForm.lifestyle || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, lifestyle: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sedentary">Sedentário</SelectItem>
+                              <SelectItem value="light">Levemente ativo</SelectItem>
+                              <SelectItem value="moderate">Moderadamente ativo</SelectItem>
+                              <SelectItem value="active">Ativo</SelectItem>
+                              <SelectItem value="very_active">Muito ativo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Experiência com exercícios</Label>
+                          <Select
+                            value={anamnesisForm.exerciseExperience || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, exerciseExperience: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhuma</SelectItem>
+                              <SelectItem value="beginner">Iniciante (menos de 6 meses)</SelectItem>
+                              <SelectItem value="intermediate">Intermediário (6 meses a 2 anos)</SelectItem>
+                              <SelectItem value="advanced">Avançado (mais de 2 anos)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Cirurgias</Label>
+                        <Textarea
+                          value={anamnesisForm.surgeries || ""}
+                          onChange={(e) => setAnamnesisForm({ ...anamnesisForm, surgeries: e.target.value })}
+                          placeholder="Cirurgias realizadas..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Nutrição */}
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Nutrição
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Refeições por dia</Label>
+                          <Select
+                            value={anamnesisForm.mealsPerDay?.toString() || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, mealsPerDay: parseInt(v) })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 refeição</SelectItem>
+                              <SelectItem value="2">2 refeições</SelectItem>
+                              <SelectItem value="3">3 refeições</SelectItem>
+                              <SelectItem value="4">4 refeições</SelectItem>
+                              <SelectItem value="5">5 refeições</SelectItem>
+                              <SelectItem value="6">6+ refeições</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Consumo de água</Label>
+                          <Select
+                            value={anamnesisForm.waterIntake || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, waterIntake: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="less_1l">Menos de 1L</SelectItem>
+                              <SelectItem value="1_2l">1-2L</SelectItem>
+                              <SelectItem value="2_3l">2-3L</SelectItem>
+                              <SelectItem value="more_3l">Mais de 3L</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Calorias diárias (aproximado)</Label>
+                          <Input
+                            type="number"
+                            value={anamnesisForm.dailyCalories || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, dailyCalories: parseInt(e.target.value) || undefined })}
+                            placeholder="Ex: 2000"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Faz cardio?</Label>
+                          <Select
+                            value={anamnesisForm.doesCardio ? "yes" : "no"}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, doesCardio: v === "yes" })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Sim</SelectItem>
+                              <SelectItem value="no">Não</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {anamnesisForm.doesCardio && (
+                        <div className="space-y-2 mt-4">
+                          <Label>Atividades cardio</Label>
+                          <Input
+                            value={anamnesisForm.cardioActivities || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, cardioActivities: e.target.value })}
+                            placeholder="Ex: Corrida, Bicicleta, Natação..."
+                          />
+                        </div>
+                      )}
+                      <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label>Restrições alimentares</Label>
+                          <Input
+                            value={anamnesisForm.dietRestrictions || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, dietRestrictions: e.target.value })}
+                            placeholder="Ex: Vegetariano, Intolerância a lactose..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Suplementos</Label>
+                          <Input
+                            value={anamnesisForm.supplements || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, supplements: e.target.value })}
+                            placeholder="Ex: Whey, Creatina..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preferências de Treino */}
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Dumbbell className="h-4 w-4" />
+                        Preferências de Treino
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Frequência semanal desejada</Label>
+                          <Select
+                            value={anamnesisForm.weeklyFrequency?.toString() || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, weeklyFrequency: parseInt(v) })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1x por semana</SelectItem>
+                              <SelectItem value="2">2x por semana</SelectItem>
+                              <SelectItem value="3">3x por semana</SelectItem>
+                              <SelectItem value="4">4x por semana</SelectItem>
+                              <SelectItem value="5">5x por semana</SelectItem>
+                              <SelectItem value="6">6x por semana</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Duração da sessão (minutos)</Label>
+                          <Select
+                            value={anamnesisForm.sessionDuration?.toString() || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, sessionDuration: parseInt(v) })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="30">30 minutos</SelectItem>
+                              <SelectItem value="45">45 minutos</SelectItem>
+                              <SelectItem value="60">60 minutos</SelectItem>
+                              <SelectItem value="75">75 minutos</SelectItem>
+                              <SelectItem value="90">90 minutos</SelectItem>
+                              <SelectItem value="120">120 minutos</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Horário preferido</Label>
+                          <Select
+                            value={anamnesisForm.preferredTime || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, preferredTime: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="early_morning">Manhã cedo (5h-8h)</SelectItem>
+                              <SelectItem value="morning">Manhã (8h-12h)</SelectItem>
+                              <SelectItem value="afternoon">Tarde (12h-18h)</SelectItem>
+                              <SelectItem value="evening">Noite (18h-22h)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Local de treino</Label>
+                          <Select
+                            value={anamnesisForm.trainingLocation || ""}
+                            onValueChange={(v) => setAnamnesisForm({ ...anamnesisForm, trainingLocation: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="gym">Academia</SelectItem>
+                              <SelectItem value="home">Casa</SelectItem>
+                              <SelectItem value="outdoor">Ar livre</SelectItem>
+                              <SelectItem value="studio">Estúdio</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Equipamentos disponíveis</Label>
+                        <Textarea
+                          value={anamnesisForm.availableEquipment || ""}
+                          onChange={(e) => setAnamnesisForm({ ...anamnesisForm, availableEquipment: e.target.value })}
+                          placeholder="Ex: Halteres, Barra, Elásticos, Máquinas..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Restrições e Ênfases */}
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        Restrições e Ênfases
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Restrições de treino</Label>
+                          <Textarea
+                            value={anamnesisForm.trainingRestrictions || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, trainingRestrictions: e.target.value })}
+                            placeholder="Ex: Evitar exercícios de impacto, Problemas no joelho..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Notas sobre restrições</Label>
+                          <Textarea
+                            value={anamnesisForm.restrictionNotes || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, restrictionNotes: e.target.value })}
+                            placeholder="Detalhes adicionais sobre restrições..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Ênfases musculares</Label>
+                          <Textarea
+                            value={anamnesisForm.muscleEmphasis || ""}
+                            onChange={(e) => setAnamnesisForm({ ...anamnesisForm, muscleEmphasis: e.target.value })}
+                            placeholder="Ex: Glúteos, Peito, Costas..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Observações */}
                     <div className="space-y-2">
                       <Label>Observações adicionais</Label>
@@ -849,35 +1201,35 @@ export default function StudentPortalPage() {
                 </CardContent>
               </Card>
             ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Pagamentos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {charges && charges.length > 0 ? (
-                  <div className="space-y-3">
-                    {charges.map((charge) => (
-                      <div key={charge.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{charge.description}</p>
-                          <p className="text-sm text-gray-500">
-                            Vencimento: {format(new Date(charge.dueDate), "dd/MM/yyyy")}
-                          </p>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Histórico de Pagamentos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {charges && charges.length > 0 ? (
+                    <div className="space-y-3">
+                      {charges.map((charge) => (
+                        <div key={charge.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <p className="font-medium">{charge.description}</p>
+                            <p className="text-sm text-gray-500">
+                              Vencimento: {format(new Date(charge.dueDate), "dd/MM/yyyy")}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">R$ {(Number(charge.amount) / 100).toFixed(2)}</p>
+                            <Badge variant={charge.status === 'paid' ? 'default' : charge.status === 'pending' ? 'secondary' : 'destructive'}>
+                              {charge.status === 'paid' ? 'Pago' : charge.status === 'pending' ? 'Pendente' : 'Cancelado'}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold">R$ {(Number(charge.amount) / 100).toFixed(2)}</p>
-                          <Badge variant={charge.status === 'paid' ? 'default' : charge.status === 'pending' ? 'secondary' : 'destructive'}>
-                            {charge.status === 'paid' ? 'Pago' : charge.status === 'pending' ? 'Pendente' : 'Cancelado'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">Nenhuma cobrança encontrada</p>
-                )}
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">Nenhuma cobrança encontrada</p>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 

@@ -2149,14 +2149,39 @@ Retorne APENAS o JSON, sem texto adicional.`;
       .input(z.object({ studentId: z.number() }))
       .query(async ({ input }) => {
         const sessions = await db.getSessionsByStudentId(input.studentId);
-        return sessions.map(s => ({
-          id: s.id,
-          date: s.scheduledAt,
-          time: s.scheduledAt ? new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '',
-          duration: s.duration || 60,
-          status: s.status,
-          notes: s.notes,
-        }));
+        
+        // Buscar informações dos treinos vinculados
+        const workoutIds = Array.from(new Set(sessions.filter(s => s.workoutId).map(s => s.workoutId!)));
+        const workoutsMap = new Map();
+        
+        for (const workoutId of workoutIds) {
+          const workout = await db.getWorkoutById(workoutId);
+          if (workout) {
+            // Buscar os dias do treino
+            const days = await db.getWorkoutDaysByWorkoutId(workoutId);
+            workoutsMap.set(workoutId, { ...workout, days });
+          }
+        }
+        
+        return sessions.map(s => {
+          const workout = s.workoutId ? workoutsMap.get(s.workoutId) : null;
+          const workoutDay = workout && s.workoutDayIndex !== null && workout.days 
+            ? workout.days[s.workoutDayIndex] 
+            : null;
+          
+          return {
+            id: s.id,
+            date: s.scheduledAt,
+            time: s.scheduledAt ? new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '',
+            duration: s.duration || 60,
+            status: s.status,
+            notes: s.notes,
+            workoutId: s.workoutId,
+            workoutDayIndex: s.workoutDayIndex,
+            workoutName: workout?.name || null,
+            workoutDayName: workoutDay?.name || null,
+          };
+        });
       }),
     
     getById: personalProcedure

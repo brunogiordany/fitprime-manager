@@ -997,3 +997,5 @@
 - [x] Botão "Liberar Tudo" para cada aluno
 - [x] Integração das permissões no portal do aluno (bloqueios funcionais)
 - [x] Corrigir ordenação das sessões no portal do aluno (mostrar mais próximas primeiro)
+- [x] Completar formulário de anamnese no portal do aluno com todos os campos do personal
+- [x] Adicionar informações de treino nas próximas sessões do portal do aluno
