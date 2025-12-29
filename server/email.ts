@@ -218,3 +218,317 @@ Guarde este email para referência futura.
     text,
   });
 }
+
+
+/**
+ * Send session reminder email to student
+ */
+export async function sendSessionReminderEmail(
+  studentEmail: string,
+  studentName: string,
+  sessionDate: Date,
+  personalName: string,
+  hoursUntil: number
+): Promise<boolean> {
+  const formattedDate = sessionDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  const formattedTime = sessionDate.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const subject = hoursUntil <= 2 
+    ? `⏰ Seu treino começa em ${Math.round(hoursUntil * 60)} minutos!`
+    : `📅 Lembrete: Treino amanhã às ${formattedTime}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">⏰</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Lembrete de Treino</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${studentName}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Não esqueça do seu treino com <strong>${personalName}</strong>!
+      </p>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+        <p style="color: #166534; font-size: 18px; font-weight: 600; margin: 0;">
+          📅 ${formattedDate}
+        </p>
+        <p style="color: #166534; font-size: 24px; font-weight: 700; margin: 10px 0 0;">
+          ⏰ ${formattedTime}
+        </p>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+        Prepare-se para mais uma sessão de treino! Lembre-se de:
+      </p>
+      <ul style="color: #4b5563; font-size: 14px; line-height: 1.8;">
+        <li>Usar roupas confortáveis</li>
+        <li>Levar uma garrafa de água</li>
+        <li>Chegar alguns minutos antes</li>
+      </ul>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Bons treinos! 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${studentName},
+
+Não esqueça do seu treino com ${personalName}!
+
+📅 ${formattedDate}
+⏰ ${formattedTime}
+
+Prepare-se para mais uma sessão de treino!
+
+Bons treinos! 💪
+  `;
+
+  return sendEmail({
+    to: studentEmail,
+    subject,
+    html,
+    text,
+  });
+}
+
+/**
+ * Send payment reminder email to student
+ */
+export async function sendPaymentReminderEmail(
+  studentEmail: string,
+  studentName: string,
+  amount: number,
+  dueDate: Date,
+  description: string,
+  daysUntil: number
+): Promise<boolean> {
+  const formattedDate = dueDate.toLocaleDateString('pt-BR');
+  const formattedAmount = (amount / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+
+  const isOverdue = daysUntil < 0;
+  const subject = isOverdue
+    ? `⚠️ Pagamento em atraso - ${description}`
+    : `💳 Lembrete de pagamento - Vence em ${daysUntil} dias`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: ${isOverdue ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'linear-gradient(135deg, #f59e0b, #eab308)'}; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">${isOverdue ? '⚠️' : '💳'}</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">
+          ${isOverdue ? 'Pagamento em Atraso' : 'Lembrete de Pagamento'}
+        </h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${studentName}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        ${isOverdue 
+          ? 'Identificamos que você possui um pagamento em atraso.'
+          : 'Este é um lembrete sobre um pagamento próximo do vencimento.'}
+      </p>
+      
+      <div style="background-color: ${isOverdue ? '#fef2f2' : '#fffbeb'}; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <p style="color: ${isOverdue ? '#991b1b' : '#92400e'}; font-size: 14px; margin: 0 0 10px;">
+          <strong>Descrição:</strong> ${description}
+        </p>
+        <p style="color: ${isOverdue ? '#991b1b' : '#92400e'}; font-size: 14px; margin: 0 0 10px;">
+          <strong>Vencimento:</strong> ${formattedDate}
+        </p>
+        <p style="color: ${isOverdue ? '#991b1b' : '#92400e'}; font-size: 24px; font-weight: 700; margin: 10px 0 0;">
+          ${formattedAmount}
+        </p>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+        ${isOverdue
+          ? 'Por favor, regularize sua situação o mais breve possível para evitar interrupção dos serviços.'
+          : 'Mantenha seus pagamentos em dia para continuar aproveitando todos os benefícios.'}
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Em caso de dúvidas, entre em contato com seu personal trainer.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${studentName},
+
+${isOverdue 
+  ? 'Identificamos que você possui um pagamento em atraso.'
+  : 'Este é um lembrete sobre um pagamento próximo do vencimento.'}
+
+Descrição: ${description}
+Vencimento: ${formattedDate}
+Valor: ${formattedAmount}
+
+${isOverdue
+  ? 'Por favor, regularize sua situação o mais breve possível.'
+  : 'Mantenha seus pagamentos em dia.'}
+
+Em caso de dúvidas, entre em contato com seu personal trainer.
+  `;
+
+  return sendEmail({
+    to: studentEmail,
+    subject,
+    html,
+    text,
+  });
+}
+
+/**
+ * Send session confirmation email to student
+ */
+export async function sendSessionConfirmationEmail(
+  studentEmail: string,
+  studentName: string,
+  sessionDate: Date,
+  action: 'confirmed' | 'cancelled'
+): Promise<boolean> {
+  const formattedDate = sessionDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  const formattedTime = sessionDate.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const isConfirmed = action === 'confirmed';
+  const subject = isConfirmed
+    ? `✅ Presença confirmada - ${formattedDate}`
+    : `❌ Sessão cancelada - ${formattedDate}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: ${isConfirmed ? 'linear-gradient(135deg, #10b981, #14b8a6)' : 'linear-gradient(135deg, #6b7280, #9ca3af)'}; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">${isConfirmed ? '✅' : '❌'}</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">
+          ${isConfirmed ? 'Presença Confirmada!' : 'Sessão Cancelada'}
+        </h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${studentName}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        ${isConfirmed
+          ? 'Sua presença foi confirmada com sucesso!'
+          : 'Sua sessão foi cancelada conforme solicitado.'}
+      </p>
+      
+      <div style="background-color: ${isConfirmed ? '#f0fdf4' : '#f9fafb'}; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+        <p style="color: ${isConfirmed ? '#166534' : '#4b5563'}; font-size: 16px; margin: 0;">
+          📅 ${formattedDate}
+        </p>
+        <p style="color: ${isConfirmed ? '#166534' : '#4b5563'}; font-size: 20px; font-weight: 600; margin: 10px 0 0;">
+          ⏰ ${formattedTime}
+        </p>
+      </div>
+      
+      ${isConfirmed ? `
+      <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+        Estamos te esperando! Não esqueça de se preparar para o treino.
+      </p>
+      ` : `
+      <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+        Se precisar reagendar, entre em contato com seu personal trainer.
+      </p>
+      `}
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime - Seu parceiro de treinos 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${studentName},
+
+${isConfirmed
+  ? 'Sua presença foi confirmada com sucesso!'
+  : 'Sua sessão foi cancelada conforme solicitado.'}
+
+📅 ${formattedDate}
+⏰ ${formattedTime}
+
+${isConfirmed
+  ? 'Estamos te esperando! Não esqueça de se preparar para o treino.'
+  : 'Se precisar reagendar, entre em contato com seu personal trainer.'}
+
+FitPrime - Seu parceiro de treinos 💪
+  `;
+
+  return sendEmail({
+    to: studentEmail,
+    subject,
+    html,
+    text,
+  });
+}

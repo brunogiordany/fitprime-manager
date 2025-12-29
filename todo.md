@@ -597,3 +597,21 @@
 - [x] Modal de convite com link copiável e botão WhatsApp
 - [x] Email de convite com template bonito
 - [x] Email de boas-vindas após cadastro
+
+
+## Melhorias Portal do Aluno (v4.8)
+- [x] Gráficos de evolução no portal do aluno
+  - [x] Gráfico de peso ao longo do tempo
+  - [x] Gráfico de medidas corporais (cintura, quadril, peito)
+  - [x] Gráfico de composição corporal (gordura, massa magra)
+  - [x] Gráfico de frequência de treinos por mês
+  - [x] Cards de estatísticas (peso atual, treinos realizados, taxa de presença)
+- [x] Sistema de notificações para alunos
+  - [x] Notificações por email (confirmação/cancelamento)
+  - [x] Templates de email para lembretes de treino
+  - [x] Templates de email para avisos de pagamento
+- [x] Gerenciamento de sessões pelo aluno
+  - [x] Confirmar presença em sessão (até 48h antes)
+  - [x] Cancelar sessão com antecedência (mínimo 24h)
+  - [x] Histórico de sessões
+  - [x] Notificação ao personal via in-app e email

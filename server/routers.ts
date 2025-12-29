@@ -2686,6 +2686,110 @@ export const appRouter = router({
     myPendingChanges: studentProcedure.query(async ({ ctx }) => {
       return await db.getPendingChangesByStudentId(ctx.student.id);
     }),
+    
+    // Confirmar presença em sessão
+    confirmSession: studentProcedure
+      .input(z.object({
+        sessionId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await db.getSessionById(input.sessionId);
+        if (!session) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        if (session.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem permissão para esta sessão' });
+        }
+        if (session.status !== 'scheduled') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Esta sessão não pode ser confirmada' });
+        }
+        
+        // Verificar se está dentro do prazo (até 48h antes)
+        const sessionDate = new Date(session.scheduledAt);
+        const now = new Date();
+        const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (hoursUntil > 48) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Confirmação disponível apenas 48h antes da sessão' });
+        }
+        if (hoursUntil <= 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Sessão já passou' });
+        }
+        
+        await db.updateSession(input.sessionId, { status: 'confirmed' });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `✅ Presença Confirmada - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} confirmou presença na sessão:\n\n📅 Data: ${sessionDate.toLocaleDateString('pt-BR')}\n⏰ Horário: ${sessionDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        });
+        
+        // Enviar email de confirmação ao aluno
+        if (ctx.student.email) {
+          const { sendSessionConfirmationEmail } = await import('./email');
+          await sendSessionConfirmationEmail(
+            ctx.student.email,
+            ctx.student.name,
+            sessionDate,
+            'confirmed'
+          );
+        }
+        
+        return { success: true };
+      }),
+    
+    // Cancelar sessão
+    cancelSession: studentProcedure
+      .input(z.object({
+        sessionId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const session = await db.getSessionById(input.sessionId);
+        if (!session) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Sessão não encontrada' });
+        }
+        if (session.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem permissão para esta sessão' });
+        }
+        if (session.status !== 'scheduled' && session.status !== 'confirmed') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Esta sessão não pode ser cancelada' });
+        }
+        
+        // Verificar se está com antecedência mínima (24h)
+        const sessionDate = new Date(session.scheduledAt);
+        const now = new Date();
+        const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (hoursUntil <= 24) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cancelamento deve ser feito com pelo menos 24h de antecedência' });
+        }
+        
+        const notes = input.reason ? `Cancelado pelo aluno: ${input.reason}` : 'Cancelado pelo aluno';
+        await db.updateSession(input.sessionId, { 
+          status: 'cancelled',
+          notes: session.notes ? `${session.notes}\n${notes}` : notes,
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `❌ Sessão Cancelada - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} cancelou uma sessão:\n\n📅 Data: ${sessionDate.toLocaleDateString('pt-BR')}\n⏰ Horário: ${sessionDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}\n📝 Motivo: ${input.reason || 'Não informado'}`,
+        });
+        
+        // Enviar email de cancelamento ao aluno
+        if (ctx.student.email) {
+          const { sendSessionConfirmationEmail } = await import('./email');
+          await sendSessionConfirmationEmail(
+            ctx.student.email,
+            ctx.student.name,
+            sessionDate,
+            'cancelled'
+          );
+        }
+        
+        return { success: true };
+      }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================

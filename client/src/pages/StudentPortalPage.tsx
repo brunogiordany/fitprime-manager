@@ -12,6 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import StudentOnboarding from "@/components/StudentOnboarding";
+import StudentEvolutionCharts from "@/components/StudentEvolutionCharts";
+import StudentSessionManager from "@/components/StudentSessionManager";
 import { 
   Calendar, 
   Dumbbell, 
@@ -92,8 +94,14 @@ export default function StudentPortalPage() {
   );
 
   // Buscar sessões do aluno
-  const { data: sessions } = trpc.sessions.listByStudent.useQuery(
+  const { data: sessions, refetch: refetchSessions } = trpc.sessions.listByStudent.useQuery(
     { studentId: studentData?.id || 0 },
+    { enabled: !!studentData?.id }
+  );
+
+  // Buscar medidas do aluno
+  const { data: measurements } = trpc.studentPortal.measurements.useQuery(
+    undefined,
     { enabled: !!studentData?.id }
   );
 
@@ -309,10 +317,18 @@ export default function StudentPortalPage() {
         )}
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="bg-white border">
+          <TabsList className="bg-white border flex-wrap">
             <TabsTrigger value="dashboard">
               <Calendar className="h-4 w-4 mr-2" />
               Início
+            </TabsTrigger>
+            <TabsTrigger value="evolution">
+              <Activity className="h-4 w-4 mr-2" />
+              Evolução
+            </TabsTrigger>
+            <TabsTrigger value="sessions">
+              <Clock className="h-4 w-4 mr-2" />
+              Sessões
             </TabsTrigger>
             <TabsTrigger value="workouts">
               <Dumbbell className="h-4 w-4 mr-2" />
@@ -396,6 +412,22 @@ export default function StudentPortalPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Evolution Tab */}
+          <TabsContent value="evolution" className="space-y-6">
+            <StudentEvolutionCharts
+              measurements={measurements || []}
+              sessions={sessions || []}
+            />
+          </TabsContent>
+
+          {/* Sessions Tab */}
+          <TabsContent value="sessions" className="space-y-6">
+            <StudentSessionManager
+              sessions={sessions || []}
+              onUpdate={() => refetchSessions()}
+            />
           </TabsContent>
 
           {/* Workouts Tab */}
