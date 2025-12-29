@@ -74,6 +74,8 @@ export default function StudentPortalPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEditingAnamnesis, setIsEditingAnamnesis] = useState(false);
   const [anamnesisForm, setAnamnesisForm] = useState<Partial<AnamnesisData>>({});
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showAnamnesisModal, setShowAnamnesisModal] = useState(false);
 
   // Verificar token do aluno
   useEffect(() => {
@@ -316,7 +318,13 @@ export default function StudentPortalPage() {
       <main className="container mx-auto px-4 py-6">
         {/* Profile Progress */}
         {profileProgress < 100 && (
-          <Card className="mb-6 border-emerald-200 bg-emerald-50">
+          <Card 
+            className="mb-6 border-emerald-200 bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors"
+            onClick={() => {
+              setActiveTab("anamnesis");
+              setIsEditingAnamnesis(true);
+            }}
+          >
             <CardContent className="py-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-emerald-800">Complete seu perfil</span>
@@ -326,43 +334,48 @@ export default function StudentPortalPage() {
               <p className="text-xs text-emerald-700 mt-2">
                 Preencha sua anamnese para que seu personal possa criar treinos personalizados
               </p>
+              <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700">
+                <Edit className="h-4 w-4 mr-2" />
+                Completar Agora
+              </Button>
             </CardContent>
           </Card>
         )}
 
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="bg-white border flex-wrap">
-            <TabsTrigger value="dashboard">
-              <Calendar className="h-4 w-4 mr-2" />
-              Início
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Menu de navegação em grid para mobile */}
+          <TabsList className="bg-white border grid grid-cols-4 sm:flex sm:flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="dashboard" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <Calendar className="h-4 w-4" />
+              <span>Início</span>
             </TabsTrigger>
-            <TabsTrigger value="evolution">
-              <Activity className="h-4 w-4 mr-2" />
-              Evolução
+            <TabsTrigger value="evolution" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <Activity className="h-4 w-4" />
+              <span>Evolução</span>
             </TabsTrigger>
-            <TabsTrigger value="sessions">
-              <Clock className="h-4 w-4 mr-2" />
-              Sessões
+            <TabsTrigger value="sessions" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <Clock className="h-4 w-4" />
+              <span>Sessões</span>
             </TabsTrigger>
-            <TabsTrigger value="workouts">
-              <Dumbbell className="h-4 w-4 mr-2" />
-              Treinos
+            <TabsTrigger value="workouts" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <Dumbbell className="h-4 w-4" />
+              <span>Treinos</span>
             </TabsTrigger>
-            <TabsTrigger value="anamnesis">
-              <FileText className="h-4 w-4 mr-2" />
-              Meu Perfil
+            <TabsTrigger value="anamnesis" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" />
+              <span>Perfil</span>
             </TabsTrigger>
-            <TabsTrigger value="payments">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Pagamentos
+            <TabsTrigger value="payments" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <CreditCard className="h-4 w-4" />
+              <span>Pagar</span>
             </TabsTrigger>
-            <TabsTrigger value="chat">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Chat
+            <TabsTrigger value="chat" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <MessageCircle className="h-4 w-4" />
+              <span>Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="badges">
-              <Trophy className="h-4 w-4 mr-2" />
-              Conquistas
+            <TabsTrigger value="badges" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <Trophy className="h-4 w-4" />
+              <span>Conquistas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -479,6 +492,15 @@ export default function StudentPortalPage() {
 
           {/* Workouts Tab */}
           <TabsContent value="workouts" className="space-y-6">
+            {editPermissions?.canViewWorkouts === false ? (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="py-8 text-center">
+                  <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                  <h3 className="font-semibold text-amber-800 mb-2">Acesso Bloqueado</h3>
+                  <p className="text-amber-700">A visualização de treinos está bloqueada pelo seu personal.</p>
+                </CardContent>
+              </Card>
+            ) : (
             <Card>
               <CardHeader>
                 <CardTitle>Meus Treinos</CardTitle>
@@ -502,7 +524,7 @@ export default function StudentPortalPage() {
                           variant="outline" 
                           size="sm" 
                           className="w-full mt-2"
-                          onClick={() => setLocation(`/portal/treino/${workout.id}`)}
+                          onClick={() => setLocation(`/meu-portal/treino/${workout.id}`)}
                         >
                           <Dumbbell className="h-4 w-4 mr-2" />
                           Ver Treino
@@ -519,12 +541,13 @@ export default function StudentPortalPage() {
                 )}
               </CardContent>
             </Card>
+            )}
           </TabsContent>
 
           {/* Anamnesis Tab */}
           <TabsContent value="anamnesis" className="space-y-6">
-            {/* Aviso de permissão bloqueada */}
-            {!editPermissions?.canEditAnamnesis && (
+            {/* Aviso de permissão bloqueada - só mostra se perfil já foi preenchido */}
+            {!editPermissions?.canEditAnamnesis && profileProgress >= 100 && (
               <Card className="border-amber-200 bg-amber-50">
                 <CardContent className="py-4">
                   <div className="flex items-center gap-3">
@@ -544,7 +567,8 @@ export default function StudentPortalPage() {
                   <CardTitle>Minha Anamnese</CardTitle>
                   <CardDescription>Suas informações de saúde e objetivos</CardDescription>
                 </div>
-                {editPermissions?.canEditAnamnesis && (
+                {/* Permitir edição se: 1) personal liberou OU 2) perfil ainda não foi preenchido */}
+                {(editPermissions?.canEditAnamnesis || profileProgress < 100) && (
                   !isEditingAnamnesis ? (
                     <Button onClick={handleEditAnamnesis} variant="outline">
                       <Edit className="h-4 w-4 mr-2" />
@@ -816,6 +840,15 @@ export default function StudentPortalPage() {
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-6">
+            {editPermissions?.canViewCharges === false ? (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="py-8 text-center">
+                  <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                  <h3 className="font-semibold text-amber-800 mb-2">Acesso Bloqueado</h3>
+                  <p className="text-amber-700">A visualização de cobranças está bloqueada pelo seu personal.</p>
+                </CardContent>
+              </Card>
+            ) : (
             <Card>
               <CardHeader>
                 <CardTitle>Histórico de Pagamentos</CardTitle>
@@ -845,6 +878,7 @@ export default function StudentPortalPage() {
                 )}
               </CardContent>
             </Card>
+            )}
           </TabsContent>
 
           {/* Chat Tab */}

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, name FROM students;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name FROM students;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno"
+    },
+    {
+      "id": "30001",
+      "name": "Laura"
+    },
+    {
+      "id": "60001",
+      "name": "AgenteIA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1\tBruno\n30001\tLaura\n60001\tAgenteIA\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

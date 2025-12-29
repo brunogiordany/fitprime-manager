@@ -1061,11 +1061,11 @@ export default function Workouts() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}`); }}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}?mode=view`); }}>
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Detalhes
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}`); }}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/treinos/${workout.id}?mode=edit`); }}>
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                           </DropdownMenuItem>

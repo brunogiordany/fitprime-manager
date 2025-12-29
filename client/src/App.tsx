@@ -24,6 +24,7 @@ import ContractPlan from "./pages/ContractPlan";
 import Trash from "./pages/Trash";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentWorkoutLog from "./pages/StudentWorkoutLog";
+import StudentWorkoutView from "./pages/StudentWorkoutView";
 import Reports from "./pages/Reports";
 import PendingChanges from "./pages/PendingChanges";
 import Invite from "./pages/Invite";
@@ -31,6 +32,7 @@ import StudentLogin from "./pages/StudentLogin";
 import StudentPortalPage from "./pages/StudentPortalPage";
 import PortalPreview from "./pages/PortalPreview";
 import Sessions from "./pages/Sessions";
+import StudentAccess from "./pages/StudentAccess";
 
 function Router() {
   return (
@@ -43,6 +45,7 @@ function Router() {
       <Route path="/portal" component={StudentPortal} />
       <Route path="/meu-portal" component={StudentPortalPage} />
       <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />
+      <Route path="/meu-portal/treino/:workoutId" component={StudentWorkoutView} />
       
       {/* Personal Trainer routes */}
       <Route path="/dashboard" component={Dashboard} />
@@ -65,6 +68,7 @@ function Router() {
       <Route path="/relatorios" component={Reports} />
       <Route path="/alteracoes-pendentes" component={PendingChanges} />
       <Route path="/portal-preview" component={PortalPreview} />
+      <Route path="/acessos-aluno" component={StudentAccess} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

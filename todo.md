@@ -952,3 +952,47 @@
 - [x] Melhorar UX da lista de treinos no mobile - substituir tabela por cards
 - [x] Corrigir relatórios que mostram dados zerados incorretamente
 - [x] Adicionar filtro por aluno nos relatórios
+- [ ] Criar visualização somente leitura para Ver Detalhes de treino
+- [ ] Implementar persistência de filtros na URL em Treinos
+
+
+## Bugs Relatados (v5.39)
+- [ ] Filtro por alunos não aparece na página de Relatórios
+- [ ] Ver Detalhes e Editar de treinos abrem a mesma tela (precisa modo somente leitura)
+- [ ] Filtros não são mantidos ao voltar da navegação de treinos
+- [ ] Adicionar opção de editar nome do dia do treino (Treino A, B, C)
+- [ ] Corrigir botão Ver Treino no portal do aluno (mostra toast em vez de abrir treino)
+- [ ] Corrigir pagamentos pendentes no portal do aluno (mostrando cobranças de outro aluno)
+- [ ] Corrigir layout encavalado do menu no Portal do Aluno real
+- [ ] Implementar popup de completar cadastro/anamnese no Portal do Aluno
+- [ ] Adicionar popup obrigatório até preencher anamnese completa
+- [ ] Corrigir página Ver Treino no portal do aluno (tela em branco ao clicar)
+- [ ] Permitir edição de anamnese quando perfil está incompleto (0%)
+
+## Nova Feature: Acessos do Aluno
+- [ ] Criar tabela student_permissions no banco de dados
+- [ ] Criar endpoints para gerenciar permissões (get, update)
+- [ ] Criar página "Acessos do Aluno" no menu lateral
+- [ ] Adicionar filtro por aluno na página
+- [ ] Implementar toggles para cada permissão
+- [ ] Integrar verificação de permissões no portal do aluno
+
+
+## Correções e Melhorias (v5.40)
+- [x] Adicionar filtro por alunos na página de Relatórios (layout mobile corrigido)
+- [x] Adicionar opção de editar nome do dia do treino (Treino A, B, C)
+- [x] Criar página Ver Treino no portal do aluno (StudentWorkoutView)
+- [x] Permitir edição de anamnese quando perfil está incompleto (0%)
+- [x] Criar sistema de Acessos do Aluno com permissões configuráveis:
+  - [x] Editar Anamnese
+  - [x] Editar Medidas
+  - [x] Enviar Fotos
+  - [x] Ver Cobranças
+  - [x] Agendar Sessões
+  - [x] Cancelar Sessões
+  - [x] Enviar Mensagens
+  - [x] Ver Treinos
+- [x] Página dedicada "Acessos do Aluno" no menu lateral
+- [x] Filtro por aluno na página de acessos
+- [x] Botão "Liberar Tudo" para cada aluno
+- [x] Integração das permissões no portal do aluno (bloqueios funcionais)

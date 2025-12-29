@@ -259,6 +259,12 @@ export const appRouter = router({
         whatsappOptIn: z.boolean().optional(),
         canEditAnamnesis: z.boolean().optional(),
         canEditMeasurements: z.boolean().optional(),
+        canEditPhotos: z.boolean().optional(),
+        canViewCharges: z.boolean().optional(),
+        canScheduleSessions: z.boolean().optional(),
+        canCancelSessions: z.boolean().optional(),
+        canSendMessages: z.boolean().optional(),
+        canViewWorkouts: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, birthDate, ...data } = input;
@@ -645,6 +651,72 @@ export const appRouter = router({
         await db.cancelPackagesByStudentId(input.studentId);
         
         return { success: true, message: 'Aluno cancelado. Histórico mantido.' };
+      }),
+    
+    // Obter permissões de um aluno
+    getPermissions: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        return {
+          studentId: student.id,
+          studentName: student.name,
+          canEditAnamnesis: student.canEditAnamnesis ?? true,
+          canEditMeasurements: student.canEditMeasurements ?? true,
+          canEditPhotos: student.canEditPhotos ?? true,
+          canViewCharges: student.canViewCharges ?? true,
+          canScheduleSessions: student.canScheduleSessions ?? true,
+          canCancelSessions: student.canCancelSessions ?? true,
+          canSendMessages: student.canSendMessages ?? true,
+          canViewWorkouts: student.canViewWorkouts ?? true,
+        };
+      }),
+    
+    // Atualizar permissões de um aluno
+    updatePermissions: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        canEditAnamnesis: z.boolean().optional(),
+        canEditMeasurements: z.boolean().optional(),
+        canEditPhotos: z.boolean().optional(),
+        canViewCharges: z.boolean().optional(),
+        canScheduleSessions: z.boolean().optional(),
+        canCancelSessions: z.boolean().optional(),
+        canSendMessages: z.boolean().optional(),
+        canViewWorkouts: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { studentId, ...permissions } = input;
+        const student = await db.getStudentById(studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        await db.updateStudent(studentId, ctx.personal.id, permissions);
+        return { success: true };
+      }),
+    
+    // Listar todos alunos com suas permissões
+    listWithPermissions: personalProcedure
+      .query(async ({ ctx }) => {
+        const students = await db.getStudentsByPersonalId(ctx.personal.id, { status: 'active' });
+        return students.map(s => ({
+          id: s.id,
+          name: s.name,
+          email: s.email,
+          phone: s.phone,
+          avatarUrl: s.avatarUrl,
+          canEditAnamnesis: s.canEditAnamnesis ?? true,
+          canEditMeasurements: s.canEditMeasurements ?? true,
+          canEditPhotos: s.canEditPhotos ?? true,
+          canViewCharges: s.canViewCharges ?? true,
+          canScheduleSessions: s.canScheduleSessions ?? true,
+          canCancelSessions: s.canCancelSessions ?? true,
+          canSendMessages: s.canSendMessages ?? true,
+          canViewWorkouts: s.canViewWorkouts ?? true,
+        }));
       }),
     
     // Exportar PDF do aluno
@@ -3493,8 +3565,14 @@ Retorne APENAS o JSON, sem texto adicional.`;
     // Verificar permissões de edição do aluno
     editPermissions: studentProcedure.query(async ({ ctx }) => {
       return {
-        canEditAnamnesis: ctx.student.canEditAnamnesis ?? false,
-        canEditMeasurements: ctx.student.canEditMeasurements ?? false,
+        canEditAnamnesis: ctx.student.canEditAnamnesis ?? true,
+        canEditMeasurements: ctx.student.canEditMeasurements ?? true,
+        canEditPhotos: ctx.student.canEditPhotos ?? true,
+        canViewCharges: ctx.student.canViewCharges ?? true,
+        canScheduleSessions: ctx.student.canScheduleSessions ?? true,
+        canCancelSessions: ctx.student.canCancelSessions ?? true,
+        canSendMessages: ctx.student.canSendMessages ?? true,
+        canViewWorkouts: ctx.student.canViewWorkouts ?? true,
       };
     }),
     

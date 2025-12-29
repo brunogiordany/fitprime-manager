@@ -332,7 +332,7 @@ export default function Reports() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <BarChart3 className="h-6 w-6" />
@@ -342,11 +342,13 @@ export default function Reports() {
               Análise detalhada da evolução e frequência dos alunos
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          
+          {/* Filtros - empilhados no mobile */}
+          <div className="flex flex-col sm:flex-row gap-2">
             {/* Filtro por aluno */}
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Aluno" />
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filtrar por aluno" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os alunos</SelectItem>
@@ -358,6 +360,7 @@ export default function Reports() {
               </SelectContent>
             </Select>
 
+            {/* Filtro por período */}
             <Select value={period} onValueChange={(val) => {
               setPeriod(val);
               if (val === "custom") {
@@ -366,7 +369,7 @@ export default function Reports() {
                 setShowCustomDatePicker(false);
               }
             }}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
@@ -381,27 +384,27 @@ export default function Reports() {
                 <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
             </Select>
-            
-            {showCustomDatePicker && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="px-3 py-2 border rounded-md text-sm bg-background"
-                  placeholder="Data inicial"
-                />
-                <span className="text-muted-foreground">até</span>
-                <input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="px-3 py-2 border rounded-md text-sm bg-background"
-                  placeholder="Data final"
-                />
-              </div>
-            )}
           </div>
+          
+          {showCustomDatePicker && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 border rounded-md text-sm bg-background"
+                placeholder="Data inicial"
+              />
+              <span className="text-muted-foreground hidden sm:inline">até</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 border rounded-md text-sm bg-background"
+                placeholder="Data final"
+              />
+            </div>
+          )}
         </div>
 
         {/* KPIs */}

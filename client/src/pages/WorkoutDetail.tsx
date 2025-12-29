@@ -82,9 +82,11 @@ export default function WorkoutDetail() {
 
   const [isEditingWorkout, setIsEditingWorkout] = useState(false);
   const [isAddDayDialogOpen, setIsAddDayDialogOpen] = useState(false);
+  const [isEditDayDialogOpen, setIsEditDayDialogOpen] = useState(false);
   const [isAddExerciseDialogOpen, setIsAddExerciseDialogOpen] = useState(false);
   const [isEditExerciseDialogOpen, setIsEditExerciseDialogOpen] = useState(false);
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
+  const [editingDay, setEditingDay] = useState<any>(null);
   const [editingExercise, setEditingExercise] = useState<any>(null);
 
   const [workoutForm, setWorkoutForm] = useState({
@@ -96,6 +98,12 @@ export default function WorkoutDetail() {
   });
 
   const [newDay, setNewDay] = useState({
+    dayOfWeek: 'monday' as const,
+    name: '',
+    notes: '',
+  });
+
+  const [editDayForm, setEditDayForm] = useState({
     dayOfWeek: 'monday' as const,
     name: '',
     notes: '',
@@ -140,6 +148,18 @@ export default function WorkoutDetail() {
     },
     onError: (error) => {
       toast.error("Erro ao adicionar dia: " + error.message);
+    },
+  });
+
+  const updateDayMutation = trpc.workoutDays.update.useMutation({
+    onSuccess: () => {
+      toast.success("Dia atualizado!");
+      setIsEditDayDialogOpen(false);
+      setEditingDay(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar dia: " + error.message);
     },
   });
 
@@ -232,6 +252,24 @@ export default function WorkoutDetail() {
     if (confirm('Tem certeza que deseja remover este dia e todos os exercícios?')) {
       deleteDayMutation.mutate({ id: dayId });
     }
+  };
+
+  const handleEditDay = (day: any) => {
+    setEditingDay(day);
+    setEditDayForm({
+      dayOfWeek: day.dayOfWeek || 'monday',
+      name: day.name || '',
+      notes: day.notes || '',
+    });
+    setIsEditDayDialogOpen(true);
+  };
+
+  const handleUpdateDay = () => {
+    if (!editingDay) return;
+    updateDayMutation.mutate({
+      id: editingDay.id,
+      ...editDayForm,
+    });
   };
 
   const handleAddExercise = () => {
@@ -502,6 +540,12 @@ export default function WorkoutDetail() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem 
+                            onClick={() => handleEditDay(day)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar Dia
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
                             className="text-destructive"
                             onClick={() => handleDeleteDay(day.id)}
                           >
@@ -669,6 +713,63 @@ export default function WorkoutDetail() {
               </Button>
               <Button onClick={handleAddDay} disabled={createDayMutation.isPending}>
                 {createDayMutation.isPending ? "Adicionando..." : "Adicionar Dia"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Editar Dia */}
+        <Dialog open={isEditDayDialogOpen} onOpenChange={setIsEditDayDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Dia de Treino</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do dia
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label>Dia da Semana *</Label>
+                <Select 
+                  value={editDayForm.dayOfWeek} 
+                  onValueChange={(v) => setEditDayForm({ ...editDayForm, dayOfWeek: v as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DAYS_OF_WEEK.map((day) => (
+                      <SelectItem key={day.value} value={day.value}>
+                        {day.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Nome do Dia</Label>
+                <Input
+                  placeholder="Ex: Treino A - Peito e Tríceps"
+                  value={editDayForm.name}
+                  onChange={(e) => setEditDayForm({ ...editDayForm, name: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Observações</Label>
+                <Textarea
+                  placeholder="Observações sobre este dia..."
+                  value={editDayForm.notes}
+                  onChange={(e) => setEditDayForm({ ...editDayForm, notes: e.target.value })}
+                  rows={2}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDayDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleUpdateDay} disabled={updateDayMutation.isPending}>
+                {updateDayMutation.isPending ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </DialogFooter>
           </DialogContent>

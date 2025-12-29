@@ -38,7 +38,8 @@ import {
   Trash2,
   BarChart3,
   AlertTriangle,
-  Eye
+  Eye,
+  Shield
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -58,6 +59,7 @@ const menuItems = [
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
   { icon: Eye, label: "Portal do Aluno", path: "/portal-preview" },
+  { icon: Shield, label: "Acessos do Aluno", path: "/acessos-aluno" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
   { icon: Trash2, label: "Lixeira", path: "/lixeira" },
 ];

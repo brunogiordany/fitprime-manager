@@ -67,8 +67,14 @@ export const students = mysqlTable("students", {
   messagePausedUntil: timestamp("messagePausedUntil"), // Pausa de mensagens até esta data
   messagePauseReason: varchar("messagePauseReason", { length: 255 }), // Motivo da pausa (férias, viagem, etc)
   passwordHash: varchar("passwordHash", { length: 255 }), // Senha hash para login direto do aluno
-  canEditAnamnesis: boolean("canEditAnamnesis").default(false), // Permite aluno editar anamnese
-  canEditMeasurements: boolean("canEditMeasurements").default(false), // Permite aluno editar medidas
+  canEditAnamnesis: boolean("canEditAnamnesis").default(true), // Permite aluno editar anamnese (padrão: liberado)
+  canEditMeasurements: boolean("canEditMeasurements").default(true), // Permite aluno editar medidas (padrão: liberado)
+  canEditPhotos: boolean("canEditPhotos").default(true), // Permite aluno enviar/editar fotos (padrão: liberado)
+  canViewCharges: boolean("canViewCharges").default(true), // Permite aluno ver cobranças (padrão: liberado)
+  canScheduleSessions: boolean("canScheduleSessions").default(true), // Permite aluno agendar sessões (padrão: liberado)
+  canCancelSessions: boolean("canCancelSessions").default(true), // Permite aluno cancelar sessões (padrão: liberado)
+  canSendMessages: boolean("canSendMessages").default(true), // Permite aluno enviar mensagens (padrão: liberado)
+  canViewWorkouts: boolean("canViewWorkouts").default(true), // Permite aluno ver treinos (padrão: liberado)
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

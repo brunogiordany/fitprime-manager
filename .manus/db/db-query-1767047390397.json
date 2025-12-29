@@ -1,0 +1,150 @@
+{
+  "query": "SELECT id, studentId, description, amount, status FROM charges ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, description, amount, status FROM charges ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "150012",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150011",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150010",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150009",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150008",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150007",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150006",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150005",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150004",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150003",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150002",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150001",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120012",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120011",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120010",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120009",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120008",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120007",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120006",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "120005",
+      "studentId": "60001",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount": "1000.00",
+      "status": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tdescription\tamount\tstatus\n150012\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150011\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150010\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150009\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150008\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150007\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150006\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150005\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150004\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150003\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150002\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150001\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120012\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120011\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120010\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120009\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120008\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120007\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120006\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n120005\t60001\tMensal 2x semana - AgenteIA\t1000.00\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}
