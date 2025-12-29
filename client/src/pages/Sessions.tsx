@@ -558,14 +558,14 @@ export default function Sessions() {
                   }
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Alterar data</Label>
                   <Input
                     type="date"
                     value={editForm.scheduledDate}
                     onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
-                    className="mt-1"
+                    className="w-full"
                     tabIndex={-1}
                     onFocus={(e) => e.target.blur()}
                     onClick={(e) => {
@@ -574,13 +574,13 @@ export default function Sessions() {
                     }}
                   />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Alterar horário</Label>
                   <Input
                     type="time"
                     value={editForm.scheduledTime}
                     onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
-                    className="mt-1"
+                    className="w-full"
                     tabIndex={-1}
                     onFocus={(e) => e.target.blur()}
                     onClick={(e) => {

@@ -912,3 +912,6 @@
 
 ## Bug: Layout Horário/Duração Encavalado (v5.33)
 - [x] Corrigir layout dos campos Horário e Duração no modal de edição de agendamento
+
+## Bug: Layout Alterar Data/Horário Encavalado (v5.35)
+- [x] Corrigir layout dos campos Alterar data e Alterar horário no modal de edição de sessão
