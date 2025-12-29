@@ -2126,6 +2126,50 @@ Retorne APENAS o JSON, sem texto adicional.`;
         await db.deleteSessionPermanently(input.id);
         return { success: true };
       }),
+    
+    // Cancelar sessões futuras em lote
+    cancelFuture: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        fromDate: z.string().optional(), // Se não informado, usa data atual
+        toDate: z.string().optional(), // Se não informado, cancela todas futuras
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        const toDate = input.toDate ? new Date(input.toDate) : undefined;
+        
+        const count = await db.cancelFutureSessions({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          fromDate,
+          toDate,
+          reason: input.reason,
+        });
+        
+        return { success: true, count, message: `${count} sessão(s) cancelada(s) com sucesso` };
+      }),
+    
+    // Excluir sessões futuras em lote
+    deleteFuture: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        fromDate: z.string().optional(),
+        toDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        const toDate = input.toDate ? new Date(input.toDate) : undefined;
+        
+        const count = await db.deleteFutureSessions({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          fromDate,
+          toDate,
+        });
+        
+        return { success: true, count, message: `${count} sessão(s) excluída(s) com sucesso` };
+      }),
   }),
 
   // ==================== PLANS ====================
@@ -2598,6 +2642,48 @@ Retorne APENAS o JSON, sem texto adicional.`;
         });
         
         return { url: paymentLink.url };
+      }),
+    
+    // Cancelar cobranças pendentes em lote
+    cancelFuture: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        fromDate: z.string().optional(),
+        toDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        const toDate = input.toDate ? new Date(input.toDate) : undefined;
+        
+        const count = await db.cancelFutureCharges({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          fromDate,
+          toDate,
+        });
+        
+        return { success: true, count, message: `${count} cobrança(s) cancelada(s) com sucesso` };
+      }),
+    
+    // Excluir cobranças pendentes em lote
+    deleteFuture: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        fromDate: z.string().optional(),
+        toDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const fromDate = input.fromDate ? new Date(input.fromDate) : new Date();
+        const toDate = input.toDate ? new Date(input.toDate) : undefined;
+        
+        const count = await db.deleteFutureCharges({
+          personalId: ctx.personal.id,
+          studentId: input.studentId,
+          fromDate,
+          toDate,
+        });
+        
+        return { success: true, count, message: `${count} cobrança(s) excluída(s) com sucesso` };
       }),
   }),
 

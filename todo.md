@@ -834,3 +834,16 @@
 ## Bug Horário Calendário (v5.19) - URGENTE
 - [x] Corrigir exibição do horário no calendário mensal (mostrando 3h a menos) - usando formatTimeUTC helper
 - [x] Horário correto no modal de edição mas errado na visualização do calendário - corrigido
+
+
+## Layout Mobile e Gestão em Lote (v5.20)
+- [x] Corrigir layout mobile da página de Agenda (card de sessão desalinhado)
+- [x] Adicionar cancelar/excluir sessões em lote (Alunos > Sessões):
+  - [x] Cancelar todas as sessões futuras
+  - [x] Excluir todas as sessões futuras
+  - [x] Pausar sessões por período (via filtro de datas)
+  - [x] Cancelar/excluir por período específico
+- [x] Adicionar cancelar/excluir cobranças em lote (Alunos > Pagamentos):
+  - [x] Cancelar todas as cobranças pendentes
+  - [x] Excluir todas as cobranças pendentes
+  - [x] Cancelar/excluir por período específico

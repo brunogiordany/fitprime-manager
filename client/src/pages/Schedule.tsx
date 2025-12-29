@@ -823,59 +823,59 @@ export default function Schedule() {
                   {getSessionsForDay(currentDate).map((session) => (
                     <div
                       key={session.id}
-                      className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/50"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border hover:bg-accent/50 gap-3"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold">
+                      {/* Info do aluno */}
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold shrink-0">
                           {session.student?.name?.charAt(0).toUpperCase() || '?'}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{session.student?.name}</p>
-                            {session.type && getTypeBadge(session.type)}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {formatTimeUTC(session.scheduledAt)} - {session.duration || 60} min
-                            </span>
-                            {session.location && (
-                              <span>{session.location}</span>
-                            )}
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{session.student?.name}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-3 w-3 shrink-0" />
+                            <span>{formatTimeUTC(session.scheduledAt)} - {session.duration || 60} min</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        {getStatusBadge(session.status)}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1"
-                          onClick={() => setLocation(`/sessao/${session.id}/treino`)}
-                        >
-                          <Dumbbell className="h-4 w-4" />
-                          Treino
-                        </Button>
-                        {session.status === 'scheduled' && (
-                          <div className="flex gap-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                              onClick={() => handleStatusChange(session.id, "completed")}
-                            >
-                              <CheckCircle2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleStatusChange(session.id, "no_show")}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                      
+                      {/* Badges e ações */}
+                      <div className="flex items-center justify-between sm:justify-end gap-2 pl-13 sm:pl-0">
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(session.status)}
+                          {session.type && getTypeBadge(session.type)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 h-8 px-2 sm:px-3"
+                            onClick={() => setLocation(`/sessao/${session.id}/treino`)}
+                          >
+                            <Dumbbell className="h-4 w-4" />
+                            <span className="hidden sm:inline">Treino</span>
+                          </Button>
+                          {session.status === 'scheduled' && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                onClick={() => handleStatusChange(session.id, "completed")}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleStatusChange(session.id, "no_show")}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

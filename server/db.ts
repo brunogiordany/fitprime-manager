@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, not } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, not, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users, User,
@@ -1741,4 +1741,120 @@ export async function countPendingChangesByPersonalId(personalId: number) {
       eq(pendingChanges.status, 'pending')
     ));
   return result[0]?.count || 0;
+}
+
+
+// ==================== BATCH SESSION OPERATIONS ====================
+export async function cancelFutureSessions(params: {
+  personalId: number;
+  studentId: number;
+  fromDate: Date;
+  toDate?: Date;
+  reason?: string;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conditions = [
+    eq(sessions.personalId, params.personalId),
+    eq(sessions.studentId, params.studentId),
+    gte(sessions.scheduledAt, params.fromDate),
+    eq(sessions.status, 'scheduled'),
+    isNull(sessions.deletedAt),
+  ];
+  
+  if (params.toDate) {
+    conditions.push(lte(sessions.scheduledAt, params.toDate));
+  }
+  
+  const result = await db.update(sessions)
+    .set({ 
+      status: 'cancelled',
+      cancelReason: params.reason || 'Cancelamento em lote',
+    })
+    .where(and(...conditions));
+  
+  return result[0]?.affectedRows || 0;
+}
+
+export async function deleteFutureSessions(params: {
+  personalId: number;
+  studentId: number;
+  fromDate: Date;
+  toDate?: Date;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conditions = [
+    eq(sessions.personalId, params.personalId),
+    eq(sessions.studentId, params.studentId),
+    gte(sessions.scheduledAt, params.fromDate),
+    inArray(sessions.status, ['scheduled', 'confirmed']),
+  ];
+  
+  if (params.toDate) {
+    conditions.push(lte(sessions.scheduledAt, params.toDate));
+  }
+  
+  // Soft delete - mover para lixeira
+  const result = await db.update(sessions)
+    .set({ deletedAt: new Date() })
+    .where(and(...conditions));
+  
+  return result[0]?.affectedRows || 0;
+}
+
+// ==================== BATCH CHARGE OPERATIONS ====================
+export async function cancelFutureCharges(params: {
+  personalId: number;
+  studentId: number;
+  fromDate: Date;
+  toDate?: Date;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conditions = [
+    eq(charges.personalId, params.personalId),
+    eq(charges.studentId, params.studentId),
+    gte(charges.dueDate, params.fromDate),
+    eq(charges.status, 'pending'),
+  ];
+  
+  if (params.toDate) {
+    conditions.push(lte(charges.dueDate, params.toDate));
+  }
+  
+  const result = await db.update(charges)
+    .set({ status: 'cancelled' })
+    .where(and(...conditions));
+  
+  return result[0]?.affectedRows || 0;
+}
+
+export async function deleteFutureCharges(params: {
+  personalId: number;
+  studentId: number;
+  fromDate: Date;
+  toDate?: Date;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conditions = [
+    eq(charges.personalId, params.personalId),
+    eq(charges.studentId, params.studentId),
+    gte(charges.dueDate, params.fromDate),
+    eq(charges.status, 'pending'),
+  ];
+  
+  if (params.toDate) {
+    conditions.push(lte(charges.dueDate, params.toDate));
+  }
+  
+  const result = await db.delete(charges)
+    .where(and(...conditions));
+  
+  return result[0]?.affectedRows || 0;
 }

@@ -44,7 +44,9 @@ import {
   Pause,
   Play,
   AlertTriangle,
-  MoreVertical
+  MoreVertical,
+  Trash2,
+  Ban
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -88,6 +90,12 @@ export default function StudentProfile() {
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
   const [editingSession, setEditingSession] = useState<any>(null);
   const [editSessionStatus, setEditSessionStatus] = useState<string>('');
+  const [showBatchSessionModal, setShowBatchSessionModal] = useState(false);
+  const [showBatchChargeModal, setShowBatchChargeModal] = useState(false);
+  const [batchAction, setBatchAction] = useState<'cancel' | 'delete'>('cancel');
+  const [batchFromDate, setBatchFromDate] = useState('');
+  const [batchToDate, setBatchToDate] = useState('');
+  const [batchReason, setBatchReason] = useState('');
   const photoInputRef = useRef<HTMLInputElement>(null);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
@@ -289,6 +297,63 @@ export default function StudentProfile() {
     },
     onError: (error: any) => {
       toast.error("Erro ao cancelar aluno: " + error.message);
+    },
+  });
+
+  // Mutations para ações em lote de sessões
+  const cancelFutureSessionsMutation = trpc.sessions.cancelFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.sessions.listByStudent.invalidate({ studentId });
+      utils.sessions.studentStats.invalidate({ studentId });
+      setShowBatchSessionModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+      setBatchReason('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar sessões: " + error.message);
+    },
+  });
+
+  const deleteFutureSessionsMutation = trpc.sessions.deleteFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.sessions.listByStudent.invalidate({ studentId });
+      utils.sessions.studentStats.invalidate({ studentId });
+      setShowBatchSessionModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir sessões: " + error.message);
+    },
+  });
+
+  // Mutations para ações em lote de cobranças
+  const cancelFutureChargesMutation = trpc.charges.cancelFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.charges.listByStudent.invalidate({ studentId });
+      setShowBatchChargeModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar cobranças: " + error.message);
+    },
+  });
+
+  const deleteFutureChargesMutation = trpc.charges.deleteFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.charges.listByStudent.invalidate({ studentId });
+      setShowBatchChargeModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir cobranças: " + error.message);
     },
   });
 
@@ -1438,15 +1503,41 @@ export default function StudentProfile() {
           {/* Sessions Tab */}
           <TabsContent value="sessions">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Sessões</CardTitle>
                   <CardDescription>Histórico de sessões do aluno - clique para editar o status</CardDescription>
                 </div>
-                <Button onClick={() => setLocation(`/agenda?new=true&studentId=${studentId}`)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Sessão
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4 mr-2" />
+                        Ações em Lote
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => {
+                        setBatchAction('cancel');
+                        setShowBatchSessionModal(true);
+                      }}>
+                        <Ban className="h-4 w-4 mr-2" />
+                        Cancelar Sessões Futuras
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setBatchAction('delete');
+                        setShowBatchSessionModal(true);
+                      }} className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir Sessões Futuras
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button onClick={() => setLocation(`/agenda?new=true&studentId=${studentId}`)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Sessão
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {studentSessions && studentSessions.length > 0 ? (
@@ -1618,17 +1709,41 @@ export default function StudentProfile() {
           {/* Payments Tab */}
           <TabsContent value="payments">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Pagamentos</CardTitle>
                   <CardDescription>Histórico de cobranças e pagamentos</CardDescription>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setLocation(`/alunos/${studentId}/contratar`)}>
+                <div className="flex flex-wrap gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4 mr-2" />
+                        Ações em Lote
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => {
+                        setBatchAction('cancel');
+                        setShowBatchChargeModal(true);
+                      }}>
+                        <Ban className="h-4 w-4 mr-2" />
+                        Cancelar Cobranças Pendentes
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setBatchAction('delete');
+                        setShowBatchChargeModal(true);
+                      }} className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir Cobranças Pendentes
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button variant="outline" size="sm" onClick={() => setLocation(`/alunos/${studentId}/contratar`)}>
                     <FileText className="h-4 w-4 mr-2" />
                     Contratar Plano
                   </Button>
-                  <Button onClick={() => setLocation(`/cobrancas?new=true&studentId=${studentId}`)}>
+                  <Button size="sm" onClick={() => setLocation(`/cobrancas?new=true&studentId=${studentId}`)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Nova Cobrança
                   </Button>
@@ -1828,6 +1943,163 @@ export default function StudentProfile() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Modal de Ações em Lote - Sessões */}
+        <Dialog open={showBatchSessionModal} onOpenChange={setShowBatchSessionModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {batchAction === 'cancel' ? (
+                  <><Ban className="h-5 w-5" /> Cancelar Sessões Futuras</>
+                ) : (
+                  <><Trash2 className="h-5 w-5 text-red-600" /> Excluir Sessões Futuras</>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>A partir de (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchFromDate}
+                  onChange={(e) => setBatchFromDate(e.target.value)}
+                  placeholder="Deixe vazio para usar data atual"
+                />
+                <p className="text-xs text-muted-foreground">Se não informado, usa a data de hoje</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Até (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchToDate}
+                  onChange={(e) => setBatchToDate(e.target.value)}
+                  placeholder="Deixe vazio para todas futuras"
+                />
+                <p className="text-xs text-muted-foreground">Se não informado, afeta todas as sessões futuras</p>
+              </div>
+              {batchAction === 'cancel' && (
+                <div className="space-y-2">
+                  <Label>Motivo do cancelamento (opcional)</Label>
+                  <Textarea
+                    value={batchReason}
+                    onChange={(e) => setBatchReason(e.target.value)}
+                    placeholder="Ex: Viagem, férias, etc."
+                  />
+                </div>
+              )}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-800">
+                  <AlertTriangle className="h-4 w-4 inline mr-1" />
+                  {batchAction === 'cancel' 
+                    ? 'As sessões serão marcadas como canceladas e não poderão ser revertidas automaticamente.'
+                    : 'As sessões serão movidas para a lixeira. Você pode restaurá-las depois se necessário.'}
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBatchSessionModal(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant={batchAction === 'delete' ? 'destructive' : 'default'}
+                onClick={() => {
+                  if (batchAction === 'cancel') {
+                    cancelFutureSessionsMutation.mutate({
+                      studentId,
+                      fromDate: batchFromDate || undefined,
+                      toDate: batchToDate || undefined,
+                      reason: batchReason || undefined,
+                    });
+                  } else {
+                    deleteFutureSessionsMutation.mutate({
+                      studentId,
+                      fromDate: batchFromDate || undefined,
+                      toDate: batchToDate || undefined,
+                    });
+                  }
+                }}
+                disabled={cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending}
+              >
+                {(cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending) 
+                  ? 'Processando...' 
+                  : batchAction === 'cancel' ? 'Cancelar Sessões' : 'Excluir Sessões'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Ações em Lote - Cobranças */}
+        <Dialog open={showBatchChargeModal} onOpenChange={setShowBatchChargeModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {batchAction === 'cancel' ? (
+                  <><Ban className="h-5 w-5" /> Cancelar Cobranças Pendentes</>
+                ) : (
+                  <><Trash2 className="h-5 w-5 text-red-600" /> Excluir Cobranças Pendentes</>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>A partir de (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchFromDate}
+                  onChange={(e) => setBatchFromDate(e.target.value)}
+                  placeholder="Deixe vazio para usar data atual"
+                />
+                <p className="text-xs text-muted-foreground">Se não informado, usa a data de hoje</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Até (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchToDate}
+                  onChange={(e) => setBatchToDate(e.target.value)}
+                  placeholder="Deixe vazio para todas futuras"
+                />
+                <p className="text-xs text-muted-foreground">Se não informado, afeta todas as cobranças pendentes futuras</p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-800">
+                  <AlertTriangle className="h-4 w-4 inline mr-1" />
+                  {batchAction === 'cancel' 
+                    ? 'As cobranças serão marcadas como canceladas.'
+                    : 'As cobranças serão excluídas permanentemente. Esta ação não pode ser desfeita.'}
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBatchChargeModal(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant={batchAction === 'delete' ? 'destructive' : 'default'}
+                onClick={() => {
+                  if (batchAction === 'cancel') {
+                    cancelFutureChargesMutation.mutate({
+                      studentId,
+                      fromDate: batchFromDate || undefined,
+                      toDate: batchToDate || undefined,
+                    });
+                  } else {
+                    deleteFutureChargesMutation.mutate({
+                      studentId,
+                      fromDate: batchFromDate || undefined,
+                      toDate: batchToDate || undefined,
+                    });
+                  }
+                }}
+                disabled={cancelFutureChargesMutation.isPending || deleteFutureChargesMutation.isPending}
+              >
+                {(cancelFutureChargesMutation.isPending || deleteFutureChargesMutation.isPending) 
+                  ? 'Processando...' 
+                  : batchAction === 'cancel' ? 'Cancelar Cobranças' : 'Excluir Cobranças'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
