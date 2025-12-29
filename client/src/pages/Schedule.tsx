@@ -891,7 +891,7 @@ export default function Schedule() {
 
         {/* New Session Dialog - Multi-step */}
         <Dialog open={isNewDialogOpen} onOpenChange={(open) => { setIsNewDialogOpen(open); if (!open) resetNewSession(); }}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novo Agendamento</DialogTitle>
               <DialogDescription>
@@ -1015,7 +1015,7 @@ export default function Schedule() {
             )}
 
             {dialogStep === "plan" && (
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-2">
                 {/* Selected student info */}
                 {selectedStudent && (
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 mb-4">
@@ -1032,22 +1032,23 @@ export default function Schedule() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Data e Hora *</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid gap-1.5">
+                    <Label className="text-sm">Data e Hora *</Label>
                     <Input
                       type="datetime-local"
                       value={newSession.scheduledAt}
                       onChange={(e) => setNewSession({ ...newSession, scheduledAt: e.target.value })}
+                      className="text-sm"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Duração</Label>
+                  <div className="grid gap-1.5">
+                    <Label className="text-sm">Duração</Label>
                     <Select
                       value={newSession.duration}
                       onValueChange={(value) => setNewSession({ ...newSession, duration: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1062,9 +1063,9 @@ export default function Schedule() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Tipo</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-1.5">
+                    <Label className="text-sm">Tipo</Label>
                     <Select
                       value={newSession.type}
                       onValueChange={(value: "regular" | "trial" | "makeup" | "extra") => 
@@ -1082,8 +1083,8 @@ export default function Schedule() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Plano (opcional)</Label>
+                  <div className="grid gap-1.5">
+                    <Label className="text-sm">Plano (opcional)</Label>
                     <Select
                       value={newSession.planId}
                       onValueChange={(value) => setNewSession({ ...newSession, planId: value })}
@@ -1103,8 +1104,8 @@ export default function Schedule() {
                   </div>
                 </div>
 
-                <div className="grid gap-2">
-                  <Label>Local</Label>
+                <div className="grid gap-1.5">
+                  <Label className="text-sm">Local</Label>
                   <Input
                     placeholder="Ex: Academia, Casa do aluno"
                     value={newSession.location}
@@ -1119,8 +1120,8 @@ export default function Schedule() {
                       <Dumbbell className="h-4 w-4 text-emerald-600" />
                       <Label className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Treino da Sessão</Label>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid gap-1.5">
                         <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
                         <Select
                           value={newSession.workoutId}
@@ -1355,7 +1356,7 @@ export default function Schedule() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
                           <Label className="text-xs text-muted-foreground">Horário das Sessões</Label>
                           <Input
@@ -1670,7 +1671,7 @@ export default function Schedule() {
                         <Dumbbell className="h-4 w-4 text-emerald-600" />
                         <h4 className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">Treino da Sessão</h4>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
                           <Select

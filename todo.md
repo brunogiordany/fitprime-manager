@@ -822,3 +822,10 @@
 ## Bug Fuso Horário Agendamento (v5.16)
 - [x] Corrigir diferença de 3 horas no agendamento de sessões (UTC vs GMT-3) - usando Date.UTC para armazenar horário correto
 - [x] Corrigir exibição do horário no modal de edição (mostrando 3 horas a menos) - usando getUTC* para formatar
+
+
+## Otimização Mobile e PWA (v5.18)
+- [x] Corrigir modal de Novo Agendamento sem scroll no mobile
+- [x] Corrigir layout encavalado (Data/Hora e Duração sobrepostas) - layout responsivo grid-cols-1 sm:grid-cols-2
+- [x] Adicionar suporte PWA para instalar como app no celular - manifest.json + ícones
+- [x] Revisar todos os modais para garantir scroll no mobile
