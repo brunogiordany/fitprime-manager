@@ -858,3 +858,9 @@
 ## Correções v5.22
 - [ ] Adicionar opção "Cancelar Todas" e "Excluir Todas" sem necessidade de selecionar datas
 - [ ] Criar aba Portal do Aluno no menu lateral para personal visualizar
+
+
+## Filtro de Alunos no Calendário (v5.23)
+- [x] Adicionar filtro de alunos na visualização mensal do calendário
+- [x] Opção "Todos os alunos" como padrão
+- [x] Ao selecionar um aluno, mostrar apenas as sessões dele

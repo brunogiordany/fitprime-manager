@@ -122,6 +122,9 @@ export default function Schedule() {
     notes: "",
   });
 
+  // Filtro de alunos
+  const [studentFilter, setStudentFilter] = useState<string>("all");
+  
   // Filtros de status
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const allStatuses = [
@@ -180,6 +183,24 @@ export default function Schedule() {
 
   const { data: students } = trpc.students.list.useQuery({});
   const { data: plans } = trpc.plans.list.useQuery();
+  
+  // Filtrar sessões por aluno selecionado
+  const filteredSessions = useMemo(() => {
+    if (!sessions) return [];
+    let result = sessions;
+    
+    // Filtrar por aluno
+    if (studentFilter !== "all") {
+      result = result.filter(s => s.studentId === parseInt(studentFilter));
+    }
+    
+    // Filtrar por status
+    if (statusFilter.length > 0) {
+      result = result.filter(s => statusFilter.includes(s.status));
+    }
+    
+    return result;
+  }, [sessions, studentFilter, statusFilter]);
   
   // Buscar treinos do aluno selecionado para vincular à sessão (nova sessão)
   const selectedStudentId = newSession.studentId ? parseInt(newSession.studentId) : null;
@@ -417,12 +438,8 @@ export default function Schedule() {
   }, [calendarDays]);
 
   const getSessionsForDay = (date: Date) => {
-    let daySessions = sessions?.filter(s => isSameDay(new Date(s.scheduledAt), date)) || [];
-    // Aplicar filtro de status se houver filtros selecionados
-    if (statusFilter.length > 0) {
-      daySessions = daySessions.filter(s => statusFilter.includes(s.status));
-    }
-    return daySessions;
+    // Usar filteredSessions que já tem os filtros de aluno e status aplicados
+    return filteredSessions.filter(s => isSameDay(new Date(s.scheduledAt), date));
   };
 
   const toggleStatusFilter = (status: string) => {
@@ -435,6 +452,7 @@ export default function Schedule() {
 
   const clearFilters = () => {
     setStatusFilter([]);
+    setStudentFilter("all");
   };
 
   // Funções para modal de edição de sessão
@@ -656,6 +674,27 @@ export default function Schedule() {
               </Button>
             </div>
             
+            {/* Filtro de Alunos */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Aluno:</span>
+              </div>
+              <Select value={studentFilter} onValueChange={setStudentFilter}>
+                <SelectTrigger className="w-[180px] h-8 text-sm">
+                  <SelectValue placeholder="Todos os alunos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os alunos</SelectItem>
+                  {students?.map((student) => (
+                    <SelectItem key={student.id} value={student.id.toString()}>
+                      {student.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             {/* Filtros de Status */}
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -676,13 +715,13 @@ export default function Schedule() {
                   {status.label}
                 </button>
               ))}
-              {statusFilter.length > 0 && (
+              {(statusFilter.length > 0 || studentFilter !== "all") && (
                 <button
                   onClick={clearFilters}
                   className="inline-flex items-center gap-1 px-2 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
                 >
                   <X className="h-3 w-3" />
-                  Limpar
+                  Limpar filtros
                 </button>
               )}
             </div>
