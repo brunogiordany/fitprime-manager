@@ -615,3 +615,9 @@
   - [x] Cancelar sessão com antecedência (mínimo 24h)
   - [x] Histórico de sessões
   - [x] Notificação ao personal via in-app e email
+
+
+## Configurações e Correções (v4.9)
+- [x] Configurar API key do Resend para envio de emails
+- [x] Corrigir problema de login do portal do aluno (erro jwt.sign)
+- [x] Atualizar email remetente para usar domínio do Resend (onboarding@resend.dev)

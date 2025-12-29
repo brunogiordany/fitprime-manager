@@ -37,7 +37,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'FitPrime <noreply@fitprime.app>',
+        from: 'FitPrime <onboarding@resend.dev>',
         to: payload.to,
         subject: payload.subject,
         html: payload.html,

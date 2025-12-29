@@ -356,7 +356,7 @@ export const appRouter = router({
         
         // Gerar token JWT para login automático
         const jwt = await import('jsonwebtoken');
-        const token = jwt.sign(
+        const token = jwt.default.sign(
           { studentId: invite.studentId, type: 'student' },
           process.env.JWT_SECRET || 'secret',
           { expiresIn: '30d' }
@@ -390,7 +390,7 @@ export const appRouter = router({
         
         // Gerar token JWT
         const jwt = await import('jsonwebtoken');
-        const token = jwt.sign(
+        const token = jwt.default.sign(
           { studentId: student.id, type: 'student' },
           process.env.JWT_SECRET || 'secret',
           { expiresIn: '30d' }
