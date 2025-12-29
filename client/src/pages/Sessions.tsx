@@ -547,22 +547,48 @@ export default function Sessions() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <Input
-                  type="date"
-                  value={editForm.scheduledDate}
-                  onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
-                />
+            <div className="space-y-2">
+              <Label>Data e Horário</Label>
+              <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/30">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {editForm.scheduledDate && editForm.scheduledTime ? 
+                    `${editForm.scheduledDate.split('-').reverse().join('/')} às ${editForm.scheduledTime}` :
+                    'Carregando...'
+                  }
+                </span>
               </div>
-              <div className="space-y-2">
-                <Label>Horário</Label>
-                <Input
-                  type="time"
-                  value={editForm.scheduledTime}
-                  onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Alterar data</Label>
+                  <Input
+                    type="date"
+                    value={editForm.scheduledDate}
+                    onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
+                    className="mt-1"
+                    tabIndex={-1}
+                    onFocus={(e) => e.target.blur()}
+                    onClick={(e) => {
+                      e.currentTarget.focus();
+                      e.currentTarget.showPicker?.();
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Alterar horário</Label>
+                  <Input
+                    type="time"
+                    value={editForm.scheduledTime}
+                    onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
+                    className="mt-1"
+                    tabIndex={-1}
+                    onFocus={(e) => e.target.blur()}
+                    onClick={(e) => {
+                      e.currentTarget.focus();
+                      e.currentTarget.showPicker?.();
+                    }}
+                  />
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
