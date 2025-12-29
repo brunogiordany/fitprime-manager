@@ -881,3 +881,13 @@
 
 ## Bug: Página Sessões 404 (v5.25)
 - [x] Registrar rota /sessoes no App.tsx
+
+## Correções Portal do Aluno (v5.26)
+- [x] Pagamentos mostrando de outros alunos (filtrar apenas do aluno logado)
+- [x] Botão "Ver Treino" não funciona (implementar visualização de treino)
+- [ ] Próximas Sessões mostrando "Nenhuma sessão agendada" incorretamente
+- [ ] Revisar UX completa do Portal do Aluno
+
+## Página Sessões - Ações em Lote (v5.27)
+- [x] Adicionar botões de ações em lote (Cancelar/Excluir sessões futuras)
+- [x] Sincronizar funcionalidades com aba de sessões do perfil do aluno

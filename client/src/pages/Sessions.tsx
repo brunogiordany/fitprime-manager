@@ -27,12 +27,16 @@ import {
   ChevronRight,
   Edit,
   MoreHorizontal,
-  X
+  X,
+  Ban,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
@@ -69,6 +73,13 @@ export default function Sessions() {
     notes: "",
   });
 
+  // Modal de ações em lote
+  const [showBatchSessionModal, setShowBatchSessionModal] = useState(false);
+  const [batchAction, setBatchAction] = useState<'cancel' | 'delete'>('cancel');
+  const [batchFromDate, setBatchFromDate] = useState('');
+  const [batchToDate, setBatchToDate] = useState('');
+  const [batchReason, setBatchReason] = useState('');
+
   const utils = trpc.useUtils();
   
   // Buscar sessões do mês atual
@@ -90,6 +101,34 @@ export default function Sessions() {
     },
     onError: (error) => {
       toast.error("Erro ao atualizar sessão", { description: error.message });
+    },
+  });
+
+  // Mutations para ações em lote
+  const cancelFutureSessionsMutation = trpc.sessions.cancelFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.sessions.list.invalidate();
+      setShowBatchSessionModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+      setBatchReason('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar sessões: " + error.message);
+    },
+  });
+
+  const deleteFutureSessionsMutation = trpc.sessions.deleteFuture.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.sessions.list.invalidate();
+      setShowBatchSessionModal(false);
+      setBatchFromDate('');
+      setBatchToDate('');
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir sessões: " + error.message);
     },
   });
 
@@ -184,7 +223,43 @@ export default function Sessions() {
     setCurrentMonth(prev => direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1));
   };
 
+  const openBatchModal = (action: 'cancel' | 'delete') => {
+    setBatchAction(action);
+    setBatchFromDate('');
+    setBatchToDate('');
+    setBatchReason('');
+    setShowBatchSessionModal(true);
+  };
+
+  const handleBatchAction = () => {
+    // Precisa ter um aluno selecionado para ações em lote
+    if (studentFilter === "all") {
+      toast.error("Selecione um aluno para executar ações em lote");
+      return;
+    }
+    
+    const studentId = parseInt(studentFilter);
+    
+    if (batchAction === 'cancel') {
+      cancelFutureSessionsMutation.mutate({
+        studentId,
+        fromDate: batchFromDate || undefined,
+        toDate: batchToDate || undefined,
+        reason: batchReason || undefined,
+      });
+    } else {
+      deleteFutureSessionsMutation.mutate({
+        studentId,
+        fromDate: batchFromDate || undefined,
+        toDate: batchToDate || undefined,
+      });
+    }
+  };
+
   const hasActiveFilters = statusFilter.length > 0 || studentFilter !== "all" || searchTerm !== "";
+
+  // Encontrar nome do aluno selecionado
+  const selectedStudent = students?.find(s => s.id.toString() === studentFilter);
 
   return (
     <DashboardLayout>
@@ -271,6 +346,31 @@ export default function Sessions() {
                   </button>
                 )}
               </div>
+
+              {/* Ações em lote - só aparece quando um aluno está selecionado */}
+              {studentFilter !== "all" && (
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+                  <span className="text-sm text-muted-foreground">Ações em lote para {selectedStudent?.name}:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openBatchModal('cancel')}
+                    className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Cancelar Sessões
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openBatchModal('delete')}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir Sessões
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -391,6 +491,27 @@ export default function Sessions() {
                                   Ver aluno
                                 </Link>
                               </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setStudentFilter(session.studentId.toString());
+                                  openBatchModal('cancel');
+                                }}
+                                className="text-amber-600"
+                              >
+                                <Ban className="h-4 w-4 mr-2" />
+                                Cancelar sessões do aluno
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setStudentFilter(session.studentId.toString());
+                                  openBatchModal('delete');
+                                }}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir sessões do aluno
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -477,6 +598,84 @@ export default function Sessions() {
             </Button>
             <Button onClick={handleUpdateSession} disabled={updateSession.isPending}>
               {updateSession.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de ações em lote */}
+      <Dialog open={showBatchSessionModal} onOpenChange={setShowBatchSessionModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {batchAction === 'cancel' ? (
+                <><Ban className="h-5 w-5" /> Cancelar Sessões Futuras</>
+              ) : (
+                <><Trash2 className="h-5 w-5 text-red-600" /> Excluir Sessões Futuras</>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedStudent && (
+              <div className="bg-primary/10 rounded-lg p-3">
+                <p className="text-sm font-medium">Aluno: {selectedStudent.name}</p>
+              </div>
+            )}
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-sm font-medium mb-1">Deixe os campos de data vazios para afetar TODAS as sessões do aluno.</p>
+              <p className="text-xs text-muted-foreground">Ou preencha para filtrar por período específico.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>De (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchFromDate}
+                  onChange={(e) => setBatchFromDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Até (opcional)</Label>
+                <Input
+                  type="date"
+                  value={batchToDate}
+                  onChange={(e) => setBatchToDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            {batchAction === 'cancel' && (
+              <div className="space-y-2">
+                <Label>Motivo do cancelamento (opcional)</Label>
+                <Textarea
+                  value={batchReason}
+                  onChange={(e) => setBatchReason(e.target.value)}
+                  placeholder="Ex: Viagem, férias, etc."
+                />
+              </div>
+            )}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <AlertTriangle className="h-4 w-4 inline mr-1" />
+                {batchAction === 'cancel' 
+                  ? 'As sessões serão marcadas como canceladas e não poderão ser revertidas automaticamente.'
+                  : 'As sessões serão movidas para a lixeira. Você pode restaurá-las depois se necessário.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBatchSessionModal(false)}>
+              Voltar
+            </Button>
+            <Button
+              variant={batchAction === 'delete' ? 'destructive' : 'default'}
+              onClick={handleBatchAction}
+              disabled={cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending}
+            >
+              {(cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending) 
+                ? 'Processando...' 
+                : batchAction === 'cancel' ? 'Cancelar Sessões' : 'Excluir Sessões'}
             </Button>
           </DialogFooter>
         </DialogContent>

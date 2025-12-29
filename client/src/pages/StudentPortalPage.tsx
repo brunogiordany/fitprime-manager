@@ -449,8 +449,17 @@ export default function StudentPortalPage() {
                           </Badge>
                         </div>
                         {workout.description && (
-                          <p className="text-sm text-gray-600">{workout.description}</p>
+                          <p className="text-sm text-gray-600 mb-3">{workout.description}</p>
                         )}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-2"
+                          onClick={() => setLocation(`/portal/treino/${workout.id}`)}
+                        >
+                          <Dumbbell className="h-4 w-4 mr-2" />
+                          Ver Treino
+                        </Button>
                       </div>
                     ))}
                   </div>

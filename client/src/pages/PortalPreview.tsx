@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Eye, ExternalLink, Users, Dumbbell, Calendar, CreditCard, Activity, Camera } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { toast } from "sonner";
 
 export default function PortalPreview() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
@@ -25,7 +26,7 @@ export default function PortalPreview() {
     { enabled: !!selectedStudentId }
   );
   
-  const { data: charges } = trpc.charges.list.useQuery(
+  const { data: charges } = trpc.charges.listByStudent.useQuery(
     { studentId: parseInt(selectedStudentId) },
     { enabled: !!selectedStudentId }
   );
@@ -46,7 +47,7 @@ export default function PortalPreview() {
   }).slice(0, 5) || [];
 
   // Cobranças pendentes
-  const pendingCharges = charges?.filter(c => c.charge.status === 'pending').slice(0, 5) || [];
+  const pendingCharges = charges?.filter(c => c.status === 'pending').slice(0, 5) || [];
 
   return (
     <div className="space-y-6">
@@ -165,7 +166,11 @@ export default function PortalPreview() {
                         <p className="font-medium">{workout.name}</p>
                         <p className="text-sm text-muted-foreground">{workout.description || 'Sem descrição'}</p>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast.info("Funcionalidade disponível apenas no portal real do aluno")}
+                      >
                         Ver Treino
                       </Button>
                     </div>
@@ -230,17 +235,17 @@ export default function PortalPreview() {
             <CardContent>
               {pendingCharges.length > 0 ? (
                 <div className="space-y-3">
-                  {pendingCharges.map((item) => (
-                    <div key={item.charge.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  {pendingCharges.map((charge) => (
+                    <div key={charge.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
-                        <p className="font-medium">{item.charge.description}</p>
+                        <p className="font-medium">{charge.description}</p>
                         <p className="text-sm text-muted-foreground">
-                          Vence em {new Date(item.charge.dueDate).toLocaleDateString('pt-BR')}
+                          Vence em {new Date(charge.dueDate).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-emerald-600">
-                          R$ {(Number(item.charge.amount) / 100).toFixed(2)}
+                          R$ {(Number(charge.amount) / 100).toFixed(2)}
                         </p>
                         <span className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700">
                           Pendente
