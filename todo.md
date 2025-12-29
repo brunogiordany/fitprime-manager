@@ -906,3 +906,6 @@
 
 ## Bug: Layout Seletores de Treino (v5.31)
 - [x] Corrigir layout dos seletores de treino no agendamento em lote (empilhar verticalmente no mobile)
+
+## Bug: Popup de Calendário Duplicado (v5.32)
+- [x] Remover popup de calendário que aparece ao editar sessão na página Sessões

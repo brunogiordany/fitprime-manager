@@ -69,7 +69,8 @@ export default function Sessions() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<any>(null);
   const [editForm, setEditForm] = useState({
-    scheduledAt: "",
+    scheduledDate: "",
+    scheduledTime: "",
     duration: 60,
     status: "scheduled",
     notes: "",
@@ -196,7 +197,8 @@ export default function Sessions() {
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     
     setEditForm({
-      scheduledAt: `${year}-${month}-${day}T${hours}:${minutes}`,
+      scheduledDate: `${year}-${month}-${day}`,
+      scheduledTime: `${hours}:${minutes}`,
       duration: session.duration,
       status: session.status,
       notes: session.notes || "",
@@ -207,9 +209,8 @@ export default function Sessions() {
   const handleUpdateSession = () => {
     if (!editingSession) return;
     
-    const [datePart, timePart] = editForm.scheduledAt.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hours, minutes] = timePart.split(':').map(Number);
+    const [year, month, day] = editForm.scheduledDate.split('-').map(Number);
+    const [hours, minutes] = editForm.scheduledTime.split(':').map(Number);
     const scheduledAt = new Date(Date.UTC(year, month - 1, day, hours, minutes));
     
     updateSession.mutate({
@@ -546,13 +547,23 @@ export default function Sessions() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Data e Hora</Label>
-              <Input
-                type="datetime-local"
-                value={editForm.scheduledAt}
-                onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={editForm.scheduledDate}
+                  onChange={(e) => setEditForm({ ...editForm, scheduledDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Horário</Label>
+                <Input
+                  type="time"
+                  value={editForm.scheduledTime}
+                  onChange={(e) => setEditForm({ ...editForm, scheduledTime: e.target.value })}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
