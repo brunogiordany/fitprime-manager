@@ -135,6 +135,21 @@ export default function Sessions() {
     },
   });
 
+  // Mutation para excluir sessão individual
+  const deleteSessionMutation = trpc.sessions.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Sessão excluída com sucesso!");
+      utils.sessions.list.invalidate();
+      setSessionToDelete(null);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir sessão: " + error.message);
+    },
+  });
+
+  // Estado para confirmação de exclusão individual
+  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+
   // Funções para marcar sessão como realizada ou falta
   const handleMarkCompleted = (sessionId: number) => {
     updateSession.mutate({ id: sessionId, status: "completed" });
@@ -495,13 +510,29 @@ export default function Sessions() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => openEditDialog(session)}>
                                 <Edit className="h-4 w-4 mr-2" />
-                                Editar
+                                Editar sessão
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <Link href={`/alunos/${session.studentId}`}>
                                   <User className="h-4 w-4 mr-2" />
                                   Ver aluno
                                 </Link>
+                              </DropdownMenuItem>
+                              {session.status === 'scheduled' && (
+                                <DropdownMenuItem 
+                                  onClick={() => updateSession.mutate({ id: session.id, status: 'cancelled' })}
+                                  className="text-amber-600"
+                                >
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Cancelar esta sessão
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem 
+                                onClick={() => setSessionToDelete(session.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir esta sessão
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
@@ -724,6 +755,35 @@ export default function Sessions() {
               {(cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending) 
                 ? 'Processando...' 
                 : batchAction === 'cancel' ? 'Cancelar Sessões' : 'Excluir Sessões'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmação de exclusão individual */}
+      <Dialog open={sessionToDelete !== null} onOpenChange={(open) => !open && setSessionToDelete(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Excluir Sessão
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              Tem certeza que deseja excluir esta sessão? Ela será movida para a lixeira.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSessionToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => sessionToDelete && deleteSessionMutation.mutate({ id: sessionToDelete })}
+              disabled={deleteSessionMutation.isPending}
+            >
+              {deleteSessionMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </Button>
           </DialogFooter>
         </DialogContent>
