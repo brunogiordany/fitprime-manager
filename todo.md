@@ -701,3 +701,10 @@
 ## Bugs Modal IA (v5.5)
 - [x] Botão "Salvar e Editar" já existe no código (verificado)
 - [x] Layout do modal corrigido - aumentada largura para 95vw/max-w-5xl e ajustadas colunas da tabela
+
+
+## Correção Modal IA v5.6
+- [x] Layout completamente refeito com largura 98vw/max-w-6xl
+- [x] Botões fixos no rodapé do modal (sempre visíveis)
+- [x] Tabela de exercícios com overflow-x-auto para scroll horizontal
+- [x] Cabeçalho e rodapé separados do conteúdo scrollável

@@ -303,169 +303,179 @@ export default function Workouts() {
                   Gerar com IA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-purple-600" />
-                    Gerar Treino com Inteligência Artificial
-                  </DialogTitle>
-                  <DialogDescription>
-                    A IA criará um treino personalizado baseado na anamnese e medidas do aluno
-                  </DialogDescription>
-                </DialogHeader>
+              <DialogContent className="w-[98vw] max-w-6xl h-[90vh] flex flex-col p-0">
+                <div className="px-6 pt-6 pb-4 border-b">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Brain className="h-5 w-5 text-purple-600" />
+                      Gerar Treino com Inteligência Artificial
+                    </DialogTitle>
+                    <DialogDescription>
+                      A IA criará um treino personalizado baseado na anamnese e medidas do aluno
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
                 
                 {!aiPreview ? (
-                  <div className="space-y-4 py-4">
-                    <div className="grid gap-2">
-                      <Label>Aluno *</Label>
-                      <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o aluno" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {students?.map((student) => (
-                            <SelectItem key={student.id} value={student.id.toString()}>
-                              {student.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {selectedStudentData && (
-                      <div className="bg-muted/50 rounded-lg p-4">
-                        <p className="text-sm font-medium mb-2">Dados do aluno que serão usados:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• Anamnese (objetivo, experiência, limitações)</li>
-                          <li>• Medidas corporais (peso, altura, composição)</li>
-                          <li>• Frequência semanal disponível</li>
-                          <li>• Equipamentos e local de treino</li>
-                        </ul>
+                  <div className="flex-1 overflow-y-auto px-6 py-4">
+                    <div className="space-y-4">
+                      <div className="grid gap-2">
+                        <Label>Aluno *</Label>
+                        <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o aluno" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {students?.map((student) => (
+                              <SelectItem key={student.id} value={student.id.toString()}>
+                                {student.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )}
-                    
-                    <div className="grid gap-2">
-                      <Label>Instruções adicionais (opcional)</Label>
-                      <Textarea
-                        placeholder="Ex: Foco em exercícios para lombar, evitar agachamento livre, incluir mais cardio..."
-                        value={customPrompt}
-                        onChange={(e) => setCustomPrompt(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-                    
-                    <Button 
-                      onClick={handleGenerateAI}
-                      disabled={!selectedStudent || generateAIMutation.isPending}
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                    >
-                      {generateAIMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Gerando treino...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4 mr-2" />
-                          Gerar Treino com IA
-                        </>
+                      
+                      {selectedStudentData && (
+                        <div className="bg-muted/50 rounded-lg p-4">
+                          <p className="text-sm font-medium mb-2">Dados do aluno que serão usados:</p>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            <li>• Anamnese (objetivo, experiência, limitações)</li>
+                            <li>• Medidas corporais (peso, altura, composição)</li>
+                            <li>• Frequência semanal disponível</li>
+                            <li>• Equipamentos e local de treino</li>
+                          </ul>
+                        </div>
                       )}
-                    </Button>
+                      
+                      <div className="grid gap-2">
+                        <Label>Instruções adicionais (opcional)</Label>
+                        <Textarea
+                          placeholder="Ex: Foco em exercícios para lombar, evitar agachamento livre, incluir mais cardio..."
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                      
+                      <Button 
+                        onClick={handleGenerateAI}
+                        disabled={!selectedStudent || generateAIMutation.isPending}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                      >
+                        {generateAIMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Gerando treino...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Gerar Treino com IA
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <ScrollArea className="flex-1 pr-2">
-                    <div className="space-y-4 py-4">
-                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-lg">{aiPreview.preview.name}</h3>
-                          <div className="flex gap-2">
-                            <Badge className={getGoalBadge(aiPreview.preview.goal).className}>
-                              {getGoalBadge(aiPreview.preview.goal).label}
-                            </Badge>
-                            <Badge className={getDifficultyBadge(aiPreview.preview.difficulty).className}>
-                              {getDifficultyBadge(aiPreview.preview.difficulty).label}
-                            </Badge>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{aiPreview.preview.description}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Para: {aiPreview.studentName}
-                        </p>
-                      </div>
-                      
+                  <>
+                    {/* Conteúdo com scroll */}
+                    <div className="flex-1 overflow-y-auto px-6 py-4">
                       <div className="space-y-4">
-                        {aiPreview.preview.days.map((day: any, dayIndex: number) => (
-                          <Card key={dayIndex}>
-                            <CardHeader className="py-3">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
-                                  {dayIndex + 1}
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                            <h3 className="font-semibold text-lg">{aiPreview.preview.name}</h3>
+                            <div className="flex gap-2 flex-wrap">
+                              <Badge className={getGoalBadge(aiPreview.preview.goal).className}>
+                                {getGoalBadge(aiPreview.preview.goal).label}
+                              </Badge>
+                              <Badge className={getDifficultyBadge(aiPreview.preview.difficulty).className}>
+                                {getDifficultyBadge(aiPreview.preview.difficulty).label}
+                              </Badge>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{aiPreview.preview.description}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Para: {aiPreview.studentName}
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {aiPreview.preview.days.map((day: any, dayIndex: number) => (
+                            <Card key={dayIndex}>
+                              <CardHeader className="py-3">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                    {dayIndex + 1}
+                                  </div>
+                                  <span className="truncate">{day.name}</span>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="py-2">
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="border-b">
+                                        <th className="text-left py-2 pr-4 font-medium">Exercício</th>
+                                        <th className="text-left py-2 pr-4 font-medium">Grupo</th>
+                                        <th className="text-center py-2 px-2 font-medium">Séries</th>
+                                        <th className="text-center py-2 px-2 font-medium">Reps</th>
+                                        <th className="text-center py-2 pl-2 font-medium">Descanso</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {day.exercises.map((ex: any, exIndex: number) => (
+                                        <tr key={exIndex} className="border-b last:border-0">
+                                          <td className="py-2 pr-4 font-medium">{ex.name}</td>
+                                          <td className="py-2 pr-4 text-muted-foreground">{ex.muscleGroup}</td>
+                                          <td className="py-2 px-2 text-center">{ex.sets}</td>
+                                          <td className="py-2 px-2 text-center">{ex.reps}</td>
+                                          <td className="py-2 pl-2 text-center">{ex.restSeconds}s</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
                                 </div>
-                                {day.name}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="py-2">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="min-w-[200px]">Exercício</TableHead>
-                                    <TableHead className="min-w-[100px]">Grupo</TableHead>
-                                    <TableHead className="w-[60px]">Séries</TableHead>
-                                    <TableHead className="w-[60px]">Reps</TableHead>
-                                    <TableHead className="w-[80px]">Descanso</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {day.exercises.map((ex: any, exIndex: number) => (
-                                    <TableRow key={exIndex}>
-                                      <TableCell className="font-medium">{ex.name}</TableCell>
-                                      <TableCell>{ex.muscleGroup}</TableCell>
-                                      <TableCell>{ex.sets}</TableCell>
-                                      <TableCell>{ex.reps}</TableCell>
-                                      <TableCell>{ex.restSeconds}s</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                      
-                      <div className="flex flex-col gap-3 pt-4 border-t">
-                        <p className="text-sm text-muted-foreground text-center">
-                          Revise o treino acima. Após salvar, você poderá editar os exercícios, séries e repetições.
-                        </p>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setAiPreview(null)}
-                            className="flex-1"
-                          >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Gerar Novo
-                          </Button>
-                          <Button 
-                            onClick={handleSaveAIWorkout}
-                            disabled={saveAIMutation.isPending}
-                            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600"
-                          >
-                            {saveAIMutation.isPending ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Salvando...
-                              </>
-                            ) : (
-                              <>
-                                <Check className="h-4 w-4 mr-2" />
-                                Salvar e Editar
-                              </>
-                            )}
-                          </Button>
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
                       </div>
                     </div>
-                  </ScrollArea>
+                    
+                    {/* Botões fixos no rodapé - SEMPRE VISÍVEIS */}
+                    <div className="border-t bg-background px-6 py-4 flex-shrink-0">
+                      <p className="text-sm text-muted-foreground text-center mb-3">
+                        Revise o treino acima. Após salvar, você poderá editar os exercícios.
+                      </p>
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setAiPreview(null)}
+                          className="flex-1"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Gerar Novo
+                        </Button>
+                        <Button 
+                          onClick={handleSaveAIWorkout}
+                          disabled={saveAIMutation.isPending}
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                        >
+                          {saveAIMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Salvando...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4 mr-2" />
+                              Salvar e Editar
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </DialogContent>
             </Dialog>
