@@ -1451,7 +1451,11 @@ export default function Schedule() {
                               const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
                               const dayConfig = newSession.weekDayWorkouts[dayValue] || { workoutId: '', workoutDayIndex: '', time: newSession.startTime };
                               const selectedWorkoutForDay = studentWorkouts.find(w => w.id.toString() === dayConfig.workoutId);
-                              const workoutDaysForDay = selectedWorkoutForDay?.days || [];
+                              // Parse days se for string JSON
+                              const rawDays = selectedWorkoutForDay?.days;
+                              const workoutDaysForDay = rawDays 
+                                ? (typeof rawDays === 'string' ? JSON.parse(rawDays) : rawDays) 
+                                : [];
                               
                               return (
                                 <div key={dayValue} className="p-3 bg-background rounded-lg border space-y-2">

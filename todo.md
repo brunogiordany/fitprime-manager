@@ -900,3 +900,6 @@
 
 ## Bug: Clique no Card de Sessão (v5.29)
 - [x] Corrigir clique no card de sessão para abrir popup de detalhes (não portal do aluno)
+
+## Melhoria: Seletor de Dia do Treino (v5.30)
+- [x] Adicionar seletor de dia do treino (A, B, C) no agendamento em lote por dia da semana
