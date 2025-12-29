@@ -920,3 +920,12 @@
 - [x] Corrigir botão Excluir no menu de 3 bolinhas para excluir apenas a sessão específica
 - [x] Evitar abertura de dois modais ao mesmo tempo
 - [x] Corrigir popup de horário que fecha muito rápido no modal de edição de sessão
+
+## Confirmação de Sessões pelo Aluno no Portal (v5.38)
+- [x] Endpoint para aluno confirmar sessão
+- [x] Endpoint para aluno solicitar cancelamento/reagendamento
+- [x] Interface de confirmação no Portal do Aluno
+- [x] Botões Confirmar/Cancelar nas sessões pendentes
+- [x] Modal para solicitar reagendamento com motivo
+- [x] Notificação para personal quando aluno confirma sessão
+- [x] Notificação para personal quando aluno cancela/solicita reagendamento
