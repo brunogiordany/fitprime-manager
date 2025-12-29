@@ -829,3 +829,8 @@
 - [x] Corrigir layout encavalado (Data/Hora e Duração sobrepostas) - layout responsivo grid-cols-1 sm:grid-cols-2
 - [x] Adicionar suporte PWA para instalar como app no celular - manifest.json + ícones
 - [x] Revisar todos os modais para garantir scroll no mobile
+
+
+## Bug Horário Calendário (v5.19) - URGENTE
+- [x] Corrigir exibição do horário no calendário mensal (mostrando 3h a menos) - usando formatTimeUTC helper
+- [x] Horário correto no modal de edição mas errado na visualização do calendário - corrigido

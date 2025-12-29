@@ -74,6 +74,14 @@ import { ptBR } from "date-fns/locale";
 
 type ViewMode = "day" | "week" | "month";
 
+// Helper function to format time from UTC timestamp without timezone conversion
+const formatTimeUTC = (date: Date | string): string => {
+  const d = new Date(date);
+  const hours = d.getUTCHours().toString().padStart(2, '0');
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 export default function Schedule() {
   const [, setLocation] = useLocation();
   const searchParams = useSearch();
@@ -731,9 +739,9 @@ export default function Schedule() {
                               key={session.id}
                               className={`text-xs p-1 rounded truncate cursor-pointer hover:opacity-80 text-white ${getStatusColor(session.status)}`}
                               onClick={() => openEditDialog(session)}
-                              title={`${format(new Date(session.scheduledAt), "HH:mm")} - ${session.student?.name}`}
+                              title={`${formatTimeUTC(session.scheduledAt)} - ${session.student?.name}`}
                             >
-                              <span className="font-medium">{format(new Date(session.scheduledAt), "HH:mm")}</span>
+                              <span className="font-medium">{formatTimeUTC(session.scheduledAt)}</span>
                               {' '}{session.student?.name?.split(' ')[0]}
                             </div>
                           ))}
@@ -779,7 +787,7 @@ export default function Schedule() {
                         >
                           <div className="flex items-center gap-1 font-medium">
                             <Clock className="h-3 w-3" />
-                            {format(new Date(session.scheduledAt), "HH:mm")}
+                            {formatTimeUTC(session.scheduledAt)}
                           </div>
                           <p className="truncate">{session.student?.name}</p>
                           <div className="mt-1">
@@ -829,7 +837,7 @@ export default function Schedule() {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {format(new Date(session.scheduledAt), "HH:mm")} - {session.duration || 60} min
+                              {formatTimeUTC(session.scheduledAt)} - {session.duration || 60} min
                             </span>
                             {session.location && (
                               <span>{session.location}</span>
@@ -1816,7 +1824,7 @@ export default function Schedule() {
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-sm">
-                        {format(new Date(session.scheduledAt), "HH:mm")}
+                        {formatTimeUTC(session.scheduledAt)}
                       </span>
                     </div>
                     <p className="font-medium text-sm">{session.student?.name}</p>
