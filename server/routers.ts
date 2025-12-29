@@ -294,6 +294,102 @@ export const appRouter = router({
         return { success: true };
       }),
     
+    // Pausar aluno (férias, ausência temporária)
+    pause: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        reason: z.string().optional(),
+        pausedUntil: z.string().optional(), // Data prevista para retorno
+        cancelFutureSessions: z.boolean().default(true),
+        cancelFutureCharges: z.boolean().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Atualizar status do aluno para pausado
+        await db.updateStudent(input.studentId, ctx.personal.id, {
+          status: 'paused',
+          pausedAt: new Date(),
+          pausedUntil: input.pausedUntil ? new Date(input.pausedUntil) : undefined,
+          pauseReason: input.reason,
+        });
+        
+        // Cancelar sessões futuras se solicitado
+        if (input.cancelFutureSessions) {
+          await db.cancelFutureSessionsByStudentId(input.studentId);
+        }
+        
+        // Cancelar cobranças futuras se solicitado
+        if (input.cancelFutureCharges) {
+          await db.cancelFutureChargesByStudentId(input.studentId);
+        }
+        
+        // Pausar contratos ativos
+        await db.pausePackagesByStudentId(input.studentId);
+        
+        return { success: true, message: 'Aluno pausado com sucesso' };
+      }),
+    
+    // Reativar aluno pausado
+    reactivate: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Reativar aluno
+        await db.updateStudent(input.studentId, ctx.personal.id, {
+          status: 'active',
+          pausedAt: null,
+          pausedUntil: null,
+          pauseReason: null,
+        });
+        
+        // Reativar contratos pausados
+        await db.reactivatePackagesByStudentId(input.studentId);
+        
+        return { success: true, message: 'Aluno reativado com sucesso' };
+      }),
+    
+    // Cancelar aluno definitivamente (mantém histórico)
+    cancel: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Atualizar status do aluno para inativo
+        await db.updateStudent(input.studentId, ctx.personal.id, {
+          status: 'inactive',
+          notes: student.notes 
+            ? `${student.notes}\n\n[Cancelado em ${new Date().toLocaleDateString('pt-BR')}]${input.reason ? `: ${input.reason}` : ''}`
+            : `[Cancelado em ${new Date().toLocaleDateString('pt-BR')}]${input.reason ? `: ${input.reason}` : ''}`,
+        });
+        
+        // Cancelar todas as sessões futuras
+        await db.cancelFutureSessionsByStudentId(input.studentId);
+        
+        // Cancelar todas as cobranças pendentes
+        await db.cancelFutureChargesByStudentId(input.studentId);
+        
+        // Cancelar todos os contratos ativos
+        await db.cancelPackagesByStudentId(input.studentId);
+        
+        return { success: true, message: 'Aluno cancelado. Histórico mantido.' };
+      }),
+    
     // Exportar PDF do aluno
     exportPDF: personalProcedure
       .input(z.object({ studentId: z.number() }))
@@ -395,6 +491,123 @@ export const appRouter = router({
       .input(z.object({ studentId: z.number() }))
       .query(async ({ ctx, input }) => {
         return await db.getAnamnesisHistory(input.studentId);
+      }),
+    
+    // Salvar anamnese com medidas corporais integradas
+    saveWithMeasurements: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        occupation: z.string().optional(),
+        lifestyle: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
+        sleepHours: z.number().optional(),
+        sleepQuality: z.enum(['poor', 'fair', 'good', 'excellent']).optional(),
+        stressLevel: z.enum(['low', 'moderate', 'high', 'very_high']).optional(),
+        medicalHistory: z.string().optional(),
+        injuries: z.string().optional(),
+        surgeries: z.string().optional(),
+        medications: z.string().optional(),
+        allergies: z.string().optional(),
+        mainGoal: z.enum(['weight_loss', 'muscle_gain', 'conditioning', 'health', 'rehabilitation', 'sports', 'other']).optional(),
+        secondaryGoals: z.string().optional(),
+        targetWeight: z.string().optional(),
+        motivation: z.string().optional(),
+        mealsPerDay: z.number().optional(),
+        waterIntake: z.string().optional(),
+        dietRestrictions: z.string().optional(),
+        supplements: z.string().optional(),
+        exerciseExperience: z.enum(['none', 'beginner', 'intermediate', 'advanced']).optional(),
+        previousActivities: z.string().optional(),
+        availableDays: z.string().optional(),
+        preferredTime: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
+        observations: z.string().optional(),
+        // Medidas corporais
+        measurements: z.object({
+          weight: z.string().optional(),
+          height: z.string().optional(),
+          bodyFat: z.string().optional(),
+          muscleMass: z.string().optional(),
+          neck: z.string().optional(),
+          chest: z.string().optional(),
+          waist: z.string().optional(),
+          hip: z.string().optional(),
+          rightArm: z.string().optional(),
+          leftArm: z.string().optional(),
+          rightThigh: z.string().optional(),
+          leftThigh: z.string().optional(),
+          rightCalf: z.string().optional(),
+          leftCalf: z.string().optional(),
+          notes: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { measurements, ...anamnesisData } = input;
+        const existing = await db.getAnamnesisByStudentId(input.studentId);
+        
+        let anamnesisId: number;
+        let updated = false;
+        
+        if (existing) {
+          // Save history before updating
+          await db.createAnamnesisHistory({
+            anamnesisId: existing.id,
+            studentId: input.studentId,
+            changes: JSON.stringify(anamnesisData),
+            changedBy: ctx.user.id,
+            version: existing.version,
+          });
+          
+          await db.updateAnamnesis(existing.id, anamnesisData);
+          anamnesisId = existing.id;
+          updated = true;
+        } else {
+          anamnesisId = await db.createAnamnesis({
+            ...anamnesisData,
+            personalId: ctx.personal.id,
+          });
+        }
+        
+        // Criar registro de medidas se houver dados
+        if (measurements && Object.values(measurements).some(v => v)) {
+          const hasMeasurementData = measurements.weight || measurements.height || 
+            measurements.bodyFat || measurements.chest || measurements.waist || 
+            measurements.hip || measurements.neck;
+          
+          if (hasMeasurementData) {
+            // Calcular IMC se tiver peso e altura
+            let bmi: string | undefined;
+            if (measurements.weight && measurements.height) {
+              const w = parseFloat(measurements.weight);
+              const h = parseFloat(measurements.height) / 100;
+              if (w > 0 && h > 0) {
+                bmi = (w / (h * h)).toFixed(1);
+              }
+            }
+            
+            await db.createMeasurement({
+              studentId: input.studentId,
+              personalId: ctx.personal.id,
+              measureDate: new Date(),
+              weight: measurements.weight,
+              height: measurements.height,
+              bodyFat: measurements.bodyFat,
+              muscleMass: measurements.muscleMass,
+              neck: measurements.neck,
+              chest: measurements.chest,
+              waist: measurements.waist,
+              hip: measurements.hip,
+              rightArm: measurements.rightArm,
+              leftArm: measurements.leftArm,
+              rightThigh: measurements.rightThigh,
+              leftThigh: measurements.leftThigh,
+              rightCalf: measurements.rightCalf,
+              leftCalf: measurements.leftCalf,
+              notes: measurements.notes,
+              bmi,
+            });
+          }
+        }
+        
+        return { id: anamnesisId, updated };
       }),
   }),
 

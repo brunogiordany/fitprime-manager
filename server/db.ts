@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, like, sql, or, isNull, not } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, not } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users, User,
@@ -655,6 +655,81 @@ export async function updatePackage(id: number, data: Partial<InsertPackage>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(packages).set(data).where(eq(packages.id, id));
+}
+
+// Pausar todos os pacotes ativos de um aluno
+export async function pausePackagesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(packages)
+    .set({ status: 'paused' })
+    .where(and(
+      eq(packages.studentId, studentId),
+      eq(packages.status, 'active')
+    ));
+}
+
+// Reativar pacotes pausados de um aluno
+export async function reactivatePackagesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(packages)
+    .set({ status: 'active' })
+    .where(and(
+      eq(packages.studentId, studentId),
+      eq(packages.status, 'paused')
+    ));
+}
+
+// Cancelar todos os pacotes de um aluno
+export async function cancelPackagesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(packages)
+    .set({ status: 'cancelled' })
+    .where(and(
+      eq(packages.studentId, studentId),
+      or(
+        eq(packages.status, 'active'),
+        eq(packages.status, 'paused')
+      )
+    ));
+}
+
+// Cancelar sessões futuras de um aluno
+export async function cancelFutureSessionsByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const now = new Date();
+  await db.update(sessions)
+    .set({ status: 'cancelled' })
+    .where(and(
+      eq(sessions.studentId, studentId),
+      gt(sessions.scheduledAt, now),
+      or(
+        eq(sessions.status, 'scheduled'),
+        eq(sessions.status, 'confirmed')
+      )
+    ));
+}
+
+// Cancelar cobranças futuras/pendentes de um aluno
+export async function cancelFutureChargesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const now = new Date();
+  await db.update(charges)
+    .set({ status: 'cancelled' })
+    .where(and(
+      eq(charges.studentId, studentId),
+      or(
+        eq(charges.status, 'pending'),
+        and(
+          eq(charges.status, 'overdue'),
+          gt(charges.dueDate, now)
+        )
+      )
+    ));
 }
 
 // ==================== CHARGE FUNCTIONS ====================
@@ -1502,38 +1577,6 @@ export async function emptyTrash(personalId: number) {
   // Excluir sessões permanentemente
   await db.delete(sessions)
     .where(and(eq(sessions.personalId, personalId), not(isNull(sessions.deletedAt))));
-}
-
-// ==================== CONTRACT MANAGEMENT FUNCTIONS ====================
-
-// Cancelar sessões futuras de um aluno (soft delete)
-export async function cancelFutureSessionsByStudentId(studentId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const now = new Date();
-  await db.update(sessions)
-    .set({ status: 'cancelled' })
-    .where(and(
-      eq(sessions.studentId, studentId),
-      gte(sessions.scheduledAt, now),
-      isNull(sessions.deletedAt)
-    ));
-}
-
-// Cancelar cobranças futuras de um aluno
-export async function cancelFutureChargesByStudentId(studentId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const now = new Date();
-  await db.update(charges)
-    .set({ status: 'cancelled' })
-    .where(and(
-      eq(charges.studentId, studentId),
-      gte(charges.dueDate, now),
-      eq(charges.status, 'pending')
-    ));
 }
 
 // ==================== PENDING CHANGES FUNCTIONS ====================

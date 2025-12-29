@@ -23,6 +23,9 @@ import {
   Target,
   AlertTriangle,
   Utensils,
+  Ruler,
+  Scale,
+  Calculator,
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
@@ -39,14 +42,12 @@ export default function Anamnesis() {
     lifestyle: "",
     sleepHours: "",
     stressLevel: "",
-
     
     // Objetivos
     mainGoal: "",
     secondaryGoals: "",
     targetWeight: "",
     exerciseExperience: "",
-
     
     // Saúde
     medicalHistory: "",
@@ -63,6 +64,23 @@ export default function Anamnesis() {
     
     // Observações
     observations: "",
+    
+    // Medidas Corporais (novo)
+    weight: "",
+    height: "",
+    bodyFat: "",
+    muscleMass: "",
+    neck: "",
+    chest: "",
+    waist: "",
+    hip: "",
+    rightArm: "",
+    leftArm: "",
+    rightThigh: "",
+    leftThigh: "",
+    rightCalf: "",
+    leftCalf: "",
+    measureNotes: "",
   });
 
   const utils = trpc.useUtils();
@@ -77,10 +95,17 @@ export default function Anamnesis() {
     { enabled: studentId > 0 }
   );
 
-  const saveMutation = trpc.anamnesis.save.useMutation({
+  // Buscar última medida para preencher campos se existir
+  const { data: measurements } = trpc.measurements.list.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+
+  const saveMutation = trpc.anamnesis.saveWithMeasurements.useMutation({
     onSuccess: () => {
-      toast.success("Anamnese salva com sucesso!");
+      toast.success("Anamnese e medidas salvas com sucesso!");
       utils.anamnesis.get.invalidate({ studentId });
+      utils.measurements.list.invalidate({ studentId });
       setLocation(`/alunos/${studentId}`);
     },
     onError: (error: any) => {
@@ -88,19 +113,88 @@ export default function Anamnesis() {
     },
   });
 
+  // Cálculos automáticos
+  const calculateIMC = (weight: string, height: string): string => {
+    const w = parseFloat(weight);
+    const h = parseFloat(height) / 100;
+    if (w > 0 && h > 0) {
+      return (w / (h * h)).toFixed(1);
+    }
+    return '';
+  };
+
+  const getIMCClassification = (imc: string): { label: string; color: string } => {
+    const value = parseFloat(imc);
+    if (!value) return { label: '', color: '' };
+    if (value < 18.5) return { label: 'Abaixo do peso', color: 'text-blue-500' };
+    if (value < 25) return { label: 'Peso normal', color: 'text-green-500' };
+    if (value < 30) return { label: 'Sobrepeso', color: 'text-yellow-500' };
+    if (value < 35) return { label: 'Obesidade I', color: 'text-orange-500' };
+    if (value < 40) return { label: 'Obesidade II', color: 'text-red-500' };
+    return { label: 'Obesidade III', color: 'text-red-700' };
+  };
+
+  // Fórmula da Marinha dos EUA para BF estimado
+  const calculateEstimatedBF = (gender: string, waist: string, neck: string, hip: string, height: string): string => {
+    const w = parseFloat(waist);
+    const n = parseFloat(neck);
+    const h = parseFloat(height);
+    const hp = parseFloat(hip);
+    
+    if (gender === 'male' && w > 0 && n > 0 && h > 0) {
+      const bf = 495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450;
+      return Math.max(0, bf).toFixed(1);
+    } else if (gender === 'female' && w > 0 && n > 0 && h > 0 && hp > 0) {
+      const bf = 495 / (1.29579 - 0.35004 * Math.log10(w + hp - n) + 0.22100 * Math.log10(h)) - 450;
+      return Math.max(0, bf).toFixed(1);
+    }
+    return '';
+  };
+
+  const calculateFatMass = (weight: string, bf: string): string => {
+    const w = parseFloat(weight);
+    const b = parseFloat(bf);
+    if (w > 0 && b > 0) {
+      return ((w * b) / 100).toFixed(1);
+    }
+    return '';
+  };
+
+  const calculateLeanMass = (weight: string, bf: string): string => {
+    const w = parseFloat(weight);
+    const b = parseFloat(bf);
+    if (w > 0 && b > 0) {
+      return (w - (w * b) / 100).toFixed(1);
+    }
+    return '';
+  };
+
+  // Valores calculados
+  const calculatedIMC = calculateIMC(formData.weight, formData.height);
+  const imcClassification = getIMCClassification(calculatedIMC);
+  const calculatedBF = calculateEstimatedBF(
+    student?.gender || 'male',
+    formData.waist,
+    formData.neck,
+    formData.hip,
+    formData.height
+  );
+  const usedBF = formData.bodyFat || calculatedBF;
+  const calculatedFatMass = calculateFatMass(formData.weight, usedBF);
+  const calculatedLeanMass = calculateLeanMass(formData.weight, usedBF);
+
   useEffect(() => {
     if (anamnesis) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         occupation: anamnesis.occupation || "",
         lifestyle: anamnesis.lifestyle || "",
         sleepHours: anamnesis.sleepHours?.toString() || "",
         stressLevel: anamnesis.stressLevel || "",
-
         mainGoal: anamnesis.mainGoal || "",
         secondaryGoals: anamnesis.secondaryGoals || "",
         targetWeight: anamnesis.targetWeight?.toString() || "",
         exerciseExperience: anamnesis.exerciseExperience || "",
-
         medicalHistory: anamnesis.medicalHistory || "",
         medications: anamnesis.medications || "",
         injuries: anamnesis.injuries || "",
@@ -111,13 +205,38 @@ export default function Anamnesis() {
         waterIntake: anamnesis.waterIntake?.toString() || "",
         supplements: anamnesis.supplements || "",
         observations: anamnesis.observations || "",
-      });
+      }));
     }
   }, [anamnesis]);
+
+  // Preencher medidas com a última medida se existir
+  useEffect(() => {
+    if (measurements && measurements.length > 0) {
+      const lastMeasure = measurements[0];
+      setFormData(prev => ({
+        ...prev,
+        weight: lastMeasure.weight || "",
+        height: lastMeasure.height || "",
+        bodyFat: lastMeasure.bodyFat || "",
+        muscleMass: lastMeasure.muscleMass || "",
+        neck: lastMeasure.neck || "",
+        chest: lastMeasure.chest || "",
+        waist: lastMeasure.waist || "",
+        hip: lastMeasure.hip || "",
+        rightArm: lastMeasure.rightArm || "",
+        leftArm: lastMeasure.leftArm || "",
+        rightThigh: lastMeasure.rightThigh || "",
+        leftThigh: lastMeasure.leftThigh || "",
+        rightCalf: lastMeasure.rightCalf || "",
+        leftCalf: lastMeasure.leftCalf || "",
+      }));
+    }
+  }, [measurements]);
 
   const handleSave = () => {
     const data = {
       studentId,
+      // Anamnese
       occupation: formData.occupation || undefined,
       lifestyle: (formData.lifestyle || undefined) as "sedentary" | "light" | "moderate" | "active" | "very_active" | undefined,
       sleepHours: formData.sleepHours ? parseInt(formData.sleepHours) : undefined,
@@ -136,6 +255,24 @@ export default function Anamnesis() {
       waterIntake: formData.waterIntake || undefined,
       supplements: formData.supplements || undefined,
       observations: formData.observations || undefined,
+      // Medidas corporais
+      measurements: {
+        weight: formData.weight || undefined,
+        height: formData.height || undefined,
+        bodyFat: formData.bodyFat || undefined,
+        muscleMass: formData.muscleMass || undefined,
+        neck: formData.neck || undefined,
+        chest: formData.chest || undefined,
+        waist: formData.waist || undefined,
+        hip: formData.hip || undefined,
+        rightArm: formData.rightArm || undefined,
+        leftArm: formData.leftArm || undefined,
+        rightThigh: formData.rightThigh || undefined,
+        leftThigh: formData.leftThigh || undefined,
+        rightCalf: formData.rightCalf || undefined,
+        leftCalf: formData.leftCalf || undefined,
+        notes: formData.measureNotes || undefined,
+      },
     };
 
     saveMutation.mutate(data);
@@ -193,8 +330,12 @@ export default function Anamnesis() {
         </div>
 
         {/* Form Tabs */}
-        <Tabs defaultValue="lifestyle" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="measurements" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="measurements" className="gap-2">
+              <Scale className="h-4 w-4 hidden sm:block" />
+              Medidas
+            </TabsTrigger>
             <TabsTrigger value="lifestyle" className="gap-2">
               <User className="h-4 w-4 hidden sm:block" />
               Estilo de Vida
@@ -216,6 +357,246 @@ export default function Anamnesis() {
               Observações
             </TabsTrigger>
           </TabsList>
+
+          {/* Medidas Corporais (Nova aba) */}
+          <TabsContent value="measurements">
+            <div className="space-y-6">
+              {/* Card de Composição Corporal */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Scale className="h-5 w-5" />
+                    Composição Corporal
+                  </CardTitle>
+                  <CardDescription>
+                    Registre as medidas básicas do aluno. O BF estimado é calculado automaticamente.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Peso (kg)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 75.5"
+                        value={formData.weight}
+                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Altura (cm)</Label>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 175"
+                        value={formData.height}
+                        onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>% Gordura (manual)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 18.5"
+                        value={formData.bodyFat}
+                        onChange={(e) => setFormData({ ...formData, bodyFat: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Massa Muscular (kg)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 35.0"
+                        value={formData.muscleMass}
+                        onChange={(e) => setFormData({ ...formData, muscleMass: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Cálculos Automáticos */}
+                  {(calculatedIMC || calculatedBF) && (
+                    <Card className="bg-emerald-50 border-emerald-200">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Calculator className="h-4 w-4" />
+                          Cálculos Automáticos
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          {calculatedIMC && (
+                            <div>
+                              <p className={`text-2xl font-bold ${imcClassification.color}`}>{calculatedIMC}</p>
+                              <p className="text-xs text-muted-foreground">IMC</p>
+                              <p className={`text-xs ${imcClassification.color}`}>{imcClassification.label}</p>
+                            </div>
+                          )}
+                          {calculatedBF && !formData.bodyFat && (
+                            <div>
+                              <p className="text-2xl font-bold text-blue-500">{calculatedBF}%</p>
+                              <p className="text-xs text-muted-foreground">BF Estimado</p>
+                              <p className="text-xs text-blue-500">Fórmula Marinha EUA</p>
+                            </div>
+                          )}
+                          {calculatedFatMass && (
+                            <div>
+                              <p className="text-2xl font-bold text-orange-500">{calculatedFatMass}</p>
+                              <p className="text-xs text-muted-foreground">kg</p>
+                              <p className="text-xs text-orange-500">Massa Gorda Est.</p>
+                            </div>
+                          )}
+                          {calculatedLeanMass && (
+                            <div>
+                              <p className="text-2xl font-bold text-green-500">{calculatedLeanMass}</p>
+                              <p className="text-xs text-muted-foreground">kg</p>
+                              <p className="text-xs text-green-500">Massa Magra Est.</p>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-3 text-center">
+                          * BF estimado requer: altura, pescoço, cintura{student?.gender === 'female' ? ', quadril' : ''}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Card de Circunferências */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Ruler className="h-5 w-5" />
+                    Circunferências (cm)
+                  </CardTitle>
+                  <CardDescription>
+                    Medidas de circunferência corporal para acompanhamento da evolução
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Pescoço</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 38.5"
+                        value={formData.neck}
+                        onChange={(e) => setFormData({ ...formData, neck: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Peito</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 100.0"
+                        value={formData.chest}
+                        onChange={(e) => setFormData({ ...formData, chest: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cintura</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 85.0"
+                        value={formData.waist}
+                        onChange={(e) => setFormData({ ...formData, waist: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Quadril</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 95.0"
+                        value={formData.hip}
+                        onChange={(e) => setFormData({ ...formData, hip: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Braço Direito</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 35.0"
+                        value={formData.rightArm}
+                        onChange={(e) => setFormData({ ...formData, rightArm: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Braço Esquerdo</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 34.5"
+                        value={formData.leftArm}
+                        onChange={(e) => setFormData({ ...formData, leftArm: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Coxa Direita</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 55.0"
+                        value={formData.rightThigh}
+                        onChange={(e) => setFormData({ ...formData, rightThigh: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Coxa Esquerda</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 54.5"
+                        value={formData.leftThigh}
+                        onChange={(e) => setFormData({ ...formData, leftThigh: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Panturrilha Direita</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 38.0"
+                        value={formData.rightCalf}
+                        onChange={(e) => setFormData({ ...formData, rightCalf: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Panturrilha Esquerda</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 37.5"
+                        value={formData.leftCalf}
+                        onChange={(e) => setFormData({ ...formData, leftCalf: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Observações sobre as medidas</Label>
+                    <Textarea
+                      placeholder="Anotações sobre a medição..."
+                      value={formData.measureNotes}
+                      onChange={(e) => setFormData({ ...formData, measureNotes: e.target.value })}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           {/* Estilo de Vida */}
           <TabsContent value="lifestyle">
@@ -282,8 +663,6 @@ export default function Anamnesis() {
                     </Select>
                   </div>
                 </div>
-
-
               </CardContent>
             </Card>
           </TabsContent>
@@ -416,8 +795,6 @@ export default function Anamnesis() {
                     onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
                   />
                 </div>
-
-
               </CardContent>
             </Card>
           </TabsContent>
@@ -499,7 +876,7 @@ export default function Anamnesis() {
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={isSaving} size="lg">
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Salvando..." : "Salvar Anamnese"}
+            {isSaving ? "Salvando..." : "Salvar Anamnese e Medidas"}
           </Button>
         </div>
       </div>

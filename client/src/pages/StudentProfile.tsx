@@ -254,6 +254,44 @@ export default function StudentProfile() {
     },
   });
 
+  // Mutations para gerenciamento do aluno
+  const pauseStudentMutation = trpc.students.pause.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.students.get.invalidate({ id: studentId });
+      utils.sessions.listByStudent.invalidate({ studentId });
+      utils.charges.listByStudent.invalidate({ studentId });
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao pausar aluno: " + error.message);
+    },
+  });
+
+  const reactivateStudentMutation = trpc.students.reactivate.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.students.get.invalidate({ id: studentId });
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao reativar aluno: " + error.message);
+    },
+  });
+
+  const cancelStudentMutation = trpc.students.cancel.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      utils.students.get.invalidate({ id: studentId });
+      utils.sessions.listByStudent.invalidate({ studentId });
+      utils.charges.listByStudent.invalidate({ studentId });
+      utils.packages.listByStudent.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar aluno: " + error.message);
+    },
+  });
+
   const exportPDFMutation = trpc.students.exportPDF.useMutation({
     onSuccess: (data) => {
       // Criar blob e fazer download
@@ -448,7 +486,21 @@ export default function StudentProfile() {
                 {student.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">{student.name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold tracking-tight">{student.name}</h1>
+                  {student.status === 'paused' && (
+                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                      <Pause className="h-3 w-3 mr-1" />
+                      Pausado
+                    </Badge>
+                  )}
+                  {student.status === 'inactive' && (
+                    <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Cancelado
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   {student.phone && (
                     <span className="flex items-center gap-1 text-sm">
@@ -522,6 +574,66 @@ export default function StudentProfile() {
                     <><Download className="h-4 w-4 mr-2" /> Exportar PDF</>
                   )}
                 </Button>
+                
+                {/* Menu de ações do aluno */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {student.status === 'paused' ? (
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          if (confirm('Reativar este aluno? Os contratos pausados serão reativados.')) {
+                            reactivateStudentMutation.mutate({ studentId });
+                          }
+                        }}
+                        disabled={reactivateStudentMutation.isPending}
+                      >
+                        <Play className="h-4 w-4 mr-2 text-green-600" />
+                        Reativar Aluno
+                      </DropdownMenuItem>
+                    ) : student.status === 'active' ? (
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          const reason = prompt('Motivo da pausa (opcional):');
+                          const pausedUntil = prompt('Data prevista de retorno (opcional, formato: AAAA-MM-DD):');
+                          if (confirm('Pausar este aluno? Sessões e cobranças futuras serão canceladas.')) {
+                            pauseStudentMutation.mutate({ 
+                              studentId, 
+                              reason: reason || undefined,
+                              pausedUntil: pausedUntil || undefined,
+                            });
+                          }
+                        }}
+                        disabled={pauseStudentMutation.isPending}
+                      >
+                        <Pause className="h-4 w-4 mr-2 text-yellow-600" />
+                        Pausar Aluno (Férias)
+                      </DropdownMenuItem>
+                    ) : null}
+                    
+                    <DropdownMenuSeparator />
+                    
+                    {student.status !== 'inactive' && (
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          const reason = prompt('Motivo do cancelamento (opcional):');
+                          if (confirm('ATENÇÃO: Cancelar este aluno definitivamente? Todos os contratos, sessões e cobranças futuras serão cancelados. O histórico será mantido.')) {
+                            cancelStudentMutation.mutate({ studentId, reason: reason || undefined });
+                          }
+                        }}
+                        disabled={cancelStudentMutation.isPending}
+                        className="text-red-600"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Cancelar Aluno
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
@@ -1443,7 +1555,10 @@ export default function StudentProfile() {
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3">Contratos</h3>
                     <div className="space-y-3">
-                      {studentPackages.map((pkg: any) => (
+                      {studentPackages.map((pkgData: any) => {
+                        const pkg = pkgData.package;
+                        const plan = pkgData.plan;
+                        return (
                         <div key={pkg.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${
@@ -1454,7 +1569,7 @@ export default function StudentProfile() {
                               'bg-blue-500'
                             }`} />
                             <div>
-                              <p className="font-medium">{pkg.plan?.name || 'Plano'}</p>
+                              <p className="font-medium">{plan?.name || 'Plano'}</p>
                               <p className="text-sm text-muted-foreground">
                                 {pkg.startDate && !isNaN(new Date(pkg.startDate).getTime()) 
                                   ? format(new Date(pkg.startDate), "dd/MM/yyyy") 
@@ -1515,7 +1630,8 @@ export default function StudentProfile() {
                             </DropdownMenu>
                           </div>
                         </div>
-                      ))}
+                      );
+                      })}
                     </div>
                   </div>
                 )}

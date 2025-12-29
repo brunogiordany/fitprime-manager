@@ -22,7 +22,7 @@
   - [x] Agenda/Sessões
   - [x] Pagamentos
   - [x] Materiais
-  - [ ] Exportar PDF
+  - [x] Exportar PDF
 
 ## Sistema de Anamnese
 - [x] Formulário editável completo
@@ -488,3 +488,23 @@
 - [ ] Interface no Portal do Aluno para pausar mensagens
 - [ ] Interface no perfil do aluno para personal gerenciar pausa
 - [ ] Lógica para verificar pausa antes de enviar mensagens
+
+## Integração Anamnese + Medidas (v4.2)
+- [x] Adicionar campos de medidas corporais na aba Anamnese
+  - [x] Peso (kg)
+  - [x] Altura (cm)
+  - [x] % Gordura
+  - [x] Massa Muscular (kg)
+  - [x] Circunferências (pescoço, peito, cintura, quadril, braços, coxas, panturrilhas)
+- [x] Criar primeiro registro de medidas automaticamente ao salvar anamnese
+- [x] Permitir aluno e personal adicionar novas medidas para acompanhamento (via aba Evolução)
+
+## Bugs e Melhorias (v4.3)
+- [x] Corrigir erro ao cancelar contrato (Invalid input: expected number)
+- [x] Sistema de pausa de aluno (férias/ausência temporária)
+  - [x] Cancelar sessões futuras durante a pausa
+  - [x] Cancelar cobranças futuras durante a pausa
+  - [x] Manter contrato ativo
+- [x] Cancelamento definitivo do aluno
+  - [x] Cancelar contrato, sessões e cobranças
+  - [x] Manter histórico (anamnese, medidas, evolução)

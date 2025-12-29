@@ -1,18 +1,18 @@
 import { jsPDF } from 'jspdf';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface StudentData {
   name: string;
   email: string | null;
   phone: string | null;
-  birthDate: Date | null;
+  birthDate: Date | string | null;
   gender: string | null;
   address: string | null;
   emergencyContact: string | null;
   emergencyPhone: string | null;
   notes: string | null;
-  createdAt: Date;
+  createdAt: Date | string;
 }
 
 interface AnamnesisData {
@@ -27,7 +27,7 @@ interface AnamnesisData {
 }
 
 interface MeasurementData {
-  date: Date;
+  date: Date | string;
   weight: string | null;
   height: string | null;
   bodyFat: string | null;
@@ -48,6 +48,39 @@ interface WorkoutData {
   type: string | null;
   difficulty: string | null;
   exercises: any[];
+}
+
+// Função auxiliar para formatar data de forma segura
+function safeFormatDate(dateValue: Date | string | null | undefined, formatStr: string = 'dd/MM/yyyy'): string | null {
+  if (!dateValue) return null;
+  
+  try {
+    let date: Date;
+    
+    if (typeof dateValue === 'string') {
+      // Tenta parsear a string de data
+      date = parseISO(dateValue);
+      
+      // Se não for válido, tenta criar Date diretamente
+      if (!isValid(date)) {
+        date = new Date(dateValue);
+      }
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else {
+      return null;
+    }
+    
+    // Verifica se a data é válida
+    if (!isValid(date)) {
+      return null;
+    }
+    
+    return format(date, formatStr, { locale: ptBR });
+  } catch (error) {
+    console.error('Erro ao formatar data:', error, dateValue);
+    return null;
+  }
 }
 
 export async function generateStudentPDF(
@@ -112,7 +145,8 @@ export async function generateStudentPDF(
   yPos += 10;
   
   doc.setFontSize(8);
-  doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth - margin - 50, yPos);
+  const currentDate = safeFormatDate(new Date(), "dd/MM/yyyy 'às' HH:mm") || 'Data não disponível';
+  doc.text(`Gerado em: ${currentDate}`, pageWidth - margin - 50, yPos);
   yPos += 15;
 
   // ==================== DADOS PESSOAIS ====================
@@ -128,13 +162,13 @@ export async function generateStudentPDF(
   
   addField('Email', student.email);
   addField('Telefone', student.phone);
-  addField('Data de Nascimento', student.birthDate ? format(new Date(student.birthDate), 'dd/MM/yyyy') : null);
+  addField('Data de Nascimento', safeFormatDate(student.birthDate));
   addField('Gênero', student.gender === 'male' ? 'Masculino' : student.gender === 'female' ? 'Feminino' : student.gender);
   addField('Endereço', student.address);
   addField('Contato de Emergência', student.emergencyContact);
   addField('Telefone de Emergência', student.emergencyPhone);
   addField('Observações', student.notes);
-  addField('Cliente desde', format(new Date(student.createdAt), 'dd/MM/yyyy'));
+  addField('Cliente desde', safeFormatDate(student.createdAt));
   yPos += 5;
 
   // ==================== ANAMNESE ====================
@@ -158,7 +192,8 @@ export async function generateStudentPDF(
     // Última medida
     const lastMeasurement = measurements[0];
     doc.setFont('helvetica', 'bold');
-    doc.text(`Última avaliação: ${format(new Date(lastMeasurement.date), 'dd/MM/yyyy')}`, margin, yPos);
+    const measurementDate = safeFormatDate(lastMeasurement.date) || 'Data não disponível';
+    doc.text(`Última avaliação: ${measurementDate}`, margin, yPos);
     yPos += 8;
     doc.setFont('helvetica', 'normal');
     

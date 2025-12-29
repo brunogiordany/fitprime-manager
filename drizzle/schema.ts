@@ -54,7 +54,10 @@ export const students = mysqlTable("students", {
   emergencyContact: varchar("emergencyContact", { length: 255 }),
   emergencyPhone: varchar("emergencyPhone", { length: 20 }),
   notes: text("notes"),
-  status: mysqlEnum("status", ["active", "inactive", "pending"]).default("active").notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "pending", "paused"]).default("active").notNull(),
+  pausedAt: timestamp("pausedAt"), // Data em que o aluno foi pausado
+  pausedUntil: timestamp("pausedUntil"), // Data prevista para retorno (opcional)
+  pauseReason: varchar("pauseReason", { length: 255 }), // Motivo da pausa (férias, viagem, etc)
   whatsappOptIn: boolean("whatsappOptIn").default(true),
   avatarUrl: varchar("avatarUrl", { length: 500 }),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }), // Stripe Customer ID
