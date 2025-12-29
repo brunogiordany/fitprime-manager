@@ -69,6 +69,13 @@ export default function Anamnesis() {
     // Ênfases Musculares
     muscleEmphasis: [] as string[],
     
+    // Treino
+    weeklyFrequency: "",
+    sessionDuration: "",
+    trainingLocation: "",
+    availableEquipment: [] as string[],
+    preferredTime: "",
+    
     // Observações
     observations: "",
     
@@ -214,6 +221,11 @@ export default function Anamnesis() {
         trainingRestrictions: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
         restrictionNotes: anamnesis.restrictionNotes || "",
         muscleEmphasis: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
+        weeklyFrequency: (anamnesis as any).weeklyFrequency?.toString() || "",
+        sessionDuration: (anamnesis as any).sessionDuration?.toString() || "",
+        trainingLocation: (anamnesis as any).trainingLocation || "",
+        availableEquipment: (anamnesis as any).availableEquipment ? JSON.parse((anamnesis as any).availableEquipment) : [],
+        preferredTime: (anamnesis as any).preferredTime || "",
         observations: anamnesis.observations || "",
       }));
     }
@@ -267,6 +279,11 @@ export default function Anamnesis() {
       trainingRestrictions: formData.trainingRestrictions?.length > 0 ? JSON.stringify(formData.trainingRestrictions) : undefined,
       restrictionNotes: formData.restrictionNotes || undefined,
       muscleEmphasis: formData.muscleEmphasis?.length > 0 ? JSON.stringify(formData.muscleEmphasis) : undefined,
+      weeklyFrequency: formData.weeklyFrequency ? parseInt(formData.weeklyFrequency) : undefined,
+      sessionDuration: formData.sessionDuration ? parseInt(formData.sessionDuration) : undefined,
+      trainingLocation: (formData.trainingLocation || undefined) as "full_gym" | "home_gym" | "home_basic" | "outdoor" | "studio" | undefined,
+      availableEquipment: formData.availableEquipment?.length > 0 ? JSON.stringify(formData.availableEquipment) : undefined,
+      preferredTime: (formData.preferredTime || undefined) as "morning" | "afternoon" | "evening" | "flexible" | undefined,
       observations: formData.observations || undefined,
       // Medidas corporais
       measurements: {
@@ -928,6 +945,143 @@ export default function Anamnesis() {
                         <span className="text-sm font-medium">{muscle.label}</span>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Preferências de Treino */}
+                <div className="pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                    Preferências de Treino
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Defina a frequência e preferências de treino do aluno. A IA usará essas informações para gerar treinos personalizados.
+                  </p>
+                  
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Frequência Semanal *</Label>
+                      <Select
+                        value={formData.weeklyFrequency}
+                        onValueChange={(value) => setFormData({ ...formData, weeklyFrequency: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Quantas vezes por semana?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1x por semana</SelectItem>
+                          <SelectItem value="2">2x por semana</SelectItem>
+                          <SelectItem value="3">3x por semana</SelectItem>
+                          <SelectItem value="4">4x por semana</SelectItem>
+                          <SelectItem value="5">5x por semana</SelectItem>
+                          <SelectItem value="6">6x por semana</SelectItem>
+                          <SelectItem value="7">7x por semana (todos os dias)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Duração da Sessão</Label>
+                      <Select
+                        value={formData.sessionDuration}
+                        onValueChange={(value) => setFormData({ ...formData, sessionDuration: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Duração preferida" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="30">30 minutos</SelectItem>
+                          <SelectItem value="45">45 minutos</SelectItem>
+                          <SelectItem value="60">60 minutos (1 hora)</SelectItem>
+                          <SelectItem value="75">75 minutos</SelectItem>
+                          <SelectItem value="90">90 minutos (1h30)</SelectItem>
+                          <SelectItem value="120">120 minutos (2 horas)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Horário Preferido</Label>
+                      <Select
+                        value={formData.preferredTime}
+                        onValueChange={(value) => setFormData({ ...formData, preferredTime: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Quando prefere treinar?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="morning">Manhã</SelectItem>
+                          <SelectItem value="afternoon">Tarde</SelectItem>
+                          <SelectItem value="evening">Noite</SelectItem>
+                          <SelectItem value="flexible">Flexível</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Local de Treino</Label>
+                      <Select
+                        value={formData.trainingLocation}
+                        onValueChange={(value) => setFormData({ ...formData, trainingLocation: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Onde vai treinar?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="full_gym">Academia Completa</SelectItem>
+                          <SelectItem value="home_gym">Home Gym (equipada)</SelectItem>
+                          <SelectItem value="home_basic">Casa (equipamentos básicos)</SelectItem>
+                          <SelectItem value="outdoor">Ao Ar Livre</SelectItem>
+                          <SelectItem value="studio">Estúdio Personal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Label className="mb-2 block">Equipamentos Disponíveis</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {[
+                        { id: "barbell", label: "Barra" },
+                        { id: "dumbbells", label: "Halteres" },
+                        { id: "kettlebell", label: "Kettlebell" },
+                        { id: "cables", label: "Cabos/Polia" },
+                        { id: "machines", label: "Máquinas" },
+                        { id: "bench", label: "Banco" },
+                        { id: "squat_rack", label: "Rack/Gaiola" },
+                        { id: "pull_up_bar", label: "Barra Fixa" },
+                        { id: "resistance_bands", label: "Elásticos" },
+                        { id: "trx", label: "TRX/Suspensão" },
+                        { id: "cardio", label: "Cardio (esteira/bike)" },
+                        { id: "bodyweight", label: "Peso Corporal" },
+                      ].map((equip) => (
+                        <button
+                          key={equip.id}
+                          type="button"
+                          onClick={() => {
+                            const current = formData.availableEquipment || [];
+                            if (current.includes(equip.id)) {
+                              setFormData({
+                                ...formData,
+                                availableEquipment: current.filter(e => e !== equip.id)
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                availableEquipment: [...current, equip.id]
+                              });
+                            }
+                          }}
+                          className={`p-2 rounded-lg border text-sm transition-all ${
+                            (formData.availableEquipment || []).includes(equip.id)
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {equip.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>

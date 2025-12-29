@@ -103,6 +103,8 @@ export default function Schedule() {
     recurrenceFrequency: "none",
     workoutId: "",
     workoutDayIndex: "",
+    weekDays: [] as number[], // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+    startTime: "08:00", // Horário padrão para sessões em cascata
   });
 
   const [newStudent, setNewStudent] = useState({
@@ -266,6 +268,8 @@ export default function Schedule() {
       recurrenceFrequency: "none",
       workoutId: "",
       workoutDayIndex: "",
+      weekDays: [],
+      startTime: "08:00",
     });
     setDialogStep("select");
     setStudentSearch("");
@@ -277,55 +281,76 @@ export default function Schedule() {
       return;
     }
     
-    // Criar sessão principal
-    createSessionMutation.mutate({
-      studentId: parseInt(newSession.studentId),
-      scheduledAt: newSession.scheduledAt,
-      duration: parseInt(newSession.duration),
-      type: newSession.type,
-      location: newSession.location || undefined,
-      notes: newSession.notes || undefined,
-      workoutId: newSession.workoutId ? parseInt(newSession.workoutId) : undefined,
-      workoutDayIndex: newSession.workoutDayIndex !== '' ? parseInt(newSession.workoutDayIndex) : undefined,
-    }, {
-      onSuccess: () => {
-        // Criar sessões recorrentes se selecionado
-        if (newSession.recurrenceFrequency !== 'none') {
-          const baseDate = new Date(newSession.scheduledAt.replace('T', ' '));
-          let weeksToCreate = 0;
-          
-          switch (newSession.recurrenceFrequency) {
-            case '1week': weeksToCreate = 1; break;
-            case '2weeks': weeksToCreate = 2; break;
-            case '3weeks': weeksToCreate = 3; break;
-            case '1month': weeksToCreate = 4; break;
-            case '2months': weeksToCreate = 8; break;
-            case '3months': weeksToCreate = 12; break;
-            case '4months': weeksToCreate = 16; break;
-            case '5months': weeksToCreate = 20; break;
-            case '6months': weeksToCreate = 24; break;
-            case '1year': weeksToCreate = 52; break;
-          }
-          
-          // Criar sessões para cada semana
-          for (let i = 1; i <= weeksToCreate; i++) {
-            const newDate = addWeeks(baseDate, i);
-            createSessionMutation.mutate({
-              studentId: parseInt(newSession.studentId),
-              scheduledAt: format(newDate, "yyyy-MM-dd'T'HH:mm"),
-              duration: parseInt(newSession.duration),
-              type: newSession.type,
-              location: newSession.location || undefined,
-              notes: newSession.notes || undefined,
-              workoutId: newSession.workoutId ? parseInt(newSession.workoutId) : undefined,
-              workoutDayIndex: newSession.workoutDayIndex !== '' ? parseInt(newSession.workoutDayIndex) : undefined,
-            });
-          }
-          
-          toast.success(`Criadas ${weeksToCreate + 1} sessões recorrentes`);
-        }
+    // Se tem recorrência com dias da semana selecionados
+    if (newSession.recurrenceFrequency !== 'none' && newSession.weekDays && newSession.weekDays.length > 0) {
+      // Calcular período total em dias
+      let totalDays = 0;
+      switch (newSession.recurrenceFrequency) {
+        case '1week': totalDays = 7; break;
+        case '2weeks': totalDays = 14; break;
+        case '3weeks': totalDays = 21; break;
+        case '1month': totalDays = 30; break;
+        case '2months': totalDays = 60; break;
+        case '3months': totalDays = 90; break;
+        case '4months': totalDays = 120; break;
+        case '5months': totalDays = 150; break;
+        case '6months': totalDays = 180; break;
+        case '1year': totalDays = 365; break;
       }
-    });
+      
+      // Data inicial (hoje ou a data selecionada)
+      const startDate = new Date(newSession.scheduledAt.split('T')[0]);
+      const endDate = addDays(startDate, totalDays);
+      
+      // Gerar todas as datas que correspondem aos dias da semana selecionados
+      const sessionsToCreate: Date[] = [];
+      let currentDate = startDate;
+      
+      while (currentDate <= endDate) {
+        const dayOfWeek = getDay(currentDate);
+        if (newSession.weekDays.includes(dayOfWeek)) {
+          sessionsToCreate.push(new Date(currentDate));
+        }
+        currentDate = addDays(currentDate, 1);
+      }
+      
+      // Criar todas as sessões
+      let createdCount = 0;
+      const selectedWorkout = studentWorkouts?.find(w => w.id.toString() === newSession.workoutId);
+      const workoutDays = selectedWorkout?.days ? (typeof selectedWorkout.days === 'string' ? JSON.parse(selectedWorkout.days) : selectedWorkout.days) : [];
+      
+      for (let i = 0; i < sessionsToCreate.length; i++) {
+        const sessionDate = sessionsToCreate[i];
+        // Calcular qual treino usar (A, B, C... em sequência)
+        const workoutDayIdx = workoutDays.length > 0 ? i % workoutDays.length : undefined;
+        
+        createSessionMutation.mutate({
+          studentId: parseInt(newSession.studentId),
+          scheduledAt: format(sessionDate, "yyyy-MM-dd") + 'T' + newSession.startTime,
+          duration: parseInt(newSession.duration),
+          type: newSession.type,
+          location: newSession.location || undefined,
+          notes: newSession.notes || undefined,
+          workoutId: newSession.workoutId && newSession.workoutId !== 'none' ? parseInt(newSession.workoutId) : undefined,
+          workoutDayIndex: workoutDayIdx,
+        });
+        createdCount++;
+      }
+      
+      toast.success(`Criadas ${createdCount} sessões em cascata!`);
+    } else {
+      // Criar sessão única
+      createSessionMutation.mutate({
+        studentId: parseInt(newSession.studentId),
+        scheduledAt: newSession.scheduledAt,
+        duration: parseInt(newSession.duration),
+        type: newSession.type,
+        location: newSession.location || undefined,
+        notes: newSession.notes || undefined,
+        workoutId: newSession.workoutId && newSession.workoutId !== 'none' ? parseInt(newSession.workoutId) : undefined,
+        workoutDayIndex: newSession.workoutDayIndex !== '' ? parseInt(newSession.workoutDayIndex) : undefined,
+      });
+    }
     
     // Gerar cobranças automáticas se selecionado
     if (newSession.generateCharges && newSession.planId && newSession.planId !== "none") {
@@ -1270,9 +1295,72 @@ export default function Schedule() {
                     </Select>
                   </div>
                   {newSession.recurrenceFrequency !== 'none' && (
-                    <p className="text-xs text-muted-foreground">
-                      Serão criadas sessões semanais no mesmo dia e horário pelo período selecionado.
-                    </p>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Dias da Semana</Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Selecione os dias fixos para agendar automaticamente
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: 0, label: 'Dom' },
+                            { value: 1, label: 'Seg' },
+                            { value: 2, label: 'Ter' },
+                            { value: 3, label: 'Qua' },
+                            { value: 4, label: 'Qui' },
+                            { value: 5, label: 'Sex' },
+                            { value: 6, label: 'Sáb' },
+                          ].map((day) => (
+                            <button
+                              key={day.value}
+                              type="button"
+                              onClick={() => {
+                                const current = newSession.weekDays || [];
+                                if (current.includes(day.value)) {
+                                  setNewSession({
+                                    ...newSession,
+                                    weekDays: current.filter(d => d !== day.value)
+                                  });
+                                } else {
+                                  setNewSession({
+                                    ...newSession,
+                                    weekDays: [...current, day.value].sort((a, b) => a - b)
+                                  });
+                                }
+                              }}
+                              className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                                (newSession.weekDays || []).includes(day.value)
+                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
+                                  : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                              }`}
+                            >
+                              {day.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground">Horário das Sessões</Label>
+                          <Input
+                            type="time"
+                            value={newSession.startTime}
+                            onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      
+                      {newSession.weekDays && newSession.weekDays.length > 0 && (
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
+                          <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                            <strong>Resumo:</strong> Serão criadas sessões toda{newSession.weekDays.length > 1 ? 's' : ''} 
+                            {' '}{newSession.weekDays.map(d => ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][d]).join(', ')}
+                            {' '}às {newSession.startTime} pelo período de {newSession.recurrenceFrequency.replace('week', ' semana').replace('weeks', ' semanas').replace('month', ' mês').replace('months', ' meses').replace('year', ' ano')}.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 

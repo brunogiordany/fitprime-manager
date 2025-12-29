@@ -1335,7 +1335,30 @@ Você DEVE retornar um JSON válido no seguinte formato:
   ]
 }
 
-Regras importantes:
+REGRAS CRÍTICAS - GÊNERO:
+- IDENTIFIQUE o gênero do aluno e ADAPTE o treino adequadamente
+- Para MULHERES:
+  * Priorize glúteos, pernas, abdômen e costas
+  * Inclua mais exercícios de glúteos (hip thrust, elevação pélvica, abdutora)
+  * Use mais repetições (12-15) com menos peso
+  * Inclua exercícios funcionais e de core
+  * Evite foco excessivo em peito e bíceps
+- Para HOMENS:
+  * Distribua melhor entre peito, costas, ombros, braços e pernas
+  * Use repetições moderadas (8-12) com mais peso
+  * Inclua exercícios compostos (supino, agachamento, terra)
+  * Pode incluir mais trabalho de bíceps e tríceps
+
+REGRAS CRÍTICAS - FREQUÊNCIA SEMANAL:
+- OBRIGATÓRIO: Crie EXATAMENTE o número de dias de treino igual à frequência semanal informada
+- Se frequência = 2: Crie 2 treinos (ex: Full Body A e B, ou Superior/Inferior)
+- Se frequência = 3: Crie 3 treinos (ex: ABC - Push/Pull/Legs ou Full Body)
+- Se frequência = 4: Crie 4 treinos (ex: ABCD - Superior A/Inferior A/Superior B/Inferior B)
+- Se frequência = 5: Crie 5 treinos (ex: ABCDE - Peito/Costas/Pernas/Ombros/Braços)
+- Se frequência = 6: Crie 6 treinos (ex: Push/Pull/Legs x2)
+- Se não informada, use 3 dias como padrão
+
+Regras adicionais:
 - PRIORIDADE MÁXIMA: Respeite as restrições de treino do aluno (lombar, joelho, ombro, etc.)
 - Se houver restrições, EVITE exercícios que sobrecarreguem essas regiões
 - Substitua exercícios problemáticos por alternativas mais seguras
@@ -1344,7 +1367,6 @@ Regras importantes:
 - Considere as lesões e limitações do aluno
 - Adapte o volume e intensidade ao nível de experiência
 - Considere os equipamentos disponíveis
-- Respeite a frequência semanal desejada
 - Inclua aquecimento e alongamento quando apropriado
 - Para iniciantes, priorize exercícios em máquinas
 - Para avançados, inclua técnicas avançadas como drop-sets

@@ -733,3 +733,24 @@
 - [x] Adicionar seletor de treino no modal de Nova Sessão
 - [x] Adicionar seletor de treino no modal de Edição de Sessão
 - [x] Exibir treino vinculado no Portal do Aluno com exercícios detalhados
+
+
+## Melhorias Anamnese e IA (v6.0)
+- [ ] Adicionar campo de frequência semanal na anamnese (1x a 7x por semana)
+- [ ] IA considera gênero do aluno para personalizar treinos
+- [ ] IA usa frequência semanal para gerar quantidade correta de dias de treino
+- [ ] Agendamento em cascata com seleção de dias da semana fixos
+- [ ] Agendar automaticamente por período selecionado (1 semana a 1 ano)
+
+
+## Melhorias Anamnese e IA (v5.10) - CONCLUÍDO
+- [x] Adicionar campo de frequência semanal na anamnese (1x a 7x por semana)
+- [x] Adicionar campo de dias preferidos de treino na anamnese
+- [x] Adicionar campo de horário preferido de treino na anamnese
+- [x] IA considerar gênero do aluno ao gerar treino (exercícios diferentes para homem/mulher)
+- [x] IA usar frequência semanal para gerar quantidade correta de dias de treino
+- [x] Agendamento em cascata implementado:
+  - [x] Seleção de dias da semana fixos (Dom, Seg, Ter, Qua, Qui, Sex, Sáb)
+  - [x] Horário padrão para todas as sessões
+  - [x] Criar múltiplas sessões automaticamente pelo período selecionado
+  - [x] Vincular treinos em sequência (A, B, C...) automaticamente
