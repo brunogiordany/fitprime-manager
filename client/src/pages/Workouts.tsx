@@ -303,7 +303,7 @@ export default function Workouts() {
                   Gerar com IA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
+              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5 text-purple-600" />
@@ -373,7 +373,7 @@ export default function Workouts() {
                     </Button>
                   </div>
                 ) : (
-                  <ScrollArea className="flex-1 pr-4">
+                  <ScrollArea className="flex-1 pr-2">
                     <div className="space-y-4 py-4">
                       <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
                         <div className="flex items-center justify-between mb-2">
@@ -408,11 +408,11 @@ export default function Workouts() {
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead>Exercício</TableHead>
-                                    <TableHead>Grupo</TableHead>
-                                    <TableHead>Séries</TableHead>
-                                    <TableHead>Reps</TableHead>
-                                    <TableHead>Descanso</TableHead>
+                                    <TableHead className="min-w-[200px]">Exercício</TableHead>
+                                    <TableHead className="min-w-[100px]">Grupo</TableHead>
+                                    <TableHead className="w-[60px]">Séries</TableHead>
+                                    <TableHead className="w-[60px]">Reps</TableHead>
+                                    <TableHead className="w-[80px]">Descanso</TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>

@@ -696,3 +696,8 @@
 - [x] Monitoramento de conexão com banco de dados
 - [x] Alerta de OAuth callback failures
 - [ ] Dashboard de status do sistema (opcional)
+
+
+## Bugs Modal IA (v5.5)
+- [x] Botão "Salvar e Editar" já existe no código (verificado)
+- [x] Layout do modal corrigido - aumentada largura para 95vw/max-w-5xl e ajustadas colunas da tabela
