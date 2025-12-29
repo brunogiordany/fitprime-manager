@@ -687,3 +687,12 @@
 - [x] Adicionar ênfases em grupos musculares na anamnese:
   - [x] Preferências de grupos musculares (12 grupos: peito, costas, ombros, bíceps, tríceps, antebraço, abdômen, glúteos, quadríceps, posterior, panturrilha, core)
   - [x] IA usa preferências ao gerar treino (prompt atualizado)
+
+
+## Sistema de Monitoramento e Notificações (v5.4)
+- [x] Health Check Endpoint para monitorar banco de dados e serviços (/api/health)
+- [x] Notificações automáticas para o owner quando detectar falhas
+- [x] Logging detalhado de erros com motivos das falhas
+- [x] Monitoramento de conexão com banco de dados
+- [x] Alerta de OAuth callback failures
+- [ ] Dashboard de status do sistema (opcional)

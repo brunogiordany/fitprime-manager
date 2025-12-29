@@ -11,6 +11,7 @@ import { storagePut } from "../storage";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import { handleStripeWebhook } from "../stripe/webhook";
+import { getHealthStatus } from "./healthCheck";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -55,6 +56,21 @@ async function startServer() {
     } catch (error) {
       console.error('Upload error:', error);
       res.status(500).json({ error: 'Upload failed' });
+    }
+  });
+  
+  // Health check endpoint
+  app.get('/api/health', async (req: any, res: any) => {
+    try {
+      const health = await getHealthStatus();
+      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      res.status(statusCode).json(health);
+    } catch (error: any) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: error?.message || 'Health check failed'
+      });
     }
   });
   

@@ -27,6 +27,7 @@ import {
   pendingChanges, InsertPendingChange, PendingChange,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { logError, notifyOAuthFailure } from './_core/healthCheck';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -96,8 +97,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+  } catch (error: any) {
+    logError('Database.upsertUser', error, true);
     throw error;
   }
 }

@@ -3,6 +3,7 @@ import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
+import { notifyOAuthFailure, logError } from "./healthCheck";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -45,9 +46,14 @@ export function registerOAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       res.redirect(302, "/");
-    } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Unknown error';
+      logError('OAuth', error, false);
+      
+      // Notify owner about OAuth failure
+      await notifyOAuthFailure(errorMessage, 'Tentativa de login');
+      
+      res.status(500).json({ error: "OAuth callback failed", details: errorMessage });
     }
   });
 }
