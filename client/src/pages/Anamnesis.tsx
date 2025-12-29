@@ -1037,52 +1037,7 @@ export default function Anamnesis() {
                       </Select>
                     </div>
                   </div>
-                  
-                  <div className="mt-4">
-                    <Label className="mb-2 block">Equipamentos Disponíveis</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      {[
-                        { id: "barbell", label: "Barra" },
-                        { id: "dumbbells", label: "Halteres" },
-                        { id: "kettlebell", label: "Kettlebell" },
-                        { id: "cables", label: "Cabos/Polia" },
-                        { id: "machines", label: "Máquinas" },
-                        { id: "bench", label: "Banco" },
-                        { id: "squat_rack", label: "Rack/Gaiola" },
-                        { id: "pull_up_bar", label: "Barra Fixa" },
-                        { id: "resistance_bands", label: "Elásticos" },
-                        { id: "trx", label: "TRX/Suspensão" },
-                        { id: "cardio", label: "Cardio (esteira/bike)" },
-                        { id: "bodyweight", label: "Peso Corporal" },
-                      ].map((equip) => (
-                        <button
-                          key={equip.id}
-                          type="button"
-                          onClick={() => {
-                            const current = formData.availableEquipment || [];
-                            if (current.includes(equip.id)) {
-                              setFormData({
-                                ...formData,
-                                availableEquipment: current.filter(e => e !== equip.id)
-                              });
-                            } else {
-                              setFormData({
-                                ...formData,
-                                availableEquipment: [...current, equip.id]
-                              });
-                            }
-                          }}
-                          className={`p-2 rounded-lg border text-sm transition-all ${
-                            (formData.availableEquipment || []).includes(equip.id)
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          {equip.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+
                 </div>
               </CardContent>
             </Card>

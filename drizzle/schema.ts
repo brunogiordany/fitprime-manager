@@ -29,6 +29,7 @@ export const personals = mysqlTable("personals", {
   whatsappNumber: varchar("whatsappNumber", { length: 20 }),
   evolutionApiKey: varchar("evolutionApiKey", { length: 255 }), // Stevo API Key
   evolutionInstance: varchar("evolutionInstance", { length: 255 }), // Stevo Instance Name
+  logoUrl: varchar("logoUrl", { length: 500 }), // Logo personalizada do personal
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "trial", "expired", "cancelled"]).default("trial").notNull(),
   subscriptionPeriod: mysqlEnum("subscriptionPeriod", ["monthly", "quarterly", "semiannual", "annual"]).default("monthly"),
   subscriptionExpiresAt: timestamp("subscriptionExpiresAt"),

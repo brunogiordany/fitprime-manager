@@ -162,6 +162,13 @@
       "when": 1766984573833,
       "tag": "0022_whole_jigsaw",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1766986647276,
+      "tag": "0023_futuristic_puppet_master",
+      "breakpoints": true
     }
   ]
 }

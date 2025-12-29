@@ -761,3 +761,25 @@
 - [x] Bug: Sessões excluídas filtradas do calendário (isNull(deletedAt))
 - [x] Bug: Aba Sessões do aluno agora mostra todas as sessões (incluindo futuras)
 - [x] Validação de conflito de horário implementada (verifica sobreposição de sessões)
+
+
+## Melhorias Anamnese e PDF (v5.12)
+- [ ] Remover seção "Equipamentos Disponíveis" da anamnese (muito técnico)
+- [ ] Corrigir PDF de medições:
+  - [ ] Mostrar apenas medições com dados preenchidos
+  - [ ] Se não tiver dados, mostrar mensagem orientando onde preencher
+  - [ ] Corrigir "Data não disponível" para mostrar data real
+- [ ] Logo personalizada do Personal:
+  - [ ] Adicionar campo de upload de logo nas Configurações
+  - [ ] Salvar logo no S3
+  - [ ] Usar logo do personal no PDF exportado (ao invés do FitPrime)
+  - [ ] Manter rodapé "FitPrime Manager - Relatório Confidencial"
+
+
+## Melhorias Anamnese e PDF (v5.12)
+- [x] Remover seção "Equipamentos Disponíveis" da anamnese (muito técnico)
+- [x] Corrigir PDF de medições - mostrar apenas dados preenchidos (filtra medições vazias)
+- [x] Se não tiver medições, mostrar mensagem orientando onde preencher
+- [x] Adicionar opção de logo personalizada nas Configurações (upload/remover)
+- [x] Usar logo do personal no PDF exportado (cabeçalho e rodapé)
+- [x] Rodapé usa nome do personal ou "FitPrime Manager" como fallback

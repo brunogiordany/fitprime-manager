@@ -83,6 +83,33 @@ export const appRouter = router({
         await db.updatePersonal(ctx.personal.id, input);
         return { success: true };
       }),
+    
+    uploadLogo: personalProcedure
+      .input(z.object({
+        logoData: z.string(), // Base64 encoded image
+        mimeType: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { storagePut } = await import('./storage');
+        
+        // Decode base64 and upload to S3
+        const buffer = Buffer.from(input.logoData, 'base64');
+        const extension = input.mimeType.split('/')[1] || 'png';
+        const fileKey = `logos/personal-${ctx.personal.id}-${Date.now()}.${extension}`;
+        
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        // Update personal with logo URL
+        await db.updatePersonal(ctx.personal.id, { logoUrl: url });
+        
+        return { logoUrl: url };
+      }),
+    
+    removeLogo: personalProcedure
+      .mutation(async ({ ctx }) => {
+        await db.updatePersonal(ctx.personal.id, { logoUrl: null });
+        return { success: true };
+      }),
   }),
 
   // ==================== DASHBOARD ====================
@@ -588,12 +615,19 @@ export const appRouter = router({
         // Buscar treinos
         const workouts = await db.getWorkoutsByStudentId(input.studentId);
         
+        // Preparar info do personal para o PDF
+        const personalInfo = {
+          businessName: ctx.personal.businessName,
+          logoUrl: ctx.personal.logoUrl,
+        };
+        
         // Gerar PDF
         const pdfBuffer = await generateStudentPDF(
           student as any,
           anamnesis as any,
           measurements as any[],
-          workouts as any[]
+          workouts as any[],
+          personalInfo
         );
         
         // Retornar como base64

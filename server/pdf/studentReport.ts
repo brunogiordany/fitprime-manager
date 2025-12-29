@@ -162,11 +162,17 @@ const translatePreferredTime = (value: string | null): string => {
   return value ? map[value] || value : '-';
 };
 
+interface PersonalInfo {
+  businessName?: string | null;
+  logoUrl?: string | null;
+}
+
 export async function generateStudentPDF(
   student: StudentData,
   anamnesis: AnamnesisData | null,
   measurements: MeasurementData[],
-  workouts: WorkoutData[]
+  workouts: WorkoutData[],
+  personalInfo?: PersonalInfo | null
 ): Promise<Buffer> {
   const doc = new jsPDF();
   let yPos = 20;
@@ -239,10 +245,40 @@ export async function generateStudentPDF(
   };
 
   // ==================== CABEÇALHO ====================
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(16, 185, 129);
-  doc.text('FitPrime', margin, yPos);
+  const headerName = personalInfo?.businessName || 'FitPrime';
+  
+  // Se tiver logo personalizada, adicionar imagem
+  if (personalInfo?.logoUrl) {
+    try {
+      // Buscar a imagem da URL
+      const response = await fetch(personalInfo.logoUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const mimeType = response.headers.get('content-type') || 'image/png';
+      const imageData = `data:${mimeType};base64,${base64}`;
+      
+      // Adicionar logo (30x30 pixels)
+      doc.addImage(imageData, 'PNG', margin, yPos - 5, 25, 25);
+      
+      // Nome ao lado da logo
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129);
+      doc.text(headerName, margin + 30, yPos + 8);
+    } catch (error) {
+      // Se falhar, usar apenas texto
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129);
+      doc.text(headerName, margin, yPos);
+    }
+  } else {
+    // Sem logo, usar apenas texto
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(16, 185, 129);
+    doc.text(headerName, margin, yPos);
+  }
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
@@ -355,13 +391,30 @@ export async function generateStudentPDF(
   }
 
   // ==================== HISTÓRICO COMPLETO DE MEDIDAS ====================
-  if (measurements.length > 0) {
-    addSection('Histórico Completo de Medidas');
-    
+  // Filtrar apenas medições que têm dados preenchidos
+  const measurementsWithData = measurements.filter(m => {
+    return m.weight || m.height || m.bodyFat || m.muscleMass || m.neck || m.chest || 
+           m.waist || m.hip || m.rightArm || m.leftArm || m.rightThigh || m.leftThigh || 
+           m.rightCalf || m.leftCalf;
+  });
+  
+  addSection('Histórico Completo de Medidas');
+  
+  if (measurementsWithData.length === 0) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Nenhuma medição registrada ainda.', margin, yPos);
+    yPos += 6;
+    doc.text('Para adicionar medidas, acesse o perfil do aluno > aba Evolução > Adicionar Medição.', margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    yPos += 10;
+  } else {
     // Resumo da evolução (primeira vs última medida)
-    if (measurements.length > 1) {
-      const firstMeasurement = measurements[measurements.length - 1];
-      const lastMeasurement = measurements[0];
+    if (measurementsWithData.length > 1) {
+      const firstMeasurement = measurementsWithData[measurementsWithData.length - 1];
+      const lastMeasurement = measurementsWithData[0];
       
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
@@ -415,18 +468,29 @@ export async function generateStudentPDF(
       yPos += 8;
     }
     
-    // Lista de todas as medições
+    // Lista de todas as medições com dados
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.text('Todas as Medições', margin, yPos);
+    doc.text('Histórico de Medições', margin, yPos);
     yPos += 8;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
-    measurements.forEach((m, index) => {
+    measurementsWithData.forEach((m, index) => {
       checkNewPage(35);
       
-      const measureDate = safeFormatDate(m.date, "dd/MM/yyyy") || 'Data não disponível';
+      // Formatar data corretamente
+      let measureDate = 'Data não disponível';
+      if (m.date) {
+        try {
+          const dateObj = new Date(m.date);
+          if (!isNaN(dateObj.getTime())) {
+            measureDate = dateObj.toLocaleDateString('pt-BR');
+          }
+        } catch (e) {
+          measureDate = safeFormatDate(m.date, "dd/MM/yyyy") || 'Data não disponível';
+        }
+      }
       
       // Data da medição
       doc.setFont('helvetica', 'bold');
@@ -541,12 +605,13 @@ export async function generateStudentPDF(
 
   // ==================== RODAPÉ ====================
   const totalPages = doc.internal.pages.length - 1;
+  const footerName = personalInfo?.businessName || 'FitPrime Manager';
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, 290, { align: 'center' });
-    doc.text('FitPrime Manager - Relatório Confidencial', margin, 290);
+    doc.text(`${footerName} - Relatório Confidencial`, margin, 290);
   }
 
   // Retornar como Buffer

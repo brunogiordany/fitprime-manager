@@ -20,7 +20,10 @@ import {
   XCircle,
   RefreshCw,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Upload,
+  Image,
+  Trash2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -50,8 +53,29 @@ export default function Settings() {
   const [whatsappStatus, setWhatsappStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isLoadingQR, setIsLoadingQR] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const { data: personalData, isLoading } = trpc.personal.get.useQuery();
+  const uploadLogoMutation = trpc.personal.uploadLogo.useMutation({
+    onSuccess: (data: { logoUrl: string }) => {
+      setLogoUrl(data.logoUrl);
+      toast.success("Logo atualizada com sucesso!");
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao fazer upload: " + error.message);
+    },
+  });
+  
+  const removeLogoMutation = trpc.personal.removeLogo.useMutation({
+    onSuccess: () => {
+      setLogoUrl(null);
+      toast.success("Logo removida com sucesso!");
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao remover logo: " + error.message);
+    },
+  });
 
   const updateMutation = trpc.personal.update.useMutation({
     onSuccess: () => {
@@ -77,6 +101,7 @@ export default function Settings() {
         instanceName: personalData.evolutionInstance || "",
         enabled: !!personalData.evolutionApiKey,
       });
+      setLogoUrl(personalData.logoUrl || null);
     }
   }, [personalData]);
 
@@ -201,6 +226,106 @@ export default function Settings() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateMutation.isPending ? "Salvando..." : "Salvar Perfil"}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Logo Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              Logo Personalizada
+            </CardTitle>
+            <CardDescription>
+              Sua logo aparecerá nos PDFs exportados e relatórios dos alunos
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-6">
+              {/* Preview da Logo */}
+              <div className="flex-shrink-0">
+                {logoUrl ? (
+                  <div className="relative">
+                    <img
+                      src={logoUrl}
+                      alt="Logo"
+                      className="w-32 h-32 object-contain border rounded-lg bg-white p-2"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6"
+                      onClick={() => removeLogoMutation.mutate()}
+                      disabled={removeLogoMutation.isPending}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/50">
+                    <Image className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Upload */}
+              <div className="flex-1 space-y-3">
+                <div>
+                  <Label>Fazer Upload da Logo</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Formatos aceitos: PNG, JPG, JPEG. Tamanho máximo: 2MB.
+                  </p>
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg"
+                    className="hidden"
+                    id="logo-upload"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      if (file.size > 2 * 1024 * 1024) {
+                        toast.error("Arquivo muito grande. Máximo 2MB.");
+                        return;
+                      }
+                      
+                      setIsUploadingLogo(true);
+                      try {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                          const base64 = (reader.result as string).split(',')[1];
+                          uploadLogoMutation.mutate({
+                            logoData: base64,
+                            mimeType: file.type,
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      } catch {
+                        toast.error("Erro ao processar imagem");
+                      } finally {
+                        setIsUploadingLogo(false);
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    disabled={isUploadingLogo || uploadLogoMutation.isPending}
+                  >
+                    {isUploadingLogo || uploadLogoMutation.isPending ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" /> Escolher Arquivo</>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recomendamos uma imagem quadrada com fundo transparente para melhor resultado.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
