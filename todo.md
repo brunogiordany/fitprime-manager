@@ -1362,3 +1362,21 @@
   - Pernas: Quadríceps, Glúteos, Posteriores, Panturrilha, Adutores
 - [x] Atualizar seletor de grupos musculares no cadastro de exercícios (organizado por região)
 - [x] Corrigir chat do PWA travado (altura dinâmica para mobile)
+
+
+## Análise por IA v5.61
+- [ ] Criar endpoint de análise por IA no backend
+- [ ] Analisar anamnese do aluno (objetivos, restrições, histórico)
+- [ ] Analisar evolução das medidas corporais
+- [ ] Analisar distribuição de grupos musculares (identificar desequilíbrios)
+- [ ] Analisar progressão de carga do Diário do Maromba
+- [ ] Analisar frequência e consistência de treino
+- [ ] Analisar sentimento/feedback nos treinos
+- [ ] Gerar recomendações personalizadas
+- [ ] Implementar botão e modal de análise na interface do personal
+
+
+## Bug Crítico - Chat Personal v5.62
+- [x] PRIORIDADE: Chat do personal não permite rolar mensagens nem enviar novas
+- [x] Corrigir altura e scroll da área de mensagens
+- [x] Verificar se o input de mensagem está visível e funcional

@@ -4841,6 +4841,209 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
         await db.rejectWorkoutLogSuggestion(input.id, input.reviewNotes);
         return { success: true };
       }),
+    
+    // Análise por IA do aluno
+    aiAnalysis: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        const db = await import('./db');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        
+        // Buscar medidas
+        const allMeasurements = await db.getMeasurementsByStudentId(input.studentId);
+        const measurements = allMeasurements.slice(0, 10);
+        
+        // Buscar análise de grupos musculares (90 dias)
+        const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const endDate = new Date().toISOString().split('T')[0];
+        const muscleGroupAnalysis = await db.getMuscleGroupAnalysis(
+          ctx.personal.id,
+          { studentId: input.studentId, startDate, endDate }
+        );
+        
+        // Buscar logs de treino recentes
+        const allLogs = await db.getWorkoutLogsByStudentId(input.studentId);
+        const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const recentLogs = allLogs.filter(log => new Date(log.trainingDate).getTime() > thirtyDaysAgo);
+        
+        // Buscar progressão de exercícios principais
+        const mainExercises = ['Supino Reto', 'Agachamento', 'Levantamento Terra', 'Desenvolvimento', 'Remada'];
+        const exerciseProgress: Record<string, any[]> = {};
+        for (const exercise of mainExercises) {
+          const progress = await db.getExerciseProgressHistory(ctx.personal.id, input.studentId, exercise, 10);
+          if (progress.length > 0) {
+            exerciseProgress[exercise] = progress;
+          }
+        }
+        
+        // Calcular estatísticas de frequência
+        const trainingDays = new Set(recentLogs.map(log => {
+          const date = new Date(log.trainingDate);
+          return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        })).size;
+        const weeksInPeriod = 4;
+        const avgTrainingsPerWeek = trainingDays / weeksInPeriod;
+        
+        // Calcular sentimento médio
+        const feelingsMap: Record<string, number> = {
+          'terrible': 1, 'bad': 2, 'neutral': 3, 'good': 4, 'excellent': 5
+        };
+        const feelings = recentLogs
+          .filter(log => log.feeling)
+          .map(log => feelingsMap[log.feeling!] || 3);
+        const avgFeeling = feelings.length > 0 
+          ? feelings.reduce((a, b) => a + b, 0) / feelings.length 
+          : 3;
+        
+        const systemPrompt = `Você é um assistente especializado em análise de treino e evolução física.
+Sua função é analisar os dados do aluno e fornecer insights úteis para o personal trainer.
+Seja direto, objetivo e use linguagem profissional.
+Identifique pontos fortes, pontos de atenção e oportunidades de melhoria.
+Sempre baseie suas análises nos dados fornecidos.`;
+        
+        const userPrompt = `Analise os dados do aluno ${student.name} e forneça insights para o personal trainer:
+
+## ANAMNESE
+${anamnesis ? `
+- Objetivo principal: ${anamnesis.mainGoal || 'Não informado'}
+- Objetivos secundários: ${anamnesis.secondaryGoals || 'Não informado'}
+- Peso alvo: ${anamnesis.targetWeight || 'Não informado'}
+- Experiência com exercícios: ${(anamnesis as any).exerciseExperience || 'Não informado'}
+- Frequência semanal desejada: ${(anamnesis as any).weeklyFrequency || 'Não informado'}x
+- Duração da sessão: ${(anamnesis as any).sessionDuration || 'Não informado'} min
+- Restrições de treino: ${(anamnesis as any).trainingRestrictions || 'Nenhuma'}
+- Histórico médico: ${anamnesis.medicalHistory || 'Nenhum'}
+- Lesões: ${anamnesis.injuries || 'Nenhuma'}
+- Nível de estresse: ${anamnesis.stressLevel || 'Não informado'}
+- Horas de sono: ${anamnesis.sleepHours || 'Não informado'}h
+- Ênfases musculares: ${(anamnesis as any).muscleEmphasis || 'Nenhuma'}
+` : 'Anamnese não preenchida'}
+
+## EVOLUÇÃO DAS MEDIDAS (${measurements.length} registros)
+${measurements.length > 0 ? measurements.slice(0, 5).map((m, i) => `
+${i === 0 ? 'Mais recente' : `${i + 1}º registro`} (${new Date(m.measureDate).toLocaleDateString('pt-BR')}):
+- Peso: ${m.weight || '-'}kg
+- Gordura: ${m.bodyFat || '-'}%
+- Peito: ${m.chest || '-'}cm
+- Cintura: ${m.waist || '-'}cm
+- Quadril: ${m.hip || '-'}cm
+- Braço D: ${m.rightArm || '-'}cm | Braço E: ${m.leftArm || '-'}cm
+- Coxa D: ${m.rightThigh || '-'}cm | Coxa E: ${m.leftThigh || '-'}cm
+`).join('') : 'Nenhuma medida registrada'}
+
+## ANÁLISE DE GRUPOS MUSCULARES (Últimos 90 dias)
+${muscleGroupAnalysis.length > 0 ? muscleGroupAnalysis.map(g => 
+  `- ${g.name}: ${g.volume}kg volume | ${g.sets} séries | ${g.exercises} exercícios`
+).join('\n') : 'Nenhum dado de treino registrado'}
+
+## PROGRESSÃO DE CARGA (Exercícios principais)
+${Object.entries(exerciseProgress).length > 0 ? Object.entries(exerciseProgress).map(([exercise, progress]) => {
+  const first = progress[progress.length - 1];
+  const last = progress[0];
+  const improvement = first && last && first.maxWeight && last.maxWeight
+    ? ((last.maxWeight - first.maxWeight) / first.maxWeight * 100).toFixed(1)
+    : null;
+  return `- ${exercise}: ${last?.maxWeight || '-'}kg (${improvement ? (parseFloat(improvement) >= 0 ? '+' : '') + improvement + '%' : 'sem dados anteriores'})`;
+}).join('\n') : 'Nenhum dado de progressão'}
+
+## FREQUÊNCIA E CONSISTÊNCIA
+- Treinos nos últimos 30 dias: ${trainingDays}
+- Média semanal: ${avgTrainingsPerWeek.toFixed(1)} treinos/semana
+- Sentimento médio: ${avgFeeling.toFixed(1)}/5
+
+## INSTRUÇÕES
+Com base nesses dados, forneça:
+1. **Resumo Geral**: Uma visão geral do progresso do aluno (2-3 frases)
+2. **Pontos Fortes**: O que está indo bem (lista de 2-4 itens)
+3. **Pontos de Atenção**: O que precisa de cuidado ou ajuste (lista de 2-4 itens)
+4. **Desequilíbrios Musculares**: Grupos que estão sendo negligenciados ou supertreinados
+5. **Recomendações**: Sugestões práticas para o personal (lista de 3-5 itens)
+6. **Alerta**: Qualquer preocupação importante baseada nos dados (se houver)
+
+Retorne APENAS o JSON no formato especificado.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'student_analysis',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  resumoGeral: { type: 'string', description: 'Visão geral do progresso em 2-3 frases' },
+                  pontosFortes: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Lista de pontos fortes'
+                  },
+                  pontosAtencao: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Lista de pontos que precisam de atenção'
+                  },
+                  desequilibriosMusculares: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Grupos musculares negligenciados ou supertreinados'
+                  },
+                  recomendacoes: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Sugestões práticas para o personal'
+                  },
+                  alerta: {
+                    type: 'string',
+                    description: 'Preocupação importante ou string vazia se não houver'
+                  },
+                },
+                required: ['resumoGeral', 'pontosFortes', 'pontosAtencao', 'desequilibriosMusculares', 'recomendacoes', 'alerta'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar análise' });
+        }
+        
+        try {
+          const analysis = JSON.parse(content);
+          return {
+            success: true,
+            analysis,
+            metadata: {
+              studentName: student.name,
+              analyzedAt: new Date().toISOString(),
+              dataPoints: {
+                measurements: measurements.length,
+                muscleGroups: muscleGroupAnalysis.length,
+                trainingDays,
+                exercisesTracked: Object.keys(exerciseProgress).length,
+              },
+            },
+          };
+        } catch (e) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao processar análise' });
+        }
+      }),
   }),
 });
 

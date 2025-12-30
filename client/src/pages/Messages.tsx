@@ -433,10 +433,10 @@ export default function Messages() {
               </Card>
 
               {/* Área de Chat */}
-              <Card className="md:col-span-2 flex flex-col">
+              <Card className="md:col-span-2 flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
                 {selectedStudent ? (
                   <>
-                    <CardHeader className="pb-3 border-b">
+                    <CardHeader className="pb-3 border-b flex-shrink-0">
                       <div className="flex items-center gap-3">
                         <Button
                           variant="ghost"
@@ -457,8 +457,8 @@ export default function Messages() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-                      <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+                    <CardContent className="flex-1 p-0 flex flex-col min-h-0">
+                      <div className="flex-1 overflow-y-auto px-4" ref={scrollRef}>
                         <div className="space-y-3 py-4">
                           {!chatMessages || chatMessages.length === 0 ? (
                             <div className="text-center py-8 text-muted-foreground">
@@ -498,9 +498,9 @@ export default function Messages() {
                             ))
                           )}
                         </div>
-                      </ScrollArea>
+                      </div>
                       
-                      <div className="p-4 border-t">
+                      <div className="p-4 border-t flex-shrink-0">
                         {/* Input de arquivos ocultos */}
                         <input
                           type="file"

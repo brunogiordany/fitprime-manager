@@ -504,15 +504,15 @@ export default function StudentChat() {
   
   return (
     <>
-      <Card className="h-[calc(100vh-200px)] min-h-[400px] max-h-[800px] flex flex-col">
-        <CardHeader className="pb-3">
+      <Card className="flex flex-col" style={{ height: 'calc(100vh - 220px)', minHeight: '350px' }}>
+        <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-emerald-500" />
             Chat com seu Personal
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <div className="flex-1 overflow-y-auto px-4" ref={scrollRef}>
             <div className="space-y-3 py-4">
               {!messages || messages.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -589,7 +589,7 @@ export default function StudentChat() {
                 ))
               )}
             </div>
-          </ScrollArea>
+          </div>
           
           <div className="p-4 border-t">
             {/* Input de arquivos ocultos */}
