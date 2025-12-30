@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, RotateCcw, AlertTriangle, Dumbbell, Users, Calendar, FileText, CheckSquare } from "lucide-react";
+import { Trash2, RotateCcw, AlertTriangle, Dumbbell, Users, Calendar, FileText, CheckSquare, Ruler } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ export default function Trash() {
   const { data: deletedWorkouts, refetch: refetchWorkouts } = trpc.workouts.listDeleted.useQuery();
   const { data: deletedStudents, refetch: refetchStudents } = trpc.students.listDeleted.useQuery();
   const { data: deletedSessions, refetch: refetchSessions } = trpc.sessions.listDeleted.useQuery();
+  const { data: deletedMeasurements, refetch: refetchMeasurements } = trpc.measurements.listDeleted.useQuery();
 
   // Mutations para restaurar e excluir permanentemente
   const restoreWorkoutMutation = trpc.workouts.restore.useMutation({
@@ -100,6 +101,26 @@ export default function Trash() {
     },
   });
 
+  const restoreMeasurementMutation = trpc.measurements.restore.useMutation({
+    onSuccess: () => {
+      toast.success("Medida restaurada com sucesso!");
+      refetchMeasurements();
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao restaurar medida: " + error.message);
+    },
+  });
+
+  const deleteMeasurementPermanentlyMutation = trpc.measurements.permanentDelete.useMutation({
+    onSuccess: () => {
+      toast.success("Medida excluída permanentemente!");
+      refetchMeasurements();
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao excluir medida: " + error.message);
+    },
+  });
+
   // Mutation para esvaziar lixeira
   const emptyTrashMutation = trpc.trash.emptyAll.useMutation({
     onSuccess: () => {
@@ -107,6 +128,7 @@ export default function Trash() {
       refetchWorkouts();
       refetchStudents();
       refetchSessions();
+      refetchMeasurements();
     },
     onError: (error: { message: string }) => {
       toast.error("Erro ao esvaziar lixeira: " + error.message);
@@ -162,7 +184,8 @@ export default function Trash() {
   const totalItems = 
     (deletedWorkouts?.length || 0) + 
     (deletedStudents?.length || 0) + 
-    (deletedSessions?.length || 0);
+    (deletedSessions?.length || 0) +
+    (deletedMeasurements?.length || 0);
 
   const formatDeletedDate = (date: Date | string | null) => {
     if (!date) return "Data desconhecida";
@@ -238,6 +261,15 @@ export default function Trash() {
               {(deletedSessions?.length || 0) > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {deletedSessions?.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="measurements" className="gap-2 whitespace-nowrap">
+              <Ruler className="h-4 w-4" />
+              <span className="hidden sm:inline">Medidas</span>
+              {(deletedMeasurements?.length || 0) > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {deletedMeasurements?.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -532,6 +564,84 @@ export default function Trash() {
                     : "Nenhuma sessão na lixeira"
                   }
                 </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Medidas */}
+        <TabsContent value="measurements" className="mt-4">
+          {deletedMeasurements && deletedMeasurements.length > 0 ? (
+            <div className="space-y-3">
+              {deletedMeasurements.map((measurement) => (
+                <Card key={measurement.id}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                          <Ruler className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">
+                            Medida de {measurement.measureDate ? format(new Date(measurement.measureDate), "dd/MM/yyyy", { locale: ptBR }) : "Data desconhecida"}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {measurement.weight ? `Peso: ${measurement.weight}kg` : ""}
+                            {measurement.weight && measurement.bodyFat ? " | " : ""}
+                            {measurement.bodyFat ? `BF: ${measurement.bodyFat}%` : ""}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Excluído em: {formatDeletedDate(measurement.deletedAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => restoreMeasurementMutation.mutate({ id: measurement.id })}
+                          disabled={restoreMeasurementMutation.isPending}
+                          className="flex-1 sm:flex-none"
+                        >
+                          <RotateCcw className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Restaurar</span>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="shrink-0">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir permanentemente?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                A medida será excluída permanentemente.
+                                Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMeasurementPermanentlyMutation.mutate({ id: measurement.id })}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Excluir Permanentemente
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Ruler className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">Nenhuma medida na lixeira</p>
               </CardContent>
             </Card>
           )}

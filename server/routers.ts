@@ -1204,6 +1204,25 @@ export const appRouter = router({
         await db.deleteMeasurement(input.id);
         return { success: true };
       }),
+    
+    listDeleted: personalProcedure
+      .query(async ({ ctx }) => {
+        return await db.getDeletedMeasurementsByPersonalId(ctx.personal.id);
+      }),
+    
+    restore: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreMeasurement(input.id);
+        return { success: true };
+      }),
+    
+    permanentDelete: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.permanentlyDeleteMeasurement(input.id);
+        return { success: true };
+      }),
   }),
 
   // ==================== PHOTOS ====================

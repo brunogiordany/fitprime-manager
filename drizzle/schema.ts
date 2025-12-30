@@ -202,6 +202,7 @@ export const measurements = mysqlTable("measurements", {
   axillaryFold: decimal("axillaryFold", { precision: 5, scale: 2 }),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
 });
 
 export type Measurement = typeof measurements.$inferSelect;

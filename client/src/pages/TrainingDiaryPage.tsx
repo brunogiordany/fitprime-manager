@@ -94,10 +94,12 @@ interface ExerciseData {
 export default function TrainingDiaryPage() {
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("registros");
+  const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
+  const [showSessionLogModal, setShowSessionLogModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -129,6 +131,19 @@ export default function TrainingDiaryPage() {
     selectedStudentId ? { studentId: parseInt(selectedStudentId) } : undefined
   );
   const { data: workouts } = trpc.workouts.list.useQuery({ studentId: 0 });
+  
+  // Query para buscar sessões do período (hoje e próximos 7 dias + últimos 7 dias)
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 7);
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 7);
+  
+  const { data: upcomingSessions, refetch: refetchSessions } = trpc.sessions.list.useQuery({
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0],
+    studentId: selectedStudentId && selectedStudentId !== 'all' ? parseInt(selectedStudentId) : undefined,
+  });
   // Buscar dias do treino selecionado
   const { data: selectedWorkout } = trpc.workouts.get.useQuery(
     { id: newLog.workoutId },
@@ -192,6 +207,41 @@ export default function TrainingDiaryPage() {
       refetchLogDetail();
     },
   });
+  
+  // Efeito para carregar exercícios quando abre modal de sessão com treino vinculado
+  useEffect(() => {
+    if (showSessionLogModal && selectedSession?.workoutId && selectedWorkout?.days) {
+      // Encontrar o dia do treino baseado no workoutDayIndex
+      const dayIndex = selectedSession.workoutDayIndex ?? 0;
+      const day = selectedWorkout.days[dayIndex];
+      if (day?.exercises && day.exercises.length > 0) {
+        const exercises: ExerciseData[] = day.exercises.map((ex: any) => ({
+          exerciseId: ex.id,
+          exerciseName: ex.name,
+          muscleGroup: ex.muscleGroup,
+          plannedSets: ex.sets || 3,
+          plannedReps: ex.reps || "8-12",
+          plannedRest: ex.restTime || 60,
+          notes: "",
+          isCompleted: false,
+          sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
+            setNumber: i + 1,
+            setType: i === 0 ? "warmup" : "working",
+            weight: undefined,
+            reps: undefined,
+            restTime: ex.restTime || 60,
+            isCompleted: false,
+          })),
+          isExpanded: true,
+        }));
+        setCurrentExercises(exercises);
+        // Atualizar o workoutDayId no newLog
+        if (day.id) {
+          setNewLog(prev => ({ ...prev, workoutDayId: day.id }));
+        }
+      }
+    }
+  }, [showSessionLogModal, selectedSession, selectedWorkout]);
   
   // Efeito para carregar exercícios do treino selecionado
   useEffect(() => {
@@ -487,7 +537,11 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="sessoes" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Sessões
+            </TabsTrigger>
             <TabsTrigger value="registros" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Registros
@@ -497,6 +551,254 @@ export default function TrainingDiaryPage() {
               Dashboard
             </TabsTrigger>
           </TabsList>
+          
+          {/* Tab: Sessões */}
+          <TabsContent value="sessoes" className="space-y-4">
+            {upcomingSessions && upcomingSessions.length > 0 ? (
+              <div className="space-y-6">
+                {/* Sessões de Hoje */}
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const todaySessions = upcomingSessions.filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
+                    return sessionDate === todayStr;
+                  });
+                  
+                  if (todaySessions.length === 0) return null;
+                  
+                  return (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-primary" />
+                        Hoje ({new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })})
+                      </h3>
+                      <div className="grid gap-3">
+                        {todaySessions.map((session: any) => (
+                          <Card 
+                            key={session.id}
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              session.status === 'completed' ? 'border-green-500 bg-green-50/50' :
+                              session.status === 'cancelled' ? 'border-red-300 bg-red-50/50 opacity-60' :
+                              'hover:border-primary'
+                            }`}
+                            onClick={() => {
+                              if (session.status !== 'cancelled') {
+                                setSelectedSession(session);
+                                // Pré-preencher o formulário com dados da sessão
+                                setNewLog({
+                                  studentId: session.studentId,
+                                  workoutId: session.workoutId || 0,
+                                  workoutDayId: 0,
+                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                  notes: session.notes || '',
+                                  feeling: '',
+                                });
+                                setShowSessionLogModal(true);
+                              }
+                            }}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
+                                    session.status === 'completed' ? 'bg-green-100' :
+                                    session.status === 'cancelled' ? 'bg-red-100' :
+                                    'bg-primary/10'
+                                  }`}>
+                                    {session.status === 'completed' ? (
+                                      <CheckCircle2 className="h-6 w-6 text-green-600" />
+                                    ) : session.status === 'cancelled' ? (
+                                      <AlertCircle className="h-6 w-6 text-red-500" />
+                                    ) : (
+                                      <Dumbbell className="h-6 w-6 text-primary" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                      {session.duration && ` • ${session.duration}min`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {session.workoutId && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                      <Dumbbell className="h-3 w-3" />
+                                      Treino {session.workoutDayIndex !== null ? String.fromCharCode(65 + session.workoutDayIndex) : ''}
+                                    </Badge>
+                                  )}
+                                  <Badge variant={
+                                    session.status === 'completed' ? 'default' :
+                                    session.status === 'cancelled' ? 'destructive' :
+                                    session.status === 'confirmed' ? 'default' :
+                                    'secondary'
+                                  }>
+                                    {session.status === 'completed' ? 'Concluído' :
+                                     session.status === 'cancelled' ? 'Cancelado' :
+                                     session.status === 'confirmed' ? 'Confirmado' :
+                                     session.status === 'no_show' ? 'Faltou' :
+                                     'Agendado'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Próximas Sessões */}
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const futureSessions = upcomingSessions.filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
+                    return sessionDate > todayStr && s.status !== 'cancelled';
+                  }).sort((a: any, b: any) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+                  
+                  if (futureSessions.length === 0) return null;
+                  
+                  return (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-blue-500" />
+                        Próximas Sessões
+                      </h3>
+                      <div className="grid gap-3">
+                        {futureSessions.slice(0, 10).map((session: any) => (
+                          <Card 
+                            key={session.id}
+                            className="cursor-pointer transition-all hover:shadow-md hover:border-primary"
+                            onClick={() => {
+                              setSelectedSession(session);
+                              setNewLog({
+                                studentId: session.studentId,
+                                workoutId: session.workoutId || 0,
+                                workoutDayId: 0,
+                                trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                notes: session.notes || '',
+                                feeling: '',
+                              });
+                              setShowSessionLogModal(true);
+                            }}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <Calendar className="h-6 w-6 text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(session.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                      {' às '}
+                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {session.workoutId && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                      <Dumbbell className="h-3 w-3" />
+                                      Treino {session.workoutDayIndex !== null ? String.fromCharCode(65 + session.workoutDayIndex) : ''}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Sessões Passadas (sem registro) */}
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const pastSessions = upcomingSessions.filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
+                    return sessionDate < todayStr && s.status !== 'cancelled' && s.status !== 'completed';
+                  }).sort((a: any, b: any) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+                  
+                  if (pastSessions.length === 0) return null;
+                  
+                  return (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-600">
+                        <AlertCircle className="h-5 w-5" />
+                        Pendentes de Registro
+                      </h3>
+                      <div className="grid gap-3">
+                        {pastSessions.map((session: any) => (
+                          <Card 
+                            key={session.id}
+                            className="cursor-pointer transition-all hover:shadow-md border-amber-300 bg-amber-50/50"
+                            onClick={() => {
+                              setSelectedSession(session);
+                              setNewLog({
+                                studentId: session.studentId,
+                                workoutId: session.workoutId || 0,
+                                workoutDayId: 0,
+                                trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                notes: session.notes || '',
+                                feeling: '',
+                              });
+                              setShowSessionLogModal(true);
+                            }}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                                    <AlertCircle className="h-6 w-6 text-amber-600" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(session.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                      {' às '}
+                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-amber-600 border-amber-300">
+                                  Sem registro
+                                </Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhuma sessão encontrada</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Não há sessões agendadas para os próximos dias.
+                  </p>
+                  <Button variant="outline" onClick={() => window.location.href = '/agenda'}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agendar Sessão
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
           
           {/* Tab: Registros */}
           <TabsContent value="registros" className="space-y-4">
@@ -1508,6 +1810,369 @@ export default function TrainingDiaryPage() {
                   Fechar
                 </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal: Registrar Treino da Sessão */}
+        <Dialog open={showSessionLogModal} onOpenChange={(open) => {
+          setShowSessionLogModal(open);
+          if (!open) {
+            setSelectedSession(null);
+            resetNewLog();
+          }
+        }}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Dumbbell className="h-5 w-5" />
+                Registrar Treino - {selectedSession?.student?.name || 'Aluno'}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedSession && (
+                  <span>
+                    {new Date(selectedSession.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    {' às '}
+                    {new Date(selectedSession.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    {selectedSession.workoutId && ` • Treino ${selectedSession.workoutDayIndex !== null ? String.fromCharCode(65 + selectedSession.workoutDayIndex) : ''}`}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Informações básicas */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Data do Treino</Label>
+                  <Input
+                    type="date"
+                    value={newLog.trainingDate}
+                    onChange={(e) => setNewLog({ ...newLog, trainingDate: e.target.value })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Horário de Início</Label>
+                  <Input
+                    type="time"
+                    value={newLog.startTime}
+                    onChange={(e) => setNewLog({ ...newLog, startTime: e.target.value })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Treino</Label>
+                  <Select 
+                    value={newLog.workoutId.toString()} 
+                    onValueChange={(v) => setNewLog({ ...newLog, workoutId: parseInt(v), workoutDayId: 0 })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Treino livre</SelectItem>
+                      {workouts?.map((workout: any) => (
+                        <SelectItem key={workout.id} value={workout.id.toString()}>
+                          {workout.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Seleção do dia do treino */}
+              {newLog.workoutId > 0 && workoutDays && workoutDays.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Dia do Treino</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {workoutDays.map((day: any, index: number) => (
+                      <Button
+                        key={day.id}
+                        variant={newLog.workoutDayId === day.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setNewLog({ 
+                          ...newLog, 
+                          workoutDayId: day.id,
+                          dayName: day.name || `Treino ${String.fromCharCode(65 + index)}`
+                        })}
+                      >
+                        {day.name || `Treino ${String.fromCharCode(65 + index)}`}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Exercícios */}
+              {currentExercises.length > 0 && (
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Exercícios</Label>
+                  {currentExercises.map((exercise, exIndex) => (
+                    <Card key={exIndex}>
+                      <CardHeader className="p-3 cursor-pointer" onClick={() => {
+                        const updated = [...currentExercises];
+                        updated[exIndex].isExpanded = !updated[exIndex].isExpanded;
+                        setCurrentExercises(updated);
+                      }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Dumbbell className="h-4 w-4 text-primary" />
+                            <span className="font-medium">{exercise.exerciseName}</span>
+                            {exercise.muscleGroup && (
+                              <Badge variant="outline" className="text-xs">{exercise.muscleGroup}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {exercise.plannedSets}x{exercise.plannedReps}
+                            </span>
+                            {exercise.isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      
+                      {exercise.isExpanded && (
+                        <CardContent className="p-3 pt-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="p-2 text-left w-16">Série</th>
+                                  <th className="p-2 text-left">Tipo</th>
+                                  <th className="p-2 text-left w-24">Carga (kg)</th>
+                                  <th className="p-2 text-left w-20">Reps</th>
+                                  <th className="p-2 text-left w-24">Descanso (s)</th>
+                                  <th className="p-2 text-center w-16">Drop</th>
+                                  <th className="p-2 text-center w-16">R-P</th>
+                                  <th className="p-2 text-center w-12">✓</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {exercise.sets.map((set, setIndex) => (
+                                  <tr key={setIndex} className="border-b last:border-0">
+                                    <td className="p-2 font-medium">S{set.setNumber}</td>
+                                    <td className="p-2">
+                                      <Select
+                                        value={set.setType || 'working'}
+                                        onValueChange={(v) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].setType = v;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 w-32">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {SET_TYPES.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                              <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${type.color}`} />
+                                                {type.label}
+                                              </div>
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </td>
+                                    <td className="p-2">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-20"
+                                        placeholder="0"
+                                        value={set.weight || ''}
+                                        onChange={(e) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].weight = e.target.value ? parseFloat(e.target.value) : undefined;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                    <td className="p-2">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-16"
+                                        placeholder="0"
+                                        value={set.reps || ''}
+                                        onChange={(e) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].reps = e.target.value ? parseInt(e.target.value) : undefined;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                    <td className="p-2">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-20"
+                                        placeholder="60"
+                                        value={set.restTime || ''}
+                                        onChange={(e) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].restTime = e.target.value ? parseInt(e.target.value) : undefined;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                    <td className="p-2 text-center">
+                                      <Checkbox
+                                        checked={set.isDropSet || false}
+                                        onCheckedChange={(v) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].isDropSet = !!v;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                    <td className="p-2 text-center">
+                                      <Checkbox
+                                        checked={set.isRestPause || false}
+                                        onCheckedChange={(v) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].isRestPause = !!v;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                    <td className="p-2 text-center">
+                                      <Checkbox
+                                        checked={set.isCompleted || false}
+                                        onCheckedChange={(v) => {
+                                          const updated = [...currentExercises];
+                                          updated[exIndex].sets[setIndex].isCompleted = !!v;
+                                          setCurrentExercises(updated);
+                                        }}
+                                      />
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          
+                          {/* Botão adicionar série */}
+                          <div className="mt-2 pt-2 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                const updated = [...currentExercises];
+                                const lastSet = updated[exIndex].sets[updated[exIndex].sets.length - 1];
+                                updated[exIndex].sets.push({
+                                  setNumber: (lastSet?.setNumber || 0) + 1,
+                                  setType: 'working',
+                                  restTime: lastSet?.restTime || 60,
+                                  isCompleted: false,
+                                });
+                                setCurrentExercises(updated);
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Adicionar Série
+                            </Button>
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+              
+              {/* Sentimento */}
+              <div className="space-y-2">
+                <Label>Como se sentiu?</Label>
+                <div className="flex flex-wrap gap-2">
+                  {FEELINGS.map((feeling) => (
+                    <Button
+                      key={feeling.value}
+                      variant={newLog.feeling === feeling.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNewLog({ ...newLog, feeling: feeling.value })}
+                    >
+                      {feeling.emoji} {feeling.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Observações */}
+              <div className="space-y-2">
+                <Label>Observações</Label>
+                <Textarea
+                  placeholder="Anotações sobre o treino..."
+                  value={newLog.notes}
+                  onChange={(e) => setNewLog({ ...newLog, notes: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowSessionLogModal(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  // Criar o registro de treino
+                  createLog.mutate({
+                    studentId: newLog.studentId,
+                    workoutId: newLog.workoutId || undefined,
+                    workoutDayId: newLog.workoutDayId || undefined,
+                    trainingDate: newLog.trainingDate,
+                    dayName: newLog.dayName || undefined,
+                    startTime: newLog.startTime || undefined,
+                    notes: newLog.notes || undefined,
+                    exercises: currentExercises.map(ex => ({
+                      exerciseId: ex.exerciseId,
+                      exerciseName: ex.exerciseName,
+                      muscleGroup: ex.muscleGroup,
+                      plannedSets: ex.plannedSets,
+                      plannedReps: ex.plannedReps,
+                      plannedRest: ex.plannedRest,
+                      notes: ex.notes,
+                      sets: ex.sets.map(s => ({
+                        setNumber: s.setNumber,
+                        setType: s.setType as any,
+                        weight: s.weight,
+                        reps: s.reps,
+                        restTime: s.restTime,
+                        isDropSet: s.isDropSet,
+                        dropWeight: s.dropWeight,
+                        dropReps: s.dropReps,
+                        isRestPause: s.isRestPause,
+                        restPauseWeight: s.restPauseWeight,
+                        restPauseReps: s.restPauseReps,
+                        restPausePause: s.restPausePause,
+                        rpe: s.rpe,
+                        isCompleted: s.isCompleted,
+                        notes: s.notes,
+                      })),
+                    })),
+                  }, {
+                    onSuccess: () => {
+                      setShowSessionLogModal(false);
+                      setSelectedSession(null);
+                      resetNewLog();
+                      refetchSessions();
+                    }
+                  });
+                }}
+                disabled={createLog.isPending}
+              >
+                {createLog.isPending ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Salvar Registro
+                  </>
+                )}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -360,6 +360,17 @@ export default function StudentProfile() {
     },
   });
 
+  // Mutation para excluir medida
+  const deleteMeasurementMutation = trpc.measurements.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Medida enviada para a lixeira!");
+      utils.measurements.list.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao excluir medida: " + error.message);
+    },
+  });
+
   const exportPDFMutation = trpc.students.exportPDF.useMutation({
     onSuccess: (data) => {
       // Criar blob e fazer download
@@ -1432,8 +1443,8 @@ export default function StudentProfile() {
                 <CardContent>
                   <div className="space-y-4">
                     {measurements.slice(0, 5).map((m) => (
-                      <div key={m.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
+                      <div key={m.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium">
                             {m.measureDate && !isNaN(new Date(m.measureDate).getTime())
                               ? format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR })
@@ -1443,9 +1454,33 @@ export default function StudentProfile() {
                             Peso: {m.weight || '-'} kg | IMC: {m.bmi || '-'}
                           </p>
                         </div>
-                        <div className="text-right text-sm">
+                        <div className="text-right text-sm hidden sm:block">
                           <p>Cintura: {m.waist || '-'} cm</p>
                           <p>Quadril: {m.hip || '-'} cm</p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setLocation(`/medidas/${studentId}?edit=${m.id}`)}
+                            title="Editar medida"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              if (confirm('Enviar esta medida para a lixeira?')) {
+                                deleteMeasurementMutation.mutate({ id: m.id });
+                              }
+                            }}
+                            title="Excluir medida"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}

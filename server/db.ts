@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, not, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, isNotNull, not, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users, User,
@@ -292,7 +292,7 @@ export async function getMeasurementsByStudentId(studentId: number) {
   const db = await getDb();
   if (!db) return [];
   return await db.select().from(measurements)
-    .where(eq(measurements.studentId, studentId))
+    .where(and(eq(measurements.studentId, studentId), isNull(measurements.deletedAt)))
     .orderBy(desc(measurements.measureDate));
 }
 
@@ -317,6 +317,37 @@ export async function updateMeasurement(id: number, data: Partial<InsertMeasurem
 }
 
 export async function deleteMeasurement(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Soft delete - move to trash
+  await db.update(measurements).set({ deletedAt: new Date() }).where(eq(measurements.id, id));
+}
+
+export async function getDeletedMeasurementsByPersonalId(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select({
+    id: measurements.id,
+    studentId: measurements.studentId,
+    personalId: measurements.personalId,
+    measureDate: measurements.measureDate,
+    weight: measurements.weight,
+    bodyFat: measurements.bodyFat,
+    deletedAt: measurements.deletedAt,
+    studentName: students.name,
+  }).from(measurements)
+    .leftJoin(students, eq(measurements.studentId, students.id))
+    .where(and(eq(measurements.personalId, personalId), isNotNull(measurements.deletedAt)))
+    .orderBy(desc(measurements.deletedAt));
+}
+
+export async function restoreMeasurement(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(measurements).set({ deletedAt: null }).where(eq(measurements.id, id));
+}
+
+export async function permanentlyDeleteMeasurement(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(measurements).where(eq(measurements.id, id));

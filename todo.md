@@ -1060,3 +1060,41 @@
 - [x] Criar interface de chat do Personal com alunos
 - [x] Adicionar badge de notificação no menu lateral com mensagens não lidas
 - [x] Mostrar lista de conversas com alunos no Chat FitPrime
+
+## Bugs Graves v4.7
+- [ ] Aluno sendo redirecionado para cadastro de Personal ao acessar Portal do Aluno
+- [ ] Login com Google/Microsoft/Apple cria área de Personal para o aluno (deveria usar login de aluno)
+
+## Melhorias Medidas v4.8
+- [ ] Adicionar botão de editar medida no histórico
+- [ ] Adicionar botão de excluir medida no histórico (soft delete - vai para lixeira)
+- [ ] Implementar soft delete para medidas (campo deletedAt)
+- [ ] Adicionar medidas na página de lixeira para restauração
+
+
+## Tarefas Prioritárias v4.9 (29/12/2025)
+
+### Bug Crítico: Autenticação Portal do Aluno
+- [x] Corrigir redirecionamento /portal → /meu-portal (aluno não deve ir para OAuth do Personal) - VERIFICADO: já está correto
+
+### Lixeira de Medidas
+- [x] Adicionar campo deletedAt na tabela measurements (já existia)
+- [x] Criar endpoint measurements.listDeleted (já existia)
+- [x] Criar endpoint measurements.restore (já existia)
+- [x] Criar endpoint measurements.permanentDelete (já existia)
+- [x] Adicionar botão editar medida no histórico
+- [x] Adicionar botão excluir medida no histórico (soft delete)
+- [x] Adicionar aba "Medidas" na página de Lixeira
+
+### Diário do Maromba - Versão Inteligente
+- [x] Listar sessões/agendamentos do aluno empilhados na tela principal (aba Sessões)
+- [x] Ao clicar em sessão, abrir popup para preencher treino
+- [x] Puxar exercícios do treino vinculado à sessão automaticamente
+- [x] Campos por exercício: até 6 séries (aquecimento + válidas + extra)
+- [x] Cada série: Carga (kg), Repetições, Descanso (s)
+- [x] Técnicas avançadas: Drop Set (carga/reps extras), Rest-Pause (carga/reps extras)
+- [x] Observações por exercício
+- [x] Checkbox de concluído por série
+- [x] Dashboard de evolução de carga por exercício (já existia)
+- [x] Filtro por aluno no dashboard (já existia)
+- [ ] Sistema de sugestões do aluno com aprovação do personal (pendente)
