@@ -49,7 +49,14 @@ import {
   Trash2,
   Ban,
   Shield,
-  Ruler
+  Ruler,
+  Brain,
+  Sparkles,
+  Target,
+  AlertCircle,
+  Lightbulb,
+  Activity,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -99,6 +106,8 @@ export default function StudentProfile() {
   const [batchFromDate, setBatchFromDate] = useState('');
   const [batchToDate, setBatchToDate] = useState('');
   const [batchReason, setBatchReason] = useState('');
+  const [showAIAnalysisModal, setShowAIAnalysisModal] = useState(false);
+  const [aiAnalysis, setAIAnalysis] = useState<any>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
@@ -399,6 +408,23 @@ export default function StudentProfile() {
     },
   });
 
+  // @ts-ignore - aiAnalysis existe no router workoutLogs
+  const aiAnalysisMutation = trpc.workoutLogs.aiAnalysis.useMutation({
+    onSuccess: (data: any) => {
+      setAIAnalysis(data);
+      toast.success("Análise gerada com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao gerar análise: " + error.message);
+    },
+  });
+
+  const handleAIAnalysis = () => {
+    setShowAIAnalysisModal(true);
+    setAIAnalysis(null);
+    aiAnalysisMutation.mutate({ studentId });
+  };
+
   useEffect(() => {
     if (student) {
       setEditData({
@@ -674,6 +700,19 @@ export default function StudentProfile() {
                     <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Gerando...</>
                   ) : (
                     <><Download className="h-4 w-4 mr-2" /> Exportar PDF</>
+                  )}
+                </Button>
+                
+                {/* Botão de Análise por IA */}
+                <Button 
+                  onClick={handleAIAnalysis}
+                  disabled={aiAnalysisMutation.isPending}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                >
+                  {aiAnalysisMutation.isPending ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando...</>
+                  ) : (
+                    <><Brain className="h-4 w-4 mr-2" /> Análise IA</>
                   )}
                 </Button>
                 
@@ -2130,6 +2169,146 @@ export default function StudentProfile() {
                 {(cancelFutureSessionsMutation.isPending || deleteFutureSessionsMutation.isPending) 
                   ? 'Processando...' 
                   : batchAction === 'cancel' ? 'Cancelar Sessões' : 'Excluir Sessões'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Análise por IA */}
+        <Dialog open={showAIAnalysisModal} onOpenChange={setShowAIAnalysisModal}>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                Análise Inteligente - {student?.name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {aiAnalysisMutation.isPending ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="relative">
+                  <Brain className="h-16 w-16 text-purple-600 animate-pulse" />
+                  <Sparkles className="h-6 w-6 text-yellow-500 absolute -top-1 -right-1 animate-bounce" />
+                </div>
+                <p className="mt-4 text-lg font-medium">Analisando dados do aluno...</p>
+                <p className="text-sm text-muted-foreground">Isso pode levar alguns segundos</p>
+              </div>
+            ) : aiAnalysis ? (
+              <div className="space-y-6 py-4">
+                {/* Resumo Geral */}
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                  <h3 className="font-semibold text-purple-800 flex items-center gap-2 mb-2">
+                    <Activity className="h-4 w-4" /> Resumo Geral
+                  </h3>
+                  <p className="text-gray-700">{aiAnalysis.analysis.resumoGeral}</p>
+                </div>
+                
+                {/* Alerta (se houver) */}
+                {aiAnalysis.analysis.alerta && (
+                  <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                    <h3 className="font-semibold text-red-800 flex items-center gap-2 mb-2">
+                      <AlertCircle className="h-4 w-4" /> Alerta Importante
+                    </h3>
+                    <p className="text-red-700">{aiAnalysis.analysis.alerta}</p>
+                  </div>
+                )}
+                
+                {/* Grid de Pontos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Pontos Fortes */}
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <h3 className="font-semibold text-green-800 flex items-center gap-2 mb-3">
+                      <CheckCircle className="h-4 w-4" /> Pontos Fortes
+                    </h3>
+                    <ul className="space-y-2">
+                      {aiAnalysis.analysis.pontosFortes.map((ponto: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-green-700">
+                          <span className="text-green-500 mt-0.5">•</span>
+                          {ponto}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Pontos de Atenção */}
+                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                    <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-3">
+                      <AlertTriangle className="h-4 w-4" /> Pontos de Atenção
+                    </h3>
+                    <ul className="space-y-2">
+                      {aiAnalysis.analysis.pontosAtencao.map((ponto: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
+                          <span className="text-amber-500 mt-0.5">•</span>
+                          {ponto}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                
+                {/* Desequilíbrios Musculares */}
+                {aiAnalysis.analysis.desequilibriosMusculares.length > 0 && (
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h3 className="font-semibold text-blue-800 flex items-center gap-2 mb-3">
+                      <Target className="h-4 w-4" /> Desequilíbrios Musculares
+                    </h3>
+                    <ul className="space-y-2">
+                      {aiAnalysis.analysis.desequilibriosMusculares.map((item: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-blue-700">
+                          <span className="text-blue-500 mt-0.5">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Recomendações */}
+                <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                  <h3 className="font-semibold text-indigo-800 flex items-center gap-2 mb-3">
+                    <Lightbulb className="h-4 w-4" /> Recomendações
+                  </h3>
+                  <ul className="space-y-2">
+                    {aiAnalysis.analysis.recomendacoes.map((rec: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-indigo-700">
+                        <span className="bg-indigo-200 text-indigo-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          {i + 1}
+                        </span>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Metadados */}
+                <div className="text-xs text-muted-foreground border-t pt-4 flex flex-wrap gap-4">
+                  <span>Análise gerada em: {new Date(aiAnalysis.metadata.analyzedAt).toLocaleString('pt-BR')}</span>
+                  <span>• {aiAnalysis.metadata.dataPoints.measurements} medidas</span>
+                  <span>• {aiAnalysis.metadata.dataPoints.trainingDays} dias de treino</span>
+                  <span>• {aiAnalysis.metadata.dataPoints.muscleGroups} grupos musculares</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Clique em "Gerar Nova Análise" para começar</p>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAIAnalysisModal(false)}>
+                Fechar
+              </Button>
+              <Button
+                onClick={() => aiAnalysisMutation.mutate({ studentId })}
+                disabled={aiAnalysisMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+              >
+                {aiAnalysisMutation.isPending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando...</>
+                ) : (
+                  <><RefreshCw className="h-4 w-4 mr-2" /> Gerar Nova Análise</>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

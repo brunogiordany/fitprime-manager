@@ -15,7 +15,7 @@
 
 ## 🟡 FUNCIONALIDADES IMPORTANTES (Prioridade Média)
 
-- [ ] 5. Implementar botão e modal de análise por IA na interface do personal
+- [x] 5. Implementar botão e modal de análise por IA na interface do personal (CONCLUÍDO)
 - [ ] 6. Vincular treinos automaticamente nas sessões recorrentes
 - [ ] 7. Implementar transcrição automática de áudio para texto no chat
 - [ ] 8. Adicionar funcionalidade de mensagem em massa (broadcast)
