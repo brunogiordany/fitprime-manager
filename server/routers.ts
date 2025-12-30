@@ -3538,16 +3538,27 @@ Retorne APENAS o JSON, sem texto adicional.`;
           exerciseName: z.string(),
           set1Weight: z.string().optional(),
           set1Reps: z.number().optional(),
+          set1Type: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
           set2Weight: z.string().optional(),
           set2Reps: z.number().optional(),
+          set2Type: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
           set3Weight: z.string().optional(),
           set3Reps: z.number().optional(),
+          set3Type: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
           set4Weight: z.string().optional(),
           set4Reps: z.number().optional(),
+          set4Type: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
           set5Weight: z.string().optional(),
           set5Reps: z.number().optional(),
+          set5Type: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
           notes: z.string().optional(),
           completed: z.boolean().optional(),
+          // Drop set extras
+          dropWeight: z.string().optional(),
+          dropReps: z.number().optional(),
+          // Rest-pause extras
+          restPausePause: z.number().optional(),
+          restPauseReps: z.number().optional(),
         })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -3567,25 +3578,71 @@ Retorne APENAS o JSON, sem texto adicional.`;
         
         // Criar logs de exercícios se fornecidos
         if (exercises && exercises.length > 0) {
-          const exerciseLogs = exercises.map((ex, index) => ({
-            workoutLogId: logId,
-            exerciseId: ex.exerciseId,
-            exerciseName: ex.exerciseName,
-            set1Weight: ex.set1Weight,
-            set1Reps: ex.set1Reps,
-            set2Weight: ex.set2Weight,
-            set2Reps: ex.set2Reps,
-            set3Weight: ex.set3Weight,
-            set3Reps: ex.set3Reps,
-            set4Weight: ex.set4Weight,
-            set4Reps: ex.set4Reps,
-            set5Weight: ex.set5Weight,
-            set5Reps: ex.set5Reps,
-            notes: ex.notes,
-            completed: ex.completed ?? true,
-            order: index,
-          }));
-          await db.bulkCreateExerciseLogs(exerciseLogs);
+          for (let index = 0; index < exercises.length; index++) {
+            const ex = exercises[index];
+            // Criar o exercício log
+            const exerciseLogId = await db.createExerciseLog({
+              workoutLogId: logId,
+              exerciseId: ex.exerciseId,
+              exerciseName: ex.exerciseName,
+              notes: ex.notes,
+              completed: ex.completed ?? true,
+              order: index,
+            });
+            
+            // Criar as séries individuais com seus tipos
+            const setsToCreate = [];
+            if (ex.set1Weight || ex.set1Reps) {
+              setsToCreate.push({
+                workoutLogExerciseId: exerciseLogId,
+                setNumber: 1,
+                setType: ex.set1Type || 'working',
+                weight: ex.set1Weight,
+                reps: ex.set1Reps,
+              });
+            }
+            if (ex.set2Weight || ex.set2Reps) {
+              setsToCreate.push({
+                workoutLogExerciseId: exerciseLogId,
+                setNumber: 2,
+                setType: ex.set2Type || 'working',
+                weight: ex.set2Weight,
+                reps: ex.set2Reps,
+              });
+            }
+            if (ex.set3Weight || ex.set3Reps) {
+              setsToCreate.push({
+                workoutLogExerciseId: exerciseLogId,
+                setNumber: 3,
+                setType: ex.set3Type || 'working',
+                weight: ex.set3Weight,
+                reps: ex.set3Reps,
+              });
+            }
+            if (ex.set4Weight || ex.set4Reps) {
+              setsToCreate.push({
+                workoutLogExerciseId: exerciseLogId,
+                setNumber: 4,
+                setType: ex.set4Type || 'working',
+                weight: ex.set4Weight,
+                reps: ex.set4Reps,
+              });
+            }
+            if (ex.set5Weight || ex.set5Reps) {
+              setsToCreate.push({
+                workoutLogExerciseId: exerciseLogId,
+                setNumber: 5,
+                setType: ex.set5Type || 'working',
+                weight: ex.set5Weight,
+                reps: ex.set5Reps,
+              });
+            }
+            
+            // Criar as séries no banco
+            for (const set of setsToCreate) {
+              await db.createWorkoutLogSet(set);
+            }
+          }
         }
         
         // Notificar o personal (owner)

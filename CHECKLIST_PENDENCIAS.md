@@ -1,0 +1,60 @@
+# Checklist de Pendências - FitPrime Manager
+
+**Última atualização:** 30/12/2025
+
+---
+
+## 🔴 BUGS CRÍTICOS (Prioridade Alta)
+
+- [x] 1. Exportar PDF não funciona (VERIFICADO - Está funcionando)
+- [x] 2. Bug: Erro validação trainingLocation ao salvar anamnese (CORRIGIDO - Validação de enums melhorada)
+- [~] 3. Bug: Erro "Treino não encontrado" ao enviar sugestão de alteração (PENDENTE - Aguardando reprodução)
+- [x] 4. Bug: Tipo "Reconhecimento" muda automaticamente para "Série Válida" (CORRIGIDO - setType agora é salvo corretamente)
+
+---
+
+## 🟡 FUNCIONALIDADES IMPORTANTES (Prioridade Média)
+
+- [ ] 5. Implementar botão e modal de análise por IA na interface do personal
+- [ ] 6. Vincular treinos automaticamente nas sessões recorrentes
+- [ ] 7. Implementar transcrição automática de áudio para texto no chat
+- [ ] 8. Adicionar funcionalidade de mensagem em massa (broadcast)
+- [ ] 9. Notificação para personal quando aluno cria sugestão
+
+---
+
+## 🟢 MELHORIAS DE UX (Prioridade Média-Baixa)
+
+- [ ] 10. Melhorar layout dos campos e seções da anamnese
+- [ ] 11. Adicionar botões Salvar/Cancelar no final do formulário de anamnese
+- [ ] 12. Drop Set com múltiplos drops - Botão "+ Adicionar Drop"
+- [ ] 13. Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa"
+- [ ] 14. Melhorar UX geral do popup de detalhes de registro
+- [ ] 15. Modal Agenda: Melhorar espaçamentos e hierarquia visual
+
+---
+
+## 🔵 FUNCIONALIDADES FUTURAS (Prioridade Baixa)
+
+- [ ] 16. Métricas SaaS (MRR, ARR, Churn Rate, LTV, Ticket Médio)
+- [ ] 17. Agrupar cobranças por aluno (expandir/colapsar)
+- [ ] 18. Planos de fábrica (6 planos mensais pré-definidos)
+- [ ] 19. Comparativo entre métodos de BF (estimado vs bio vs adi)
+- [ ] 20. Histórico de sessões por treino
+- [ ] 21. Comparativo de evolução de carga
+
+---
+
+## ✅ CONCLUÍDOS HOJE
+
+- [x] Bug: Erro "Please login (10001)" ao salvar anamnese no onboarding
+- [x] Bug: Erro "Please login (10001)" ao salvar anamnese no portal
+- [x] Persistência de dados no localStorage (não perde ao atualizar)
+
+---
+
+## 📊 PROGRESSO
+
+**Total de itens:** 21
+**Concluídos:** 0
+**Restantes:** 21

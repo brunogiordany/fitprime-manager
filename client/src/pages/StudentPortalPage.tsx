@@ -301,40 +301,48 @@ export default function StudentPortalPage() {
   const handleSaveAnamnesis = () => {
     if (!studentData) return;
     
+    // Função auxiliar para converter strings vazias em undefined
+    const cleanValue = (val: any) => (val === '' || val === null) ? undefined : val;
+    const cleanEnum = (val: any, validValues: string[]) => {
+      if (!val || val === '') return undefined;
+      return validValues.includes(val) ? val : undefined;
+    };
+    
     // Usa o endpoint studentPortal.saveWithMeasurements (studentProcedure)
+    // Todos os campos são opcionais - aluno pode salvar parcialmente
     updateAnamneseMutation.mutate({
-      occupation: anamnesisForm.occupation || undefined,
+      occupation: cleanValue(anamnesisForm.occupation),
       sleepHours: anamnesisForm.sleepHours || undefined,
-      stressLevel: anamnesisForm.stressLevel as any || undefined,
-      lifestyle: anamnesisForm.lifestyle as any || undefined,
-      medicalHistory: anamnesisForm.medicalHistory || undefined,
-      medications: anamnesisForm.medications || undefined,
-      injuries: anamnesisForm.injuries || undefined,
-      surgeries: anamnesisForm.surgeries || undefined,
-      allergies: anamnesisForm.allergies || undefined,
-      mainGoal: anamnesisForm.mainGoal as any || undefined,
-      secondaryGoals: anamnesisForm.secondaryGoals || undefined,
-      targetWeight: anamnesisForm.targetWeight || undefined,
-      exerciseExperience: anamnesisForm.exerciseExperience as any || undefined,
-      observations: anamnesisForm.observations || undefined,
+      stressLevel: cleanEnum(anamnesisForm.stressLevel, ['low', 'moderate', 'high', 'very_high']),
+      lifestyle: cleanEnum(anamnesisForm.lifestyle, ['sedentary', 'light', 'moderate', 'active', 'very_active']),
+      medicalHistory: cleanValue(anamnesisForm.medicalHistory),
+      medications: cleanValue(anamnesisForm.medications),
+      injuries: cleanValue(anamnesisForm.injuries),
+      surgeries: cleanValue(anamnesisForm.surgeries),
+      allergies: cleanValue(anamnesisForm.allergies),
+      mainGoal: cleanEnum(anamnesisForm.mainGoal, ['weight_loss', 'muscle_gain', 'conditioning', 'health', 'rehabilitation', 'sports', 'other']),
+      secondaryGoals: cleanValue(anamnesisForm.secondaryGoals),
+      targetWeight: cleanValue(anamnesisForm.targetWeight),
+      exerciseExperience: cleanEnum(anamnesisForm.exerciseExperience, ['none', 'beginner', 'intermediate', 'advanced']),
+      observations: cleanValue(anamnesisForm.observations),
       // Nutrição
       mealsPerDay: anamnesisForm.mealsPerDay || undefined,
-      waterIntake: anamnesisForm.waterIntake as any || undefined,
+      waterIntake: cleanValue(anamnesisForm.waterIntake),
       dailyCalories: anamnesisForm.dailyCalories || undefined,
-      dietRestrictions: anamnesisForm.dietRestrictions || undefined,
-      supplements: anamnesisForm.supplements || undefined,
+      dietRestrictions: cleanValue(anamnesisForm.dietRestrictions),
+      supplements: cleanValue(anamnesisForm.supplements),
       doesCardio: anamnesisForm.doesCardio || false,
-      cardioActivities: anamnesisForm.cardioActivities || undefined,
+      cardioActivities: cleanValue(anamnesisForm.cardioActivities),
       // Preferências de treino
       weeklyFrequency: anamnesisForm.weeklyFrequency || undefined,
       sessionDuration: anamnesisForm.sessionDuration || undefined,
-      preferredTime: anamnesisForm.preferredTime as any || undefined,
-      trainingLocation: anamnesisForm.trainingLocation as any || undefined,
-      availableEquipment: anamnesisForm.availableEquipment || undefined,
+      preferredTime: cleanEnum(anamnesisForm.preferredTime, ['morning', 'afternoon', 'evening', 'flexible']),
+      trainingLocation: cleanEnum(anamnesisForm.trainingLocation, ['full_gym', 'home_gym', 'home_basic', 'outdoor', 'studio']),
+      availableEquipment: cleanValue(anamnesisForm.availableEquipment),
       // Restrições e ênfases
-      trainingRestrictions: anamnesisForm.trainingRestrictions || undefined,
-      restrictionNotes: anamnesisForm.restrictionNotes || undefined,
-      muscleEmphasis: anamnesisForm.muscleEmphasis || undefined,
+      trainingRestrictions: cleanValue(anamnesisForm.trainingRestrictions),
+      restrictionNotes: cleanValue(anamnesisForm.restrictionNotes),
+      muscleEmphasis: cleanValue(anamnesisForm.muscleEmphasis),
     });
   };
 
@@ -2144,16 +2152,27 @@ export default function StudentPortalPage() {
                     exerciseName: ex.exerciseName,
                     set1Weight: ex.sets[0]?.weight || '',
                     set1Reps: ex.sets[0]?.reps || 0,
+                    set1Type: (ex.sets[0]?.setType as any) || 'working',
                     set2Weight: ex.sets[1]?.weight || '',
                     set2Reps: ex.sets[1]?.reps || 0,
+                    set2Type: (ex.sets[1]?.setType as any) || 'working',
                     set3Weight: ex.sets[2]?.weight || '',
                     set3Reps: ex.sets[2]?.reps || 0,
+                    set3Type: (ex.sets[2]?.setType as any) || 'working',
                     set4Weight: ex.sets[3]?.weight || '',
                     set4Reps: ex.sets[3]?.reps || 0,
+                    set4Type: (ex.sets[3]?.setType as any) || 'working',
                     set5Weight: ex.sets[4]?.weight || '',
                     set5Reps: ex.sets[4]?.reps || 0,
+                    set5Type: (ex.sets[4]?.setType as any) || 'working',
                     notes: ex.notes,
                     completed: ex.completed,
+                    // Drop set extras
+                    dropWeight: ex.dropWeight || undefined,
+                    dropReps: ex.dropReps || undefined,
+                    // Rest-pause extras
+                    restPausePause: ex.restPausePause || undefined,
+                    restPauseReps: ex.restPauseReps || undefined,
                   })),
                 });
               }}
