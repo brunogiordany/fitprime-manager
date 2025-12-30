@@ -68,6 +68,7 @@ import {
 import { useLocation, useParams, useSearch } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -187,12 +188,17 @@ export default function StudentProfile() {
   });
 
   const sendInviteMutation = trpc.students.sendInvite.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Convite enviado com sucesso!");
-      // Copiar link para clipboard
+      // Copiar link para clipboard usando utilitário robusto
       const fullLink = window.location.origin + data.inviteLink;
-      navigator.clipboard.writeText(fullLink);
-      toast.info("Link copiado para a área de transferência!");
+      const copied = await copyToClipboard(fullLink);
+      if (copied) {
+        toast.info("Link copiado para a área de transferência!");
+      } else {
+        // Se não conseguiu copiar, mostra o link para copiar manualmente
+        toast.info("Copie o link: " + fullLink, { duration: 10000 });
+      }
     },
     onError: (error: any) => {
       toast.error("Erro ao enviar convite: " + error.message);
@@ -1134,10 +1140,14 @@ export default function StudentProfile() {
                       <Button 
                         variant="outline" 
                         size="icon"
-                        onClick={() => {
+                        onClick={async () => {
                           const link = `${window.location.origin}/convite/${student.inviteToken || ''}`;
-                          navigator.clipboard.writeText(link);
-                          toast.success('Link copiado!');
+                          const copied = await copyToClipboard(link);
+                          if (copied) {
+                            toast.success('Link copiado!');
+                          } else {
+                            toast.info('Copie o link: ' + link, { duration: 10000 });
+                          }
                         }}
                       >
                         <Copy className="h-4 w-4" />

@@ -46,6 +46,7 @@ import {
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -449,9 +450,13 @@ export default function Students() {
                   />
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(inviteLink);
-                      toast.success("Link copiado!");
+                    onClick={async () => {
+                      const copied = await copyToClipboard(inviteLink);
+                      if (copied) {
+                        toast.success("Link copiado!");
+                      } else {
+                        toast.info('Copie o link: ' + inviteLink, { duration: 10000 });
+                      }
                     }}
                   >
                     Copiar

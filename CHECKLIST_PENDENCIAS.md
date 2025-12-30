@@ -4,7 +4,19 @@
 
 ---
 
-## 🔴 BUGS CRÍTICOS - NOVOS (Prioridade Máxima)
+## 🔴 BUGS CRÍTICOS - SÉRIE B (Prioridade Máxima)
+
+- [x] B1. Bug: Link de convite não copia para área de transferência (CORRIGIDO - Implementado utilitário robusto de clipboard com fallback para iOS)
+- [ ] B2. Bug: Redesign completo do Chat (UX ruim, scroll quebrado) - estilo WhatsApp/iMessage
+- [ ] B3. Bug: Portal do Aluno - adicionar barra lateral de navegação
+- [ ] B4. Bug: Gravação de áudio (grava mas dá erro, não tem pause, não envia)
+- [ ] B5. Bug: Upload de arquivos não funciona (fotos, vídeos, docs)
+- [ ] B6. Bug: Campos de bioimpedância e adipômetro sumiram (verificar)
+- [ ] B7. Bug: Scroll não funciona no chat (página e mensagens)
+
+---
+
+## 🔴 BUGS CRÍTICOS - SÉRIE A (Resolvidos)
 
 - [x] A1. Bug: Erro ao clicar em "Análise IA" - "No procedure found on path workoutLogs.aiAnalysis" (CORRIGIDO - Mudado para trainingDiary.aiAnalysis)
 - [x] A2. Bug: Diário de Treino - Remover aba "Sessões" (duplicada com Registros), manter apenas "Registros" e "Dashboard" (CORRIGIDO)
@@ -58,16 +70,17 @@
 
 ---
 
-## ✅ CONCLUÍDOS HOJE
+## ✅ CONCLUÍDOS RECENTEMENTE
 
 - [x] Bug: Erro "Please login (10001)" ao salvar anamnese no onboarding
 - [x] Bug: Erro "Please login (10001)" ao salvar anamnese no portal
 - [x] Persistência de dados no localStorage (não perde ao atualizar)
+- [x] B1: Link de convite não copia para área de transferência (30/12/2025)
 
 ---
 
 ## 📊 PROGRESSO
 
-**Total de itens:** 21
-**Concluídos:** 0
-**Restantes:** 21
+**Bugs Série B:** 1/7 resolvidos
+**Bugs Série A:** 8/8 resolvidos
+**Total geral:** ~75% concluído

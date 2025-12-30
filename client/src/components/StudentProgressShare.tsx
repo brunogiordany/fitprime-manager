@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 import {
   Share2,
   Download,
@@ -61,12 +62,12 @@ export default function StudentProgressShare({ studentName, progressData }: Stud
 
   const handleCopyText = async () => {
     const text = generateShareText();
-    try {
-      await navigator.clipboard.writeText(text);
+    const success = await copyToClipboard(text);
+    if (success) {
       setCopied(true);
       toast.success("Texto copiado!");
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } else {
       toast.error("Erro ao copiar texto");
     }
   };

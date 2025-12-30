@@ -1413,3 +1413,42 @@
 - [x] Implementar persistência de dados no localStorage para não perder ao atualizar página
 - [x] Restaurar dados do localStorage ao carregar a página
 - [x] Limpar localStorage após salvar com sucesso
+
+
+## Bugs Críticos v5.70 - Reportados pelo Usuário
+
+### B1. Bug: Link de convite não copia para área de transferência
+- [ ] Ao clicar em "Convidar" aparece "Link copiado" mas não copia de verdade
+- [ ] Aluno não recebe o convite porque o link não foi copiado
+- [ ] Verificar e corrigir a função de copiar para clipboard
+
+### B2. Melhoria CRÍTICA: Redesign completo do Chat/Mensagens
+- [ ] UX atual está muito ruim, "experiência ridícula"
+- [ ] Campo de rolagem não funciona (página e mensagens)
+- [ ] Criar layout estilo Instagram Direct / Messenger / iMessage
+- [ ] Usar paleta de cores do FitPrime
+- [ ] UX avançada de elite para personal E aluno
+- [ ] Tela cheia, scroll funcionando perfeitamente
+
+### B3. Melhoria: Portal do Aluno - Adicionar barra lateral
+- [ ] Atualmente tudo centralizado em uma única tela
+- [ ] Criar barra lateral igual do personal
+- [ ] Facilitar navegação do aluno
+
+### B4. Bug: Gravação de áudio não funciona
+- [ ] Grava mas dá erro ao enviar
+- [ ] Não tem opção de pausar (fica gravando eternamente)
+- [ ] Ao clicar no X para, mas não envia
+- [ ] Corrigir fluxo completo de gravação e envio
+
+### B5. Bug: Upload de arquivos não funciona
+- [ ] Campos de envio de arquivos, docs, fotos, vídeos desabilitados
+- [ ] Não consegue fazer upload e enviar nada
+- [ ] Habilitar e corrigir upload de mídia
+
+### B6. Bug: Campos de bioimpedância e adipometria sumiram
+- [ ] Verificar se campos de upload de bioimpedância existem
+- [ ] Verificar se campos de adipometria existem
+- [ ] Verificar tanto no lado do personal quanto no portal do aluno
+- [ ] Restaurar se estiverem faltando
+
