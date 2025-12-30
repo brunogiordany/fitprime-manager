@@ -19,7 +19,24 @@ import {
 interface Message {
   id: number;
   senderType: "personal" | "student";
-  message: string;
+  messageType?: "text" | "audio" | "image" | "video" | "file" | "link";
+  message: string | null;
+  mediaUrl?: string | null;
+  mediaName?: string | null;
+  mediaMimeType?: string | null;
+  mediaSize?: number | null;
+  mediaDuration?: number | null;
+  audioTranscription?: string | null;
+  linkPreviewTitle?: string | null;
+  linkPreviewDescription?: string | null;
+  linkPreviewImage?: string | null;
+  linkPreviewUrl?: string | null;
+  isEdited?: boolean | null;
+  editedAt?: Date | string | null;
+  originalMessage?: string | null;
+  deletedForSender?: boolean | null;
+  deletedForAll?: boolean | null;
+  deletedAt?: Date | string | null;
   createdAt: Date | string;
   isRead: boolean | null;
 }

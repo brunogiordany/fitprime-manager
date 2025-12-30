@@ -582,7 +582,30 @@ export const chatMessages = mysqlTable("chat_messages", {
   personalId: int("personalId").notNull().references(() => personals.id),
   studentId: int("studentId").notNull().references(() => students.id),
   senderType: mysqlEnum("senderType", ["personal", "student"]).notNull(),
-  message: text("message").notNull(),
+  messageType: mysqlEnum("messageType", ["text", "audio", "image", "video", "file", "link"]).default("text").notNull(),
+  message: text("message"), // texto da mensagem ou legenda da mídia
+  // Campos para mídia (fotos, vídeos, arquivos, áudio)
+  mediaUrl: text("mediaUrl"), // URL do arquivo no S3
+  mediaName: varchar("mediaName", { length: 255 }), // nome original do arquivo
+  mediaMimeType: varchar("mediaMimeType", { length: 100 }), // tipo MIME
+  mediaSize: int("mediaSize"), // tamanho em bytes
+  mediaDuration: int("mediaDuration"), // duração em segundos (para áudio/vídeo)
+  // Transcrição de áudio
+  audioTranscription: text("audioTranscription"),
+  // Preview de links
+  linkPreviewTitle: varchar("linkPreviewTitle", { length: 255 }),
+  linkPreviewDescription: text("linkPreviewDescription"),
+  linkPreviewImage: text("linkPreviewImage"),
+  linkPreviewUrl: text("linkPreviewUrl"),
+  // Edição
+  isEdited: boolean("isEdited").default(false),
+  editedAt: timestamp("editedAt"),
+  originalMessage: text("originalMessage"), // mensagem original antes da edição
+  // Exclusão
+  deletedForSender: boolean("deletedForSender").default(false),
+  deletedForAll: boolean("deletedForAll").default(false),
+  deletedAt: timestamp("deletedAt"),
+  // Leitura
   isRead: boolean("isRead").default(false),
   readAt: timestamp("readAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

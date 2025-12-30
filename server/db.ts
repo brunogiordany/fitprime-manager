@@ -2080,6 +2080,83 @@ export async function getStudentsWithUnreadMessages(personalId: number) {
 }
 
 
+// ==================== CHAT MESSAGE EDIT/DELETE FUNCTIONS ====================
+export async function editChatMessage(messageId: number, senderId: number, senderType: 'personal' | 'student', newMessage: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se a mensagem pertence ao remetente
+  const message = await db.select().from(chatMessages)
+    .where(and(
+      eq(chatMessages.id, messageId),
+      senderType === 'personal' 
+        ? eq(chatMessages.personalId, senderId)
+        : eq(chatMessages.studentId, senderId),
+      eq(chatMessages.senderType, senderType)
+    ))
+    .limit(1);
+  
+  if (message.length === 0) {
+    throw new Error("Mensagem não encontrada ou sem permissão");
+  }
+  
+  await db.update(chatMessages)
+    .set({ 
+      message: newMessage, 
+      isEdited: true, 
+      editedAt: new Date() 
+    })
+    .where(eq(chatMessages.id, messageId));
+}
+
+export async function deleteChatMessageForSender(messageId: number, senderId: number, senderType: 'personal' | 'student') {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se a mensagem pertence ao remetente
+  const message = await db.select().from(chatMessages)
+    .where(and(
+      eq(chatMessages.id, messageId),
+      senderType === 'personal' 
+        ? eq(chatMessages.personalId, senderId)
+        : eq(chatMessages.studentId, senderId),
+      eq(chatMessages.senderType, senderType)
+    ))
+    .limit(1);
+  
+  if (message.length === 0) {
+    throw new Error("Mensagem não encontrada ou sem permissão");
+  }
+  
+  await db.update(chatMessages)
+    .set({ deletedForSender: true })
+    .where(eq(chatMessages.id, messageId));
+}
+
+export async function deleteChatMessageForAll(messageId: number, senderId: number, senderType: 'personal' | 'student') {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se a mensagem pertence ao remetente
+  const message = await db.select().from(chatMessages)
+    .where(and(
+      eq(chatMessages.id, messageId),
+      senderType === 'personal' 
+        ? eq(chatMessages.personalId, senderId)
+        : eq(chatMessages.studentId, senderId),
+      eq(chatMessages.senderType, senderType)
+    ))
+    .limit(1);
+  
+  if (message.length === 0) {
+    throw new Error("Mensagem não encontrada ou sem permissão");
+  }
+  
+  await db.update(chatMessages)
+    .set({ deletedForAll: true })
+    .where(eq(chatMessages.id, messageId));
+}
+
 // ==================== STUDENT BADGES FUNCTIONS ====================
 export async function getStudentBadges(studentId: number) {
   const db = await getDb();

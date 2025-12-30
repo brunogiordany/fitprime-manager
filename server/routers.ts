@@ -156,7 +156,18 @@ export const appRouter = router({
     
     // Enviar mensagem para um aluno
     send: personalProcedure
-      .input(z.object({ studentId: z.number(), message: z.string().min(1) }))
+      .input(z.object({ 
+        studentId: z.number(), 
+        message: z.string().optional(),
+        messageType: z.enum(['text', 'audio', 'image', 'video', 'file', 'link']).default('text'),
+        mediaUrl: z.string().optional(),
+        mediaName: z.string().optional(),
+        mediaMimeType: z.string().optional(),
+        mediaSize: z.number().optional(),
+        mediaDuration: z.number().optional(),
+        audioTranscription: z.string().optional(),
+        linkPreview: z.string().optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
         // Verificar se o aluno pertence ao personal
         const student = await db.getStudentById(input.studentId, ctx.personal.id);
@@ -164,14 +175,88 @@ export const appRouter = router({
           throw new TRPCError({ code: 'FORBIDDEN', message: 'Aluno não encontrado' });
         }
         
+        // Validar que tem mensagem ou mídia
+        if (!input.message && !input.mediaUrl) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
+        }
+        
         const messageId = await db.createChatMessage({
           personalId: ctx.personal.id,
           studentId: input.studentId,
           senderType: 'personal',
-          message: input.message,
+          message: input.message || null,
+          messageType: input.messageType,
+          mediaUrl: input.mediaUrl,
+          mediaName: input.mediaName,
+          mediaMimeType: input.mediaMimeType,
+          mediaSize: input.mediaSize,
+          mediaDuration: input.mediaDuration,
+          audioTranscription: input.audioTranscription,
+          linkPreviewUrl: input.linkPreview,
         });
         
         return { success: true, messageId };
+      }),
+    
+    // Editar mensagem
+    editMessage: personalProcedure
+      .input(z.object({ messageId: z.number(), newMessage: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        await db.editChatMessage(input.messageId, ctx.personal.id, 'personal', input.newMessage);
+        return { success: true };
+      }),
+    
+    // Excluir mensagem para mim
+    deleteForMe: personalProcedure
+      .input(z.object({ messageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteChatMessageForSender(input.messageId, ctx.personal.id, 'personal');
+        return { success: true };
+      }),
+    
+    // Excluir mensagem para todos
+    deleteForAll: personalProcedure
+      .input(z.object({ messageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteChatMessageForAll(input.messageId, ctx.personal.id, 'personal');
+        return { success: true };
+      }),
+    
+    // Enviar mensagem em massa
+    broadcast: personalProcedure
+      .input(z.object({
+        studentIds: z.array(z.number()),
+        message: z.string().optional(),
+        messageType: z.enum(['text', 'audio', 'image', 'video', 'file', 'link']).default('text'),
+        mediaUrl: z.string().optional(),
+        mediaName: z.string().optional(),
+        mediaMimeType: z.string().optional(),
+        mediaSize: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!input.message && !input.mediaUrl) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
+        }
+        
+        const results = [];
+        for (const studentId of input.studentIds) {
+          const student = await db.getStudentById(studentId, ctx.personal.id);
+          if (student) {
+            const messageId = await db.createChatMessage({
+              personalId: ctx.personal.id,
+              studentId,
+              senderType: 'personal',
+              message: input.message || null,
+              messageType: input.messageType,
+              mediaUrl: input.mediaUrl,
+              mediaName: input.mediaName,
+              mediaMimeType: input.mediaMimeType,
+              mediaSize: input.mediaSize,
+            });
+            results.push({ studentId, messageId, success: true });
+          }
+        }
+        return { success: true, sent: results.length, results };
       }),
     
     // Contagem de mensagens não lidas por aluno

@@ -1258,3 +1258,50 @@
 - [x] Cada item do histórico mostra todas as séries detalhadas ao expandir
 - [x] Adicionar filtro por período (última semana, último mês, últimos 3 meses, todo período)
 - [x] Gráfico de linha para visualização rápida da tendência de carga máxima
+
+
+## Sistema de Chat Completo (v5.45)
+- [ ] Corrigir envio de mensagens de texto (campo de input não aparece no PWA)
+- [ ] Implementar gravação e envio de áudio
+- [ ] Transcrição automática de áudio para texto (acessibilidade)
+- [ ] Envio de fotos com preview
+- [ ] Envio de vídeos
+- [ ] Envio de arquivos (PDF, documentos)
+- [ ] Envio de links com preview automático
+- [ ] Editar mensagem enviada
+- [ ] Excluir mensagem "para mim" (só para o usuário)
+- [ ] Excluir mensagem "para todos" (apaga para todos os participantes)
+- [ ] Interface estilo WhatsApp para ações nas mensagens
+- [ ] Mensagem em massa (selecionar contatos ou todos)
+- [ ] Modal de seleção de destinatários para broadcast
+
+
+## UX Área do Aluno (v5.46)
+- [ ] Igualar UX de registrar treino do aluno com a do personal (completa)
+- [ ] Adicionar seletor de tipo de série (Aquecimento, Reconhecimento, Série Válida, Drop Set, Rest-Pause)
+- [ ] Adicionar campo de descanso entre séries
+- [ ] Adicionar campos extras para Drop Set e Rest-Pause
+- [ ] Interface mais completa e profissional igual ao personal
+
+## UX Portal do Aluno - Anamnese (v5.47)
+- [ ] Melhorar UX da anamnese no portal do aluno (está muito simples)
+- [ ] Deixar mais parecido com a UX do personal (visual mais profissional)
+- [ ] Melhorar layout dos campos e seções
+- [ ] Adicionar ícones e visual mais atraente
+- [ ] Melhorar espaçamento e organização dos grupos de campos
+
+
+## Bugs Portal do Aluno - Anamnese (v5.47)
+- [ ] Bug: Erro de validação no campo trainingLocation ao salvar anamnese (invalid_value)
+- [ ] UX: Adicionar botões Salvar e Cancelar no final do formulário de anamnese (não só no topo)
+
+## Bugs Portal do Aluno - Sugestões (v5.48)
+- [ ] Bug: Erro "Treino não encontrado" ao enviar sugestão de alteração no treino
+
+
+## Bugs Portal do Aluno - Cobranças (v5.49)
+- [ ] Bug: Cobranças na área do aluno estão diferentes/erradas comparadas com a área do personal
+- [ ] Comparar e alinhar dados de cobranças entre portal do aluno e área do personal
+
+## Bugs Portal do Aluno - Histórico de Medidas (v5.50)
+- [ ] Bug: Ao clicar em "Histórico de Medidas" abre popup de calendário automaticamente (precisa remover esse comportamento)

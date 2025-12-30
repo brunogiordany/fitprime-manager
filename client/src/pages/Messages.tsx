@@ -28,9 +28,25 @@ import {
   User,
   Dumbbell,
   ArrowLeft,
-  Loader2
+  Loader2,
+  Mic,
+  MicOff,
+  Image,
+  FileText,
+  Video,
+  Link2,
+  Paperclip,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  X,
+  Play,
+  Pause,
+  Download,
+  Users,
+  CheckCheck
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -38,7 +54,30 @@ import { toast } from "sonner";
 interface ChatMessage {
   id: number;
   senderType: "personal" | "student";
-  message: string;
+  messageType: "text" | "audio" | "image" | "video" | "file" | "link";
+  message: string | null;
+  // Mídia
+  mediaUrl?: string | null;
+  mediaName?: string | null;
+  mediaMimeType?: string | null;
+  mediaSize?: number | null;
+  mediaDuration?: number | null;
+  // Transcrição de áudio
+  audioTranscription?: string | null;
+  // Preview de links
+  linkPreviewTitle?: string | null;
+  linkPreviewDescription?: string | null;
+  linkPreviewImage?: string | null;
+  linkPreviewUrl?: string | null;
+  // Edição
+  isEdited?: boolean | null;
+  editedAt?: Date | string | null;
+  originalMessage?: string | null;
+  // Exclusão
+  deletedForSender?: boolean | null;
+  deletedForAll?: boolean | null;
+  deletedAt?: Date | string | null;
+  // Leitura
   createdAt: Date | string;
   isRead: boolean | null;
 }
@@ -64,6 +103,32 @@ export default function Messages() {
   const [selectedStudent, setSelectedStudent] = useState<StudentWithUnread | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Estados para gravação de áudio
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Estados para upload de mídia
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  
+  // Estados para edição e exclusão
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
+  const [editText, setEditText] = useState("");
+  const [messageMenuId, setMessageMenuId] = useState<number | null>(null);
+  
+  // Estados para mensagem em massa
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [selectedStudentsForBroadcast, setSelectedStudentsForBroadcast] = useState<number[]>([]);
+  const [selectAllForBroadcast, setSelectAllForBroadcast] = useState(false);
 
   // WhatsApp messages
   const { data: whatsappMessages, isLoading: isLoadingWhatsapp, refetch: refetchWhatsapp } = trpc.messages.log.useQuery({
@@ -125,6 +190,90 @@ export default function Messages() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  // Funções de gravação de áudio
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+      
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (error) {
+      toast.error('Não foi possível acessar o microfone');
+    }
+  }, []);
+  
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    }
+  }, [isRecording]);
+  
+  const cancelRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setAudioBlob(null);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    }
+  }, [isRecording]);
+  
+  const handleSendAudio = async () => {
+    if (!audioBlob || !selectedStudent) return;
+    // Por enquanto, enviar como mensagem de texto indicando áudio
+    // TODO: Implementar upload para S3 e envio real de áudio
+    toast.info('Áudio gravado! Upload será implementado em breve.');
+    setAudioBlob(null);
+  };
+  
+  // Funções de upload de mídia
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'file') => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedStudent) return;
+    
+    // Validar tamanho (16MB máximo)
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Máximo 16MB.');
+      return;
+    }
+    
+    setUploadingMedia(true);
+    try {
+      // TODO: Implementar upload para S3
+      toast.info(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} selecionado! Upload será implementado em breve.`);
+    } catch (error) {
+      toast.error('Erro ao enviar arquivo');
+    } finally {
+      setUploadingMedia(false);
+      e.target.value = '';
     }
   };
 
@@ -352,26 +501,140 @@ export default function Messages() {
                       </ScrollArea>
                       
                       <div className="p-4 border-t">
-                        <div className="flex gap-2">
+                        {/* Input de arquivos ocultos */}
+                        <input
+                          type="file"
+                          ref={imageInputRef}
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileSelect(e, 'image')}
+                        />
+                        <input
+                          type="file"
+                          ref={videoInputRef}
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) => handleFileSelect(e, 'video')}
+                        />
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                          className="hidden"
+                          onChange={(e) => handleFileSelect(e, 'file')}
+                        />
+                        
+                        {/* Preview de áudio gravado */}
+                        {audioBlob && (
+                          <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3">
+                            <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
+                            <Button variant="ghost" size="icon" onClick={() => setAudioBlob(null)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" onClick={handleSendAudio} disabled={sendMessage.isPending}>
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Barra de gravação */}
+                        {isRecording && (
+                          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center gap-3">
+                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                            <span className="text-red-600 dark:text-red-400 font-medium">
+                              Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                            </span>
+                            <div className="flex-1" />
+                            <Button variant="ghost" size="icon" onClick={cancelRecording}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                            <Button variant="destructive" size="icon" onClick={stopRecording}>
+                              <MicOff className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <div className="flex gap-2 items-center">
+                          {/* Menu de anexos */}
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowAttachMenu(!showAttachMenu)}
+                              disabled={isRecording || uploadingMedia}
+                            >
+                              <Paperclip className="h-5 w-5" />
+                            </Button>
+                            {showAttachMenu && (
+                              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="justify-start gap-2"
+                                  onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
+                                >
+                                  <Image className="h-4 w-4 text-blue-500" />
+                                  Foto
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="justify-start gap-2"
+                                  onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
+                                >
+                                  <Video className="h-4 w-4 text-purple-500" />
+                                  Vídeo
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="justify-start gap-2"
+                                  onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
+                                >
+                                  <FileText className="h-4 w-4 text-orange-500" />
+                                  Arquivo
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Campo de texto */}
                           <Input
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={handleKeyPress}
                             placeholder="Digite sua mensagem..."
-                            disabled={sendMessage.isPending}
+                            disabled={sendMessage.isPending || isRecording || uploadingMedia}
                             className="flex-1"
                           />
-                          <Button
-                            onClick={handleSendMessage}
-                            disabled={!newMessage.trim() || sendMessage.isPending}
-                            size="icon"
-                          >
-                            {sendMessage.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Send className="h-4 w-4" />
-                            )}
-                          </Button>
+                          
+                          {/* Botão de gravação de áudio ou enviar */}
+                          {newMessage.trim() ? (
+                            <Button
+                              onClick={handleSendMessage}
+                              disabled={sendMessage.isPending}
+                              size="icon"
+                            >
+                              {sendMessage.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant={isRecording ? "destructive" : "ghost"}
+                              size="icon"
+                              onClick={isRecording ? stopRecording : startRecording}
+                              disabled={uploadingMedia}
+                            >
+                              {isRecording ? (
+                                <MicOff className="h-5 w-5" />
+                              ) : (
+                                <Mic className="h-5 w-5" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>

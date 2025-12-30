@@ -1303,9 +1303,10 @@ export default function StudentPortalPage() {
                               <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="gym">Academia</SelectItem>
-                              <SelectItem value="home">Casa</SelectItem>
-                              <SelectItem value="outdoor">Ar livre</SelectItem>
+                              <SelectItem value="full_gym">Academia Completa</SelectItem>
+                              <SelectItem value="home_gym">Academia em Casa</SelectItem>
+                              <SelectItem value="home_basic">Casa (equipamentos básicos)</SelectItem>
+                              <SelectItem value="outdoor">Ar Livre</SelectItem>
                               <SelectItem value="studio">Estúdio</SelectItem>
                             </SelectContent>
                           </Select>
@@ -1363,6 +1364,27 @@ export default function StudentPortalPage() {
                         onChange={(e) => setAnamnesisForm({ ...anamnesisForm, observations: e.target.value })}
                         placeholder="Outras informações que você gostaria de compartilhar..."
                       />
+                    </div>
+                    
+                    {/* Botões Salvar e Cancelar no final do formulário */}
+                    <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditingAnamnesis(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleSaveAnamnesis}
+                        disabled={updateAnamneseMutation.isPending}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        {updateAnamneseMutation.isPending ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</>
+                        ) : (
+                          <><Save className="h-4 w-4 mr-2" /> Salvar</>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 ) : (
