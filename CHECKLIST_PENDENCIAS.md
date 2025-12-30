@@ -7,7 +7,7 @@
 ## 🔴 BUGS CRÍTICOS - SÉRIE B (Prioridade Máxima)
 
 - [x] B1. Bug: Link de convite não copia para área de transferência (CORRIGIDO - Implementado utilitário robusto de clipboard com fallback para iOS)
-- [ ] B2. Bug: Redesign completo do Chat (UX ruim, scroll quebrado) - estilo WhatsApp/iMessage
+- [x] B2. Bug: Redesign completo do Chat (UX ruim, scroll quebrado) - estilo WhatsApp/iMessage (CORRIGIDO - Layout estilo WhatsApp com scroll funcional, agrupamento por data, bolhas elegantes)
 - [ ] B3. Bug: Portal do Aluno - adicionar barra lateral de navegação
 - [ ] B4. Bug: Gravação de áudio (grava mas dá erro, não tem pause, não envia)
 - [ ] B5. Bug: Upload de arquivos não funciona (fotos, vídeos, docs)

@@ -44,20 +44,18 @@ import {
   Image,
   FileText,
   Video,
-  Link2,
   Paperclip,
-  MoreVertical,
-  Pencil,
-  Trash2,
   X,
-  Play,
-  Pause,
   Download,
   Users,
-  CheckCheck
+  CheckCheck,
+  Check,
+  Phone,
+  MoreVertical,
+  Smile
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { format } from "date-fns";
+import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
@@ -66,28 +64,22 @@ interface ChatMessage {
   senderType: "personal" | "student";
   messageType: "text" | "audio" | "image" | "video" | "file" | "link";
   message: string | null;
-  // Mídia
   mediaUrl?: string | null;
   mediaName?: string | null;
   mediaMimeType?: string | null;
   mediaSize?: number | null;
   mediaDuration?: number | null;
-  // Transcrição de áudio
   audioTranscription?: string | null;
-  // Preview de links
   linkPreviewTitle?: string | null;
   linkPreviewDescription?: string | null;
   linkPreviewImage?: string | null;
   linkPreviewUrl?: string | null;
-  // Edição
   isEdited?: boolean | null;
   editedAt?: Date | string | null;
   originalMessage?: string | null;
-  // Exclusão
   deletedForSender?: boolean | null;
   deletedForAll?: boolean | null;
   deletedAt?: Date | string | null;
-  // Leitura
   createdAt: Date | string;
   isRead: boolean | null;
 }
@@ -100,19 +92,14 @@ interface StudentWithUnread {
   lastMessageAt?: Date | string;
 }
 
-interface StudentFromAPI {
-  id: number;
-  name: string;
-  unreadCount?: number;
-}
-
 export default function Messages() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("chat");
   const [selectedStudent, setSelectedStudent] = useState<StudentWithUnread | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   
   // Estados para gravação de áudio
   const [isRecording, setIsRecording] = useState(false);
@@ -128,11 +115,6 @@ export default function Messages() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  
-  // Estados para edição e exclusão
-  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
-  const [editText, setEditText] = useState("");
-  const [messageMenuId, setMessageMenuId] = useState<number | null>(null);
   
   // Estados para mensagem em massa
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
@@ -161,7 +143,7 @@ export default function Messages() {
   const { data: allStudents } = trpc.students.list.useQuery({});
 
   // Chat messages do aluno selecionado
-  const { data: chatMessages, refetch: refetchChat } = trpc.chat.messages.useQuery(
+  const { data: chatMessages, refetch: refetchChat, isLoading: isLoadingChat } = trpc.chat.messages.useQuery(
     { studentId: selectedStudent?.studentId || 0, limit: 100 },
     { 
       enabled: !!selectedStudent,
@@ -182,11 +164,15 @@ export default function Messages() {
   });
 
   // Scroll para o final quando novas mensagens chegarem
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chatMessages]);
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages, scrollToBottom]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedStudent) return;
@@ -258,8 +244,6 @@ export default function Messages() {
   
   const handleSendAudio = async () => {
     if (!audioBlob || !selectedStudent) return;
-    // Por enquanto, enviar como mensagem de texto indicando áudio
-    // TODO: Implementar upload para S3 e envio real de áudio
     toast.info('Áudio gravado! Upload será implementado em breve.');
     setAudioBlob(null);
   };
@@ -269,7 +253,6 @@ export default function Messages() {
     const file = e.target.files?.[0];
     if (!file || !selectedStudent) return;
     
-    // Validar tamanho (16MB máximo)
     if (file.size > 16 * 1024 * 1024) {
       toast.error('Arquivo muito grande. Máximo 16MB.');
       return;
@@ -277,7 +260,6 @@ export default function Messages() {
     
     setUploadingMedia(true);
     try {
-      // TODO: Implementar upload para S3
       toast.info(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} selecionado! Upload será implementado em breve.`);
     } catch (error) {
       toast.error('Erro ao enviar arquivo');
@@ -287,24 +269,40 @@ export default function Messages() {
     }
   };
 
-  const formatMessageDate = (date: Date | string) => {
+  // Formatar data da mensagem
+  const formatMessageTime = (date: Date | string) => {
+    return format(new Date(date), "HH:mm", { locale: ptBR });
+  };
+
+  // Formatar data do separador
+  const formatDateSeparator = (date: Date | string) => {
     const d = new Date(date);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (d.toDateString() === today.toDateString()) {
-      return format(d, "HH:mm", { locale: ptBR });
-    } else if (d.toDateString() === yesterday.toDateString()) {
-      return `Ontem ${format(d, "HH:mm", { locale: ptBR })}`;
-    } else {
-      return format(d, "dd/MM HH:mm", { locale: ptBR });
-    }
+    if (isToday(d)) return "Hoje";
+    if (isYesterday(d)) return "Ontem";
+    return format(d, "dd 'de' MMMM", { locale: ptBR });
+  };
+
+  // Agrupar mensagens por data
+  const groupMessagesByDate = (messages: ChatMessage[]) => {
+    const groups: { date: string; messages: ChatMessage[] }[] = [];
+    let currentGroup: { date: string; messages: ChatMessage[] } | null = null;
+
+    messages.forEach((msg) => {
+      const msgDate = new Date(msg.createdAt);
+      const dateKey = format(msgDate, "yyyy-MM-dd");
+
+      if (!currentGroup || currentGroup.date !== dateKey) {
+        currentGroup = { date: dateKey, messages: [] };
+        groups.push(currentGroup);
+      }
+      currentGroup.messages.push(msg);
+    });
+
+    return groups;
   };
 
   // Combinar alunos com mensagens não lidas com todos os alunos
   const conversationsList: StudentWithUnread[] = (allStudents?.map((student: any) => {
-    // studentsWithUnread retorna o student completo com unreadCount
     const unreadInfo = studentsWithUnread?.find((s: any) => s.id === student.id);
     return {
       studentId: student.id,
@@ -312,440 +310,478 @@ export default function Messages() {
       unreadCount: unreadInfo?.unreadCount || 0,
     };
   }) || []).sort((a, b) => {
-    // Ordenar por mensagens não lidas primeiro
     if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
     if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
     return a.studentName.localeCompare(b.studentName);
   });
 
-  // WhatsApp filters
-  const filteredWhatsappMessages = whatsappMessages?.filter((msg: any) => {
-    if (!searchTerm) return true;
-    return msg.phone?.includes(searchTerm) || msg.message?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filtrar mensagens WhatsApp
+  const displayWhatsappMessages = whatsappMessages?.filter((msg: any) => {
+    if (statusFilter !== "all" && msg.status !== statusFilter) return false;
+    if (searchTerm && !msg.phone?.includes(searchTerm) && !msg.message?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return true;
   }) || [];
-
-  const displayWhatsappMessages = statusFilter === 'all' 
-    ? filteredWhatsappMessages 
-    : filteredWhatsappMessages.filter((m: any) => m.status === statusFilter);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return <Badge className="bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-3 w-3 mr-1" />Enviada</Badge>;
-      case 'failed':
-        return <Badge className="bg-red-100 text-red-700"><XCircle className="h-3 w-3 mr-1" />Falhou</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-700"><Clock className="h-3 w-3 mr-1" />Pendente</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   // Estatísticas WhatsApp
   const whatsappStats = {
     total: whatsappMessages?.length || 0,
-    sent: whatsappMessages?.filter((m: any) => m.status === 'sent').length || 0,
-    pending: whatsappMessages?.filter((m: any) => m.status === 'pending').length || 0,
-    failed: whatsappMessages?.filter((m: any) => m.status === 'failed').length || 0,
+    sent: whatsappMessages?.filter((m: any) => m.status === "sent").length || 0,
+    pending: whatsappMessages?.filter((m: any) => m.status === "pending").length || 0,
+    failed: whatsappMessages?.filter((m: any) => m.status === "failed").length || 0,
   };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "sent":
+        return <Badge className="bg-emerald-500">Enviada</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">Pendente</Badge>;
+      case "failed":
+        return <Badge className="bg-red-500">Falhou</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  // Agrupar mensagens
+  const messageGroups = chatMessages ? groupMessagesByDate(chatMessages) : [];
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Mensagens</h1>
-            <p className="text-muted-foreground">
-              Gerencie suas conversas e mensagens automáticas
-            </p>
-          </div>
-        </div>
-
+      <div className="h-[calc(100vh-80px)] flex flex-col">
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="chat" className="relative">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Chat FitPrime
-              {totalUnread && totalUnread > 0 && (
-                <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
-                  {totalUnread}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="whatsapp">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              WhatsApp
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          <div className="flex-shrink-0 px-4 pt-4 pb-2">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="chat" className="relative">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Chat FitPrime
+                {totalUnread && totalUnread > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
+                    {totalUnread}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="whatsapp">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                WhatsApp
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          {/* Chat FitPrime Tab */}
-          <TabsContent value="chat" className="mt-4">
-            <div className="grid md:grid-cols-3 gap-4" style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}>
-              {/* Lista de Conversas */}
-              <Card className="md:col-span-1 flex flex-col h-full overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Conversas</CardTitle>
+          {/* Chat FitPrime Tab - Estilo WhatsApp */}
+          <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
+            <div className="flex h-full bg-gray-100 dark:bg-gray-900">
+              {/* Lista de Conversas - Sidebar */}
+              <div className={`${selectedStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r`}>
+                {/* Header da lista */}
+                <div className="flex-shrink-0 p-4 border-b bg-emerald-600 text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xl font-bold">Conversas</h2>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => setShowBroadcastModal(true)}
-                      className="gap-1"
+                      className="text-white hover:bg-emerald-700"
                     >
-                      <Users className="h-4 w-4" />
-                      <span className="hidden sm:inline">Broadcast</span>
+                      <Users className="h-5 w-5" />
                     </Button>
                   </div>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-200" />
                     <Input
                       placeholder="Buscar aluno..."
-                      className="pl-10"
+                      className="pl-10 bg-emerald-700 border-emerald-500 text-white placeholder:text-emerald-200 focus:bg-emerald-600"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 p-0 overflow-hidden">
-                  <ScrollArea className="h-full">
-                    <div className="space-y-1 p-2">
-                      {conversationsList
-                        .filter((conv: any) => 
-                          conv.studentName.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                        .map((conv: any) => (
-                          <button
-                            key={conv.studentId}
-                            onClick={() => setSelectedStudent(conv)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                              selectedStudent?.studentId === conv.studentId
-                                ? "bg-emerald-100 dark:bg-emerald-900/30"
-                                : "hover:bg-accent"
-                            }`}
-                          >
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                                {conv.studentName.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <p className="font-medium truncate">{conv.studentName}</p>
-                                {conv.unreadCount > 0 && (
-                                  <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
-                                    {conv.unreadCount}
-                                  </Badge>
-                                )}
+                </div>
+
+                {/* Lista de conversas */}
+                <div className="flex-1 overflow-y-auto">
+                  {conversationsList
+                    .filter((conv) => 
+                      conv.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((conv) => (
+                      <button
+                        key={conv.studentId}
+                        onClick={() => setSelectedStudent(conv)}
+                        className={`w-full flex items-center gap-3 p-4 text-left transition-colors border-b border-gray-100 dark:border-gray-800 ${
+                          selectedStudent?.studentId === conv.studentId
+                            ? "bg-emerald-50 dark:bg-emerald-900/20"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-900"
+                        }`}
+                      >
+                        <Avatar className="h-12 w-12 flex-shrink-0">
+                          <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-lg">
+                            {conv.studentName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold truncate">{conv.studentName}</p>
+                            {conv.unreadCount > 0 && (
+                              <Badge className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                {conv.unreadCount}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 truncate">
+                            Clique para conversar
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  {conversationsList.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                      <p className="font-medium">Nenhum aluno encontrado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Área de Chat */}
+              <div className={`${selectedStudent ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-[#e5ddd5] dark:bg-gray-800`}>
+                {selectedStudent ? (
+                  <>
+                    {/* Header do chat */}
+                    <div className="flex-shrink-0 flex items-center gap-3 p-3 bg-emerald-600 text-white shadow-md">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden text-white hover:bg-emerald-700"
+                        onClick={() => setSelectedStudent(null)}
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </Button>
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-white/20 text-white">
+                          {selectedStudent.studentName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{selectedStudent.studentName}</p>
+                        <p className="text-xs text-emerald-100">Online</p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="text-white hover:bg-emerald-700">
+                        <Phone className="h-5 w-5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-white hover:bg-emerald-700">
+                        <MoreVertical className="h-5 w-5" />
+                      </Button>
+                    </div>
+
+                    {/* Área de mensagens */}
+                    <div 
+                      ref={messagesContainerRef}
+                      className="flex-1 overflow-y-auto p-4"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                      }}
+                    >
+                      {isLoadingChat ? (
+                        <div className="flex items-center justify-center h-full">
+                          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                        </div>
+                      ) : messageGroups.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center bg-white/80 dark:bg-gray-900/80 rounded-2xl p-8 shadow-lg">
+                            <MessageCircle className="h-16 w-16 mx-auto mb-4 text-emerald-500" />
+                            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Nenhuma mensagem ainda</p>
+                            <p className="text-sm text-gray-500">Envie uma mensagem para iniciar a conversa!</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {messageGroups.map((group) => (
+                            <div key={group.date}>
+                              {/* Separador de data */}
+                              <div className="flex justify-center my-4">
+                                <span className="bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full shadow-sm">
+                                  {formatDateSeparator(group.messages[0].createdAt)}
+                                </span>
+                              </div>
+                              
+                              {/* Mensagens do grupo */}
+                              <div className="space-y-1">
+                                {group.messages.map((msg, idx) => {
+                                  const isPersonal = msg.senderType === "personal";
+                                  const showTail = idx === group.messages.length - 1 || 
+                                    group.messages[idx + 1]?.senderType !== msg.senderType;
+                                  
+                                  return (
+                                    <div
+                                      key={msg.id}
+                                      className={`flex ${isPersonal ? "justify-end" : "justify-start"}`}
+                                    >
+                                      <div
+                                        className={`relative max-w-[85%] md:max-w-[70%] px-3 py-2 shadow-sm ${
+                                          isPersonal
+                                            ? `bg-[#dcf8c6] dark:bg-emerald-700 ${showTail ? 'rounded-tl-lg rounded-tr-lg rounded-bl-lg' : 'rounded-lg'}`
+                                            : `bg-white dark:bg-gray-700 ${showTail ? 'rounded-tl-lg rounded-tr-lg rounded-br-lg' : 'rounded-lg'}`
+                                        }`}
+                                      >
+                                        {/* Conteúdo da mensagem */}
+                                        {msg.messageType === 'audio' && msg.mediaUrl ? (
+                                          <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <audio 
+                                                src={msg.mediaUrl} 
+                                                controls 
+                                                className="h-10 max-w-[200px]"
+                                              />
+                                            </div>
+                                            {msg.audioTranscription && (
+                                              <p className="text-xs italic text-gray-600 dark:text-gray-400">
+                                                "{msg.audioTranscription}"
+                                              </p>
+                                            )}
+                                          </div>
+                                        ) : msg.messageType === 'image' && msg.mediaUrl ? (
+                                          <div className="space-y-1">
+                                            <img 
+                                              src={msg.mediaUrl} 
+                                              alt={msg.mediaName || 'Imagem'} 
+                                              className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                              onClick={() => window.open(msg.mediaUrl!, '_blank')}
+                                            />
+                                            {msg.message && <p className="text-sm">{msg.message}</p>}
+                                          </div>
+                                        ) : msg.messageType === 'video' && msg.mediaUrl ? (
+                                          <div className="space-y-1">
+                                            <video 
+                                              src={msg.mediaUrl} 
+                                              controls 
+                                              className="max-w-full rounded-lg"
+                                            />
+                                            {msg.message && <p className="text-sm">{msg.message}</p>}
+                                          </div>
+                                        ) : msg.messageType === 'file' && msg.mediaUrl ? (
+                                          <div className="flex items-center gap-2 p-2 bg-black/5 rounded-lg">
+                                            <FileText className="h-8 w-8 text-emerald-600 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-sm font-medium truncate">{msg.mediaName || 'Arquivo'}</p>
+                                              {msg.mediaSize && (
+                                                <p className="text-xs text-gray-500">
+                                                  {(msg.mediaSize / 1024).toFixed(1)} KB
+                                                </p>
+                                              )}
+                                            </div>
+                                            <Button
+                                              size="icon"
+                                              variant="ghost"
+                                              className="h-8 w-8"
+                                              onClick={() => window.open(msg.mediaUrl!, '_blank')}
+                                            >
+                                              <Download className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ) : (
+                                          <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                                        )}
+                                        
+                                        {/* Horário e status */}
+                                        <div className={`flex items-center justify-end gap-1 mt-1 ${isPersonal ? "text-emerald-700 dark:text-emerald-300" : "text-gray-500"}`}>
+                                          <span className="text-[10px]">{formatMessageTime(msg.createdAt)}</span>
+                                          {isPersonal && (
+                                            msg.isRead ? (
+                                              <CheckCheck className="h-3.5 w-3.5 text-blue-500" />
+                                            ) : (
+                                              <Check className="h-3.5 w-3.5" />
+                                            )
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
-                          </button>
-                        ))}
-                      {conversationsList.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                          <p>Nenhum aluno encontrado</p>
+                          ))}
+                          <div ref={messagesEndRef} />
                         </div>
                       )}
                     </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
 
-              {/* Área de Chat */}
-              <Card className="md:col-span-2 flex flex-col h-full overflow-hidden">
-                {selectedStudent ? (
-                  <>
-                    <CardHeader className="pb-3 border-b flex-shrink-0">
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="md:hidden"
-                          onClick={() => setSelectedStudent(null)}
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                            {selectedStudent.studentName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-lg">{selectedStudent.studentName}</CardTitle>
-                          <CardDescription>Chat interno</CardDescription>
+                    {/* Input de mensagem */}
+                    <div className="flex-shrink-0 p-3 bg-gray-100 dark:bg-gray-900">
+                      {/* Input de arquivos ocultos */}
+                      <input
+                        type="file"
+                        ref={imageInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, 'image')}
+                      />
+                      <input
+                        type="file"
+                        ref={videoInputRef}
+                        accept="video/*"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, 'video')}
+                      />
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e, 'file')}
+                      />
+                      
+                      {/* Preview de áudio gravado */}
+                      {audioBlob && (
+                        <div className="mb-3 p-3 bg-white dark:bg-gray-800 rounded-full flex items-center gap-3 shadow-sm">
+                          <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
+                          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setAudioBlob(null)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" className="rounded-full bg-emerald-500 hover:bg-emerald-600" onClick={handleSendAudio} disabled={sendMessage.isPending}>
+                            <Send className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 p-0 flex flex-col min-h-0">
-                      <div className="flex-1 overflow-y-auto px-4" ref={scrollRef}>
-                        <div className="space-y-3 py-4">
-                          {!chatMessages || chatMessages.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                              <p>Nenhuma mensagem ainda</p>
-                              <p className="text-sm">Envie uma mensagem para iniciar a conversa!</p>
-                            </div>
-                          ) : (
-                            chatMessages.map((msg: ChatMessage) => (
-                              <div
-                                key={msg.id}
-                                className={`flex ${msg.senderType === "personal" ? "justify-end" : "justify-start"}`}
+                      )}
+                      
+                      {/* Barra de gravação */}
+                      {isRecording && (
+                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center gap-3 shadow-sm">
+                          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                          <span className="text-red-600 dark:text-red-400 font-medium flex-1">
+                            Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                          </span>
+                          <Button variant="ghost" size="icon" className="rounded-full" onClick={cancelRecording}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="icon" className="rounded-full" onClick={stopRecording}>
+                            <MicOff className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Barra de input */}
+                      <div className="flex items-center gap-2">
+                        {/* Menu de anexos */}
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full text-gray-600 hover:text-emerald-600 hover:bg-emerald-50"
+                            onClick={() => setShowAttachMenu(!showAttachMenu)}
+                            disabled={isRecording || uploadingMedia}
+                          >
+                            <Paperclip className="h-5 w-5" />
+                          </Button>
+                          {showAttachMenu && (
+                            <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start gap-2 rounded-lg"
+                                onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
                               >
-                                <div
-                                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                                    msg.senderType === "personal"
-                                      ? "bg-emerald-500 text-white rounded-br-md"
-                                      : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 mb-1">
-                                    {msg.senderType === "student" ? (
-                                      <User className="h-3 w-3" />
-                                    ) : (
-                                      <Dumbbell className="h-3 w-3" />
-                                    )}
-                                    <span className="text-xs opacity-75">
-                                      {msg.senderType === "student" ? selectedStudent.studentName : "Você"}
-                                    </span>
-                                  </div>
-                                  {/* Renderização baseada no tipo de mensagem */}
-                                  {msg.messageType === 'audio' && msg.mediaUrl ? (
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <audio 
-                                          src={msg.mediaUrl} 
-                                          controls 
-                                          className="h-8 max-w-[200px]"
-                                        />
-                                        {msg.mediaDuration && (
-                                          <span className="text-xs opacity-75">
-                                            {Math.floor(msg.mediaDuration / 60)}:{String(msg.mediaDuration % 60).padStart(2, '0')}
-                                          </span>
-                                        )}
-                                      </div>
-                                      {msg.audioTranscription ? (
-                                        <p className="text-xs opacity-75 italic">
-                                          "{msg.audioTranscription}"
-                                        </p>
-                                      ) : (
-                                        <TranscribeButton 
-                                          messageId={msg.id} 
-                                          audioUrl={msg.mediaUrl} 
-                                          onSuccess={() => refetchChat()}
-                                        />
-                                      )}
-                                    </div>
-                                  ) : msg.messageType === 'image' && msg.mediaUrl ? (
-                                    <div className="space-y-2">
-                                      <img 
-                                        src={msg.mediaUrl} 
-                                        alt={msg.mediaName || 'Imagem'} 
-                                        className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                        onClick={() => window.open(msg.mediaUrl!, '_blank')}
-                                      />
-                                      {msg.message && <p className="text-sm">{msg.message}</p>}
-                                    </div>
-                                  ) : msg.messageType === 'video' && msg.mediaUrl ? (
-                                    <div className="space-y-2">
-                                      <video 
-                                        src={msg.mediaUrl} 
-                                        controls 
-                                        className="max-w-full rounded-lg"
-                                      />
-                                      {msg.message && <p className="text-sm">{msg.message}</p>}
-                                    </div>
-                                  ) : msg.messageType === 'file' && msg.mediaUrl ? (
-                                    <div className="flex items-center gap-3 p-2 bg-black/10 rounded-lg">
-                                      <FileText className="h-8 w-8 flex-shrink-0" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium truncate">{msg.mediaName || 'Arquivo'}</p>
-                                        {msg.mediaSize && (
-                                          <p className="text-xs opacity-75">
-                                            {(msg.mediaSize / 1024).toFixed(1)} KB
-                                          </p>
-                                        )}
-                                      </div>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-8 w-8"
-                                        onClick={() => window.open(msg.mediaUrl!, '_blank')}
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
-                                  )}
-                                  <div className={`flex items-center gap-1 mt-1 ${msg.senderType === "personal" ? "text-emerald-100" : "text-gray-500"}`}>
-                                    <span className="text-xs">{formatMessageDate(msg.createdAt)}</span>
-                                    {msg.senderType === "personal" && msg.isRead && (
-                                      <CheckCheck className="h-3 w-3" />
-                                    )}
-                                  </div>
+                                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                                  <Image className="h-4 w-4 text-white" />
                                 </div>
-                              </div>
-                            ))
+                                Foto
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start gap-2 rounded-lg"
+                                onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                                  <Video className="h-4 w-4 text-white" />
+                                </div>
+                                Vídeo
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start gap-2 rounded-lg"
+                                onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                                  <FileText className="h-4 w-4 text-white" />
+                                </div>
+                                Arquivo
+                              </Button>
+                            </div>
                           )}
                         </div>
-                      </div>
-                      
-                      <div className="p-4 border-t flex-shrink-0">
-                        {/* Input de arquivos ocultos */}
-                        <input
-                          type="file"
-                          ref={imageInputRef}
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleFileSelect(e, 'image')}
-                        />
-                        <input
-                          type="file"
-                          ref={videoInputRef}
-                          accept="video/*"
-                          className="hidden"
-                          onChange={(e) => handleFileSelect(e, 'video')}
-                        />
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-                          className="hidden"
-                          onChange={(e) => handleFileSelect(e, 'file')}
-                        />
                         
-                        {/* Preview de áudio gravado */}
-                        {audioBlob && (
-                          <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3">
-                            <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
-                            <Button variant="ghost" size="icon" onClick={() => setAudioBlob(null)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" onClick={handleSendAudio} disabled={sendMessage.isPending}>
-                              <Send className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {/* Barra de gravação */}
-                        {isRecording && (
-                          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center gap-3">
-                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                            <span className="text-red-600 dark:text-red-400 font-medium">
-                              Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
-                            </span>
-                            <div className="flex-1" />
-                            <Button variant="ghost" size="icon" onClick={cancelRecording}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                            <Button variant="destructive" size="icon" onClick={stopRecording}>
-                              <MicOff className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        
-                        <div className="flex gap-2 items-center">
-                          {/* Menu de anexos */}
-                          <div className="relative">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setShowAttachMenu(!showAttachMenu)}
-                              disabled={isRecording || uploadingMedia}
-                            >
-                              <Paperclip className="h-5 w-5" />
-                            </Button>
-                            {showAttachMenu && (
-                              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="justify-start gap-2"
-                                  onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
-                                >
-                                  <Image className="h-4 w-4 text-blue-500" />
-                                  Foto
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="justify-start gap-2"
-                                  onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
-                                >
-                                  <Video className="h-4 w-4 text-purple-500" />
-                                  Vídeo
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="justify-start gap-2"
-                                  onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
-                                >
-                                  <FileText className="h-4 w-4 text-orange-500" />
-                                  Arquivo
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Campo de texto */}
+                        {/* Campo de texto */}
+                        <div className="flex-1 relative">
                           <Input
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder="Digite sua mensagem..."
+                            placeholder="Digite uma mensagem"
                             disabled={sendMessage.isPending || isRecording || uploadingMedia}
-                            className="flex-1"
+                            className="rounded-full pr-10 bg-white dark:bg-gray-800 border-0 shadow-sm"
                           />
-                          
-                          {/* Botão de gravação de áudio ou enviar */}
-                          {newMessage.trim() ? (
-                            <Button
-                              onClick={handleSendMessage}
-                              disabled={sendMessage.isPending}
-                              size="icon"
-                            >
-                              {sendMessage.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
-                            </Button>
-                          ) : (
-                            <Button
-                              variant={isRecording ? "destructive" : "ghost"}
-                              size="icon"
-                              onClick={isRecording ? stopRecording : startRecording}
-                              disabled={uploadingMedia}
-                            >
-                              {isRecording ? (
-                                <MicOff className="h-5 w-5" />
-                              ) : (
-                                <Mic className="h-5 w-5" />
-                              )}
-                            </Button>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-gray-400 hover:text-gray-600"
+                          >
+                            <Smile className="h-5 w-5" />
+                          </Button>
                         </div>
+                        
+                        {/* Botão de enviar ou gravar */}
+                        {newMessage.trim() ? (
+                          <Button
+                            onClick={handleSendMessage}
+                            disabled={sendMessage.isPending}
+                            size="icon"
+                            className="rounded-full bg-emerald-500 hover:bg-emerald-600 h-10 w-10"
+                          >
+                            {sendMessage.isPending ? (
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <Send className="h-5 w-5" />
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant={isRecording ? "destructive" : "default"}
+                            size="icon"
+                            onClick={isRecording ? stopRecording : startRecording}
+                            disabled={uploadingMedia}
+                            className={`rounded-full h-10 w-10 ${!isRecording ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
+                          >
+                            {isRecording ? (
+                              <MicOff className="h-5 w-5" />
+                            ) : (
+                              <Mic className="h-5 w-5" />
+                            )}
+                          </Button>
+                        )}
                       </div>
-                    </CardContent>
+                    </div>
                   </>
                 ) : (
-                  <CardContent className="flex-1 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <MessageCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                      <p className="text-lg font-medium">Selecione uma conversa</p>
-                      <p className="text-sm">Escolha um aluno para ver as mensagens</p>
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-64 h-64 mx-auto mb-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+                        <MessageCircle className="h-32 w-32 text-emerald-500" />
+                      </div>
+                      <h2 className="text-2xl font-light text-gray-600 dark:text-gray-400 mb-2">FitPrime Chat</h2>
+                      <p className="text-gray-500 dark:text-gray-500">
+                        Selecione uma conversa para começar
+                      </p>
                     </div>
-                  </CardContent>
+                  </div>
                 )}
-              </Card>
+              </div>
             </div>
           </TabsContent>
 
           {/* WhatsApp Tab */}
-          <TabsContent value="whatsapp" className="mt-6 space-y-6">
+          <TabsContent value="whatsapp" className="flex-1 overflow-auto p-4 space-y-6">
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
@@ -888,6 +924,7 @@ export default function Messages() {
           </TabsContent>
         </Tabs>
       </div>
+
       {/* Modal de Broadcast */}
       <Dialog open={showBroadcastModal} onOpenChange={setShowBroadcastModal}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
@@ -1025,7 +1062,7 @@ function BroadcastSendButton({ studentIds, message, onSuccess }: { studentIds: n
 // Componente de botão de transcrição de áudio
 function TranscribeButton({ messageId, audioUrl, onSuccess }: { messageId: number; audioUrl: string; onSuccess: () => void }) {
   const transcribe = trpc.chat.transcribeAudio.useMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Transcrição concluída!');
       onSuccess();
     },
