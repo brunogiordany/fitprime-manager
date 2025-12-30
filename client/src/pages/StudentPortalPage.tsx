@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import StudentOnboarding from "@/components/StudentOnboarding";
+import StudentPortalLayout from "@/components/StudentPortalLayout";
 import StudentEvolutionCharts from "@/components/StudentEvolutionCharts";
 import StudentSessionManager from "@/components/StudentSessionManager";
 import StudentChat from "@/components/StudentChat";
@@ -429,32 +430,13 @@ export default function StudentPortalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <Dumbbell className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">FitPrime</h1>
-              <p className="text-sm text-gray-500">Portal do Aluno</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="font-medium">{studentData.name}</p>
-              <p className="text-sm text-gray-500">{studentData.email}</p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
+    <StudentPortalLayout
+      studentData={studentData}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      onLogout={handleLogout}
+    >
+      <div className="space-y-6">
         {/* Profile Progress */}
         {profileProgress < 100 && (
           <Card 
@@ -1788,7 +1770,7 @@ export default function StudentPortalPage() {
             <StudentBadges />
           </TabsContent>
         </Tabs>
-      </main>
+      </div>
       
       {/* Modal de Registro de Treino */}
       <Dialog open={showDiaryModal} onOpenChange={setShowDiaryModal}>
@@ -2295,6 +2277,6 @@ export default function StudentPortalPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </StudentPortalLayout>
   );
 }
