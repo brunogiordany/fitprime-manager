@@ -3995,6 +3995,68 @@ Retorne APENAS o JSON, sem texto adicional.`;
         
         return { success: true };
       }),
+    
+    // Criar sugestão de alteração no treino
+    createWorkoutSuggestion: studentProcedure
+      .input(z.object({
+        workoutId: z.number(),
+        exerciseId: z.number().optional(),
+        suggestionType: z.enum(['weight_change', 'reps_change', 'exercise_change', 'add_exercise', 'remove_exercise', 'note', 'other']),
+        currentValue: z.string().optional(),
+        suggestedValue: z.string(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o treino pertence ao aluno
+        const workout = await db.getWorkoutById(input.workoutId);
+        if (!workout || workout.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Treino não encontrado' });
+        }
+        
+        // Criar a sugestão como pending change
+        const id = await db.createPendingChange({
+          personalId: ctx.student.personalId,
+          studentId: ctx.student.id,
+          entityType: 'workout',
+          entityId: input.workoutId,
+          fieldName: `${input.suggestionType}${input.exerciseId ? `_exercise_${input.exerciseId}` : ''}`,
+          oldValue: input.currentValue,
+          newValue: input.suggestedValue,
+          requestedBy: 'student',
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        const suggestionTypeLabels: Record<string, string> = {
+          weight_change: 'Alteração de Carga',
+          reps_change: 'Alteração de Repetições',
+          exercise_change: 'Alteração de Exercício',
+          add_exercise: 'Adicionar Exercício',
+          remove_exercise: 'Remover Exercício',
+          note: 'Observação',
+          other: 'Outra Sugestão',
+        };
+        
+        await notifyOwner({
+          title: `💡 Sugestão de Treino - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} sugeriu uma alteração no treino:
+
+🏋️ Treino: ${workout.name}
+📝 Tipo: ${suggestionTypeLabels[input.suggestionType] || input.suggestionType}${input.currentValue ? `\n📤 Valor atual: ${input.currentValue}` : ''}
+📥 Sugestão: ${input.suggestedValue}${input.reason ? `\n💬 Motivo: ${input.reason}` : ''}
+
+Acesse Alterações Pendentes para aprovar ou rejeitar.`,
+        });
+        
+        return { id };
+      }),
+    
+    // Listar sugestões do aluno
+    mySuggestions: studentProcedure.query(async ({ ctx }) => {
+      const changes = await db.getPendingChangesByStudentId(ctx.student.id);
+      // Filtrar apenas sugestões de treino
+      return changes.filter(c => c.entityType === 'workout');
+    }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================
@@ -4227,14 +4289,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
         const db = await import('./db');
         const { exercises, trainingDate, ...logData } = input;
         
+        console.log('=== trainingDiary.create ===');
+        console.log('Input:', JSON.stringify(input, null, 2));
+        console.log('trainingDate:', trainingDate);
+        console.log('logData:', JSON.stringify(logData, null, 2));
+        
         // Helper para converter number para string (decimal)
         const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
+        
+        // Formatar a data corretamente para o banco (YYYY-MM-DD)
+        const formattedDate = trainingDate.split('T')[0]; // Pegar apenas a parte da data
+        
+        console.log('formattedDate:', formattedDate);
         
         // Criar o log principal
         const logId = await db.createWorkoutLog({
           ...logData,
           personalId: ctx.personal.id,
-          trainingDate: new Date(trainingDate),
+          trainingDate: formattedDate,
           status: 'in_progress',
         });
         

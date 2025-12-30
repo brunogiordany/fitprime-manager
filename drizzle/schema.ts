@@ -560,7 +560,7 @@ export const pendingChanges = mysqlTable("pending_changes", {
   id: int("id").autoincrement().primaryKey(),
   personalId: int("personalId").notNull().references(() => personals.id),
   studentId: int("studentId").notNull().references(() => students.id),
-  entityType: mysqlEnum("entityType", ["student", "anamnesis", "measurement"]).notNull(),
+  entityType: mysqlEnum("entityType", ["student", "anamnesis", "measurement", "workout"]).notNull(),
   entityId: int("entityId").notNull(), // ID do registro sendo alterado
   fieldName: varchar("fieldName", { length: 100 }).notNull(),
   oldValue: text("oldValue"),

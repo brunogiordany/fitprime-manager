@@ -1131,11 +1131,46 @@ export async function getWorkoutLogsByStudentId(studentId: number) {
     .orderBy(desc(workoutLogs.trainingDate));
 }
 
-export async function createWorkoutLog(data: InsertWorkoutLog) {
+export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDate'> & { trainingDate: string | Date }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(workoutLogs).values(data);
-  return result[0].insertId;
+  
+  // Converter trainingDate para string YYYY-MM-DD
+  let dateStr: string;
+  if (typeof data.trainingDate === 'string') {
+    dateStr = data.trainingDate.split('T')[0];
+  } else if (data.trainingDate instanceof Date) {
+    dateStr = data.trainingDate.toISOString().split('T')[0];
+  } else {
+    dateStr = new Date(String(data.trainingDate)).toISOString().split('T')[0];
+  }
+  
+  console.log('createWorkoutLog - dateStr:', dateStr);
+  console.log('createWorkoutLog - data:', JSON.stringify(data, null, 2));
+  
+  try {
+    // Usar SQL raw para inserir com a data no formato correto
+    const result = await db.execute(sql`
+      INSERT INTO workout_logs (
+        studentId, personalId, workoutId, workoutDayId, trainingDate,
+        dayName, startTime, status, sessionDate
+      ) VALUES (
+        ${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr},
+        ${data.dayName || null}, ${data.startTime || null}, ${data.status || 'in_progress'}, ${dateStr}
+      )
+    `);
+    
+    console.log('createWorkoutLog - result:', JSON.stringify(result, null, 2));
+    
+    // Obter o último ID inserido
+    const [lastId] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
+    console.log('createWorkoutLog - lastId:', JSON.stringify(lastId, null, 2));
+    
+    return (lastId as any)[0]?.id || (result[0] as any)?.insertId;
+  } catch (error) {
+    console.error('createWorkoutLog - error:', error);
+    throw error;
+  }
 }
 
 export async function updateWorkoutLog(id: number, data: Partial<InsertWorkoutLog>) {

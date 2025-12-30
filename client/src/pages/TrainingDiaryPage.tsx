@@ -100,6 +100,10 @@ export default function TrainingDiaryPage() {
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
   const [showSessionLogModal, setShowSessionLogModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
+  
+  // Estados para gráfico de evolução de carga
+  const [progressStudentId, setProgressStudentId] = useState<string>("");
+  const [progressExercise, setProgressExercise] = useState<string>("");
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -151,6 +155,16 @@ export default function TrainingDiaryPage() {
   );
   const workoutDays = selectedWorkout?.days || [];
   const dayExercises = workoutDays.find((d: any) => d.id === newLog.workoutDayId)?.exercises || [];
+  
+  // Query para buscar histórico de evolução de carga
+  const { data: exerciseProgress } = trpc.trainingDiary.exerciseProgress.useQuery(
+    { 
+      studentId: parseInt(progressStudentId), 
+      exerciseName: progressExercise,
+      limit: 30
+    },
+    { enabled: !!progressStudentId && !!progressExercise }
+  );
   
   // Mutations
   const createLog = trpc.trainingDiary.create.useMutation({
@@ -1006,6 +1020,141 @@ export default function TrainingDiaryPage() {
                     </div>
                   </CardContent>
                 </Card>
+                
+                {/* Gráfico de Evolução de Carga por Exercício */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Evolução de Carga por Exercício
+                    </CardTitle>
+                    <CardDescription>
+                      Acompanhe a progressão de carga ao longo do tempo
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Filtros */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm">Aluno</Label>
+                        <Select value={progressStudentId} onValueChange={setProgressStudentId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um aluno" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {students?.map((student: any) => (
+                              <SelectItem key={student.id} value={student.id.toString()}>
+                                {student.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-sm">Exercício</Label>
+                        <Input
+                          placeholder="Digite o nome do exercício"
+                          value={progressExercise}
+                          onChange={(e) => setProgressExercise(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Gráfico */}
+                    {exerciseProgress && exerciseProgress.length > 0 ? (
+                      <div className="space-y-4">
+                        {/* Gráfico de barras */}
+                        <div className="flex items-end justify-between gap-2 h-48 border rounded-lg p-4 bg-muted/30">
+                          {exerciseProgress.slice().reverse().map((item: any, index: number) => {
+                            const maxWeight = Math.max(...exerciseProgress.map((i: any) => i.maxWeight || 0));
+                            const height = maxWeight > 0 ? ((item.maxWeight || 0) / maxWeight) * 100 : 0;
+                            const date = new Date(item.date);
+                            return (
+                              <div key={index} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                                <span className="text-xs font-bold text-primary">{item.maxWeight || 0}kg</span>
+                                <div 
+                                  className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t transition-all hover:from-primary/80 hover:to-primary/40"
+                                  style={{ height: `${Math.max(height, 5)}%` }}
+                                  title={`${item.exerciseName}\n${item.maxWeight}kg - ${item.totalReps} reps\n${date.toLocaleDateString('pt-BR')}`}
+                                />
+                                <span className="text-[10px] text-muted-foreground truncate w-full text-center">
+                                  {date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Resumo */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div className="text-center p-3 bg-muted/50 rounded-lg">
+                            <p className="text-2xl font-bold text-primary">
+                              {Math.max(...exerciseProgress.map((i: any) => i.maxWeight || 0))}kg
+                            </p>
+                            <p className="text-xs text-muted-foreground">Recorde Pessoal</p>
+                          </div>
+                          <div className="text-center p-3 bg-muted/50 rounded-lg">
+                            <p className="text-2xl font-bold">
+                              {(exerciseProgress.reduce((sum: number, i: any) => sum + (i.maxWeight || 0), 0) / exerciseProgress.length).toFixed(1)}kg
+                            </p>
+                            <p className="text-xs text-muted-foreground">Média</p>
+                          </div>
+                          <div className="text-center p-3 bg-muted/50 rounded-lg">
+                            <p className="text-2xl font-bold">
+                              {exerciseProgress.length}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Treinos</p>
+                          </div>
+                          <div className="text-center p-3 bg-muted/50 rounded-lg">
+                            <p className="text-2xl font-bold">
+                              {exerciseProgress.reduce((sum: number, i: any) => sum + (i.totalReps || 0), 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Reps Totais</p>
+                          </div>
+                        </div>
+                        
+                        {/* Histórico detalhado */}
+                        <div className="border rounded-lg overflow-hidden">
+                          <div className="bg-muted/50 px-4 py-2 font-medium text-sm">Histórico Detalhado</div>
+                          <div className="max-h-60 overflow-y-auto">
+                            {exerciseProgress.map((item: any, index: number) => {
+                              const date = new Date(item.date);
+                              return (
+                                <div key={index} className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 hover:bg-muted/30">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium">
+                                      {date.toLocaleDateString('pt-BR')}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                      {item.exerciseName}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <span className="font-bold text-primary">{item.maxWeight}kg</span>
+                                    <span className="text-muted-foreground">{item.totalSets} séries</span>
+                                    <span className="text-muted-foreground">{item.totalReps} reps</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ) : progressStudentId && progressExercise ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum registro encontrado para este exercício.</p>
+                        <p className="text-sm">Registre treinos para ver a evolução.</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>Selecione um aluno e digite o nome do exercício</p>
+                        <p className="text-sm">para ver a evolução de carga ao longo do tempo.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </>
             ) : (
               <Card>
@@ -1218,168 +1367,169 @@ export default function TrainingDiaryPage() {
                         
                         {exercise.isExpanded && (
                           <CardContent className="p-0">
-                            {/* Tabela de séries estilo planilha */}
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead className="bg-muted/50">
-                                  <tr>
-                                    <th className="p-2 text-left w-16">Série</th>
-                                    <th className="p-2 text-left w-24">Tipo</th>
-                                    <th className="p-2 text-center w-24">Peso (kg)</th>
-                                    <th className="p-2 text-center w-20">Reps</th>
-                                    <th className="p-2 text-center w-24">Descanso</th>
-                                    <th className="p-2 text-center w-20">Drop</th>
-                                    <th className="p-2 text-center w-20">R-P</th>
-                                    <th className="p-2 text-center w-16">✓</th>
-                                    <th className="p-2 w-10"></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {exercise.sets.map((set, setIndex) => (
-                                    <tr key={setIndex} className={`border-t ${set.isCompleted ? 'bg-green-50 dark:bg-green-950/20' : ''}`}>
-                                      <td className="p-2">
-                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ${getSetTypeColor(set.setType)}`}>
-                                          {set.setNumber}
-                                        </span>
-                                      </td>
-                                      <td className="p-2">
-                                        <Select
-                                          value={set.setType || "working"}
-                                          onValueChange={(v) => handleUpdateSet(exIndex, setIndex, 'setType', v)}
-                                        >
-                                          <SelectTrigger className="h-8 text-xs">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {SET_TYPES.map((type) => (
-                                              <SelectItem key={type.value} value={type.value}>
-                                                {type.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </td>
-                                      <td className="p-2">
-                                        <Input
-                                          type="number"
-                                          className="h-8 text-center"
-                                          placeholder="0"
-                                          value={set.weight || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'weight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                        />
-                                      </td>
-                                      <td className="p-2">
-                                        <Input
-                                          type="number"
-                                          className="h-8 text-center"
-                                          placeholder="0"
-                                          value={set.reps || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'reps', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                      </td>
-                                      <td className="p-2">
-                                        <Input
-                                          type="number"
-                                          className="h-8 text-center"
-                                          placeholder="60"
-                                          value={set.restTime || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restTime', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                      </td>
-                                      <td className="p-2 text-center">
-                                        <Checkbox
-                                          checked={set.isDropSet || false}
-                                          onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isDropSet', v)}
-                                        />
-                                      </td>
-                                      <td className="p-2 text-center">
-                                        <Checkbox
-                                          checked={set.isRestPause || false}
-                                          onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isRestPause', v)}
-                                        />
-                                      </td>
-                                      <td className="p-2 text-center">
-                                        <Checkbox
-                                          checked={set.isCompleted || false}
-                                          onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isCompleted', v)}
-                                        />
-                                      </td>
-                                      <td className="p-2">
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6 text-destructive"
-                                          onClick={() => handleRemoveSet(exIndex, setIndex)}
-                                        >
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                            
-                            {/* Campos de Drop Set e Rest-Pause quando ativados */}
-                            {exercise.sets.some(s => s.isDropSet || s.isRestPause) && (
-                              <div className="p-3 border-t bg-muted/30">
-                                <p className="text-xs font-medium mb-2">Técnicas Avançadas:</p>
-                                {exercise.sets.map((set, setIndex) => (
-                                  <div key={setIndex}>
-                                    {set.isDropSet && (
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <Badge variant="secondary" className="text-xs">S{set.setNumber} Drop</Badge>
-                                        <Input
-                                          type="number"
-                                          className="h-7 w-20"
-                                          placeholder="Peso"
-                                          value={set.dropWeight || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs">kg</span>
-                                        <Input
-                                          type="number"
-                                          className="h-7 w-16"
-                                          placeholder="Reps"
-                                          value={set.dropReps || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropReps', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs">reps</span>
-                                      </div>
-                                    )}
-                                    {set.isRestPause && (
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <Badge variant="secondary" className="text-xs">S{set.setNumber} R-P</Badge>
-                                        <Input
-                                          type="number"
-                                          className="h-7 w-20"
-                                          placeholder="Peso"
-                                          value={set.restPauseWeight || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs">kg</span>
-                                        <Input
-                                          type="number"
-                                          className="h-7 w-16"
-                                          placeholder="Reps"
-                                          value={set.restPauseReps || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseReps', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs">reps</span>
-                                        <Input
-                                          type="number"
-                                          className="h-7 w-16"
-                                          placeholder="Pausa"
-                                          value={set.restPausePause || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPausePause', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs">s</span>
-                                      </div>
-                                    )}
+                            {/* Lista de séries - layout compacto sem rolagem */}
+                            <div className="divide-y">
+                              {exercise.sets.map((set, setIndex) => (
+                                <div key={setIndex} className="p-3">
+                                  {/* Linha principal da série */}
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
+                                      {set.setNumber}
+                                    </span>
+                                    
+                                    <Select
+                                      value={set.setType || "working"}
+                                      onValueChange={(v) => {
+                                        handleUpdateSet(exIndex, setIndex, 'setType', v);
+                                        // Auto-ativar flags quando seleciona drop ou rest_pause
+                                        if (v === 'drop') {
+                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', true);
+                                        } else if (v === 'rest_pause') {
+                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', true);
+                                        } else {
+                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', false);
+                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', false);
+                                        }
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-8 w-[120px] text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {SET_TYPES.map((type) => (
+                                          <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    
+                                    <div className="flex items-center gap-1">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-16 text-center text-sm"
+                                        placeholder="0"
+                                        value={set.weight || ""}
+                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'weight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                                      />
+                                      <span className="text-xs text-muted-foreground">kg</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-1">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-14 text-center text-sm"
+                                        placeholder="0"
+                                        value={set.reps || ""}
+                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'reps', e.target.value ? parseInt(e.target.value) : undefined)}
+                                      />
+                                      <span className="text-xs text-muted-foreground">reps</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-1">
+                                      <Input
+                                        type="number"
+                                        className="h-8 w-14 text-center text-sm"
+                                        placeholder="60"
+                                        value={set.restTime || ""}
+                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restTime', e.target.value ? parseInt(e.target.value) : undefined)}
+                                      />
+                                      <span className="text-xs text-muted-foreground">s</span>
+                                    </div>
+                                    
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive ml-auto"
+                                      onClick={() => handleRemoveSet(exIndex, setIndex)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                  
+                                  {/* Área expandida para Drop Set */}
+                                  {(set.setType === 'drop' || set.isDropSet) && (
+                                    <div className="mt-2 ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                                        <span className="text-xs text-muted-foreground">Redução de carga após a série principal</span>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-16 text-center text-sm"
+                                              placeholder="0"
+                                              value={set.dropWeight || ""}
+                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                                            />
+                                            <span className="text-xs text-muted-foreground">kg</span>
+                                          </div>
+                                          <span className="text-muted-foreground">×</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-14 text-center text-sm"
+                                              placeholder="0"
+                                              value={set.dropReps || ""}
+                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropReps', e.target.value ? parseInt(e.target.value) : undefined)}
+                                            />
+                                            <span className="text-xs text-muted-foreground">reps</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Área expandida para Rest-Pause */}
+                                  {(set.setType === 'rest_pause' || set.isRestPause) && (
+                                    <div className="mt-2 ml-9 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                                        <span className="text-xs text-muted-foreground">Pausa curta e continuação</span>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-16 text-center text-sm"
+                                              placeholder="0"
+                                              value={set.restPauseWeight || ""}
+                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                                            />
+                                            <span className="text-xs text-muted-foreground">kg</span>
+                                          </div>
+                                          <span className="text-muted-foreground">×</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-14 text-center text-sm"
+                                              placeholder="0"
+                                              value={set.restPauseReps || ""}
+                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseReps', e.target.value ? parseInt(e.target.value) : undefined)}
+                                            />
+                                            <span className="text-xs text-muted-foreground">reps</span>
+                                          </div>
+                                          <span className="text-muted-foreground">|</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-14 text-center text-sm"
+                                              placeholder="15"
+                                              value={set.restPausePause || ""}
+                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPausePause', e.target.value ? parseInt(e.target.value) : undefined)}
+                                            />
+                                            <span className="text-xs text-muted-foreground">s pausa</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                             
                             {/* Botão adicionar série */}
                             <div className="p-2 border-t">
@@ -1538,200 +1688,182 @@ export default function TrainingDiaryPage() {
                       
                       {exercise.isExpanded && (
                         <CardContent className="p-0">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead className="bg-muted/50">
-                                <tr>
-                                  <th className="p-2 text-left w-16">Série</th>
-                                  <th className="p-2 text-left w-24">Tipo</th>
-                                  <th className="p-2 text-center w-24">Peso (kg)</th>
-                                  <th className="p-2 text-center w-20">Reps</th>
-                                  <th className="p-2 text-center w-24">Descanso</th>
-                                  <th className="p-2 text-center w-20">Drop</th>
-                                  <th className="p-2 text-center w-20">R-P</th>
-                                  <th className="p-2 text-center w-16">✓</th>
-                                  {isEditing && <th className="p-2 w-10"></th>}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {exercise.sets.map((set, setIndex) => (
-                                  <tr key={setIndex} className={`border-t ${set.isCompleted ? 'bg-green-50 dark:bg-green-950/20' : ''}`}>
-                                    <td className="p-2">
-                                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ${getSetTypeColor(set.setType)}`}>
-                                        {set.setNumber}
-                                      </span>
-                                    </td>
-                                    <td className="p-2">
-                                      {isEditing ? (
-                                        <Select
-                                          value={set.setType || "working"}
-                                          onValueChange={(v) => handleUpdateSet(exIndex, setIndex, 'setType', v)}
-                                        >
-                                          <SelectTrigger className="h-8 text-xs">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {SET_TYPES.map((type) => (
-                                              <SelectItem key={type.value} value={type.value}>
-                                                {type.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      ) : (
-                                        <span className="text-xs">{getSetTypeLabel(set.setType)}</span>
-                                      )}
-                                    </td>
-                                    <td className="p-2">
-                                      {isEditing ? (
+                          {/* Lista de séries - layout compacto */}
+                          <div className="divide-y">
+                            {exercise.sets.map((set, setIndex) => (
+                              <div key={setIndex} className="p-3">
+                                {/* Linha principal da série */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
+                                    {set.setNumber}
+                                  </span>
+                                  
+                                  {isEditing ? (
+                                    <Select
+                                      value={set.setType || "working"}
+                                      onValueChange={(v) => {
+                                        handleUpdateSet(exIndex, setIndex, 'setType', v);
+                                        if (v === 'drop') {
+                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', true);
+                                        } else if (v === 'rest_pause') {
+                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', true);
+                                        } else {
+                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', false);
+                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', false);
+                                        }
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-8 w-[120px] text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {SET_TYPES.map((type) => (
+                                          <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs">{getSetTypeLabel(set.setType)}</Badge>
+                                  )}
+                                  
+                                  {isEditing ? (
+                                    <>
+                                      <div className="flex items-center gap-1">
                                         <Input
                                           type="number"
-                                          className="h-8 text-center"
+                                          className="h-8 w-16 text-center text-sm"
                                           placeholder="0"
                                           value={set.weight || ""}
                                           onChange={(e) => handleUpdateSet(exIndex, setIndex, 'weight', e.target.value ? parseFloat(e.target.value) : undefined)}
                                         />
-                                      ) : (
-                                        <span className="text-center block">{set.weight || "-"}</span>
-                                      )}
-                                    </td>
-                                    <td className="p-2">
-                                      {isEditing ? (
+                                        <span className="text-xs text-muted-foreground">kg</span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-1">
                                         <Input
                                           type="number"
-                                          className="h-8 text-center"
+                                          className="h-8 w-14 text-center text-sm"
                                           placeholder="0"
                                           value={set.reps || ""}
                                           onChange={(e) => handleUpdateSet(exIndex, setIndex, 'reps', e.target.value ? parseInt(e.target.value) : undefined)}
                                         />
-                                      ) : (
-                                        <span className="text-center block">{set.reps || "-"}</span>
-                                      )}
-                                    </td>
-                                    <td className="p-2">
-                                      {isEditing ? (
+                                        <span className="text-xs text-muted-foreground">reps</span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-1">
                                         <Input
                                           type="number"
-                                          className="h-8 text-center"
+                                          className="h-8 w-14 text-center text-sm"
                                           placeholder="60"
                                           value={set.restTime || ""}
                                           onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restTime', e.target.value ? parseInt(e.target.value) : undefined)}
                                         />
-                                      ) : (
-                                        <span className="text-center block">{set.restTime || "-"}s</span>
-                                      )}
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isDropSet || false}
-                                        onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isDropSet', v)}
-                                        disabled={!isEditing}
-                                      />
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isRestPause || false}
-                                        onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isRestPause', v)}
-                                        disabled={!isEditing}
-                                      />
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isCompleted || false}
-                                        onCheckedChange={(v) => handleUpdateSet(exIndex, setIndex, 'isCompleted', v)}
-                                        disabled={!isEditing}
-                                      />
-                                    </td>
-                                    {isEditing && (
-                                      <td className="p-2">
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6 text-destructive"
-                                          onClick={() => handleRemoveSet(exIndex, setIndex)}
-                                        >
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                      </td>
-                                    )}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          
-                          {/* Campos de Drop Set e Rest-Pause */}
-                          {exercise.sets.some(s => s.isDropSet || s.isRestPause) && (
-                            <div className="p-3 border-t bg-muted/30">
-                              <p className="text-xs font-medium mb-2">Técnicas Avançadas:</p>
-                              {exercise.sets.map((set, setIndex) => (
-                                <div key={setIndex}>
-                                  {set.isDropSet && (
+                                        <span className="text-xs text-muted-foreground">s</span>
+                                      </div>
+                                      
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive ml-auto"
+                                        onClick={() => handleRemoveSet(exIndex, setIndex)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground">
+                                      {set.weight || 0}kg × {set.reps || 0} reps | {set.restTime || 60}s
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {/* Área expandida para Drop Set */}
+                                {(set.setType === 'drop' || set.isDropSet) && (
+                                  <div className="mt-2 ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <Badge variant="secondary" className="text-xs">S{set.setNumber} Drop</Badge>
-                                      {isEditing ? (
-                                        <>
+                                      <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                                    </div>
+                                    {isEditing ? (
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1">
                                           <Input
                                             type="number"
-                                            className="h-7 w-20"
-                                            placeholder="Peso"
+                                            className="h-8 w-16 text-center text-sm"
+                                            placeholder="0"
                                             value={set.dropWeight || ""}
                                             onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
                                           />
-                                          <span className="text-xs">kg</span>
+                                          <span className="text-xs text-muted-foreground">kg</span>
+                                        </div>
+                                        <span className="text-muted-foreground">×</span>
+                                        <div className="flex items-center gap-1">
                                           <Input
                                             type="number"
-                                            className="h-7 w-16"
-                                            placeholder="Reps"
+                                            className="h-8 w-14 text-center text-sm"
+                                            placeholder="0"
                                             value={set.dropReps || ""}
                                             onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropReps', e.target.value ? parseInt(e.target.value) : undefined)}
                                           />
-                                          <span className="text-xs">reps</span>
-                                        </>
-                                      ) : (
-                                        <span className="text-xs">{set.dropWeight}kg × {set.dropReps} reps</span>
-                                      )}
-                                    </div>
-                                  )}
-                                  {set.isRestPause && (
+                                          <span className="text-xs text-muted-foreground">reps</span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm">{set.dropWeight}kg × {set.dropReps} reps</span>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                {/* Área expandida para Rest-Pause */}
+                                {(set.setType === 'rest_pause' || set.isRestPause) && (
+                                  <div className="mt-2 ml-9 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <Badge variant="secondary" className="text-xs">S{set.setNumber} R-P</Badge>
-                                      {isEditing ? (
-                                        <>
+                                      <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                                    </div>
+                                    {isEditing ? (
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1">
                                           <Input
                                             type="number"
-                                            className="h-7 w-20"
-                                            placeholder="Peso"
+                                            className="h-8 w-16 text-center text-sm"
+                                            placeholder="0"
                                             value={set.restPauseWeight || ""}
                                             onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
                                           />
-                                          <span className="text-xs">kg</span>
+                                          <span className="text-xs text-muted-foreground">kg</span>
+                                        </div>
+                                        <span className="text-muted-foreground">×</span>
+                                        <div className="flex items-center gap-1">
                                           <Input
                                             type="number"
-                                            className="h-7 w-16"
-                                            placeholder="Reps"
+                                            className="h-8 w-14 text-center text-sm"
+                                            placeholder="0"
                                             value={set.restPauseReps || ""}
                                             onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseReps', e.target.value ? parseInt(e.target.value) : undefined)}
                                           />
-                                          <span className="text-xs">reps</span>
+                                          <span className="text-xs text-muted-foreground">reps</span>
+                                        </div>
+                                        <span className="text-muted-foreground">|</span>
+                                        <div className="flex items-center gap-1">
                                           <Input
                                             type="number"
-                                            className="h-7 w-16"
-                                            placeholder="Pausa"
+                                            className="h-8 w-14 text-center text-sm"
+                                            placeholder="15"
                                             value={set.restPausePause || ""}
                                             onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPausePause', e.target.value ? parseInt(e.target.value) : undefined)}
                                           />
-                                          <span className="text-xs">s</span>
-                                        </>
-                                      ) : (
-                                        <span className="text-xs">{set.restPauseWeight}kg × {set.restPauseReps} reps (pausa: {set.restPausePause}s)</span>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                          <span className="text-xs text-muted-foreground">s pausa</span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm">{set.restPauseWeight}kg × {set.restPauseReps} reps (pausa: {set.restPausePause}s)</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                           
                           {/* Botão adicionar série */}
                           {isEditing && (
@@ -1757,7 +1889,7 @@ export default function TrainingDiaryPage() {
                 {logDetail.status === 'in_progress' && isEditing && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Como se sentiu?</Label>
+                      <Label>Como o aluno estava?</Label>
                       <div className="flex flex-wrap gap-2">
                         {FEELINGS.map((feeling) => (
                           <Button
@@ -2083,7 +2215,7 @@ export default function TrainingDiaryPage() {
               
               {/* Sentimento */}
               <div className="space-y-2">
-                <Label>Como se sentiu?</Label>
+                <Label>Como o aluno estava?</Label>
                 <div className="flex flex-wrap gap-2">
                   {FEELINGS.map((feeling) => (
                     <Button
@@ -2115,6 +2247,9 @@ export default function TrainingDiaryPage() {
               </Button>
               <Button 
                 onClick={() => {
+                  console.log('=== BOTAO SALVAR CLICADO ===');
+                  console.log('newLog:', newLog);
+                  console.log('currentExercises:', currentExercises);
                   // Criar o registro de treino
                   createLog.mutate({
                     studentId: newLog.studentId,

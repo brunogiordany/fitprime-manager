@@ -1,0 +1,166 @@
+{
+  "query": "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'workout_logs' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'workout_logs' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "workoutId",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "workoutDayId",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "studentId",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "personalId",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "sessionDate",
+      "DATA_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "sessionNumber",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "1"
+    },
+    {
+      "COLUMN_NAME": "duration",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "notes",
+      "DATA_TYPE": "text",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "completed",
+      "DATA_TYPE": "tinyint",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "createdAt",
+      "DATA_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    },
+    {
+      "COLUMN_NAME": "updatedAt",
+      "DATA_TYPE": "timestamp",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    },
+    {
+      "COLUMN_NAME": "sessionId",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "trainingDate",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "dayName",
+      "DATA_TYPE": "varchar",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "startTime",
+      "DATA_TYPE": "varchar",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "endTime",
+      "DATA_TYPE": "varchar",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "totalDuration",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "totalSets",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "totalReps",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "totalVolume",
+      "DATA_TYPE": "decimal",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "totalExercises",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "feeling",
+      "DATA_TYPE": "enum",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "status",
+      "DATA_TYPE": "enum",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "in_progress"
+    },
+    {
+      "COLUMN_NAME": "completedAt",
+      "DATA_TYPE": "timestamp",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "hasPendingSuggestions",
+      "DATA_TYPE": "tinyint",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tDATA_TYPE\tIS_NULLABLE\tCOLUMN_DEFAULT\nid\tint\tNO\tNULL\nworkoutId\tint\tNO\tNULL\nworkoutDayId\tint\tNO\tNULL\nstudentId\tint\tNO\tNULL\npersonalId\tint\tNO\tNULL\nsessionDate\ttimestamp\tNO\tNULL\nsessionNumber\tint\tYES\t1\nduration\tint\tYES\tNULL\nnotes\ttext\tYES\tNULL\ncompleted\ttinyint\tYES\t0\ncreatedAt\ttimestamp\tNO\tCURRENT_TIMESTAMP\nupdatedAt\ttimestamp\tNO\tCURRENT_TIMESTAMP\nsessionId\tint\tYES\tNULL\ntrainingDate\tdate\tYES\tNULL\ndayName\tvarchar\tYES\tNULL\nstartTime\tvarchar\tYES\tNULL\nendTime\tvarchar\tYES\tNULL\ntotalDuration\tint\tYES\tNULL\ntotalSets\tint\tYES\t0\ntotalReps\tint\tYES\t0\ntotalVolume\tdecimal\tYES\t0\ntotalExercises\tint\tYES\t0\nfeeling\tenum\tYES\tNULL\nstatus\tenum\tYES\tin_progress\ncompletedAt\ttimestamp\tYES\tNULL\nhasPendingSuggestions\ttinyint\tYES\t0\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

@@ -1098,3 +1098,44 @@
 - [x] Dashboard de evolução de carga por exercício (já existia)
 - [x] Filtro por aluno no dashboard (já existia)
 - [ ] Sistema de sugestões do aluno com aprovação do personal (pendente)
+
+
+## Novas Funcionalidades v5.0 (29/12/2025)
+
+### Sistema de Sugestões do Aluno
+- [x] Criar tabela workout_suggestions no banco de dados (workoutLogSuggestions já existia)
+- [x] Campos: studentId, workoutId, exerciseId, suggestionType, details, status, createdAt
+- [x] Criar endpoints: createSuggestion (studentPortal), listSuggestions, approveSuggestion, rejectSuggestion (trainingDiary)
+- [x] Interface no Portal do Aluno para criar sugestões (StudentWorkoutView com botão Sugerir)
+- [x] Interface na página Alterações Pendentes para personal aprovar/rejeitar (aba Sugestões de Treino)
+- [ ] Notificação para personal quando aluno cria sugestão (pendente)
+- [ ] Aplicar alteração no treino quando aprovada (pendente)
+
+### Histórico de Evolução de Carga
+- [x] Criar gráfico de progressão de peso por exercício
+- [x] Filtro por aluno e exercício
+- [x] Mostrar evolução ao longo do tempo
+- [x] Integrar na aba Dashboard do Diário de Treino
+- [x] Mostrar recordes pessoais, média, total de treinos e reps
+
+### Cobranças Agrupadas por Aluno
+- [x] Já implementado - página de cobranças mostra agrupamento por aluno
+
+
+### Melhorias Diário de Treino - Layout (29/12/2025)
+- [ ] Remover checkbox "Concluído" do canto direito de cada série
+- [ ] Reorganizar Drop Set e Rest-Pause para expandir área abaixo com campos extras
+- [ ] Adicionar botão "+ Adicionar Série" dentro da área expandida de Drop/Rest-Pause
+- [ ] Melhorar layout para evitar rolagem horizontal (layout compacto/empilhado)
+
+
+### Bug: Erro ao salvar registro de treino (29/12/2025)
+- [x] Corrigir erro "Failed query: insert into workout_logs" - valores default sendo enviados incorretamente
+- [x] Adicionar campo sessionDate na inserção SQL
+
+
+### Diário de Treino no Portal do Aluno (30/12/2025)
+- [x] Adicionar aba "Diário" no Portal do Aluno (PWA mobile)
+- [ ] Implementar interface de registro de treino no Portal do Aluno
+- [ ] Permitir aluno registrar treinos e preencher "Como se sentiu?"
+- [x] No lado do Personal: trocado "Como se sentiu?" para "Como o aluno estava?"

@@ -3,7 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { 
   ArrowLeft, 
   Dumbbell, 
@@ -13,7 +19,9 @@ import {
   ChevronDown,
   ChevronUp,
   Play,
-  Info
+  Info,
+  Lightbulb,
+  Send
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 
@@ -29,6 +37,57 @@ export default function StudentWorkoutView() {
   const [, setLocation] = useLocation();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [expandedDays, setExpandedDays] = useState<number[]>([]);
+  
+  // Estados para modal de sugestão
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<{ id: number; name: string } | null>(null);
+  const [suggestionType, setSuggestionType] = useState<string>('');
+  const [currentValue, setCurrentValue] = useState('');
+  const [suggestedValue, setSuggestedValue] = useState('');
+  const [suggestionReason, setSuggestionReason] = useState('');
+  
+  // Mutation para criar sugestão
+  const createSuggestion = trpc.studentPortal.createWorkoutSuggestion.useMutation({
+    onSuccess: () => {
+      toast.success('Sugestão enviada com sucesso! Seu personal irá analisar.');
+      setShowSuggestionModal(false);
+      resetSuggestionForm();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao enviar sugestão');
+    },
+  });
+  
+  const resetSuggestionForm = () => {
+    setSelectedExercise(null);
+    setSuggestionType('');
+    setCurrentValue('');
+    setSuggestedValue('');
+    setSuggestionReason('');
+  };
+  
+  const openSuggestionModal = (exercise?: { id: number; name: string }) => {
+    if (exercise) {
+      setSelectedExercise(exercise);
+    }
+    setShowSuggestionModal(true);
+  };
+  
+  const handleSubmitSuggestion = () => {
+    if (!suggestionType || !suggestedValue) {
+      toast.error('Preencha o tipo e a sugestão');
+      return;
+    }
+    
+    createSuggestion.mutate({
+      workoutId,
+      exerciseId: selectedExercise?.id,
+      suggestionType: suggestionType as any,
+      currentValue: currentValue || undefined,
+      suggestedValue,
+      reason: suggestionReason || undefined,
+    });
+  };
 
   // Verificar token do aluno
   useEffect(() => {
@@ -240,13 +299,27 @@ export default function StudentWorkoutView() {
                                   {exIndex + 1}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h4 className="font-medium">{exercise.name}</h4>
-                                    {exercise.muscleGroup && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {exercise.muscleGroup}
-                                      </Badge>
-                                    )}
+                                  <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="font-medium">{exercise.name}</h4>
+                                      {exercise.muscleGroup && (
+                                        <Badge variant="outline" className="text-xs">
+                                          {exercise.muscleGroup}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openSuggestionModal({ id: exercise.id, name: exercise.name });
+                                      }}
+                                    >
+                                      <Lightbulb className="h-4 w-4 mr-1" />
+                                      Sugerir
+                                    </Button>
                                   </div>
                                   <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 flex-wrap">
                                     {exercise.sets && (
@@ -297,7 +370,109 @@ export default function StudentWorkoutView() {
             </Card>
           )}
         </div>
+        
+        {/* Botão flutuante para sugestão geral */}
+        <div className="fixed bottom-6 right-6">
+          <Button
+            onClick={() => openSuggestionModal()}
+            className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg rounded-full h-14 px-6"
+          >
+            <Lightbulb className="h-5 w-5 mr-2" />
+            Sugerir Alteração
+          </Button>
+        </div>
       </main>
+      
+      {/* Modal de Sugestão */}
+      <Dialog open={showSuggestionModal} onOpenChange={setShowSuggestionModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              Sugerir Alteração no Treino
+            </DialogTitle>
+            <DialogDescription>
+              {selectedExercise 
+                ? `Sugestão para: ${selectedExercise.name}`
+                : 'Envie uma sugestão de alteração para seu personal analisar'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Tipo de Sugestão *</Label>
+              <Select value={suggestionType} onValueChange={setSuggestionType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weight_change">Alterar Carga</SelectItem>
+                  <SelectItem value="reps_change">Alterar Repetições</SelectItem>
+                  <SelectItem value="exercise_change">Trocar Exercício</SelectItem>
+                  <SelectItem value="add_exercise">Adicionar Exercício</SelectItem>
+                  <SelectItem value="remove_exercise">Remover Exercício</SelectItem>
+                  <SelectItem value="note">Observação Geral</SelectItem>
+                  <SelectItem value="other">Outra Sugestão</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {(suggestionType === 'weight_change' || suggestionType === 'reps_change' || suggestionType === 'exercise_change') && (
+              <div className="space-y-2">
+                <Label>Valor Atual (opcional)</Label>
+                <Input
+                  value={currentValue}
+                  onChange={(e) => setCurrentValue(e.target.value)}
+                  placeholder={suggestionType === 'weight_change' ? 'Ex: 20kg' : suggestionType === 'reps_change' ? 'Ex: 12 reps' : 'Ex: Supino Reto'}
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label>Sua Sugestão *</Label>
+              <Input
+                value={suggestedValue}
+                onChange={(e) => setSuggestedValue(e.target.value)}
+                placeholder={suggestionType === 'weight_change' ? 'Ex: 25kg' : suggestionType === 'reps_change' ? 'Ex: 15 reps' : suggestionType === 'exercise_change' ? 'Ex: Supino Inclinado' : suggestionType === 'add_exercise' ? 'Ex: Rosca Direta' : 'Descreva sua sugestão'}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Motivo (opcional)</Label>
+              <Textarea
+                value={suggestionReason}
+                onChange={(e) => setSuggestionReason(e.target.value)}
+                placeholder="Explique por que você sugere essa alteração..."
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuggestionModal(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmitSuggestion}
+              disabled={createSuggestion.isPending || !suggestionType || !suggestedValue}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              {createSuggestion.isPending ? (
+                <span className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                  Enviando...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Send className="h-4 w-4" />
+                  Enviar Sugestão
+                </span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

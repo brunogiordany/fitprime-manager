@@ -425,6 +425,10 @@ export default function StudentPortalPage() {
               <Dumbbell className="h-4 w-4" />
               <span>Treinos</span>
             </TabsTrigger>
+            <TabsTrigger value="diary" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" />
+              <span>Diário</span>
+            </TabsTrigger>
             <TabsTrigger value="anamnesis" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
               <FileText className="h-4 w-4" />
               <span>Perfil</span>
@@ -606,6 +610,27 @@ export default function StudentPortalPage() {
               </CardContent>
             </Card>
             )}
+          </TabsContent>
+
+          {/* Diário de Treino Tab */}
+          <TabsContent value="diary" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-emerald-500" />
+                  Diário de Treino
+                </CardTitle>
+                <CardDescription>Registre seus treinos e acompanhe sua evolução</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p className="font-medium">Em breve!</p>
+                  <p className="text-sm">O diário de treino estará disponível em breve.</p>
+                  <p className="text-sm mt-2">Por enquanto, registre seus treinos na aba "Sessões".</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Anamnesis Tab */}
