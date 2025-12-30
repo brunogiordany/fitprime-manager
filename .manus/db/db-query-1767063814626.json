@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, name, email, passwordHash FROM students WHERE passwordHash IS NOT NULL LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, passwordHash FROM students WHERE passwordHash IS NOT NULL LIMIT 5",
+  "rows": [
+    {
+      "id": "60001",
+      "name": "AgenteIA",
+      "email": "agenteiaoficial@gmail.com",
+      "passwordHash": "$2b$10$aRK5IoUXG5HklYNU0yUrkumjYK1FXrd9/yfN4p9aqGTwWwmKdKMTa"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "email": "brunogiordanyps@gmail.com",
+      "passwordHash": "$2b$10$oNEDhTjmKxOttxdFSUo3ZOWnUFRcah6Hjf14zVf2rl.fyc2V0oOfG"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tpasswordHash\n60001\tAgenteIA\tagenteiaoficial@gmail.com\t$2b$10$aRK5IoUXG5HklYNU0yUrkumjYK1FXrd9/yfN4p9aqGTwWwmKdKMTa\n90001\tbruno ps\tbrunogiordanyps@gmail.com\t$2b$10$oNEDhTjmKxOttxdFSUo3ZOWnUFRcah6Hjf14zVf2rl.fyc2V0oOfG\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

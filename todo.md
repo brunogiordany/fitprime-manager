@@ -1139,3 +1139,27 @@
 - [ ] Implementar interface de registro de treino no Portal do Aluno
 - [ ] Permitir aluno registrar treinos e preencher "Como se sentiu?"
 - [x] No lado do Personal: trocado "Como se sentiu?" para "Como o aluno estava?"
+
+
+## Melhorias v5.1 (30/12/2025)
+
+### Diário de Treino no Portal do Aluno
+- [x] Implementar interface completa de registro de treino na aba "Diário"
+- [x] Listar sessões do aluno (hoje, próximas, pendentes)
+- [x] Ao clicar em sessão, abrir popup para preencher treino
+- [x] Puxar exercícios do treino vinculado à sessão
+- [x] Campos: séries, carga, reps, observações
+- [x] Campo "Como se sentiu?" para o aluno preencher
+- [x] Salvar registro de treino pelo aluno
+- [x] Histórico de treinos registrados
+
+### Notificações de Sugestões
+- [x] Enviar notificação ao personal quando aluno criar sugestão de alteração no treino (já implementado)
+- [x] Incluir nome do aluno, exercício e tipo de sugestão na notificação
+- [x] Notificação via sistema interno (notifyOwner)
+
+### Aplicar Alterações Aprovadas
+- [x] Quando personal aprovar sugestão de carga, atualizar carga no treino
+- [x] Quando personal aprovar sugestão de reps, atualizar repetições no treino
+- [x] Quando personal aprovar troca de exercício, substituir exercício no treino
+- [x] Registrar histórico da alteração aplicada (pendingChanges.status = 'approved')

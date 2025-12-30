@@ -38,8 +38,12 @@ import {
   Save,
   Loader2,
   MessageCircle,
-  Trophy
+  Trophy,
+  Play,
+  Plus,
+  Minus
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -96,6 +100,12 @@ export default function StudentPortalPage() {
   const [isEditingAnamnesis, setIsEditingAnamnesis] = useState(false);
   const [anamnesisForm, setAnamnesisForm] = useState<Partial<AnamnesisData>>({});
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showDiaryModal, setShowDiaryModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [diaryExercises, setDiaryExercises] = useState<any[]>([]);
+  const [diaryNotes, setDiaryNotes] = useState("");
+  const [diaryFeeling, setDiaryFeeling] = useState<string>("");
+  const [diaryDuration, setDiaryDuration] = useState(60);
   const [showAnamnesisModal, setShowAnamnesisModal] = useState(false);
 
   // Verificar token do aluno
@@ -153,6 +163,35 @@ export default function StudentPortalPage() {
     { studentId: studentData?.id || 0 },
     { enabled: !!studentData?.id }
   );
+
+  // Buscar registros de treino do aluno (para o diário)
+  const { data: workoutLogs, refetch: refetchWorkoutLogs } = trpc.studentPortal.workoutLogs.useQuery(
+    undefined,
+    { enabled: !!studentData?.id }
+  );
+
+  // Buscar sessões do portal do aluno (com informações de treino)
+  const { data: portalSessions, refetch: refetchPortalSessions } = trpc.studentPortal.sessions.useQuery(
+    undefined,
+    { enabled: !!studentData?.id }
+  );
+
+  // Mutation para criar registro de treino
+  const createWorkoutLogMutation = trpc.studentPortal.createWorkoutLog.useMutation({
+    onSuccess: () => {
+      toast.success("Treino registrado com sucesso!");
+      setShowDiaryModal(false);
+      setSelectedSession(null);
+      setDiaryExercises([]);
+      setDiaryNotes("");
+      setDiaryFeeling("");
+      refetchWorkoutLogs();
+      refetchPortalSessions();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao registrar treino");
+    },
+  });
 
   // Mutation para atualizar anamnese
   const updateAnamneseMutation = trpc.anamnesis.saveWithMeasurements.useMutation({
@@ -614,21 +653,235 @@ export default function StudentPortalPage() {
 
           {/* Diário de Treino Tab */}
           <TabsContent value="diary" className="space-y-6">
+            {/* Sessões para Registrar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Play className="h-5 w-5 text-emerald-500" />
+                  Registrar Treino
+                </CardTitle>
+                <CardDescription>Selecione uma sessão para registrar seu treino</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  
+                  const todaySessions = (portalSessions || []).filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt);
+                    sessionDate.setHours(0, 0, 0, 0);
+                    return sessionDate.getTime() === today.getTime() && 
+                           (s.status === 'scheduled' || s.status === 'confirmed' || s.status === 'completed');
+                  });
+                  
+                  const pendingSessions = (portalSessions || []).filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt);
+                    sessionDate.setHours(0, 0, 0, 0);
+                    return sessionDate.getTime() < today.getTime() && 
+                           (s.status === 'scheduled' || s.status === 'confirmed');
+                  });
+                  
+                  const upcomingSessions = (portalSessions || []).filter((s: any) => {
+                    const sessionDate = new Date(s.scheduledAt);
+                    sessionDate.setHours(0, 0, 0, 0);
+                    return sessionDate.getTime() > today.getTime() && 
+                           (s.status === 'scheduled' || s.status === 'confirmed');
+                  }).slice(0, 5);
+                  
+                  const allSessions = [...todaySessions, ...pendingSessions, ...upcomingSessions];
+                  
+                  if (allSessions.length === 0) {
+                    return (
+                      <div className="text-center py-8 text-gray-500">
+                        <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p className="font-medium">Nenhuma sessão disponível</p>
+                        <p className="text-sm">Você não tem sessões agendadas para registrar.</p>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="space-y-4">
+                      {todaySessions.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-emerald-600 mb-2 flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Hoje
+                          </h4>
+                          <div className="space-y-2">
+                            {todaySessions.map((session: any) => (
+                              <div
+                                key={session.id}
+                                className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                                onClick={() => {
+                                  if (session.workoutInfo) {
+                                    setSelectedSession(session);
+                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any) => ({
+                                      exerciseId: 0,
+                                      exerciseName: ex.name,
+                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0 })),
+                                      notes: '',
+                                      completed: false,
+                                    })));
+                                    setShowDiaryModal(true);
+                                  } else {
+                                    toast.error("Esta sessão não tem treino vinculado");
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium">
+                                      {format(new Date(session.scheduledAt), "HH:mm", { locale: ptBR })}
+                                    </p>
+                                    {session.workoutInfo && (
+                                      <p className="text-sm text-gray-500">
+                                        {session.workoutInfo.workoutName} - {session.workoutInfo.dayName}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Button size="sm" variant="outline">
+                                    <Play className="h-4 w-4 mr-1" />
+                                    Registrar
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {pendingSessions.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-amber-600 mb-2 flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            Pendentes
+                          </h4>
+                          <div className="space-y-2">
+                            {pendingSessions.map((session: any) => (
+                              <div
+                                key={session.id}
+                                className="p-4 border border-amber-200 bg-amber-50 rounded-lg hover:bg-amber-100 cursor-pointer transition-colors"
+                                onClick={() => {
+                                  if (session.workoutInfo) {
+                                    setSelectedSession(session);
+                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any) => ({
+                                      exerciseId: 0,
+                                      exerciseName: ex.name,
+                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0 })),
+                                      notes: '',
+                                      completed: false,
+                                    })));
+                                    setShowDiaryModal(true);
+                                  } else {
+                                    toast.error("Esta sessão não tem treino vinculado");
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium">
+                                      {format(new Date(session.scheduledAt), "dd/MM - HH:mm", { locale: ptBR })}
+                                    </p>
+                                    {session.workoutInfo && (
+                                      <p className="text-sm text-amber-700">
+                                        {session.workoutInfo.workoutName} - {session.workoutInfo.dayName}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Button size="sm" variant="outline" className="border-amber-500 text-amber-700">
+                                    <Play className="h-4 w-4 mr-1" />
+                                    Registrar
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {upcomingSessions.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-600 mb-2 flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Próximas
+                          </h4>
+                          <div className="space-y-2">
+                            {upcomingSessions.map((session: any) => (
+                              <div
+                                key={session.id}
+                                className="p-4 border rounded-lg opacity-75"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium">
+                                      {format(new Date(session.scheduledAt), "dd/MM - HH:mm", { locale: ptBR })}
+                                    </p>
+                                    {session.workoutInfo && (
+                                      <p className="text-sm text-gray-500">
+                                        {session.workoutInfo.workoutName} - {session.workoutInfo.dayName}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Badge variant="outline">Agendada</Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+            
+            {/* Histórico de Treinos */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-emerald-500" />
-                  Diário de Treino
+                  Histórico de Treinos
                 </CardTitle>
-                <CardDescription>Registre seus treinos e acompanhe sua evolução</CardDescription>
+                <CardDescription>Seus treinos registrados</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p className="font-medium">Em breve!</p>
-                  <p className="text-sm">O diário de treino estará disponível em breve.</p>
-                  <p className="text-sm mt-2">Por enquanto, registre seus treinos na aba "Sessões".</p>
-                </div>
+                {(!workoutLogs || workoutLogs.length === 0) ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p className="font-medium">Nenhum treino registrado</p>
+                    <p className="text-sm">Registre seu primeiro treino acima!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {workoutLogs.slice(0, 10).map((log: any) => (
+                      <div key={log.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{log.dayName || 'Treino'}</p>
+                            <p className="text-sm text-gray-500">
+                              {format(new Date(log.trainingDate), "dd/MM/yyyy", { locale: ptBR })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={log.status === 'completed' ? 'default' : 'outline'}>
+                              {log.status === 'completed' ? 'Concluído' : 'Em andamento'}
+                            </Badge>
+                            {log.feeling && (
+                              <p className="text-sm mt-1">
+                                {log.feeling === 'excellent' && '🔥'}
+                                {log.feeling === 'good' && '💪'}
+                                {log.feeling === 'normal' && '😐'}
+                                {log.feeling === 'tired' && '😓'}
+                                {log.feeling === 'exhausted' && '😵'}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1256,6 +1509,216 @@ export default function StudentPortalPage() {
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Modal de Registro de Treino */}
+      <Dialog open={showDiaryModal} onOpenChange={setShowDiaryModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Dumbbell className="h-5 w-5 text-emerald-500" />
+              Registrar Treino
+            </DialogTitle>
+            <DialogDescription>
+              {selectedSession?.workoutInfo && (
+                <span>
+                  {selectedSession.workoutInfo.workoutName} - {selectedSession.workoutInfo.dayName} • 
+                  {format(new Date(selectedSession.scheduledAt), " dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Exercícios */}
+            <div className="space-y-4">
+              <h4 className="font-medium">Exercícios</h4>
+              {diaryExercises.map((exercise, exIndex) => (
+                <Card key={exIndex} className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="font-medium">{exercise.exerciseName}</h5>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const updated = [...diaryExercises];
+                        updated[exIndex].completed = !updated[exIndex].completed;
+                        setDiaryExercises(updated);
+                      }}
+                      className={exercise.completed ? "text-emerald-600" : "text-gray-400"}
+                    >
+                      <CheckCircle2 className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {exercise.sets.map((set: any, setIndex: number) => (
+                      <div key={setIndex} className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 w-8">S{setIndex + 1}</span>
+                        <Input
+                          type="number"
+                          placeholder="Carga"
+                          value={set.weight}
+                          onChange={(e) => {
+                            const updated = [...diaryExercises];
+                            updated[exIndex].sets[setIndex].weight = e.target.value;
+                            setDiaryExercises(updated);
+                          }}
+                          className="w-20"
+                        />
+                        <span className="text-sm text-gray-500">kg</span>
+                        <Input
+                          type="number"
+                          placeholder="Reps"
+                          value={set.reps}
+                          onChange={(e) => {
+                            const updated = [...diaryExercises];
+                            updated[exIndex].sets[setIndex].reps = parseInt(e.target.value) || 0;
+                            setDiaryExercises(updated);
+                          }}
+                          className="w-20"
+                        />
+                        <span className="text-sm text-gray-500">reps</span>
+                      </div>
+                    ))}
+                    
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const updated = [...diaryExercises];
+                          updated[exIndex].sets.push({ weight: '', reps: 0 });
+                          setDiaryExercises(updated);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Série
+                      </Button>
+                      {exercise.sets.length > 1 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const updated = [...diaryExercises];
+                            updated[exIndex].sets.pop();
+                            setDiaryExercises(updated);
+                          }}
+                        >
+                          <Minus className="h-4 w-4 mr-1" />
+                          Remover
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <Input
+                      placeholder="Observações do exercício..."
+                      value={exercise.notes}
+                      onChange={(e) => {
+                        const updated = [...diaryExercises];
+                        updated[exIndex].notes = e.target.value;
+                        setDiaryExercises(updated);
+                      }}
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Duração */}
+            <div>
+              <Label>Duração (minutos)</Label>
+              <Input
+                type="number"
+                value={diaryDuration}
+                onChange={(e) => setDiaryDuration(parseInt(e.target.value) || 60)}
+                className="mt-1"
+              />
+            </div>
+            
+            {/* Como se sentiu */}
+            <div>
+              <Label>Como você se sentiu?</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  { value: 'excellent', label: '🔥 Excelente', color: 'emerald' },
+                  { value: 'good', label: '💪 Bom', color: 'green' },
+                  { value: 'normal', label: '😐 Normal', color: 'gray' },
+                  { value: 'tired', label: '😓 Cansado', color: 'amber' },
+                  { value: 'exhausted', label: '😵 Exausto', color: 'red' },
+                ].map((feeling) => (
+                  <Button
+                    key={feeling.value}
+                    type="button"
+                    variant={diaryFeeling === feeling.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setDiaryFeeling(feeling.value)}
+                    className={diaryFeeling === feeling.value ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                  >
+                    {feeling.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Observações gerais */}
+            <div>
+              <Label>Observações gerais</Label>
+              <Textarea
+                value={diaryNotes}
+                onChange={(e) => setDiaryNotes(e.target.value)}
+                placeholder="Como foi o treino? Alguma observação importante..."
+                className="mt-1"
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowDiaryModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedSession?.workoutInfo) return;
+                
+                createWorkoutLogMutation.mutate({
+                  workoutId: selectedSession.workoutId || 0,
+                  workoutDayId: 0,
+                  trainingDate: new Date(selectedSession.scheduledAt).toISOString().split('T')[0],
+                  duration: diaryDuration,
+                  notes: diaryNotes + (diaryFeeling ? ` | Sentimento: ${diaryFeeling}` : ''),
+                  exercises: diaryExercises.map((ex) => ({
+                    exerciseId: ex.exerciseId || 0,
+                    exerciseName: ex.exerciseName,
+                    set1Weight: ex.sets[0]?.weight || '',
+                    set1Reps: ex.sets[0]?.reps || 0,
+                    set2Weight: ex.sets[1]?.weight || '',
+                    set2Reps: ex.sets[1]?.reps || 0,
+                    set3Weight: ex.sets[2]?.weight || '',
+                    set3Reps: ex.sets[2]?.reps || 0,
+                    set4Weight: ex.sets[3]?.weight || '',
+                    set4Reps: ex.sets[3]?.reps || 0,
+                    set5Weight: ex.sets[4]?.weight || '',
+                    set5Reps: ex.sets[4]?.reps || 0,
+                    notes: ex.notes,
+                    completed: ex.completed,
+                  })),
+                });
+              }}
+              disabled={createWorkoutLogMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {createWorkoutLogMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salvar Treino
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

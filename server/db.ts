@@ -1789,6 +1789,31 @@ export async function approvePendingChange(id: number, reviewNotes?: string) {
     await db.update(anamneses).set({ [fieldName]: newValue }).where(eq(anamneses.id, entityId));
   } else if (entityType === 'measurement') {
     await db.update(measurements).set({ [fieldName]: newValue }).where(eq(measurements.id, entityId));
+  } else if (entityType === 'workout') {
+    // Aplicar alterações de treino
+    // fieldName formato: "weight_change_exercise_123" ou "reps_change_exercise_456"
+    const parts = fieldName.split('_');
+    const suggestionType = parts.slice(0, -2).join('_'); // weight_change, reps_change, exercise_change
+    const exerciseId = parseInt(parts[parts.length - 1]);
+    
+    if (exerciseId && !isNaN(exerciseId)) {
+      try {
+        const newValues = JSON.parse(newValue || '{}');
+        
+        if (suggestionType === 'weight_change' && newValues.weight !== undefined) {
+          // Atualizar carga do exercício
+          await db.update(exercises).set({ weight: newValues.weight }).where(eq(exercises.id, exerciseId));
+        } else if (suggestionType === 'reps_change' && newValues.reps !== undefined) {
+          // Atualizar repetições do exercício
+          await db.update(exercises).set({ reps: newValues.reps }).where(eq(exercises.id, exerciseId));
+        } else if (suggestionType === 'exercise_change' && newValues.name !== undefined) {
+          // Trocar exercício (atualizar nome)
+          await db.update(exercises).set({ name: newValues.name }).where(eq(exercises.id, exerciseId));
+        }
+      } catch (e) {
+        console.error('Erro ao aplicar alteração de treino:', e);
+      }
+    }
   }
   
   // Mark as approved
