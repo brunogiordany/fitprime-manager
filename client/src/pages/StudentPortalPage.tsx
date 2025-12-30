@@ -1288,10 +1288,10 @@ export default function StudentPortalPage() {
                               <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="early_morning">Manhã cedo (5h-8h)</SelectItem>
-                              <SelectItem value="morning">Manhã (8h-12h)</SelectItem>
+                              <SelectItem value="morning">Manhã (6h-12h)</SelectItem>
                               <SelectItem value="afternoon">Tarde (12h-18h)</SelectItem>
                               <SelectItem value="evening">Noite (18h-22h)</SelectItem>
+                              <SelectItem value="flexible">Flexível</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

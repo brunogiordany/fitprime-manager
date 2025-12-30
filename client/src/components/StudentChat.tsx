@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -25,7 +24,23 @@ import {
   Pause,
   Download,
   CheckCheck,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Message {
   id: number;
@@ -75,9 +90,15 @@ export default function StudentChat() {
   const [playingAudioId, setPlayingAudioId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
+  // Estados para edição e exclusão
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [editText, setEditText] = useState("");
+  const [deleteConfirmMessage, setDeleteConfirmMessage] = useState<Message | null>(null);
+  const [deleteType, setDeleteType] = useState<'forMe' | 'forAll'>('forMe');
+  
   const { data: messages, refetch: refetchMessages } = trpc.studentPortal.chatMessages.useQuery(
     { limit: 100 },
-    { refetchInterval: 5000 } // Atualizar a cada 5 segundos
+    { refetchInterval: 5000 }
   );
   
   const sendMessage = trpc.studentPortal.sendChatMessage.useMutation({
@@ -90,6 +111,46 @@ export default function StudentChat() {
     },
   });
   
+  const uploadMedia = trpc.studentPortal.uploadChatMedia.useMutation({
+    onError: (error) => {
+      toast.error(error.message || "Erro ao fazer upload");
+    },
+  });
+  
+  const editMessage = trpc.studentPortal.editChatMessage.useMutation({
+    onSuccess: () => {
+      setEditingMessage(null);
+      setEditText("");
+      refetchMessages();
+      toast.success("Mensagem editada");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao editar mensagem");
+    },
+  });
+  
+  const deleteForMe = trpc.studentPortal.deleteChatMessageForMe.useMutation({
+    onSuccess: () => {
+      setDeleteConfirmMessage(null);
+      refetchMessages();
+      toast.success("Mensagem apagada para você");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao apagar mensagem");
+    },
+  });
+  
+  const deleteForAll = trpc.studentPortal.deleteChatMessageForAll.useMutation({
+    onSuccess: () => {
+      setDeleteConfirmMessage(null);
+      refetchMessages();
+      toast.success("Mensagem apagada para todos");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao apagar mensagem");
+    },
+  });
+  
   // Scroll para o final quando novas mensagens chegarem
   useEffect(() => {
     if (scrollRef.current) {
@@ -99,7 +160,7 @@ export default function StudentChat() {
   
   const handleSend = () => {
     if (!newMessage.trim()) return;
-    sendMessage.mutate({ message: newMessage.trim() });
+    sendMessage.mutate({ message: newMessage.trim(), messageType: 'text' });
   };
   
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -165,10 +226,41 @@ export default function StudentChat() {
   const handleSendAudio = async () => {
     if (!audioBlob) return;
     
-    // Por enquanto, enviar como mensagem de texto indicando áudio
-    // TODO: Implementar upload para S3 e envio real de áudio
-    toast.info('Áudio gravado! Upload será implementado em breve.');
-    setAudioBlob(null);
+    setUploadingMedia(true);
+    try {
+      // Converter blob para base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        
+        // Upload para S3
+        const uploadResult = await uploadMedia.mutateAsync({
+          fileBase64: base64,
+          fileName: `audio-${Date.now()}.webm`,
+          mimeType: 'audio/webm',
+          fileSize: audioBlob.size,
+          duration: recordingTime,
+        });
+        
+        // Enviar mensagem com URL do áudio
+        await sendMessage.mutateAsync({
+          messageType: 'audio',
+          mediaUrl: uploadResult.url,
+          mediaName: uploadResult.fileName,
+          mediaMimeType: uploadResult.mimeType,
+          mediaSize: uploadResult.fileSize,
+          mediaDuration: uploadResult.duration,
+        });
+        
+        setAudioBlob(null);
+        toast.success('Áudio enviado!');
+      };
+    } catch (error) {
+      toast.error('Erro ao enviar áudio');
+    } finally {
+      setUploadingMedia(false);
+    }
   };
   
   // Funções de upload de mídia
@@ -184,8 +276,34 @@ export default function StudentChat() {
     
     setUploadingMedia(true);
     try {
-      // TODO: Implementar upload para S3
-      toast.info(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} selecionado! Upload será implementado em breve.`);
+      // Converter para base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        
+        // Upload para S3
+        const uploadResult = await uploadMedia.mutateAsync({
+          fileBase64: base64,
+          fileName: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+        });
+        
+        // Determinar tipo de mensagem
+        const messageType = type === 'image' ? 'image' : type === 'video' ? 'video' : 'file';
+        
+        // Enviar mensagem com URL da mídia
+        await sendMessage.mutateAsync({
+          messageType,
+          mediaUrl: uploadResult.url,
+          mediaName: uploadResult.fileName,
+          mediaMimeType: uploadResult.mimeType,
+          mediaSize: uploadResult.fileSize,
+        });
+        
+        toast.success(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} enviado!`);
+      };
     } catch (error) {
       toast.error('Erro ao enviar arquivo');
     } finally {
@@ -207,6 +325,22 @@ export default function StudentChat() {
       audioRef.current.play();
       audioRef.current.onended = () => setPlayingAudioId(null);
       setPlayingAudioId(msgId);
+    }
+  };
+  
+  // Edição de mensagem
+  const handleEditMessage = () => {
+    if (!editingMessage || !editText.trim()) return;
+    editMessage.mutate({ messageId: editingMessage.id, newMessage: editText.trim() });
+  };
+  
+  // Exclusão de mensagem
+  const handleDeleteMessage = () => {
+    if (!deleteConfirmMessage) return;
+    if (deleteType === 'forMe') {
+      deleteForMe.mutate({ messageId: deleteConfirmMessage.id });
+    } else {
+      deleteForAll.mutate({ messageId: deleteConfirmMessage.id });
     }
   };
   
@@ -232,11 +366,20 @@ export default function StudentChat() {
   };
   
   const renderMessageContent = (msg: Message) => {
-    // Mensagem deletada
+    // Mensagem deletada para todos
     if (msg.deletedForAll) {
       return (
         <p className="text-sm italic opacity-60">
           Esta mensagem foi apagada
+        </p>
+      );
+    }
+    
+    // Mensagem deletada para o remetente (só mostra se for do aluno)
+    if (msg.deletedForSender && msg.senderType === 'student') {
+      return (
+        <p className="text-sm italic opacity-60">
+          Você apagou esta mensagem
         </p>
       );
     }
@@ -360,200 +503,295 @@ export default function StudentChat() {
   };
   
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-emerald-500" />
-          Chat com seu Personal
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
-          <div className="space-y-3 py-4">
-            {!messages || messages.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Nenhuma mensagem ainda</p>
-                <p className="text-sm">Envie uma mensagem para seu personal!</p>
-              </div>
-            ) : (
-              messages.map((msg: Message) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.senderType === "student" ? "justify-end" : "justify-start"}`}
-                >
+    <>
+      <Card className="h-[600px] flex flex-col">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-emerald-500" />
+            Chat com seu Personal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+            <div className="space-y-3 py-4">
+              {!messages || messages.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Nenhuma mensagem ainda</p>
+                  <p className="text-sm">Envie uma mensagem para seu personal!</p>
+                </div>
+              ) : (
+                messages.map((msg: Message) => (
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                      msg.senderType === "student"
-                        ? "bg-emerald-500 text-white rounded-br-md"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md"
-                    }`}
+                    key={msg.id}
+                    className={`flex ${msg.senderType === "student" ? "justify-end" : "justify-start"} group`}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      {msg.senderType === "personal" ? (
-                        <Dumbbell className="h-3 w-3" />
-                      ) : (
-                        <User className="h-3 w-3" />
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-2 relative ${
+                        msg.senderType === "student"
+                          ? "bg-emerald-500 text-white rounded-br-md"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md"
+                      }`}
+                    >
+                      {/* Menu de ações para mensagens do aluno */}
+                      {msg.senderType === "student" && !msg.deletedForAll && !msg.deletedForSender && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute -left-8 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            {msg.messageType === 'text' && (
+                              <DropdownMenuItem onClick={() => { setEditingMessage(msg); setEditText(msg.message || ''); }}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => { setDeleteConfirmMessage(msg); setDeleteType('forMe'); }}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Apagar para mim
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setDeleteConfirmMessage(msg); setDeleteType('forAll'); }}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Apagar para todos
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                      <span className="text-xs opacity-75">
-                        {msg.senderType === "personal" ? "Personal" : "Você"}
-                      </span>
-                    </div>
-                    {renderMessageContent(msg)}
-                    <div className={`flex items-center gap-1 mt-1 ${msg.senderType === "student" ? "text-emerald-100" : "text-gray-500"}`}>
-                      <span className="text-xs">{formatMessageDate(msg.createdAt)}</span>
-                      {msg.senderType === "student" && msg.isRead && (
-                        <CheckCheck className="h-3 w-3" />
-                      )}
-                      {msg.isEdited && (
-                        <span className="text-xs italic opacity-75">editada</span>
-                      )}
+                      
+                      <div className="flex items-center gap-2 mb-1">
+                        {msg.senderType === "personal" ? (
+                          <Dumbbell className="h-3 w-3" />
+                        ) : (
+                          <User className="h-3 w-3" />
+                        )}
+                        <span className="text-xs opacity-75">
+                          {msg.senderType === "personal" ? "Personal" : "Você"}
+                        </span>
+                      </div>
+                      {renderMessageContent(msg)}
+                      <div className={`flex items-center gap-1 mt-1 ${msg.senderType === "student" ? "text-emerald-100" : "text-gray-500"}`}>
+                        <span className="text-xs">{formatMessageDate(msg.createdAt)}</span>
+                        {msg.senderType === "student" && msg.isRead && (
+                          <CheckCheck className="h-3 w-3" />
+                        )}
+                        {msg.isEdited && (
+                          <span className="text-xs italic opacity-75">editada</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </ScrollArea>
-        
-        <div className="p-4 border-t">
-          {/* Input de arquivos ocultos */}
-          <input
-            type="file"
-            ref={imageInputRef}
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, 'image')}
-          />
-          <input
-            type="file"
-            ref={videoInputRef}
-            accept="video/*"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, 'video')}
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, 'file')}
-          />
-          
-          {/* Preview de áudio gravado */}
-          {audioBlob && (
-            <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3">
-              <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
-              <Button variant="ghost" size="icon" onClick={() => setAudioBlob(null)}>
-                <X className="h-4 w-4" />
-              </Button>
-              <Button size="icon" onClick={handleSendAudio} disabled={sendMessage.isPending}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-          
-          {/* Barra de gravação */}
-          {isRecording && (
-            <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center gap-3">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-red-600 dark:text-red-400 font-medium">
-                Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
-              </span>
-              <div className="flex-1" />
-              <Button variant="ghost" size="icon" onClick={cancelRecording}>
-                <X className="h-4 w-4" />
-              </Button>
-              <Button variant="destructive" size="icon" onClick={stopRecording}>
-                <MicOff className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-          
-          <div className="flex gap-2 items-center">
-            {/* Menu de anexos */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowAttachMenu(!showAttachMenu)}
-                disabled={isRecording || uploadingMedia}
-              >
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              {showAttachMenu && (
-                <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start gap-2"
-                    onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
-                  >
-                    <Image className="h-4 w-4 text-blue-500" />
-                    Foto
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start gap-2"
-                    onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
-                  >
-                    <Video className="h-4 w-4 text-purple-500" />
-                    Vídeo
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start gap-2"
-                    onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
-                  >
-                    <FileText className="h-4 w-4 text-orange-500" />
-                    Arquivo
-                  </Button>
-                </div>
+                ))
               )}
             </div>
-            
-            {/* Campo de texto */}
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Digite sua mensagem..."
-              disabled={sendMessage.isPending || isRecording || uploadingMedia}
-              className="flex-1"
+          </ScrollArea>
+          
+          <div className="p-4 border-t">
+            {/* Input de arquivos ocultos */}
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, 'image')}
+            />
+            <input
+              type="file"
+              ref={videoInputRef}
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, 'video')}
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, 'file')}
             />
             
-            {/* Botão de gravação de áudio ou enviar */}
-            {newMessage.trim() ? (
-              <Button
-                onClick={handleSend}
-                disabled={sendMessage.isPending}
-                size="icon"
-              >
-                {sendMessage.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            ) : (
-              <Button
-                variant={isRecording ? "destructive" : "ghost"}
-                size="icon"
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={uploadingMedia}
-              >
-                {isRecording ? (
-                  <MicOff className="h-5 w-5" />
-                ) : (
-                  <Mic className="h-5 w-5" />
-                )}
-              </Button>
+            {/* Preview de áudio gravado */}
+            {audioBlob && (
+              <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3">
+                <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
+                <Button variant="ghost" size="icon" onClick={() => setAudioBlob(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button size="icon" onClick={handleSendAudio} disabled={uploadingMedia}>
+                  {uploadingMedia ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
             )}
+            
+            {/* Barra de gravação */}
+            {isRecording && (
+              <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center gap-3">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-red-600 dark:text-red-400 font-medium">
+                  Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                </span>
+                <div className="flex-1" />
+                <Button variant="ghost" size="icon" onClick={cancelRecording}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button variant="destructive" size="icon" onClick={stopRecording}>
+                  <MicOff className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            
+            {/* Indicador de upload */}
+            {uploadingMedia && !audioBlob && (
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                <span className="text-blue-600 dark:text-blue-400 font-medium">
+                  Enviando arquivo...
+                </span>
+              </div>
+            )}
+            
+            <div className="flex gap-2 items-center">
+              {/* Menu de anexos */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAttachMenu(!showAttachMenu)}
+                  disabled={isRecording || uploadingMedia}
+                >
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+                {showAttachMenu && (
+                  <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start gap-2"
+                      onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
+                    >
+                      <Image className="h-4 w-4 text-blue-500" />
+                      Foto
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start gap-2"
+                      onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
+                    >
+                      <Video className="h-4 w-4 text-purple-500" />
+                      Vídeo
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start gap-2"
+                      onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
+                    >
+                      <FileText className="h-4 w-4 text-orange-500" />
+                      Arquivo
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Campo de texto */}
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Digite sua mensagem..."
+                disabled={sendMessage.isPending || isRecording || uploadingMedia}
+                className="flex-1"
+              />
+              
+              {/* Botão de gravação de áudio ou enviar */}
+              {newMessage.trim() ? (
+                <Button
+                  onClick={handleSend}
+                  disabled={sendMessage.isPending}
+                  size="icon"
+                >
+                  {sendMessage.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  variant={isRecording ? "destructive" : "ghost"}
+                  size="icon"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={uploadingMedia}
+                >
+                  {isRecording ? (
+                    <MicOff className="h-5 w-5" />
+                  ) : (
+                    <Mic className="h-5 w-5" />
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      
+      {/* Dialog de edição */}
+      <Dialog open={!!editingMessage} onOpenChange={(open) => !open && setEditingMessage(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar mensagem</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            placeholder="Digite a nova mensagem..."
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingMessage(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleEditMessage} disabled={editMessage.isPending || !editText.trim()}>
+              {editMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de confirmação de exclusão */}
+      <Dialog open={!!deleteConfirmMessage} onOpenChange={(open) => !open && setDeleteConfirmMessage(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {deleteType === 'forMe' ? 'Apagar para mim' : 'Apagar para todos'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {deleteType === 'forMe' 
+              ? 'Esta mensagem será apagada apenas para você. O personal ainda poderá vê-la.'
+              : 'Esta mensagem será apagada para todos. Ninguém mais poderá vê-la.'}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmMessage(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteMessage}
+              disabled={deleteForMe.isPending || deleteForAll.isPending}
+            >
+              {(deleteForMe.isPending || deleteForAll.isPending) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Apagar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

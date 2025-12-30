@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, studentId, workoutId, workoutDayIndex, status, scheduledAt \nFROM sessions \nWHERE workoutId IS NOT NULL \nORDER BY scheduledAt DESC \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, workoutId, workoutDayIndex, status, scheduledAt \nFROM sessions \nWHERE workoutId IS NOT NULL \nORDER BY scheduledAt DESC \nLIMIT 10;",
+  "rows": [
+    {
+      "id": "270076",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-27 12:00:00"
+    },
+    {
+      "id": "270074",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-25 15:00:00"
+    },
+    {
+      "id": "270070",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-23 14:00:00"
+    },
+    {
+      "id": "270071",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-20 12:00:00"
+    },
+    {
+      "id": "270075",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-18 15:00:00"
+    },
+    {
+      "id": "270069",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-16 14:00:00"
+    },
+    {
+      "id": "270067",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-13 12:00:00"
+    },
+    {
+      "id": "270073",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-11 15:00:00"
+    },
+    {
+      "id": "270072",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-09 14:00:00"
+    },
+    {
+      "id": "270068",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-06 12:00:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tworkoutId\tworkoutDayIndex\tstatus\tscheduledAt\n270076\t1\t60001\t2\tscheduled\t2026-03-27 12:00:00\n270074\t1\t60001\t1\tscheduled\t2026-03-25 15:00:00\n270070\t1\t60001\t0\tscheduled\t2026-03-23 14:00:00\n270071\t1\t60001\t2\tscheduled\t2026-03-20 12:00:00\n270075\t1\t60001\t1\tscheduled\t2026-03-18 15:00:00\n270069\t1\t60001\t0\tscheduled\t2026-03-16 14:00:00\n270067\t1\t60001\t2\tscheduled\t2026-03-13 12:00:00\n270073\t1\t60001\t1\tscheduled\t2026-03-11 15:00:00\n270072\t1\t60001\t0\tscheduled\t2026-03-09 14:00:00\n270068\t1\t60001\t2\tscheduled\t2026-03-06 12:00:00\n",
+  "stderr": "",
+  "execution_time_ms": 86
+}

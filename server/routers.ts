@@ -276,6 +276,45 @@ export const appRouter = router({
       const unreadCounts = await db.getAllUnreadChatCountForPersonal(ctx.personal.id);
       return unreadCounts.reduce((sum, item) => sum + item.count, 0);
     }),
+    
+    // Upload de mídia para o chat
+    uploadMedia: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        fileBase64: z.string(),
+        fileName: z.string(),
+        mimeType: z.string(),
+        fileSize: z.number(),
+        duration: z.number().optional(), // Para áudio/vídeo
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { storagePut } = await import('./storage');
+        
+        // Validar tamanho (16MB máximo)
+        if (input.fileSize > 16 * 1024 * 1024) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Máximo 16MB.' });
+        }
+        
+        // Verificar se o aluno pertence ao personal
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Aluno não encontrado' });
+        }
+        
+        const buffer = Buffer.from(input.fileBase64, 'base64');
+        const fileKey = `chat/${ctx.personal.id}/${input.studentId}/${nanoid()}-${input.fileName}`;
+        
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        return { 
+          url, 
+          fileKey,
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          duration: input.duration,
+        };
+      }),
   }),
 
   // ==================== STUDENTS ====================
@@ -3900,23 +3939,117 @@ Retorne APENAS o JSON, sem texto adicional.`;
       }),
     
     sendChatMessage: studentProcedure
-      .input(z.object({ message: z.string().min(1) }))
+      .input(z.object({ 
+        message: z.string().optional(),
+        messageType: z.enum(['text', 'audio', 'image', 'video', 'file', 'link']).default('text'),
+        mediaUrl: z.string().optional(),
+        mediaName: z.string().optional(),
+        mediaMimeType: z.string().optional(),
+        mediaSize: z.number().optional(),
+        mediaDuration: z.number().optional(),
+        audioTranscription: z.string().optional(),
+        linkPreviewUrl: z.string().optional(),
+        linkPreviewTitle: z.string().optional(),
+        linkPreviewDescription: z.string().optional(),
+        linkPreviewImage: z.string().optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
+        // Validar que tem mensagem ou mídia
+        if (!input.message && !input.mediaUrl) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
+        }
+        
         const messageId = await db.createChatMessage({
           personalId: ctx.student.personalId,
           studentId: ctx.student.id,
           senderType: 'student',
-          message: input.message,
+          message: input.message || null,
+          messageType: input.messageType,
+          mediaUrl: input.mediaUrl,
+          mediaName: input.mediaName,
+          mediaMimeType: input.mediaMimeType,
+          mediaSize: input.mediaSize,
+          mediaDuration: input.mediaDuration,
+          audioTranscription: input.audioTranscription,
+          linkPreviewUrl: input.linkPreviewUrl,
+          linkPreviewTitle: input.linkPreviewTitle,
+          linkPreviewDescription: input.linkPreviewDescription,
+          linkPreviewImage: input.linkPreviewImage,
         });
         
         // Notificar o personal
         const { notifyOwner } = await import('./_core/notification');
+        const notificationContent = input.messageType === 'text' 
+          ? (input.message?.substring(0, 200) || '') + ((input.message?.length || 0) > 200 ? '...' : '')
+          : input.messageType === 'audio' ? '🎤 Mensagem de áudio'
+          : input.messageType === 'image' ? '🖼️ Foto enviada'
+          : input.messageType === 'video' ? '🎥 Vídeo enviado'
+          : input.messageType === 'file' ? `📄 Arquivo: ${input.mediaName || 'arquivo'}`
+          : input.messageType === 'link' ? `🔗 Link: ${input.linkPreviewTitle || input.linkPreviewUrl || 'link'}`
+          : 'Nova mensagem';
+        
         await notifyOwner({
           title: `💬 Nova mensagem de ${ctx.student.name}`,
-          content: input.message.substring(0, 200) + (input.message.length > 200 ? '...' : ''),
+          content: notificationContent,
         });
         
         return { success: true, messageId };
+      }),
+    
+    // Editar mensagem
+    editChatMessage: studentProcedure
+      .input(z.object({ messageId: z.number(), newMessage: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        await db.editChatMessage(input.messageId, ctx.student.personalId, 'student', input.newMessage, ctx.student.id);
+        return { success: true };
+      }),
+    
+    // Excluir mensagem para mim
+    deleteChatMessageForMe: studentProcedure
+      .input(z.object({ messageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteChatMessageForSender(input.messageId, ctx.student.personalId, 'student', ctx.student.id);
+        return { success: true };
+      }),
+    
+    // Excluir mensagem para todos
+    deleteChatMessageForAll: studentProcedure
+      .input(z.object({ messageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteChatMessageForAll(input.messageId, ctx.student.personalId, 'student', ctx.student.id);
+        return { success: true };
+      }),
+    
+    // Upload de mídia para o chat
+    uploadChatMedia: studentProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        fileName: z.string(),
+        mimeType: z.string(),
+        fileSize: z.number(),
+        duration: z.number().optional(), // Para áudio/vídeo
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { storagePut } = await import('./storage');
+        
+        // Validar tamanho (16MB máximo)
+        if (input.fileSize > 16 * 1024 * 1024) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Arquivo muito grande. Máximo 16MB.' });
+        }
+        
+        const buffer = Buffer.from(input.fileBase64, 'base64');
+        const fileKey = `chat/${ctx.student.personalId}/${ctx.student.id}/${nanoid()}-${input.fileName}`;
+        
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        return { 
+          url, 
+          fileKey,
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          duration: input.duration,
+        };
       }),
     
     unreadChatCount: studentProcedure.query(async ({ ctx }) => {

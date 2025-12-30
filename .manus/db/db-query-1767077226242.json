@@ -1,0 +1,190 @@
+{
+  "query": "SELECT s.id, s.studentId, s.workoutId, s.workoutDayIndex, s.status, s.scheduledAt, w.name as workoutName\nFROM sessions s\nLEFT JOIN workouts w ON s.workoutId = w.id\nWHERE s.deletedAt IS NULL\nORDER BY s.scheduledAt DESC\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.studentId, s.workoutId, s.workoutDayIndex, s.status, s.scheduledAt, w.name as workoutName\nFROM sessions s\nLEFT JOIN workouts w ON s.workoutId = w.id\nWHERE s.deletedAt IS NULL\nORDER BY s.scheduledAt DESC\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "270076",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-27 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270074",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-25 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270070",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-23 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270071",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-20 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270075",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-18 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270069",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-16 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270067",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-13 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270073",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-11 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270072",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-09 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270068",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-06 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270064",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-04 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270063",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-02 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270062",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-27 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270061",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-25 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270060",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-23 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270066",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-20 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270052",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-18 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270057",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "0",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-16 14:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270056",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "2",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-13 12:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    },
+    {
+      "id": "270055",
+      "studentId": "1",
+      "workoutId": "60001",
+      "workoutDayIndex": "1",
+      "status": "scheduled",
+      "scheduledAt": "2026-02-11 15:00:00",
+      "workoutName": "Hipertrofia Iniciante - ABC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tworkoutId\tworkoutDayIndex\tstatus\tscheduledAt\tworkoutName\n270076\t1\t60001\t2\tscheduled\t2026-03-27 12:00:00\tHipertrofia Iniciante - ABC\n270074\t1\t60001\t1\tscheduled\t2026-03-25 15:00:00\tHipertrofia Iniciante - ABC\n270070\t1\t60001\t0\tscheduled\t2026-03-23 14:00:00\tHipertrofia Iniciante - ABC\n270071\t1\t60001\t2\tscheduled\t2026-03-20 12:00:00\tHipertrofia Iniciante - ABC\n270075\t1\t60001\t1\tscheduled\t2026-03-18 15:00:00\tHipertrofia Iniciante - ABC\n270069\t1\t60001\t0\tscheduled\t2026-03-16 14:00:00\tHipertrofia Iniciante - ABC\n270067\t1\t60001\t2\tscheduled\t2026-03-13 12:00:00\tHipertrofia Iniciante - ABC\n270073\t1\t60001\t1\tscheduled\t2026-03-11 15:00:00\tHipertrofia Iniciante - ABC\n270072\t1\t60001\t0\tscheduled\t2026-03-09 14:00:00\tHipertrofia Iniciante - ABC\n270068\t1\t60001\t2\tscheduled\t2026-03-06 12:00:00\tHipertrofia Iniciante - ABC\n270064\t1\t60001\t1\tscheduled\t2026-03-04 15:00:00\tHipertrofia Iniciante - ABC\n270063\t1\t60001\t0\tscheduled\t2026-03-02 14:00:00\tHipertrofia Iniciante - ABC\n270062\t1\t60001\t2\tscheduled\t2026-02-27 12:00:00\tHipertrofia Iniciante - ABC\n270061\t1\t60001\t1\tscheduled\t2026-02-25 15:00:00\tHipertrofia Iniciante - ABC\n270060\t1\t60001\t0\tscheduled\t2026-02-23 14:00:00\tHipertrofia Iniciante - ABC\n270066\t1\t60001\t2\tscheduled\t2026-02-20 12:00:00\tHipertrofia Iniciante - ABC\n270052\t1\t60001\t1\tscheduled\t2026-02-18 15:00:00\tHipertrofia Iniciante - ABC\n270057\t1\t60001\t0\tscheduled\t2026-02-16 14:00:00\tHipertrofia Iniciante - ABC\n270056\t1\t60001\t2\tscheduled\t2026-02-13 12:00:00\tHipertrofia Iniciante - ABC\n270055\t1\t60001\t1\tscheduled\t2026-02-11 15:00:00\tHipertrofia Iniciante - ABC\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT w.id, w.studentId, w.name, s.name as studentName, COUNT(wd.id) as daysCount\nFROM workouts w\nJOIN students s ON w.studentId = s.id\nLEFT JOIN workout_days wd ON w.id = wd.workoutId\nWHERE w.deletedAt IS NULL\nGROUP BY w.id, w.studentId, w.name, s.name\nORDER BY w.id DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT w.id, w.studentId, w.name, s.name as studentName, COUNT(wd.id) as daysCount\nFROM workouts w\nJOIN students s ON w.studentId = s.id\nLEFT JOIN workout_days wd ON w.id = wd.workoutId\nWHERE w.deletedAt IS NULL\nGROUP BY w.id, w.studentId, w.name, s.name\nORDER BY w.id DESC\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "90001",
+      "studentId": "1",
+      "name": "Plano de Hipertrofia Intermediário (Lombar Safe)",
+      "studentName": "Bruno",
+      "daysCount": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tname\tstudentName\tdaysCount\n90001\t1\tPlano de Hipertrofia Intermediário (Lombar Safe)\tBruno\t4\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

@@ -2081,23 +2081,35 @@ export async function getStudentsWithUnreadMessages(personalId: number) {
 
 
 // ==================== CHAT MESSAGE EDIT/DELETE FUNCTIONS ====================
-export async function editChatMessage(messageId: number, senderId: number, senderType: 'personal' | 'student', newMessage: string) {
+export async function editChatMessage(messageId: number, personalId: number, senderType: 'personal' | 'student', newMessage: string, studentId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   // Verificar se a mensagem pertence ao remetente
+  const conditions = [
+    eq(chatMessages.id, messageId),
+    eq(chatMessages.personalId, personalId),
+    eq(chatMessages.senderType, senderType)
+  ];
+  
+  // Para aluno, verificar também o studentId
+  if (senderType === 'student' && studentId) {
+    conditions.push(eq(chatMessages.studentId, studentId));
+  }
+  
   const message = await db.select().from(chatMessages)
-    .where(and(
-      eq(chatMessages.id, messageId),
-      senderType === 'personal' 
-        ? eq(chatMessages.personalId, senderId)
-        : eq(chatMessages.studentId, senderId),
-      eq(chatMessages.senderType, senderType)
-    ))
+    .where(and(...conditions))
     .limit(1);
   
   if (message.length === 0) {
     throw new Error("Mensagem não encontrada ou sem permissão");
+  }
+  
+  // Salvar mensagem original antes de editar
+  if (!message[0].originalMessage) {
+    await db.update(chatMessages)
+      .set({ originalMessage: message[0].message })
+      .where(eq(chatMessages.id, messageId));
   }
   
   await db.update(chatMessages)
@@ -2109,19 +2121,24 @@ export async function editChatMessage(messageId: number, senderId: number, sende
     .where(eq(chatMessages.id, messageId));
 }
 
-export async function deleteChatMessageForSender(messageId: number, senderId: number, senderType: 'personal' | 'student') {
+export async function deleteChatMessageForSender(messageId: number, personalId: number, senderType: 'personal' | 'student', studentId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   // Verificar se a mensagem pertence ao remetente
+  const conditions = [
+    eq(chatMessages.id, messageId),
+    eq(chatMessages.personalId, personalId),
+    eq(chatMessages.senderType, senderType)
+  ];
+  
+  // Para aluno, verificar também o studentId
+  if (senderType === 'student' && studentId) {
+    conditions.push(eq(chatMessages.studentId, studentId));
+  }
+  
   const message = await db.select().from(chatMessages)
-    .where(and(
-      eq(chatMessages.id, messageId),
-      senderType === 'personal' 
-        ? eq(chatMessages.personalId, senderId)
-        : eq(chatMessages.studentId, senderId),
-      eq(chatMessages.senderType, senderType)
-    ))
+    .where(and(...conditions))
     .limit(1);
   
   if (message.length === 0) {
@@ -2129,23 +2146,28 @@ export async function deleteChatMessageForSender(messageId: number, senderId: nu
   }
   
   await db.update(chatMessages)
-    .set({ deletedForSender: true })
+    .set({ deletedForSender: true, deletedAt: new Date() })
     .where(eq(chatMessages.id, messageId));
 }
 
-export async function deleteChatMessageForAll(messageId: number, senderId: number, senderType: 'personal' | 'student') {
+export async function deleteChatMessageForAll(messageId: number, personalId: number, senderType: 'personal' | 'student', studentId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   // Verificar se a mensagem pertence ao remetente
+  const conditions = [
+    eq(chatMessages.id, messageId),
+    eq(chatMessages.personalId, personalId),
+    eq(chatMessages.senderType, senderType)
+  ];
+  
+  // Para aluno, verificar também o studentId
+  if (senderType === 'student' && studentId) {
+    conditions.push(eq(chatMessages.studentId, studentId));
+  }
+  
   const message = await db.select().from(chatMessages)
-    .where(and(
-      eq(chatMessages.id, messageId),
-      senderType === 'personal' 
-        ? eq(chatMessages.personalId, senderId)
-        : eq(chatMessages.studentId, senderId),
-      eq(chatMessages.senderType, senderType)
-    ))
+    .where(and(...conditions))
     .limit(1);
   
   if (message.length === 0) {
@@ -2153,7 +2175,7 @@ export async function deleteChatMessageForAll(messageId: number, senderId: numbe
   }
   
   await db.update(chatMessages)
-    .set({ deletedForAll: true })
+    .set({ deletedForAll: true, deletedAt: new Date() })
     .where(eq(chatMessages.id, messageId));
 }
 

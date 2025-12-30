@@ -1330,3 +1330,19 @@
 - [x] UX: Adicionar botão X para fechar o modal de detalhes da sessão (atualmente precisa clicar fora para fechar)
 - [x] Bug: Treino vinculado não aparece no modal de edição mesmo em agendamentos futuros que têm treino associado
 - [x] Melhoria: Seção de treino sempre visível com mensagem quando não há treinos cadastrados
+
+
+## Próximos Passos Chat (v5.55)
+- [x] Implementar upload real de mídia para S3 no chat (backend)
+- [x] Atualizar frontend do chat para usar upload S3
+- [x] Implementar edição de mensagens no chat
+- [x] Implementar exclusão de mensagens "para mim"
+- [x] Implementar exclusão de mensagens "para todos"
+- [x] Investigar bug de treinos não aparecendo em alguns agendamentos
+  - Causa: Sessões não têm workoutId/workoutDayIndex salvos no banco
+  - Solução: O personal precisa vincular o treino ao criar/editar a sessão
+  - O modal de edição já permite vincular treinos quando existem treinos cadastrados
+
+## Bug Crítico - Anamnese Portal do Aluno (v5.56)
+- [x] PRIORIDADE: Erro ao salvar anamnese no portal do aluno - corrigido valor inválido 'early_morning' para preferredTime
+- [x] Valores de preferredTime agora são: morning, afternoon, evening, flexible (conforme schema)
