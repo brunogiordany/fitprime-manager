@@ -61,7 +61,7 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
 
   const utils = trpc.useUtils();
 
-  const saveAnamneseMutation = trpc.anamnesis.saveWithMeasurements.useMutation({
+  const saveAnamneseMutation = trpc.studentPortal.saveWithMeasurements.useMutation({
     onSuccess: () => {
       toast.success("Perfil completado com sucesso!");
       onComplete();
@@ -88,8 +88,8 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
   };
 
   const handleSubmit = () => {
+    // Usa o endpoint studentPortal.saveWithMeasurements que usa studentProcedure
     saveAnamneseMutation.mutate({
-      studentId,
       occupation: formData.occupation || undefined,
       sleepHours: formData.sleepHours ? parseInt(formData.sleepHours) : undefined,
       stressLevel: formData.stressLevel as any || undefined,

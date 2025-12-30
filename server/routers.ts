@@ -4288,6 +4288,116 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
       // Filtrar apenas sugestões de treino
       return changes.filter(c => c.entityType === 'workout');
     }),
+    
+    // Salvar anamnese com medidas (para onboarding do aluno)
+    saveWithMeasurements: studentProcedure
+      .input(z.object({
+        occupation: z.string().optional(),
+        lifestyle: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
+        sleepHours: z.number().optional(),
+        sleepQuality: z.enum(['poor', 'fair', 'good', 'excellent']).optional(),
+        stressLevel: z.enum(['low', 'moderate', 'high', 'very_high']).optional(),
+        medicalHistory: z.string().optional(),
+        injuries: z.string().optional(),
+        surgeries: z.string().optional(),
+        medications: z.string().optional(),
+        allergies: z.string().optional(),
+        mainGoal: z.enum(['weight_loss', 'muscle_gain', 'conditioning', 'health', 'rehabilitation', 'sports', 'other']).optional(),
+        secondaryGoals: z.string().optional(),
+        targetWeight: z.string().optional(),
+        motivation: z.string().optional(),
+        mealsPerDay: z.number().optional(),
+        waterIntake: z.string().optional(),
+        dietRestrictions: z.string().optional(),
+        supplements: z.string().optional(),
+        dailyCalories: z.number().optional(),
+        doesCardio: z.boolean().optional(),
+        cardioActivities: z.string().optional(),
+        exerciseExperience: z.enum(['none', 'beginner', 'intermediate', 'advanced']).optional(),
+        previousActivities: z.string().optional(),
+        availableDays: z.string().optional(),
+        preferredTime: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
+        weeklyFrequency: z.number().optional(),
+        sessionDuration: z.number().optional(),
+        trainingLocation: z.enum(['full_gym', 'home_gym', 'home_basic', 'outdoor', 'studio']).optional(),
+        availableEquipment: z.string().optional(),
+        trainingRestrictions: z.string().optional(),
+        restrictionNotes: z.string().optional(),
+        muscleEmphasis: z.string().optional(),
+        observations: z.string().optional(),
+        measurements: z.object({
+          weight: z.string().optional(),
+          height: z.string().optional(),
+          bodyFat: z.string().optional(),
+          muscleMass: z.string().optional(),
+          neck: z.string().optional(),
+          chest: z.string().optional(),
+          waist: z.string().optional(),
+          hip: z.string().optional(),
+          rightArm: z.string().optional(),
+          leftArm: z.string().optional(),
+          rightThigh: z.string().optional(),
+          leftThigh: z.string().optional(),
+          rightCalf: z.string().optional(),
+          leftCalf: z.string().optional(),
+          notes: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { measurements, ...anamnesisData } = input;
+        const existing = await db.getAnamnesisByStudentId(ctx.student.id);
+        
+        let anamnesisId: number;
+        let updated = false;
+        
+        if (existing) {
+          await db.updateAnamnesis(existing.id, anamnesisData as any);
+          anamnesisId = existing.id;
+          updated = true;
+        } else {
+          anamnesisId = await db.createAnamnesis({
+            ...anamnesisData,
+            studentId: ctx.student.id,
+            personalId: ctx.student.personalId,
+          } as any);
+        }
+        
+        // Criar registro de medidas se houver dados
+        if (measurements && Object.values(measurements).some(v => v)) {
+          const hasMeasurementData = measurements.weight || measurements.height || 
+            measurements.bodyFat || measurements.chest || measurements.waist || 
+            measurements.hip || measurements.neck;
+          
+          if (hasMeasurementData) {
+            // Calcular IMC se tiver peso e altura
+            let bmi: string | undefined;
+            if (measurements.weight && measurements.height) {
+              const w = parseFloat(measurements.weight);
+              const h = parseFloat(measurements.height) / 100;
+              if (w > 0 && h > 0) {
+                bmi = (w / (h * h)).toFixed(1);
+              }
+            }
+            
+            await db.createMeasurement({
+              studentId: ctx.student.id,
+              personalId: ctx.student.personalId,
+              measureDate: new Date(),
+              ...measurements,
+              bmi,
+            });
+          }
+        }
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `📋 ${updated ? 'Anamnese Atualizada' : 'Onboarding Completo'} - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} ${updated ? 'atualizou sua anamnese' : 'completou o onboarding inicial'}.\n\nAcesse o sistema para ver os detalhes.`,
+        });
+        
+        return { success: true, anamnesisId, updated };
+      }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================

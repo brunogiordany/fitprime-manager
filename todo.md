@@ -1365,14 +1365,14 @@
 
 
 ## Análise por IA v5.61
-- [ ] Criar endpoint de análise por IA no backend
-- [ ] Analisar anamnese do aluno (objetivos, restrições, histórico)
-- [ ] Analisar evolução das medidas corporais
-- [ ] Analisar distribuição de grupos musculares (identificar desequilíbrios)
-- [ ] Analisar progressão de carga do Diário do Maromba
-- [ ] Analisar frequência e consistência de treino
-- [ ] Analisar sentimento/feedback nos treinos
-- [ ] Gerar recomendações personalizadas
+- [x] Criar endpoint de análise por IA no backend (workoutLogs.aiAnalysis)
+- [x] Analisar anamnese do aluno (objetivos, restrições, histórico)
+- [x] Analisar evolução das medidas corporais
+- [x] Analisar distribuição de grupos musculares (identificar desequilíbrios)
+- [x] Analisar progressão de carga do Diário do Maromba
+- [x] Analisar frequência e consistência de treino
+- [x] Analisar sentimento/feedback nos treinos
+- [x] Gerar recomendações personalizadas
 - [ ] Implementar botão e modal de análise na interface do personal
 
 
@@ -1397,3 +1397,10 @@
 - [x] PRIORIDADE: Aluno é deslogado automaticamente após 2-3 segundos
 - [x] Aluno é redirecionado para login do Manus (OAuth) ao invés de manter sessão do portal
 - [x] Corrigido: main.tsx agora ignora redirecionamento OAuth quando está no portal do aluno
+
+
+## Bug Anamnese Portal do Aluno v5.66
+- [x] Erro "Please login (10001)" ao salvar anamnese no portal do aluno
+- [x] Endpoint está usando protectedProcedure (OAuth) ao invés de studentProcedure
+- [x] CORRIGIDO: Criado endpoint studentPortal.saveWithMeasurements com studentProcedure
+- [x] StudentOnboarding.tsx atualizado para usar o novo endpoint
