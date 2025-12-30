@@ -1391,3 +1391,9 @@
   - Peito + Tríceps (Supino, Flexões)
   - Costas + Bíceps (Remadas, Pulldown)
   - Ombros + Tríceps (Desenvolvimento)
+
+
+## Bug Crítico - Autenticação Portal do Aluno v5.65
+- [x] PRIORIDADE: Aluno é deslogado automaticamente após 2-3 segundos
+- [x] Aluno é redirecionado para login do Manus (OAuth) ao invés de manter sessão do portal
+- [x] Corrigido: main.tsx agora ignora redirecionamento OAuth quando está no portal do aluno

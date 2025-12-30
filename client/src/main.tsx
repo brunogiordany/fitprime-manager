@@ -18,6 +18,22 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
+  // NÃO redirecionar para OAuth se estiver no portal do aluno
+  // O portal do aluno tem seu próprio sistema de autenticação
+  const currentPath = window.location.pathname;
+  const isStudentPortal = currentPath.startsWith('/meu-portal') || 
+                          currentPath.startsWith('/portal-aluno') || 
+                          currentPath.startsWith('/portal') ||
+                          currentPath.startsWith('/login-aluno') ||
+                          currentPath.startsWith('/convite');
+  
+  if (isStudentPortal) {
+    // Para o portal do aluno, não redirecionar para OAuth
+    // O StudentPortalPage já tem sua própria lógica de autenticação
+    console.log('[Auth] Ignorando redirecionamento OAuth no portal do aluno');
+    return;
+  }
+
   window.location.href = getLoginUrl();
 };
 
