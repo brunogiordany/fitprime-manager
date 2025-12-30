@@ -376,9 +376,46 @@ export default function Messages() {
     
     setUploadingMedia(true);
     try {
-      toast.info(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} selecionado! Upload será implementado em breve.`);
-    } catch (error) {
-      toast.error('Erro ao enviar arquivo');
+      // Converter para base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+      
+      const base64 = await base64Promise;
+      
+      // Upload para S3
+      const uploadResult = await uploadMediaMutation.mutateAsync({
+        studentId: selectedStudent.studentId,
+        fileBase64: base64,
+        fileName: file.name,
+        mimeType: file.type,
+        fileSize: file.size,
+      });
+      
+      // Determinar tipo de mensagem
+      const messageType = type === 'image' ? 'image' : type === 'video' ? 'video' : 'file';
+      
+      // Enviar mensagem com URL da mídia
+      await sendMessage.mutateAsync({
+        studentId: selectedStudent.studentId,
+        messageType,
+        mediaUrl: uploadResult.url,
+        mediaName: uploadResult.fileName,
+        mediaMimeType: uploadResult.mimeType,
+        mediaSize: uploadResult.fileSize,
+      });
+      
+      toast.success(`${type === 'image' ? 'Foto' : type === 'video' ? 'Vídeo' : 'Arquivo'} enviado!`);
+    } catch (error: any) {
+      console.error('Erro ao enviar arquivo:', error);
+      toast.error(error.message || 'Erro ao enviar arquivo');
     } finally {
       setUploadingMedia(false);
       e.target.value = '';
