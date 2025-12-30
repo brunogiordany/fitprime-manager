@@ -1997,7 +1997,7 @@ export default function Schedule() {
                         <Dumbbell className="h-4 w-4 text-emerald-600" />
                         <h4 className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">Treino da Sessão</h4>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-3">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
                           <Select

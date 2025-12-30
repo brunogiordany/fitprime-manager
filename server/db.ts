@@ -1131,6 +1131,15 @@ export async function getWorkoutLogsByStudentId(studentId: number) {
     .orderBy(desc(workoutLogs.trainingDate));
 }
 
+export async function getWorkoutLogBySessionId(sessionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(workoutLogs)
+    .where(eq(workoutLogs.sessionId, sessionId))
+    .limit(1);
+  return result[0] || null;
+}
+
 export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDate'> & { trainingDate: string | Date }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -2586,6 +2595,73 @@ export async function getTrainingDashboard(
     volumeByMonth,
     recentLogs: logs.slice(0, 10),
   };
+}
+
+// Análise por grupo muscular
+export async function getMuscleGroupAnalysis(
+  personalId: number,
+  filters?: { studentId?: number; startDate?: string; endDate?: string }
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [
+    eq(workoutLogs.personalId, personalId),
+    eq(workoutLogs.status, 'completed'),
+  ];
+  
+  if (filters?.studentId) {
+    conditions.push(eq(workoutLogs.studentId, filters.studentId));
+  }
+  if (filters?.startDate) {
+    conditions.push(gte(workoutLogs.trainingDate, new Date(filters.startDate)));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(workoutLogs.trainingDate, new Date(filters.endDate)));
+  }
+  
+  // Buscar todos os exercícios dos logs completados
+  const logIds = await db.select({ id: workoutLogs.id })
+    .from(workoutLogs)
+    .where(and(...conditions));
+  
+  if (logIds.length === 0) return [];
+  
+  const exercises = await db.select({
+    muscleGroup: workoutLogExercises.muscleGroup,
+    totalVolume: workoutLogExercises.totalVolume,
+    completedSets: workoutLogExercises.completedSets,
+    totalReps: workoutLogExercises.totalReps,
+  })
+    .from(workoutLogExercises)
+    .where(inArray(workoutLogExercises.workoutLogId, logIds.map(l => l.id)));
+  
+  // Agrupar por grupo muscular
+  const muscleGroups: Record<string, { volume: number; sets: number; reps: number; count: number }> = {};
+  
+  for (const ex of exercises) {
+    const group = ex.muscleGroup || 'Outros';
+    if (!muscleGroups[group]) {
+      muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
+    }
+    muscleGroups[group].volume += parseFloat(ex.totalVolume?.toString() || '0');
+    muscleGroups[group].sets += ex.completedSets || 0;
+    muscleGroups[group].reps += ex.totalReps || 0;
+    muscleGroups[group].count += 1;
+  }
+  
+  // Converter para array e ordenar por volume
+  const result = Object.entries(muscleGroups)
+    .map(([name, data]) => ({
+      name,
+      volume: Math.round(data.volume),
+      sets: data.sets,
+      reps: data.reps,
+      exercises: data.count,
+    }))
+    .sort((a, b) => b.volume - a.volume);
+  
+  return result;
 }
 
 // Histórico de evolução de um exercício específico

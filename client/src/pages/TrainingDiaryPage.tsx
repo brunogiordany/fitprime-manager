@@ -119,6 +119,7 @@ export default function TrainingDiaryPage() {
   
   // Estado para gráfico de evolução de carga
   const [progressExercise, setProgressExercise] = useState<string>("");
+  const [selectedProgressDay, setSelectedProgressDay] = useState<number | null>(null); // Índice do dia selecionado no gráfico
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -147,6 +148,9 @@ export default function TrainingDiaryPage() {
     { enabled: !!selectedLogId }
   );
   const { data: dashboard } = trpc.trainingDiary.dashboard.useQuery(
+    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
+  );
+  const { data: muscleGroupData } = trpc.trainingDiary.muscleGroupAnalysis.useQuery(
     selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
   );
   const { data: workouts } = trpc.workouts.list.useQuery({ studentId: 0 });
@@ -611,23 +615,28 @@ export default function TrainingDiaryPage() {
                               session.status === 'cancelled' ? 'border-red-300 bg-red-50/50 opacity-60' :
                               'hover:border-primary'
                             }`}
-                            onClick={() => {
-                              if (session.status !== 'cancelled') {
-                                setSelectedSession(session);
-                                // Pré-preencher o formulário com dados da sessão
-                                setNewLog({
-                                  studentId: session.studentId,
-                                  workoutId: session.workoutId || 0,
-                                  workoutDayId: 0,
-                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                  notes: session.notes || '',
-                                  feeling: '',
-                                });
-                                setShowSessionLogModal(true);
-                              }
-                            }}
+onClick={() => {
+                                              if (session.status !== 'cancelled') {
+                                                // Se a sessão já tem um registro de treino, abrir detalhes
+                                                if (session.status === 'completed' && session.workoutLogId) {
+                                                  openLogDetail(session.workoutLogId);
+                                                } else {
+                                                  // Senão, abrir modal para registrar treino
+                                                  setSelectedSession(session);
+                                                  setNewLog({
+                                                    studentId: session.studentId,
+                                                    workoutId: session.workoutId || 0,
+                                                    workoutDayId: 0,
+                                                    trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                                    dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                                    startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                                    notes: session.notes || '',
+                                                    feeling: '',
+                                                  });
+                                                  setShowSessionLogModal(true);
+                                                }
+                                              }
+                                            }}
                           >
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between gap-4">
@@ -702,20 +711,26 @@ export default function TrainingDiaryPage() {
                         {futureSessions.slice(0, 10).map((session: any) => (
                           <Card 
                             key={session.id}
-                            className="cursor-pointer transition-all hover:shadow-md hover:border-primary"
+                            className={`cursor-pointer transition-all hover:shadow-md ${session.status === 'completed' ? 'border-green-500 bg-green-50/50' : 'hover:border-primary'}`}
                             onClick={() => {
-                              setSelectedSession(session);
-                              setNewLog({
-                                studentId: session.studentId,
-                                workoutId: session.workoutId || 0,
-                                workoutDayId: 0,
-                                trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                notes: session.notes || '',
-                                feeling: '',
-                              });
-                              setShowSessionLogModal(true);
+                              // Se a sessão já tem um registro de treino, abrir detalhes
+                              if (session.status === 'completed' && session.workoutLogId) {
+                                openLogDetail(session.workoutLogId);
+                              } else {
+                                // Senão, abrir modal para registrar treino
+                                setSelectedSession(session);
+                                setNewLog({
+                                  studentId: session.studentId,
+                                  workoutId: session.workoutId || 0,
+                                  workoutDayId: 0,
+                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                  notes: session.notes || '',
+                                  feeling: '',
+                                });
+                                setShowSessionLogModal(true);
+                              }
                             }}
                           >
                             <CardContent className="p-4">
@@ -770,20 +785,26 @@ export default function TrainingDiaryPage() {
                         {pastSessions.map((session: any) => (
                           <Card 
                             key={session.id}
-                            className="cursor-pointer transition-all hover:shadow-md border-amber-300 bg-amber-50/50"
+                            className={`cursor-pointer transition-all hover:shadow-md ${session.status === 'completed' && session.workoutLogId ? 'border-green-500 bg-green-50/50' : 'border-amber-300 bg-amber-50/50'}`}
                             onClick={() => {
-                              setSelectedSession(session);
-                              setNewLog({
-                                studentId: session.studentId,
-                                workoutId: session.workoutId || 0,
-                                workoutDayId: 0,
-                                trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                notes: session.notes || '',
-                                feeling: '',
-                              });
-                              setShowSessionLogModal(true);
+                              // Se a sessão já tem um registro de treino, abrir detalhes
+                              if (session.status === 'completed' && session.workoutLogId) {
+                                openLogDetail(session.workoutLogId);
+                              } else {
+                                // Senão, abrir modal para registrar treino
+                                setSelectedSession(session);
+                                setNewLog({
+                                  studentId: session.studentId,
+                                  workoutId: session.workoutId || 0,
+                                  workoutDayId: 0,
+                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
+                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                                  notes: session.notes || '',
+                                  feeling: '',
+                                });
+                                setShowSessionLogModal(true);
+                              }
                             }}
                           >
                             <CardContent className="p-4">
@@ -913,7 +934,7 @@ export default function TrainingDiaryPage() {
             {dashboard ? (
               <>
                 {/* Cards de resumo */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -944,15 +965,6 @@ export default function TrainingDiaryPage() {
                     </CardContent>
                   </Card>
                   
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Timer className="h-4 w-4" />
-                        <span className="text-sm">Duração Média</span>
-                      </div>
-                      <p className="text-2xl font-bold">{dashboard.avgDuration}min</p>
-                    </CardContent>
-                  </Card>
                 </div>
                 
                 {/* Gráfico de treinos por mês */}
@@ -1011,6 +1023,84 @@ export default function TrainingDiaryPage() {
                   </CardContent>
                 </Card>
                 
+                {/* Análise por Grupo Muscular */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Análise por Grupo Muscular
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">Volume e frequência de treino por grupo muscular</p>
+                  </CardHeader>
+                  <CardContent>
+                    {muscleGroupData && muscleGroupData.length > 0 ? (
+                      <div className="space-y-4">
+                        {/* Gráfico de barras horizontais */}
+                        <div className="space-y-3">
+                          {muscleGroupData.map((group: any, index: number) => {
+                            const maxVolume = Math.max(...muscleGroupData.map((g: any) => g.volume));
+                            const percentage = maxVolume > 0 ? (group.volume / maxVolume) * 100 : 0;
+                            const colors = [
+                              'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-orange-500',
+                              'bg-pink-500', 'bg-cyan-500', 'bg-yellow-500', 'bg-red-500',
+                              'bg-indigo-500', 'bg-teal-500', 'bg-lime-500', 'bg-amber-500'
+                            ];
+                            const color = colors[index % colors.length];
+                            return (
+                              <div key={group.name} className="space-y-1">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium">{group.name}</span>
+                                  <span className="text-muted-foreground">
+                                    {group.volume.toLocaleString('pt-BR')}kg · {group.sets} séries · {group.exercises} exercícios
+                                  </span>
+                                </div>
+                                <div className="h-4 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full ${color} rounded-full transition-all duration-500`}
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Resumo */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t">
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">{muscleGroupData.length}</p>
+                            <p className="text-xs text-muted-foreground">Grupos</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">
+                              {muscleGroupData.reduce((sum: number, g: any) => sum + g.volume, 0).toLocaleString('pt-BR')}kg
+                            </p>
+                            <p className="text-xs text-muted-foreground">Volume Total</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">
+                              {muscleGroupData.reduce((sum: number, g: any) => sum + g.sets, 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Séries Totais</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">
+                              {muscleGroupData.reduce((sum: number, g: any) => sum + g.exercises, 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Exercícios</p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum dado de grupo muscular disponível</p>
+                        <p className="text-sm">Registre treinos com exercícios para ver a análise</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
                 {/* Distribuição de sentimento */}
                 <Card>
                   <CardHeader>
@@ -1062,27 +1152,111 @@ export default function TrainingDiaryPage() {
                     {/* Gráfico */}
                     {exerciseProgress && exerciseProgress.length > 0 ? (
                       <div className="space-y-4">
-                        {/* Gráfico de barras */}
+                        {/* Gráfico de barras - clique para ver detalhes */}
                         <div className="flex items-end justify-between gap-2 h-48 border rounded-lg p-4 bg-muted/30">
                           {exerciseProgress.slice().reverse().map((item: any, index: number) => {
+                            const reversedIndex = exerciseProgress.length - 1 - index; // Índice original no array
                             const maxWeight = Math.max(...exerciseProgress.map((i: any) => i.maxWeight || 0));
                             const height = maxWeight > 0 ? ((item.maxWeight || 0) / maxWeight) * 100 : 0;
                             const date = new Date(item.date);
+                            const isSelected = selectedProgressDay === reversedIndex;
                             return (
-                              <div key={index} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                                <span className="text-xs font-bold text-primary">{item.maxWeight || 0}kg</span>
+                              <div 
+                                key={index} 
+                                className="flex-1 flex flex-col items-center gap-1 min-w-0 cursor-pointer"
+                                onClick={() => setSelectedProgressDay(isSelected ? null : reversedIndex)}
+                              >
+                                <span className={`text-xs font-bold ${isSelected ? 'text-green-600' : 'text-primary'}`}>{item.maxWeight || 0}kg</span>
                                 <div 
-                                  className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t transition-all hover:from-primary/80 hover:to-primary/40"
+                                  className={`w-full rounded-t transition-all ${isSelected ? 'bg-gradient-to-t from-green-600 to-green-400 ring-2 ring-green-500' : 'bg-gradient-to-t from-primary to-primary/60 hover:from-primary/80 hover:to-primary/40'}`}
                                   style={{ height: `${Math.max(height, 5)}%` }}
-                                  title={`${item.exerciseName}\n${item.maxWeight}kg - ${item.totalReps} reps\n${date.toLocaleDateString('pt-BR')}`}
+                                  title={`Clique para ver detalhes\n${item.exerciseName}\n${item.maxWeight}kg - ${item.totalReps} reps\n${date.toLocaleDateString('pt-BR')}`}
                                 />
-                                <span className="text-[10px] text-muted-foreground truncate w-full text-center">
+                                <span className={`text-[10px] truncate w-full text-center ${isSelected ? 'text-green-600 font-bold' : 'text-muted-foreground'}`}>
                                   {date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                 </span>
                               </div>
                             );
                           })}
                         </div>
+                        
+                        {/* Tabela detalhada de séries do dia selecionado */}
+                        {selectedProgressDay !== null && exerciseProgress[selectedProgressDay] && (
+                          <div className="border rounded-lg overflow-hidden bg-green-50/50 border-green-200">
+                            <div className="bg-green-100 px-4 py-3 font-medium text-sm flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Dumbbell className="h-4 w-4 text-green-600" />
+                                <span className="text-green-800">
+                                  Detalhes do Treino - {new Date(exerciseProgress[selectedProgressDay].date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                </span>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-green-600 hover:text-green-800 hover:bg-green-200"
+                                onClick={() => setSelectedProgressDay(null)}
+                              >
+                                Fechar
+                              </Button>
+                            </div>
+                            <div className="p-4">
+                              <div className="mb-3">
+                                <h4 className="font-semibold text-green-800">{exerciseProgress[selectedProgressDay].exerciseName}</h4>
+                                <p className="text-sm text-green-600">
+                                  {exerciseProgress[selectedProgressDay].totalSets} séries • {exerciseProgress[selectedProgressDay].totalReps} reps • Carga máxima: {exerciseProgress[selectedProgressDay].maxWeight}kg
+                                </p>
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="border-b border-green-200">
+                                      <th className="text-left py-2 px-3 font-medium text-green-800">Série</th>
+                                      <th className="text-left py-2 px-3 font-medium text-green-800">Tipo</th>
+                                      <th className="text-right py-2 px-3 font-medium text-green-800">Carga (kg)</th>
+                                      <th className="text-right py-2 px-3 font-medium text-green-800">Reps</th>
+                                      <th className="text-right py-2 px-3 font-medium text-green-800">Descanso</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {exerciseProgress[selectedProgressDay].sets && exerciseProgress[selectedProgressDay].sets.length > 0 ? (
+                                      exerciseProgress[selectedProgressDay].sets.map((set: any, setIndex: number) => {
+                                        const setTypeLabel = SET_TYPES.find(t => t.value === set.setType)?.label || set.setType || 'Válida';
+                                        const setTypeColor = SET_TYPES.find(t => t.value === set.setType)?.color || 'bg-green-500';
+                                        return (
+                                          <tr key={setIndex} className="border-b border-green-100 last:border-b-0 hover:bg-green-100/50">
+                                            <td className="py-2 px-3">
+                                              <span className="font-medium">S{set.setNumber || setIndex + 1}</span>
+                                            </td>
+                                            <td className="py-2 px-3">
+                                              <Badge variant="outline" className={`${setTypeColor} text-white border-0 text-xs`}>
+                                                {setTypeLabel}
+                                              </Badge>
+                                            </td>
+                                            <td className="py-2 px-3 text-right font-bold text-primary">
+                                              {set.weight || '-'}
+                                            </td>
+                                            <td className="py-2 px-3 text-right">
+                                              {set.reps || '-'}
+                                            </td>
+                                            <td className="py-2 px-3 text-right text-muted-foreground">
+                                              {set.restTime ? `${set.restTime}s` : '-'}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })
+                                    ) : (
+                                      <tr>
+                                        <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                                          Nenhuma série registrada para este treino
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         
                         {/* Resumo */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -2058,10 +2058,23 @@ Retorne APENAS o JSON, sem texto adicional.`;
           if (student) studentsMap.set(studentId, student);
         }
         
-        return sessions.map(session => ({
-          ...session,
-          student: studentsMap.get(session.studentId),
-        }));
+        // Get workout log IDs for completed sessions
+        const sessionsWithLogs = await Promise.all(
+          sessions.map(async (session) => {
+            let workoutLogId = null;
+            if (session.status === 'completed') {
+              const log = await db.getWorkoutLogBySessionId(session.id);
+              if (log) workoutLogId = log.id;
+            }
+            return {
+              ...session,
+              student: studentsMap.get(session.studentId),
+              workoutLogId,
+            };
+          })
+        );
+        
+        return sessionsWithLogs;
       }),
     
     create: personalProcedure
@@ -4545,6 +4558,18 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
       .query(async ({ ctx, input }) => {
         const db = await import('./db');
         return await db.getTrainingDashboard(ctx.personal.id, input);
+      }),
+    
+    // Análise por grupo muscular
+    muscleGroupAnalysis: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getMuscleGroupAnalysis(ctx.personal.id, input);
       }),
     
     // Histórico de evolução de um exercício

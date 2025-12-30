@@ -1227,3 +1227,24 @@
 
 ## Bugs PWA (Mobile)
 - [x] Bug: No PWA, ao clicar na sessão do Diário de Treino, o calendário abre automaticamente - corrigido com campo de data customizado
+
+## Bug Layout Agenda
+- [x] Bug: Seção "Treino da Sessão" no modal da Agenda - layout corrigido para vertical
+
+
+## Bugs Diário de Treino (v5.14)
+- [ ] Bug: Popup de detalhes vazio ao clicar em sessão concluída na aba "Sessões" (funciona na aba "Registros")
+- [x] Dashboard por Grupo Muscular implementado com gráfico de barras e resumo
+- [x] Remover campo "Duração Média" do Dashboard
+- [x] Layout da seção "Treino da Sessão" na Agenda corrigido para vertical
+- [x] Calendário não abre automaticamente no PWA ao clicar em sessão
+
+
+## Correções e Melhorias Diário de Treino (v5.43)
+- [x] Bug crítico: Sessões concluídas na aba "Sessões" abrem popup vazio (precisa abrir modal de detalhes, não de registro) - CORRIGIDO (verifica workoutLogId antes de abrir modal)
+- [x] Evolução de Carga: Ao clicar em um dia no gráfico, mostrar tabela detalhada abaixo com todas as séries (número, tipo, carga, reps, descanso) - IMPLEMENTADO
+- [ ] Drop Set com múltiplos drops - Botão "+ Adicionar Drop"
+- [ ] Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa"
+- [ ] Campo de descanso no Drop Set e Rest-Pause
+- [ ] Melhorar UX geral do popup de detalhes de registro
+- [ ] Verificar bug do tipo "Reconhecimento" mudando para "Série Válida"
