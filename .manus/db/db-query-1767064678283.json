@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, studentId, status, totalSets, totalReps, totalVolume, totalDuration FROM workout_logs ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, status, totalSets, totalReps, totalVolume, totalDuration FROM workout_logs ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "4",
+      "studentId": "60001",
+      "status": "completed",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL"
+    },
+    {
+      "id": "3",
+      "studentId": "1",
+      "status": "completed",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL"
+    },
+    {
+      "id": "2",
+      "studentId": "60001",
+      "status": "in_progress",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL"
+    },
+    {
+      "id": "1",
+      "studentId": "1",
+      "status": "in_progress",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tstatus\ttotalSets\ttotalReps\ttotalVolume\ttotalDuration\n4\t60001\tcompleted\t0\t0\t0.00\tNULL\n3\t1\tcompleted\t0\t0\t0.00\tNULL\n2\t60001\tin_progress\t0\t0\t0.00\tNULL\n1\t1\tin_progress\t0\t0\t0.00\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

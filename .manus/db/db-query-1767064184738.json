@@ -1,0 +1,43 @@
+{
+  "query": "SELECT wl.id, wl.studentId, wl.status, wl.trainingDate, wl.totalSets, wl.totalReps, wl.totalVolume, wl.totalDuration, wl.feeling\nFROM workout_logs wl\nORDER BY wl.id DESC\nLIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT wl.id, wl.studentId, wl.status, wl.trainingDate, wl.totalSets, wl.totalReps, wl.totalVolume, wl.totalDuration, wl.feeling\nFROM workout_logs wl\nORDER BY wl.id DESC\nLIMIT 10",
+  "rows": [
+    {
+      "id": "3",
+      "studentId": "1",
+      "status": "completed",
+      "trainingDate": "2025-12-30",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL",
+      "feeling": "NULL"
+    },
+    {
+      "id": "2",
+      "studentId": "60001",
+      "status": "in_progress",
+      "trainingDate": "2025-12-30",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL",
+      "feeling": "NULL"
+    },
+    {
+      "id": "1",
+      "studentId": "1",
+      "status": "in_progress",
+      "trainingDate": "2025-12-31",
+      "totalSets": "0",
+      "totalReps": "0",
+      "totalVolume": "0.00",
+      "totalDuration": "NULL",
+      "feeling": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tstatus\ttrainingDate\ttotalSets\ttotalReps\ttotalVolume\ttotalDuration\tfeeling\n3\t1\tcompleted\t2025-12-30\t0\t0\t0.00\tNULL\tNULL\n2\t60001\tin_progress\t2025-12-30\t0\t0\t0.00\tNULL\tNULL\n1\t1\tin_progress\t2025-12-31\t0\t0\t0.00\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

@@ -1163,3 +1163,18 @@
 - [x] Quando personal aprovar sugestão de reps, atualizar repetições no treino
 - [x] Quando personal aprovar troca de exercício, substituir exercício no treino
 - [x] Registrar histórico da alteração aplicada (pendingChanges.status = 'approved')
+
+
+## Bugs Diário de Treino do Maromba (v5.1)
+- [x] Bug: Registro de treino não calcula Volume, Séries, Reps, Duração (corrigido - conta séries com peso E reps)
+- [ ] Bug: Dashboard do Diário tem dois seletores de aluno (o segundo é específico para Evolução de Carga)
+- [x] UX: Trocar unidade de Volume de toneladas (t) para quilos (kg)
+- [ ] UX: Melhorar layout do popup de detalhes do registro (cortando e encavalando)
+- [x] UX: Remover checkbox de concluído das séries no registro de treino
+- [x] UX: Drop Set e Rest-Pause como opção no tipo de série (não checkbox separado)
+- [x] UX: Ao selecionar Drop Set ou Rest-Pause, expandir campos inline para carga/reps/descanso extras
+- [x] Bug: Cálculo de estatísticas agora conta séries com peso E reps preenchidos
+- [x] UX: Trocar exibição de toneladas para kg no Dashboard
+
+- [x] Bug: Aba Registros não mostra registros quando "Todos os alunos" está selecionado
+- [x] Bug: Recalculadas estatísticas dos registros existentes no banco

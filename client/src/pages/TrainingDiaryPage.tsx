@@ -125,14 +125,14 @@ export default function TrainingDiaryPage() {
   // Queries
   const { data: students } = trpc.students.list.useQuery();
   const { data: logs, refetch: refetchLogs } = trpc.trainingDiary.list.useQuery(
-    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : undefined
+    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
   );
   const { data: logDetail, refetch: refetchLogDetail } = trpc.trainingDiary.get.useQuery(
     { id: selectedLogId! },
     { enabled: !!selectedLogId }
   );
   const { data: dashboard } = trpc.trainingDiary.dashboard.useQuery(
-    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : undefined
+    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
   );
   const { data: workouts } = trpc.workouts.list.useQuery({ studentId: 0 });
   
@@ -505,7 +505,8 @@ export default function TrainingDiaryPage() {
     currentExercises.forEach(ex => {
       ex.sets.forEach(set => {
         totalSets++;
-        if (set.isCompleted) completedSets++;
+        // Considera como "feita" se tem peso E reps preenchidos
+        if (set.weight && set.reps) completedSets++;
       });
     });
     
@@ -914,7 +915,7 @@ export default function TrainingDiaryPage() {
                         <Weight className="h-4 w-4" />
                         <span className="text-sm">Volume Total</span>
                       </div>
-                      <p className="text-2xl font-bold">{(dashboard.totalVolume / 1000).toFixed(1)}t</p>
+                      <p className="text-2xl font-bold">{dashboard.totalVolume.toLocaleString('pt-BR')}kg</p>
                     </CardContent>
                   </Card>
                   
@@ -982,7 +983,7 @@ export default function TrainingDiaryPage() {
                         const height = maxVolume > 0 ? (item.volume / maxVolume) * 100 : 0;
                         return (
                           <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                            <span className="text-xs font-medium">{(item.volume / 1000).toFixed(1)}t</span>
+                            <span className="text-xs font-medium">{item.volume.toLocaleString('pt-BR')}kg</span>
                             <div 
                               className="w-full bg-green-500 rounded-t transition-all"
                               style={{ height: `${Math.max(height, 5)}%` }}
@@ -1354,7 +1355,7 @@ export default function TrainingDiaryPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline">
-                                {exercise.sets.filter(s => s.isCompleted).length}/{exercise.sets.length} séries
+                                {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
                               </Badge>
                               {exercise.isExpanded ? (
                                 <ChevronUp className="h-4 w-4" />
@@ -1675,7 +1676,7 @@ export default function TrainingDiaryPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">
-                              {exercise.sets.filter(s => s.isCompleted).length}/{exercise.sets.length} séries
+                              {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
                             </Badge>
                             {exercise.isExpanded ? (
                               <ChevronUp className="h-4 w-4" />
@@ -2067,121 +2068,208 @@ export default function TrainingDiaryPage() {
                       
                       {exercise.isExpanded && (
                         <CardContent className="p-3 pt-0">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b">
-                                  <th className="p-2 text-left w-16">Série</th>
-                                  <th className="p-2 text-left">Tipo</th>
-                                  <th className="p-2 text-left w-24">Carga (kg)</th>
-                                  <th className="p-2 text-left w-20">Reps</th>
-                                  <th className="p-2 text-left w-24">Descanso (s)</th>
-                                  <th className="p-2 text-center w-16">Drop</th>
-                                  <th className="p-2 text-center w-16">R-P</th>
-                                  <th className="p-2 text-center w-12">✓</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {exercise.sets.map((set, setIndex) => (
-                                  <tr key={setIndex} className="border-b last:border-0">
-                                    <td className="p-2 font-medium">S{set.setNumber}</td>
-                                    <td className="p-2">
-                                      <Select
-                                        value={set.setType || 'working'}
-                                        onValueChange={(v) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].setType = v;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      >
-                                        <SelectTrigger className="h-8 w-32">
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {SET_TYPES.map((type) => (
-                                            <SelectItem key={type.value} value={type.value}>
-                                              <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${type.color}`} />
-                                                {type.label}
-                                              </div>
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </td>
-                                    <td className="p-2">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-20"
-                                        placeholder="0"
-                                        value={set.weight || ''}
-                                        onChange={(e) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].weight = e.target.value ? parseFloat(e.target.value) : undefined;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="p-2">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-16"
-                                        placeholder="0"
-                                        value={set.reps || ''}
-                                        onChange={(e) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].reps = e.target.value ? parseInt(e.target.value) : undefined;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="p-2">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-20"
-                                        placeholder="60"
-                                        value={set.restTime || ''}
-                                        onChange={(e) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].restTime = e.target.value ? parseInt(e.target.value) : undefined;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isDropSet || false}
-                                        onCheckedChange={(v) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].isDropSet = !!v;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isRestPause || false}
-                                        onCheckedChange={(v) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].isRestPause = !!v;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      <Checkbox
-                                        checked={set.isCompleted || false}
-                                        onCheckedChange={(v) => {
-                                          const updated = [...currentExercises];
-                                          updated[exIndex].sets[setIndex].isCompleted = !!v;
-                                          setCurrentExercises(updated);
-                                        }}
-                                      />
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                          <div className="divide-y">
+                            {exercise.sets.map((set, setIndex) => (
+                              <div key={setIndex} className="py-3">
+                                {/* Linha principal da série */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${SET_TYPES.find(t => t.value === set.setType)?.color || 'bg-green-500'}`}>
+                                    {set.setNumber}
+                                  </span>
+                                  
+                                  <Select
+                                    value={set.setType || 'working'}
+                                    onValueChange={(v) => {
+                                      const updated = [...currentExercises];
+                                      updated[exIndex].sets[setIndex].setType = v;
+                                      // Auto-ativar flags quando seleciona drop ou rest_pause
+                                      if (v === 'drop') {
+                                        updated[exIndex].sets[setIndex].isDropSet = true;
+                                      } else if (v === 'rest_pause') {
+                                        updated[exIndex].sets[setIndex].isRestPause = true;
+                                      } else {
+                                        updated[exIndex].sets[setIndex].isDropSet = false;
+                                        updated[exIndex].sets[setIndex].isRestPause = false;
+                                      }
+                                      setCurrentExercises(updated);
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-8 w-[120px] text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {SET_TYPES.map((type) => (
+                                        <SelectItem key={type.value} value={type.value}>
+                                          <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${type.color}`} />
+                                            {type.label}
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <Input
+                                      type="number"
+                                      className="h-8 w-16 text-center text-sm"
+                                      placeholder="0"
+                                      value={set.weight || ''}
+                                      onChange={(e) => {
+                                        const updated = [...currentExercises];
+                                        updated[exIndex].sets[setIndex].weight = e.target.value ? parseFloat(e.target.value) : undefined;
+                                        setCurrentExercises(updated);
+                                      }}
+                                    />
+                                    <span className="text-xs text-muted-foreground">kg</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <Input
+                                      type="number"
+                                      className="h-8 w-14 text-center text-sm"
+                                      placeholder="0"
+                                      value={set.reps || ''}
+                                      onChange={(e) => {
+                                        const updated = [...currentExercises];
+                                        updated[exIndex].sets[setIndex].reps = e.target.value ? parseInt(e.target.value) : undefined;
+                                        setCurrentExercises(updated);
+                                      }}
+                                    />
+                                    <span className="text-xs text-muted-foreground">reps</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <Input
+                                      type="number"
+                                      className="h-8 w-14 text-center text-sm"
+                                      placeholder="60"
+                                      value={set.restTime || ''}
+                                      onChange={(e) => {
+                                        const updated = [...currentExercises];
+                                        updated[exIndex].sets[setIndex].restTime = e.target.value ? parseInt(e.target.value) : undefined;
+                                        setCurrentExercises(updated);
+                                      }}
+                                    />
+                                    <span className="text-xs text-muted-foreground">s</span>
+                                  </div>
+                                  
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-destructive ml-auto"
+                                    onClick={() => {
+                                      const updated = [...currentExercises];
+                                      updated[exIndex].sets.splice(setIndex, 1);
+                                      // Renumerar séries
+                                      updated[exIndex].sets.forEach((s, i) => {
+                                        s.setNumber = i + 1;
+                                      });
+                                      setCurrentExercises(updated);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                                
+                                {/* Área expandida para Drop Set */}
+                                {(set.setType === 'drop' || set.isDropSet) && (
+                                  <div className="mt-2 ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                                      <span className="text-xs text-muted-foreground">Redução de carga após a série principal</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          className="h-8 w-16 text-center text-sm"
+                                          placeholder="0"
+                                          value={set.dropWeight || ''}
+                                          onChange={(e) => {
+                                            const updated = [...currentExercises];
+                                            updated[exIndex].sets[setIndex].dropWeight = e.target.value ? parseFloat(e.target.value) : undefined;
+                                            setCurrentExercises(updated);
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">kg</span>
+                                      </div>
+                                      <span className="text-muted-foreground">×</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          className="h-8 w-14 text-center text-sm"
+                                          placeholder="0"
+                                          value={set.dropReps || ''}
+                                          onChange={(e) => {
+                                            const updated = [...currentExercises];
+                                            updated[exIndex].sets[setIndex].dropReps = e.target.value ? parseInt(e.target.value) : undefined;
+                                            setCurrentExercises(updated);
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">reps</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Área expandida para Rest-Pause */}
+                                {(set.setType === 'rest_pause' || set.isRestPause) && (
+                                  <div className="mt-2 ml-9 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                                      <span className="text-xs text-muted-foreground">Pausa curta e continuação</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          className="h-8 w-16 text-center text-sm"
+                                          placeholder="0"
+                                          value={set.restPauseWeight || ''}
+                                          onChange={(e) => {
+                                            const updated = [...currentExercises];
+                                            updated[exIndex].sets[setIndex].restPauseWeight = e.target.value ? parseFloat(e.target.value) : undefined;
+                                            setCurrentExercises(updated);
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">kg</span>
+                                      </div>
+                                      <span className="text-muted-foreground">×</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          className="h-8 w-14 text-center text-sm"
+                                          placeholder="0"
+                                          value={set.restPauseReps || ''}
+                                          onChange={(e) => {
+                                            const updated = [...currentExercises];
+                                            updated[exIndex].sets[setIndex].restPauseReps = e.target.value ? parseInt(e.target.value) : undefined;
+                                            setCurrentExercises(updated);
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">reps</span>
+                                      </div>
+                                      <span className="text-muted-foreground">|</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          className="h-8 w-14 text-center text-sm"
+                                          placeholder="15"
+                                          value={set.restPausePause || ''}
+                                          onChange={(e) => {
+                                            const updated = [...currentExercises];
+                                            updated[exIndex].sets[setIndex].restPausePause = e.target.value ? parseInt(e.target.value) : undefined;
+                                            setCurrentExercises(updated);
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">s pausa</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
                           
                           {/* Botão adicionar série */}

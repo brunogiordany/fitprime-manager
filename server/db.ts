@@ -2437,13 +2437,18 @@ export async function calculateWorkoutLogStats(workoutLogId: number) {
   let totalExercises = exercises.length;
   
   for (const ex of exercises) {
-    const sets = await db.select().from(workoutLogSets)
-      .where(and(
-        eq(workoutLogSets.workoutLogExerciseId, ex.id),
-        eq(workoutLogSets.isCompleted, true)
-      ));
+    // Buscar TODAS as séries do exercício (não apenas isCompleted)
+    const allSets = await db.select().from(workoutLogSets)
+      .where(eq(workoutLogSets.workoutLogExerciseId, ex.id));
     
-    for (const set of sets) {
+    // Filtrar séries que têm peso E reps preenchidos (considera como "feita")
+    const completedSets = allSets.filter(s => {
+      const weight = parseFloat(s.weight?.toString() || '0');
+      const reps = s.reps || 0;
+      return weight > 0 && reps > 0;
+    });
+    
+    for (const set of completedSets) {
       totalSets++;
       totalReps += set.reps || 0;
       const weight = parseFloat(set.weight?.toString() || '0');
@@ -2463,13 +2468,15 @@ export async function calculateWorkoutLogStats(workoutLogId: number) {
     }
     
     // Atualizar estatísticas do exercício
-    const exSets = sets.length;
-    const exReps = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-    const exVolume = sets.reduce((sum, s) => {
+    const exSets = completedSets.length;
+    const exReps = completedSets.reduce((sum, s) => sum + (s.reps || 0), 0);
+    const exVolume = completedSets.reduce((sum, s) => {
       const w = parseFloat(s.weight?.toString() || '0');
       return sum + w * (s.reps || 0);
     }, 0);
-    const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight?.toString() || '0')));
+    const maxWeight = completedSets.length > 0 
+      ? Math.max(...completedSets.map(s => parseFloat(s.weight?.toString() || '0')))
+      : 0;
     
     await updateWorkoutLogExercise(ex.id, {
       completedSets: exSets,
