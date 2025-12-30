@@ -1404,3 +1404,12 @@
 - [x] Endpoint está usando protectedProcedure (OAuth) ao invés de studentProcedure
 - [x] CORRIGIDO: Criado endpoint studentPortal.saveWithMeasurements com studentProcedure
 - [x] StudentOnboarding.tsx atualizado para usar o novo endpoint
+
+
+## Bug Anamnese Portal do Aluno v5.68
+- [x] Bug: Erro "Please login (10001)" ao salvar anamnese na página de anamnese do portal (não apenas onboarding)
+- [x] Identificar qual componente está usando endpoint errado (StudentPortalPage.tsx)
+- [x] Corrigir para usar studentPortal.saveWithMeasurements
+- [x] Implementar persistência de dados no localStorage para não perder ao atualizar página
+- [x] Restaurar dados do localStorage ao carregar a página
+- [x] Limpar localStorage após salvar com sucesso

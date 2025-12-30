@@ -108,6 +108,31 @@ export default function StudentPortalPage() {
   const [diaryDuration, setDiaryDuration] = useState(60);
   const [showAnamnesisModal, setShowAnamnesisModal] = useState(false);
 
+  // Restaurar dados do formulário de anamnese do localStorage ao carregar
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('anamnesisFormDraft');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        setAnamnesisForm(parsed);
+        // Se tinha dados salvos, mostrar que está editando
+        if (Object.keys(parsed).some(k => parsed[k])) {
+          setIsEditingAnamnesis(true);
+          toast.info('Dados do formulário restaurados. Clique em Salvar para concluir.');
+        }
+      } catch (e) {
+        console.error('Erro ao restaurar dados do formulário:', e);
+      }
+    }
+  }, []);
+
+  // Salvar dados do formulário no localStorage quando mudar
+  useEffect(() => {
+    if (isEditingAnamnesis && Object.keys(anamnesisForm).some(k => (anamnesisForm as any)[k])) {
+      localStorage.setItem('anamnesisFormDraft', JSON.stringify(anamnesisForm));
+    }
+  }, [anamnesisForm, isEditingAnamnesis]);
+
   // Verificar token do aluno
   useEffect(() => {
     const token = localStorage.getItem("studentToken");
@@ -193,12 +218,14 @@ export default function StudentPortalPage() {
     },
   });
 
-  // Mutation para atualizar anamnese
-  const updateAnamneseMutation = trpc.anamnesis.saveWithMeasurements.useMutation({
+  // Mutation para atualizar anamnese (usa studentProcedure para autenticação do aluno)
+  const updateAnamneseMutation = trpc.studentPortal.saveWithMeasurements.useMutation({
     onSuccess: () => {
       toast.success("Anamnese atualizada com sucesso!");
       setIsEditingAnamnesis(false);
       refetchAnamnesis();
+      // Limpar dados salvos no localStorage após sucesso
+      localStorage.removeItem('anamnesisFormDraft');
     },
     onError: (error: any) => {
       toast.error(error.message || "Erro ao atualizar anamnese");
@@ -274,8 +301,8 @@ export default function StudentPortalPage() {
   const handleSaveAnamnesis = () => {
     if (!studentData) return;
     
+    // Usa o endpoint studentPortal.saveWithMeasurements (studentProcedure)
     updateAnamneseMutation.mutate({
-      studentId: studentData.id,
       occupation: anamnesisForm.occupation || undefined,
       sleepHours: anamnesisForm.sleepHours || undefined,
       stressLevel: anamnesisForm.stressLevel as any || undefined,

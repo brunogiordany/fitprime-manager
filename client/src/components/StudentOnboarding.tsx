@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,35 +34,70 @@ const steps = [
 ];
 
 export default function StudentOnboarding({ studentId, studentName, onComplete }: StudentOnboardingProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    // Dados pessoais
-    birthDate: "",
-    gender: "",
-    height: "",
-    weight: "",
-    // Saúde
-    healthConditions: "",
-    medications: "",
-    injuries: "",
-    allergies: "",
-    // Objetivos
-    mainGoal: "",
-    secondaryGoals: "",
-    targetWeight: "",
-    timeline: "",
-    // Estilo de vida
-    occupation: "",
-    sleepHours: "",
-    stressLevel: "",
-    exerciseFrequency: "",
-    dietDescription: "",
-  });
+  // Restaurar dados do localStorage se existirem
+  const getInitialFormData = () => {
+    const saved = localStorage.getItem('onboardingFormDraft');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Erro ao restaurar dados do onboarding:', e);
+      }
+    }
+    return {
+      // Dados pessoais
+      birthDate: "",
+      gender: "",
+      height: "",
+      weight: "",
+      // Saúde
+      healthConditions: "",
+      medications: "",
+      injuries: "",
+      allergies: "",
+      // Objetivos
+      mainGoal: "",
+      secondaryGoals: "",
+      targetWeight: "",
+      timeline: "",
+      // Estilo de vida
+      occupation: "",
+      sleepHours: "",
+      stressLevel: "",
+      exerciseFrequency: "",
+      dietDescription: "",
+    };
+  };
+
+  const getInitialStep = () => {
+    const saved = localStorage.getItem('onboardingCurrentStep');
+    if (saved) {
+      const step = parseInt(saved, 10);
+      if (step >= 1 && step <= 4) return step;
+    }
+    return 1;
+  };
+
+  const [currentStep, setCurrentStep] = useState(getInitialStep);
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  // Salvar dados no localStorage quando mudar
+  useEffect(() => {
+    localStorage.setItem('onboardingFormDraft', JSON.stringify(formData));
+  }, [formData]);
+
+  // Salvar step atual no localStorage
+  useEffect(() => {
+    localStorage.setItem('onboardingCurrentStep', currentStep.toString());
+  }, [currentStep]);
 
   const utils = trpc.useUtils();
 
   const saveAnamneseMutation = trpc.studentPortal.saveWithMeasurements.useMutation({
     onSuccess: () => {
+      // Limpar dados salvos no localStorage após sucesso
+      localStorage.removeItem('onboardingFormDraft');
+      localStorage.removeItem('onboardingCurrentStep');
       toast.success("Perfil completado com sucesso!");
       onComplete();
     },
@@ -109,7 +144,7 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
   };
 
   const updateField = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: typeof formData) => ({ ...prev, [field]: value }));
   };
 
   return (
