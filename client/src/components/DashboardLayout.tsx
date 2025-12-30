@@ -40,7 +40,8 @@ import {
   AlertTriangle,
   Eye,
   Shield,
-  BookOpen
+  BookOpen,
+  TrendingUp
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -56,6 +57,7 @@ const menuItems = [
   { icon: CalendarCheck, label: "Sessões", path: "/sessoes" },
   { icon: Dumbbell, label: "Treinos", path: "/treinos" },
   { icon: BookOpen, label: "Diário de Treino", path: "/diario-treino" },
+  { icon: TrendingUp, label: "Evolução", path: "/evolucao" },
   { icon: CreditCard, label: "Cobranças", path: "/cobrancas" },
   { icon: FileText, label: "Planos", path: "/planos" },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios" },

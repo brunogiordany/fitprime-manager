@@ -34,6 +34,7 @@ import PortalPreview from "./pages/PortalPreview";
 import Sessions from "./pages/Sessions";
 import StudentAccess from "./pages/StudentAccess";
 import TrainingDiaryPage from "./pages/TrainingDiaryPage";
+import EvolutionDashboard from "./pages/EvolutionDashboard";
 
 function Router() {
   return (
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/portal-preview" component={PortalPreview} />
       <Route path="/acessos-aluno" component={StudentAccess} />
       <Route path="/diario-treino" component={TrainingDiaryPage} />
+      <Route path="/evolucao" component={EvolutionDashboard} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
