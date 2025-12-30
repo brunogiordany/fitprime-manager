@@ -1248,3 +1248,13 @@
 - [ ] Campo de descanso no Drop Set e Rest-Pause
 - [ ] Melhorar UX geral do popup de detalhes de registro
 - [ ] Verificar bug do tipo "Reconhecimento" mudando para "Série Válida"
+- [x] Bug: Sessões concluídas não carregam dados já registrados (sessionId agora é salvo no workout_log)
+- [ ] Adicionar campo de descanso específico para Drop Set e Rest-Pause no registro de treino
+
+
+## Melhorias Evolução de Carga por Exercício (v5.44)
+- [x] Histórico Detalhado: deixar óbvio que os itens são clicáveis (chevron + texto "Clique para expandir")
+- [x] Redesenhar seção para escalar com 3+ meses de dados (lista expansível ao invés de gráfico de barras)
+- [x] Cada item do histórico mostra todas as séries detalhadas ao expandir
+- [x] Adicionar filtro por período (última semana, último mês, últimos 3 meses, todo período)
+- [x] Gráfico de linha para visualização rápida da tendência de carga máxima

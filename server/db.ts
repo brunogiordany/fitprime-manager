@@ -1162,10 +1162,10 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
     const result = await db.execute(sql`
       INSERT INTO workout_logs (
         studentId, personalId, workoutId, workoutDayId, trainingDate,
-        dayName, startTime, status, sessionDate
+        dayName, startTime, status, sessionDate, sessionId
       ) VALUES (
         ${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr},
-        ${data.dayName || null}, ${data.startTime || null}, ${data.status || 'in_progress'}, ${dateStr}
+        ${data.dayName || null}, ${data.startTime || null}, ${data.status || 'in_progress'}, ${dateStr}, ${data.sessionId || null}
       )
     `);
     

@@ -1,0 +1,26 @@
+{
+  "query": "SELECT \n  s.id as session_id, \n  s.status, \n  DATE(s.scheduledAt) as session_date,\n  s.studentId,\n  wl.id as workout_log_id,\n  wl.sessionId as log_session_id\nFROM sessions s\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nWHERE s.status = 'completed'\nORDER BY s.scheduledAt DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT \n  s.id as session_id, \n  s.status, \n  DATE(s.scheduledAt) as session_date,\n  s.studentId,\n  wl.id as workout_log_id,\n  wl.sessionId as log_session_id\nFROM sessions s\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nWHERE s.status = 'completed'\nORDER BY s.scheduledAt DESC\nLIMIT 10;",
+  "rows": [
+    {
+      "session_id": "270025",
+      "status": "completed",
+      "session_date": "2025-12-30",
+      "studentId": "1",
+      "workout_log_id": "NULL",
+      "log_session_id": "NULL"
+    },
+    {
+      "session_id": "300002",
+      "status": "completed",
+      "session_date": "2025-12-30",
+      "studentId": "60001",
+      "workout_log_id": "NULL",
+      "log_session_id": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "session_id\tstatus\tsession_date\tstudentId\tworkout_log_id\tlog_session_id\n270025\tcompleted\t2025-12-30\t1\tNULL\tNULL\n300002\tcompleted\t2025-12-30\t60001\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

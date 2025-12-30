@@ -4361,6 +4361,11 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
           }
         }
         
+        // Se foi associado a uma sessão, marcar a sessão como concluída
+        if (input.sessionId) {
+          await db.updateSession(input.sessionId, { status: 'completed' });
+        }
+        
         return { id: logId };
       }),
     

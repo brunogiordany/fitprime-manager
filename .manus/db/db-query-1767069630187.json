@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, sessionId, studentId, trainingDate, status, createdAt FROM workout_logs ORDER BY createdAt DESC LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, sessionId, studentId, trainingDate, status, createdAt FROM workout_logs ORDER BY createdAt DESC LIMIT 3;",
+  "rows": [
+    {
+      "id": "6",
+      "sessionId": "NULL",
+      "studentId": "1",
+      "trainingDate": "2026-01-02",
+      "status": "completed",
+      "createdAt": "2025-12-30 04:39:06"
+    },
+    {
+      "id": "5",
+      "sessionId": "NULL",
+      "studentId": "1",
+      "trainingDate": "2025-12-31",
+      "status": "in_progress",
+      "createdAt": "2025-12-30 04:37:20"
+    },
+    {
+      "id": "4",
+      "sessionId": "NULL",
+      "studentId": "60001",
+      "trainingDate": "2025-12-30",
+      "status": "completed",
+      "createdAt": "2025-12-30 03:13:57"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsessionId\tstudentId\ttrainingDate\tstatus\tcreatedAt\n6\tNULL\t1\t2026-01-02\tcompleted\t2025-12-30 04:39:06\n5\tNULL\t1\t2025-12-31\tin_progress\t2025-12-30 04:37:20\n4\tNULL\t60001\t2025-12-30\tcompleted\t2025-12-30 03:13:57\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

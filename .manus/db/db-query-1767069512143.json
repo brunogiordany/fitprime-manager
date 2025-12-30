@@ -1,0 +1,45 @@
+{
+  "query": "SELECT s.id, s.status, DATE(s.scheduledAt) as session_date, st.name as student_name, wl.id as workout_log_id\nFROM sessions s\nJOIN students st ON st.id = s.studentId\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nWHERE DATE(s.scheduledAt) = '2025-12-31'\nORDER BY s.scheduledAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.status, DATE(s.scheduledAt) as session_date, st.name as student_name, wl.id as workout_log_id\nFROM sessions s\nJOIN students st ON st.id = s.studentId\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nWHERE DATE(s.scheduledAt) = '2025-12-31'\nORDER BY s.scheduledAt;",
+  "rows": [
+    {
+      "id": "270005",
+      "status": "scheduled",
+      "session_date": "2025-12-31",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270018",
+      "status": "no_show",
+      "session_date": "2025-12-31",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "240001",
+      "status": "scheduled",
+      "session_date": "2025-12-31",
+      "student_name": "AgenteIA",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270026",
+      "status": "no_show",
+      "session_date": "2025-12-31",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270039",
+      "status": "completed",
+      "session_date": "2025-12-31",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tsession_date\tstudent_name\tworkout_log_id\n270005\tscheduled\t2025-12-31\tBruno\tNULL\n270018\tno_show\t2025-12-31\tBruno\tNULL\n240001\tscheduled\t2025-12-31\tAgenteIA\tNULL\n270026\tno_show\t2025-12-31\tBruno\tNULL\n270039\tcompleted\t2025-12-31\tBruno\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

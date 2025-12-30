@@ -120,6 +120,8 @@ export default function TrainingDiaryPage() {
   // Estado para gráfico de evolução de carga
   const [progressExercise, setProgressExercise] = useState<string>("");
   const [selectedProgressDay, setSelectedProgressDay] = useState<number | null>(null); // Índice do dia selecionado no gráfico
+  const [progressPeriod, setProgressPeriod] = useState<string>("3months"); // Filtro de período
+  const [expandedHistoryItem, setExpandedHistoryItem] = useState<number | null>(null); // Item expandido no histórico
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -1139,181 +1141,255 @@ onClick={() => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Filtro de exercício */}
-                    <div>
-                      <Label className="text-sm">Exercício</Label>
-                      <Input
-                        placeholder="Digite o nome do exercício"
-                        value={progressExercise}
-                        onChange={(e) => setProgressExercise(e.target.value)}
-                      />
+                    {/* Filtros */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm">Exercício</Label>
+                        <Input
+                          placeholder="Digite o nome do exercício"
+                          value={progressExercise}
+                          onChange={(e) => {
+                            setProgressExercise(e.target.value);
+                            setExpandedHistoryItem(null);
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Período</Label>
+                        <Select value={progressPeriod} onValueChange={setProgressPeriod}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o período" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="week">Última semana</SelectItem>
+                            <SelectItem value="month">Último mês</SelectItem>
+                            <SelectItem value="3months">Últimos 3 meses</SelectItem>
+                            <SelectItem value="6months">Últimos 6 meses</SelectItem>
+                            <SelectItem value="year">Último ano</SelectItem>
+                            <SelectItem value="all">Todo o período</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     
-                    {/* Gráfico */}
-                    {exerciseProgress && exerciseProgress.length > 0 ? (
-                      <div className="space-y-4">
-                        {/* Gráfico de barras - clique para ver detalhes */}
-                        <div className="flex items-end justify-between gap-2 h-48 border rounded-lg p-4 bg-muted/30">
-                          {exerciseProgress.slice().reverse().map((item: any, index: number) => {
-                            const reversedIndex = exerciseProgress.length - 1 - index; // Índice original no array
-                            const maxWeight = Math.max(...exerciseProgress.map((i: any) => i.maxWeight || 0));
-                            const height = maxWeight > 0 ? ((item.maxWeight || 0) / maxWeight) * 100 : 0;
-                            const date = new Date(item.date);
-                            const isSelected = selectedProgressDay === reversedIndex;
-                            return (
-                              <div 
-                                key={index} 
-                                className="flex-1 flex flex-col items-center gap-1 min-w-0 cursor-pointer"
-                                onClick={() => setSelectedProgressDay(isSelected ? null : reversedIndex)}
-                              >
-                                <span className={`text-xs font-bold ${isSelected ? 'text-green-600' : 'text-primary'}`}>{item.maxWeight || 0}kg</span>
-                                <div 
-                                  className={`w-full rounded-t transition-all ${isSelected ? 'bg-gradient-to-t from-green-600 to-green-400 ring-2 ring-green-500' : 'bg-gradient-to-t from-primary to-primary/60 hover:from-primary/80 hover:to-primary/40'}`}
-                                  style={{ height: `${Math.max(height, 5)}%` }}
-                                  title={`Clique para ver detalhes\n${item.exerciseName}\n${item.maxWeight}kg - ${item.totalReps} reps\n${date.toLocaleDateString('pt-BR')}`}
-                                />
-                                <span className={`text-[10px] truncate w-full text-center ${isSelected ? 'text-green-600 font-bold' : 'text-muted-foreground'}`}>
-                                  {date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        {/* Tabela detalhada de séries do dia selecionado */}
-                        {selectedProgressDay !== null && exerciseProgress[selectedProgressDay] && (
-                          <div className="border rounded-lg overflow-hidden bg-green-50/50 border-green-200">
-                            <div className="bg-green-100 px-4 py-3 font-medium text-sm flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Dumbbell className="h-4 w-4 text-green-600" />
-                                <span className="text-green-800">
-                                  Detalhes do Treino - {new Date(exerciseProgress[selectedProgressDay].date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                                </span>
-                              </div>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-6 px-2 text-green-600 hover:text-green-800 hover:bg-green-200"
-                                onClick={() => setSelectedProgressDay(null)}
-                              >
-                                Fechar
-                              </Button>
+                    {/* Conteúdo */}
+                    {exerciseProgress && exerciseProgress.length > 0 ? (() => {
+                      // Filtrar por período
+                      const now = new Date();
+                      const filteredProgress = exerciseProgress.filter((item: any) => {
+                        const itemDate = new Date(item.date);
+                        const diffDays = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
+                        switch (progressPeriod) {
+                          case 'week': return diffDays <= 7;
+                          case 'month': return diffDays <= 30;
+                          case '3months': return diffDays <= 90;
+                          case '6months': return diffDays <= 180;
+                          case 'year': return diffDays <= 365;
+                          default: return true;
+                        }
+                      });
+                      
+                      if (filteredProgress.length === 0) {
+                        return (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p>Nenhum registro encontrado neste período.</p>
+                            <p className="text-sm">Tente selecionar um período maior.</p>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div className="space-y-4">
+                          {/* Resumo compacto */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+                              <p className="text-xl font-bold text-primary">
+                                {Math.max(...filteredProgress.map((i: any) => i.maxWeight || 0))}kg
+                              </p>
+                              <p className="text-xs text-muted-foreground">Recorde</p>
                             </div>
-                            <div className="p-4">
-                              <div className="mb-3">
-                                <h4 className="font-semibold text-green-800">{exerciseProgress[selectedProgressDay].exerciseName}</h4>
-                                <p className="text-sm text-green-600">
-                                  {exerciseProgress[selectedProgressDay].totalSets} séries • {exerciseProgress[selectedProgressDay].totalReps} reps • Carga máxima: {exerciseProgress[selectedProgressDay].maxWeight}kg
-                                </p>
-                              </div>
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                  <thead>
-                                    <tr className="border-b border-green-200">
-                                      <th className="text-left py-2 px-3 font-medium text-green-800">Série</th>
-                                      <th className="text-left py-2 px-3 font-medium text-green-800">Tipo</th>
-                                      <th className="text-right py-2 px-3 font-medium text-green-800">Carga (kg)</th>
-                                      <th className="text-right py-2 px-3 font-medium text-green-800">Reps</th>
-                                      <th className="text-right py-2 px-3 font-medium text-green-800">Descanso</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {exerciseProgress[selectedProgressDay].sets && exerciseProgress[selectedProgressDay].sets.length > 0 ? (
-                                      exerciseProgress[selectedProgressDay].sets.map((set: any, setIndex: number) => {
-                                        const setTypeLabel = SET_TYPES.find(t => t.value === set.setType)?.label || set.setType || 'Válida';
-                                        const setTypeColor = SET_TYPES.find(t => t.value === set.setType)?.color || 'bg-green-500';
+                            <div className="text-center p-3 bg-muted/50 rounded-lg">
+                              <p className="text-xl font-bold">
+                                {(filteredProgress.reduce((sum: number, i: any) => sum + (i.maxWeight || 0), 0) / filteredProgress.length).toFixed(1)}kg
+                              </p>
+                              <p className="text-xs text-muted-foreground">Média</p>
+                            </div>
+                            <div className="text-center p-3 bg-muted/50 rounded-lg">
+                              <p className="text-xl font-bold">
+                                {filteredProgress.length}
+                              </p>
+                              <p className="text-xs text-muted-foreground">Treinos</p>
+                            </div>
+                            <div className="text-center p-3 bg-muted/50 rounded-lg">
+                              <p className="text-xl font-bold">
+                                {filteredProgress.reduce((sum: number, i: any) => sum + (i.totalReps || 0), 0)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">Reps</p>
+                            </div>
+                          </div>
+                          
+                          {/* Gráfico de linha compacto */}
+                          <div className="border rounded-lg p-4 bg-muted/20">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium">Tendência de Carga Máxima</span>
+                              <span className="text-xs text-muted-foreground">
+                                {filteredProgress.length} registros
+                              </span>
+                            </div>
+                            <div className="relative h-24">
+                              {/* Linha de tendência SVG */}
+                              <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                                {/* Linha de fundo */}
+                                <line x1="0" y1="35" x2="100" y2="35" stroke="currentColor" strokeOpacity="0.1" strokeWidth="0.5" />
+                                <line x1="0" y1="20" x2="100" y2="20" stroke="currentColor" strokeOpacity="0.1" strokeWidth="0.5" />
+                                <line x1="0" y1="5" x2="100" y2="5" stroke="currentColor" strokeOpacity="0.1" strokeWidth="0.5" />
+                                
+                                {/* Linha de evolução */}
+                                {(() => {
+                                  const maxW = Math.max(...filteredProgress.map((i: any) => i.maxWeight || 0));
+                                  const minW = Math.min(...filteredProgress.map((i: any) => i.maxWeight || 0));
+                                  const range = maxW - minW || 1;
+                                  const points = filteredProgress.slice().reverse().map((item: any, idx: number) => {
+                                    const x = (idx / Math.max(filteredProgress.length - 1, 1)) * 100;
+                                    const y = 35 - ((item.maxWeight - minW) / range) * 30;
+                                    return `${x},${y}`;
+                                  }).join(' ');
+                                  return (
+                                    <>
+                                      <polyline
+                                        fill="none"
+                                        stroke="hsl(var(--primary))"
+                                        strokeWidth="1.5"
+                                        points={points}
+                                      />
+                                      {/* Pontos */}
+                                      {filteredProgress.slice().reverse().map((item: any, idx: number) => {
+                                        const x = (idx / Math.max(filteredProgress.length - 1, 1)) * 100;
+                                        const y = 35 - ((item.maxWeight - minW) / range) * 30;
                                         return (
-                                          <tr key={setIndex} className="border-b border-green-100 last:border-b-0 hover:bg-green-100/50">
-                                            <td className="py-2 px-3">
-                                              <span className="font-medium">S{set.setNumber || setIndex + 1}</span>
-                                            </td>
-                                            <td className="py-2 px-3">
-                                              <Badge variant="outline" className={`${setTypeColor} text-white border-0 text-xs`}>
-                                                {setTypeLabel}
-                                              </Badge>
-                                            </td>
-                                            <td className="py-2 px-3 text-right font-bold text-primary">
-                                              {set.weight || '-'}
-                                            </td>
-                                            <td className="py-2 px-3 text-right">
-                                              {set.reps || '-'}
-                                            </td>
-                                            <td className="py-2 px-3 text-right text-muted-foreground">
-                                              {set.restTime ? `${set.restTime}s` : '-'}
-                                            </td>
-                                          </tr>
+                                          <circle
+                                            key={idx}
+                                            cx={x}
+                                            cy={y}
+                                            r="1.5"
+                                            fill="hsl(var(--primary))"
+                                          />
                                         );
-                                      })
-                                    ) : (
-                                      <tr>
-                                        <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                                          Nenhuma série registrada para este treino
-                                        </td>
-                                      </tr>
-                                    )}
-                                  </tbody>
-                                </table>
+                                      })}
+                                    </>
+                                  );
+                                })()}
+                              </svg>
+                              {/* Labels */}
+                              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-muted-foreground">
+                                <span>{new Date(filteredProgress[filteredProgress.length - 1]?.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                <span>{new Date(filteredProgress[0]?.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
                               </div>
                             </div>
                           </div>
-                        )}
-                        
-                        {/* Resumo */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          <div className="text-center p-3 bg-muted/50 rounded-lg">
-                            <p className="text-2xl font-bold text-primary">
-                              {Math.max(...exerciseProgress.map((i: any) => i.maxWeight || 0))}kg
-                            </p>
-                            <p className="text-xs text-muted-foreground">Recorde Pessoal</p>
-                          </div>
-                          <div className="text-center p-3 bg-muted/50 rounded-lg">
-                            <p className="text-2xl font-bold">
-                              {(exerciseProgress.reduce((sum: number, i: any) => sum + (i.maxWeight || 0), 0) / exerciseProgress.length).toFixed(1)}kg
-                            </p>
-                            <p className="text-xs text-muted-foreground">Média</p>
-                          </div>
-                          <div className="text-center p-3 bg-muted/50 rounded-lg">
-                            <p className="text-2xl font-bold">
-                              {exerciseProgress.length}
-                            </p>
-                            <p className="text-xs text-muted-foreground">Treinos</p>
-                          </div>
-                          <div className="text-center p-3 bg-muted/50 rounded-lg">
-                            <p className="text-2xl font-bold">
-                              {exerciseProgress.reduce((sum: number, i: any) => sum + (i.totalReps || 0), 0)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">Reps Totais</p>
+                          
+                          {/* Histórico detalhado expansível */}
+                          <div className="border rounded-lg overflow-hidden">
+                            <div className="bg-muted/50 px-4 py-2 font-medium text-sm flex items-center justify-between">
+                              <span>Histórico Detalhado</span>
+                              <span className="text-xs text-muted-foreground">Clique para expandir</span>
+                            </div>
+                            <div className="divide-y max-h-[500px] overflow-y-auto">
+                              {filteredProgress.map((item: any, index: number) => {
+                                const date = new Date(item.date);
+                                const isExpanded = expandedHistoryItem === index;
+                                return (
+                                  <div key={index} className="bg-background">
+                                    {/* Cabeçalho clicável */}
+                                    <div 
+                                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                                      onClick={() => setExpandedHistoryItem(isExpanded ? null : index)}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`p-1.5 rounded-full transition-colors ${isExpanded ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                        </div>
+                                        <div>
+                                          <div className="font-medium text-sm">
+                                            {date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {item.exerciseName}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                          <div className="font-bold text-primary">{item.maxWeight}kg</div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {item.totalSets} séries • {item.totalReps} reps
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Detalhes expandidos */}
+                                    {isExpanded && (
+                                      <div className="px-4 pb-4 bg-muted/30">
+                                        <div className="overflow-x-auto">
+                                          <table className="w-full text-sm">
+                                            <thead>
+                                              <tr className="border-b">
+                                                <th className="text-left py-2 px-2 font-medium text-muted-foreground">Série</th>
+                                                <th className="text-left py-2 px-2 font-medium text-muted-foreground">Tipo</th>
+                                                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Carga</th>
+                                                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Reps</th>
+                                                <th className="text-right py-2 px-2 font-medium text-muted-foreground">Descanso</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {item.sets && item.sets.length > 0 ? (
+                                                item.sets.map((set: any, setIndex: number) => {
+                                                  const setTypeLabel = SET_TYPES.find(t => t.value === set.setType)?.label || set.setType || 'Válida';
+                                                  const setTypeColor = SET_TYPES.find(t => t.value === set.setType)?.color || 'bg-green-500';
+                                                  return (
+                                                    <tr key={setIndex} className="border-b last:border-b-0">
+                                                      <td className="py-2 px-2">
+                                                        <span className="font-medium">S{set.setNumber || setIndex + 1}</span>
+                                                      </td>
+                                                      <td className="py-2 px-2">
+                                                        <Badge variant="outline" className={`${setTypeColor} text-white border-0 text-xs`}>
+                                                          {setTypeLabel}
+                                                        </Badge>
+                                                      </td>
+                                                      <td className="py-2 px-2 text-right font-bold">
+                                                        {set.weight ? `${set.weight}kg` : '-'}
+                                                      </td>
+                                                      <td className="py-2 px-2 text-right">
+                                                        {set.reps || '-'}
+                                                      </td>
+                                                      <td className="py-2 px-2 text-right text-muted-foreground">
+                                                        {set.restTime ? `${set.restTime}s` : '-'}
+                                                      </td>
+                                                    </tr>
+                                                  );
+                                                })
+                                              ) : (
+                                                <tr>
+                                                  <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                                                    Nenhuma série registrada
+                                                  </td>
+                                                </tr>
+                                              )}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
-                        
-                        {/* Histórico detalhado */}
-                        <div className="border rounded-lg overflow-hidden">
-                          <div className="bg-muted/50 px-4 py-2 font-medium text-sm">Histórico Detalhado</div>
-                          <div className="max-h-60 overflow-y-auto">
-                            {exerciseProgress.map((item: any, index: number) => {
-                              const date = new Date(item.date);
-                              return (
-                                <div key={index} className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 hover:bg-muted/30">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium">
-                                      {date.toLocaleDateString('pt-BR')}
-                                    </span>
-                                    <span className="text-sm text-muted-foreground">
-                                      {item.exerciseName}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <span className="font-bold text-primary">{item.maxWeight}kg</span>
-                                    <span className="text-muted-foreground">{item.totalSets} séries</span>
-                                    <span className="text-muted-foreground">{item.totalReps} reps</span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ) : progressExercise ? (
+                      );
+                    })() : progressExercise ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
                         <p>Nenhum registro encontrado para este exercício.</p>
@@ -2657,6 +2733,7 @@ onClick={() => {
                   // Criar o registro de treino
                   createLog.mutate({
                     studentId: newLog.studentId,
+                    sessionId: selectedSession?.id, // Associar ao sessionId da sessão
                     workoutId: newLog.workoutId || undefined,
                     workoutDayId: newLog.workoutDayId || undefined,
                     trainingDate: newLog.trainingDate,

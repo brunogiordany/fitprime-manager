@@ -1,0 +1,80 @@
+{
+  "query": "SELECT s.id, s.status, s.scheduledAt, st.name as student_name, wl.id as workout_log_id\nFROM sessions s\nJOIN students st ON st.id = s.studentId\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nORDER BY s.scheduledAt DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.status, s.scheduledAt, st.name as student_name, wl.id as workout_log_id\nFROM sessions s\nJOIN students st ON st.id = s.studentId\nLEFT JOIN workout_logs wl ON wl.sessionId = s.id\nORDER BY s.scheduledAt DESC\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "270076",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-27 12:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270074",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-25 15:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270070",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-23 14:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270071",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-20 12:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270075",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-18 15:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270069",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-16 14:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270067",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-13 12:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270073",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-11 15:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270072",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-09 14:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    },
+    {
+      "id": "270068",
+      "status": "scheduled",
+      "scheduledAt": "2026-03-06 12:00:00",
+      "student_name": "Bruno",
+      "workout_log_id": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tscheduledAt\tstudent_name\tworkout_log_id\n270076\tscheduled\t2026-03-27 12:00:00\tBruno\tNULL\n270074\tscheduled\t2026-03-25 15:00:00\tBruno\tNULL\n270070\tscheduled\t2026-03-23 14:00:00\tBruno\tNULL\n270071\tscheduled\t2026-03-20 12:00:00\tBruno\tNULL\n270075\tscheduled\t2026-03-18 15:00:00\tBruno\tNULL\n270069\tscheduled\t2026-03-16 14:00:00\tBruno\tNULL\n270067\tscheduled\t2026-03-13 12:00:00\tBruno\tNULL\n270073\tscheduled\t2026-03-11 15:00:00\tBruno\tNULL\n270072\tscheduled\t2026-03-09 14:00:00\tBruno\tNULL\n270068\tscheduled\t2026-03-06 12:00:00\tBruno\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}
