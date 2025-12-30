@@ -1837,14 +1837,34 @@ onClick={() => {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Dumbbell className="h-5 w-5" />
-                {logDetail?.dayName || "Registro de Treino"}
-                {logDetail?.feeling && (
-                  <span className="text-lg">{getFeelingEmoji(logDetail.feeling)}</span>
-                )}
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Dumbbell className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <span className="flex items-center gap-2">
+                    {logDetail?.dayName || "Registro de Treino"}
+                    {logDetail?.feeling && (
+                      <span className="text-lg">{getFeelingEmoji(logDetail.feeling)}</span>
+                    )}
+                  </span>
+                  <p className="text-sm font-normal text-muted-foreground">
+                    {logDetail?.student?.name}
+                  </p>
+                </div>
               </DialogTitle>
-              <DialogDescription>
-                {logDetail?.student?.name} • {logDetail && formatDate(logDetail.trainingDate)}
+              <DialogDescription className="flex items-center gap-4 flex-wrap">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {logDetail && formatDate(logDetail.trainingDate)}
+                </span>
+                {logDetail?.startTime && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    {logDetail.startTime}
+                    {logDetail.endTime && ` - ${logDetail.endTime}`}
+                  </span>
+                )}
+
               </DialogDescription>
             </DialogHeader>
             
@@ -2170,9 +2190,15 @@ onClick={() => {
                 )}
                 
                 {logDetail.notes && logDetail.status === 'completed' && (
-                  <Card>
-                    <CardContent className="p-3">
-                      <p className="text-sm text-muted-foreground">{logDetail.notes}</p>
+                  <Card className="bg-muted/30 border-dashed">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Observações do treino</p>
+                          <p className="text-sm">{logDetail.notes}</p>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 )}

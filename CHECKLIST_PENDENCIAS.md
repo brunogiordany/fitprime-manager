@@ -29,8 +29,8 @@
 - [x] 11. Adicionar botões Salvar/Cancelar no final do formulário de anamnese (JÁ IMPLEMENTADO)
 - [x] 12. Drop Set com múltiplos drops - Botão "+ Adicionar Drop" (CONCLUÍDO - Portal do Aluno)
 - [x] 13. Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa" (CONCLUÍDO - Portal do Aluno)
-- [ ] 14. Melhorar UX geral do popup de detalhes de registro
-- [ ] 15. Modal Agenda: Melhorar espaçamentos e hierarquia visual
+- [x] 14. Melhorar UX geral do popup de detalhes de registro (CONCLUÍDO - header melhorado, observações com ícone)
+- [x] 15. Modal Agenda: Melhorar espaçamentos e hierarquia visual (JÁ IMPLEMENTADO - estilo Belasis)
 
 ---
 
