@@ -1305,3 +1305,4 @@
 
 ## Bugs Portal do Aluno - Histórico de Medidas (v5.50)
 - [ ] Bug: Ao clicar em "Histórico de Medidas" abre popup de calendário automaticamente (precisa remover esse comportamento)
+- [ ] Bug: Modal de "Editar Medição" não permite rolar para baixo (campos ficam escondidos)
