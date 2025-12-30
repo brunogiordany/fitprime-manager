@@ -9,7 +9,7 @@
 - [x] B1. Bug: Link de convite não copia para área de transferência (CORRIGIDO - Implementado utilitário robusto de clipboard com fallback para iOS)
 - [x] B2. Bug: Redesign completo do Chat (UX ruim, scroll quebrado) - estilo WhatsApp/iMessage (CORRIGIDO - Layout estilo WhatsApp com scroll funcional, agrupamento por data, bolhas elegantes)
 - [x] B3. Bug: Portal do Aluno - adicionar barra lateral de navegação (CORRIGIDO - Sidebar estilo DashboardLayout com menu lateral, header e footer)
-- [ ] B4. Bug: Gravação de áudio (grava mas dá erro, não tem pause, não envia)
+- [x] B4. Bug: Gravação de áudio (CORRIGIDO - Envio funcional, pause/resume, codecs compatíveis, tratamento de erros)
 - [ ] B5. Bug: Upload de arquivos não funciona (fotos, vídeos, docs)
 - [ ] B6. Bug: Campos de bioimpedância e adipômetro sumiram (verificar)
 - [ ] B7. Bug: Scroll não funciona no chat (página e mensagens)
@@ -81,6 +81,6 @@
 
 ## 📊 PROGRESSO
 
-**Bugs Série B:** 3/7 resolvidos
+**Bugs Série B:** 4/7 resolvidos
 **Bugs Série A:** 8/8 resolvidos
 **Total geral:** ~75% concluído

@@ -52,7 +52,10 @@ import {
   Check,
   Phone,
   MoreVertical,
-  Smile
+  Smile,
+  Pause,
+  Play,
+  Square
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
@@ -103,11 +106,13 @@ export default function Messages() {
   
   // Estados para gravação de áudio
   const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   
   // Estados para upload de mídia
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -163,6 +168,13 @@ export default function Messages() {
     },
   });
 
+  // Mutation para upload de mídia
+  const uploadMediaMutation = trpc.chat.uploadMedia.useMutation({
+    onError: (error) => {
+      toast.error(error.message || "Erro ao fazer upload");
+    },
+  });
+
   // Scroll para o final quando novas mensagens chegarem
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
@@ -193,7 +205,16 @@ export default function Messages() {
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      streamRef.current = stream;
+      
+      // Tentar usar codecs mais compatíveis
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+        ? 'audio/webm;codecs=opus' 
+        : MediaRecorder.isTypeSupported('audio/webm') 
+          ? 'audio/webm' 
+          : 'audio/mp4';
+      
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
       
@@ -204,27 +225,66 @@ export default function Messages() {
       };
       
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType.split(';')[0] });
         setAudioBlob(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+        // Liberar stream
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
       };
       
-      mediaRecorder.start();
+      mediaRecorder.onerror = (e) => {
+        console.error('MediaRecorder error:', e);
+        toast.error('Erro na gravação de áudio');
+        cancelRecording();
+      };
+      
+      mediaRecorder.start(1000); // Coletar dados a cada 1 segundo
       setIsRecording(true);
+      setIsPaused(false);
       setRecordingTime(0);
       
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
-    } catch (error) {
-      toast.error('Não foi possível acessar o microfone');
+    } catch (error: any) {
+      console.error('Erro ao acessar microfone:', error);
+      if (error.name === 'NotAllowedError') {
+        toast.error('Permissão de microfone negada. Verifique as configurações do navegador.');
+      } else if (error.name === 'NotFoundError') {
+        toast.error('Nenhum microfone encontrado.');
+      } else {
+        toast.error('Não foi possível acessar o microfone');
+      }
     }
   }, []);
+  
+  const pauseRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording && !isPaused) {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    }
+  }, [isRecording, isPaused]);
+  
+  const resumeRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording && isPaused) {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    }
+  }, [isRecording, isPaused]);
   
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setIsPaused(false);
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
       }
@@ -232,20 +292,76 @@ export default function Messages() {
   }, [isRecording]);
   
   const cancelRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setAudioBlob(null);
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
+    if (mediaRecorderRef.current) {
+      if (mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
       }
     }
-  }, [isRecording]);
+    // Liberar stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsRecording(false);
+    setIsPaused(false);
+    setAudioBlob(null);
+    setRecordingTime(0);
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+    }
+  }, []);
   
   const handleSendAudio = async () => {
     if (!audioBlob || !selectedStudent) return;
-    toast.info('Áudio gravado! Upload será implementado em breve.');
-    setAudioBlob(null);
+    
+    setUploadingMedia(true);
+    try {
+      // Converter blob para base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(audioBlob);
+      
+      const base64 = await base64Promise;
+      const mimeType = audioBlob.type || 'audio/webm';
+      const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      
+      // Upload para S3
+      const uploadResult = await uploadMediaMutation.mutateAsync({
+        studentId: selectedStudent.studentId,
+        fileBase64: base64,
+        fileName: `audio-${Date.now()}.${extension}`,
+        mimeType: mimeType,
+        fileSize: audioBlob.size,
+        duration: recordingTime,
+      });
+      
+      // Enviar mensagem com URL do áudio
+      await sendMessage.mutateAsync({
+        studentId: selectedStudent.studentId,
+        messageType: 'audio',
+        mediaUrl: uploadResult.url,
+        mediaName: uploadResult.fileName,
+        mediaMimeType: uploadResult.mimeType,
+        mediaSize: uploadResult.fileSize,
+        mediaDuration: uploadResult.duration,
+      });
+      
+      setAudioBlob(null);
+      setRecordingTime(0);
+      toast.success('Áudio enviado!');
+    } catch (error: any) {
+      console.error('Erro ao enviar áudio:', error);
+      toast.error(error.message || 'Erro ao enviar áudio');
+    } finally {
+      setUploadingMedia(false);
+    }
   };
   
   // Funções de upload de mídia
@@ -646,16 +762,37 @@ export default function Messages() {
                       
                       {/* Barra de gravação */}
                       {isRecording && (
-                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center gap-3 shadow-sm">
-                          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center gap-3 shadow-sm">
+                          <div className={`w-3 h-3 bg-red-500 rounded-full ${!isPaused ? 'animate-pulse' : ''}`} />
                           <span className="text-red-600 dark:text-red-400 font-medium flex-1">
-                            Gravando... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                            {isPaused ? 'Pausado' : 'Gravando'} {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
                           </span>
-                          <Button variant="ghost" size="icon" className="rounded-full" onClick={cancelRecording}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="rounded-full hover:bg-red-100 dark:hover:bg-red-900/40" 
+                            onClick={cancelRecording}
+                            title="Cancelar gravação"
+                          >
                             <X className="h-4 w-4" />
                           </Button>
-                          <Button variant="destructive" size="icon" className="rounded-full" onClick={stopRecording}>
-                            <MicOff className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40" 
+                            onClick={isPaused ? resumeRecording : pauseRecording}
+                            title={isPaused ? 'Continuar' : 'Pausar'}
+                          >
+                            {isPaused ? <Play className="h-4 w-4 text-amber-600" /> : <Pause className="h-4 w-4 text-amber-600" />}
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="icon" 
+                            className="rounded-full" 
+                            onClick={stopRecording}
+                            title="Parar e salvar"
+                          >
+                            <Square className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
