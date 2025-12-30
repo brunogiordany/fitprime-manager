@@ -1,0 +1,74 @@
+{
+  "query": "SELECT muscleGroup, COUNT(*) as count FROM workout_log_exercises GROUP BY muscleGroup ORDER BY count DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT muscleGroup, COUNT(*) as count FROM workout_log_exercises GROUP BY muscleGroup ORDER BY count DESC",
+  "rows": [
+    {
+      "muscleGroup": "Costas",
+      "count": "10"
+    },
+    {
+      "muscleGroup": "Bíceps",
+      "count": "8"
+    },
+    {
+      "muscleGroup": "Quadríceps",
+      "count": "7"
+    },
+    {
+      "muscleGroup": "Posterior",
+      "count": "4"
+    },
+    {
+      "muscleGroup": "Tríceps",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Pernas (Quadríceps, Glúteos)",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Ombros",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Core",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Quadríceps/Glúteos",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Posteriores da Coxa",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Panturrilha",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Peito",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Abdômen",
+      "count": "2"
+    },
+    {
+      "muscleGroup": "Glúteos/Isquiotibiais",
+      "count": "1"
+    },
+    {
+      "muscleGroup": "Panturrilhas",
+      "count": "1"
+    },
+    {
+      "muscleGroup": "Isquiotibiais",
+      "count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "muscleGroup\tcount\nCostas\t10\nBíceps\t8\nQuadríceps\t7\nPosterior\t4\nTríceps\t2\nPernas (Quadríceps, Glúteos)\t2\nOmbros\t2\nCore\t2\nQuadríceps/Glúteos\t2\nPosteriores da Coxa\t2\nPanturrilha\t2\nPeito\t2\nAbdômen\t2\nGlúteos/Isquiotibiais\t1\nPanturrilhas\t1\nIsquiotibiais\t1\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

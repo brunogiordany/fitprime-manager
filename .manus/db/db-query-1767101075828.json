@@ -1,0 +1,58 @@
+{
+  "query": "SELECT DISTINCT muscleGroup FROM workout_log_exercises ORDER BY muscleGroup",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT DISTINCT muscleGroup FROM workout_log_exercises ORDER BY muscleGroup",
+  "rows": [
+    {
+      "muscleGroup": "Abdômen"
+    },
+    {
+      "muscleGroup": "Bíceps"
+    },
+    {
+      "muscleGroup": "Core"
+    },
+    {
+      "muscleGroup": "Costas"
+    },
+    {
+      "muscleGroup": "Glúteos/Isquiotibiais"
+    },
+    {
+      "muscleGroup": "Isquiotibiais"
+    },
+    {
+      "muscleGroup": "Ombros"
+    },
+    {
+      "muscleGroup": "Panturrilha"
+    },
+    {
+      "muscleGroup": "Panturrilhas"
+    },
+    {
+      "muscleGroup": "Peito"
+    },
+    {
+      "muscleGroup": "Pernas (Quadríceps, Glúteos)"
+    },
+    {
+      "muscleGroup": "Posterior"
+    },
+    {
+      "muscleGroup": "Posteriores da Coxa"
+    },
+    {
+      "muscleGroup": "Quadríceps"
+    },
+    {
+      "muscleGroup": "Quadríceps/Glúteos"
+    },
+    {
+      "muscleGroup": "Tríceps"
+    }
+  ],
+  "messages": [],
+  "stdout": "muscleGroup\nAbdômen\nBíceps\nCore\nCostas\nGlúteos/Isquiotibiais\nIsquiotibiais\nOmbros\nPanturrilha\nPanturrilhas\nPeito\nPernas (Quadríceps, Glúteos)\nPosterior\nPosteriores da Coxa\nQuadríceps\nQuadríceps/Glúteos\nTríceps\n",
+  "stderr": "",
+  "execution_time_ms": 85
+}

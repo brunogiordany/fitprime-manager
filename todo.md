@@ -1380,3 +1380,14 @@
 - [x] PRIORIDADE: Chat do personal não permite rolar mensagens nem enviar novas
 - [x] Corrigir altura e scroll da área de mensagens
 - [x] Verificar se o input de mensagem está visível e funcional
+
+
+## Bug Grupos Musculares Duplicados v5.64
+- [x] Corrigir duplicação de Quadríceps e Glúteos na análise (mesmo exercício contando 2x)
+- [x] Remover mapeamento automático de "Pernas" para múltiplos grupos
+- [x] Adicionar grupos compostos como opção:
+  - Quadríceps + Glúteos (Agachamento, Leg Press)
+  - Glúteos + Posteriores (Stiff, Levantamento Terra)
+  - Peito + Tríceps (Supino, Flexões)
+  - Costas + Bíceps (Remadas, Pulldown)
+  - Ombros + Tríceps (Desenvolvimento)

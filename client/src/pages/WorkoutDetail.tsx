@@ -112,6 +112,13 @@ const MUSCLE_GROUPS_DETAILED = {
     { value: 'Cardio', label: 'Cardio' },
     { value: 'Corpo Inteiro', label: 'Corpo Inteiro' },
   ],
+  'Compostos': [
+    { value: 'Quadríceps + Glúteos', label: 'Quadríceps + Glúteos (Agachamento, Leg Press)' },
+    { value: 'Glúteos + Posteriores', label: 'Glúteos + Posteriores (Stiff, Levantamento Terra)' },
+    { value: 'Peito + Tríceps', label: 'Peito + Tríceps (Supino, Flexões)' },
+    { value: 'Costas + Bíceps', label: 'Costas + Bíceps (Remadas, Pulldown)' },
+    { value: 'Ombros + Tríceps', label: 'Ombros + Tríceps (Desenvolvimento)' },
+  ],
 };
 
 // Lista simples para compatibilidade

@@ -2739,13 +2739,14 @@ export async function getMuscleGroupAnalysis(
     if (!group) return 'Outros';
     const g = group.toLowerCase().trim();
     
-    // Quadríceps
-    if (g.includes('quadríceps') || g.includes('quadriceps') || g === 'pernas') {
-      if (g.includes('glúteo') || g.includes('gluteo')) {
-        // Se menciona ambos, separar - retornar apenas quadríceps aqui
-        return 'Quadríceps';
-      }
+    // Quadríceps - NÃO mapear "pernas" automaticamente para evitar duplicação
+    if (g.includes('quadríceps') || g.includes('quadriceps')) {
       return 'Quadríceps';
+    }
+    
+    // Pernas (genérico) - manter como categoria separada
+    if (g === 'pernas') {
+      return 'Pernas';
     }
     
     // Glúteos
@@ -2812,44 +2813,24 @@ export async function getMuscleGroupAnalysis(
     return group.charAt(0).toUpperCase() + group.slice(1);
   };
   
-  // Função para verificar se um grupo combinado precisa ser dividido
-  const splitCombinedGroups = (group: string | null): string[] => {
-    if (!group) return ['Outros'];
-    const g = group.toLowerCase();
-    
-    // Grupos combinados que precisam ser divididos
-    if ((g.includes('quadríceps') || g.includes('quadriceps') || g.includes('pernas')) && 
-        (g.includes('glúteo') || g.includes('gluteo'))) {
-      return ['Quadríceps', 'Glúteos'];
-    }
-    
-    if ((g.includes('glúteo') || g.includes('gluteo')) && 
-        (g.includes('isquiotibiai') || g.includes('posterior'))) {
-      return ['Glúteos', 'Posteriores da Coxa'];
-    }
-    
-    return [normalizeGroup(group)];
-  };
-  
-  // Agrupar por grupo muscular
+  // Agrupar por grupo muscular - sem duplicação
+  // Cada exercício conta apenas para o grupo que foi especificamente selecionado
   const muscleGroups: Record<string, { volume: number; sets: number; reps: number; count: number }> = {};
   
   for (const ex of exercises) {
-    // Dividir grupos combinados e distribuir o volume igualmente
-    const groups = splitCombinedGroups(ex.muscleGroup);
-    const volumePerGroup = parseFloat(ex.totalVolume?.toString() || '0') / groups.length;
-    const setsPerGroup = Math.ceil((ex.completedSets || 0) / groups.length);
-    const repsPerGroup = Math.ceil((ex.totalReps || 0) / groups.length);
+    // Normalizar o grupo muscular - sem dividir em múltiplos grupos
+    const group = normalizeGroup(ex.muscleGroup);
+    const volume = parseFloat(ex.totalVolume?.toString() || '0');
+    const sets = ex.completedSets || 0;
+    const reps = ex.totalReps || 0;
     
-    for (const group of groups) {
-      if (!muscleGroups[group]) {
-        muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
-      }
-      muscleGroups[group].volume += volumePerGroup;
-      muscleGroups[group].sets += setsPerGroup;
-      muscleGroups[group].reps += repsPerGroup;
-      muscleGroups[group].count += 1;
+    if (!muscleGroups[group]) {
+      muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
     }
+    muscleGroups[group].volume += volume;
+    muscleGroups[group].sets += sets;
+    muscleGroups[group].reps += reps;
+    muscleGroups[group].count += 1;
   }
   
   // Converter para array e ordenar por volume
