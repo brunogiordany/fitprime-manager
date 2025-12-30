@@ -1306,3 +1306,6 @@
 ## Bugs Portal do Aluno - Histórico de Medidas (v5.50)
 - [ ] Bug: Ao clicar em "Histórico de Medidas" abre popup de calendário automaticamente (precisa remover esse comportamento)
 - [ ] Bug: Modal de "Editar Medição" não permite rolar para baixo (campos ficam escondidos)
+
+## Bugs Portal do Aluno - Reagendamento (v5.51)
+- [ ] Bug: Reagendar sessão mostra "Nenhum horário disponível nos próximos 14 dias" (verificar busca de horários disponíveis)
