@@ -2915,6 +2915,34 @@ export async function getExerciseProgressHistory(
   return historyWithSets;
 }
 
+// Buscar todos os exercícios únicos do aluno (para lista de evolução)
+export async function getUniqueExerciseNames(
+  personalId: number,
+  studentId?: number
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [
+    eq(workoutLogs.personalId, personalId),
+    eq(workoutLogs.status, 'completed')
+  ];
+  
+  if (studentId) {
+    conditions.push(eq(workoutLogs.studentId, studentId));
+  }
+  
+  // Buscar todos os nomes de exercícios únicos
+  const exercises = await db.selectDistinct({
+    exerciseName: workoutLogExercises.exerciseName,
+  }).from(workoutLogExercises)
+    .innerJoin(workoutLogs, eq(workoutLogExercises.workoutLogId, workoutLogs.id))
+    .where(and(...conditions))
+    .orderBy(asc(workoutLogExercises.exerciseName));
+  
+  return exercises.map(e => e.exerciseName).filter(Boolean);
+}
+
 // ==================== SUGESTÕES DE AJUSTE DO ALUNO ====================
 
 // Listar sugestões

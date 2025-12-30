@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -120,7 +120,7 @@ export default function TrainingDiaryPage() {
   // Estado para gráfico de evolução de carga
   const [progressExercise, setProgressExercise] = useState<string>("");
   const [selectedProgressDay, setSelectedProgressDay] = useState<number | null>(null); // Índice do dia selecionado no gráfico
-  const [progressPeriod, setProgressPeriod] = useState<string>("3months"); // Filtro de período
+  const [progressPeriod, setProgressPeriod] = useState<string>("week"); // Filtro de período - padrão 1 semana
   const [expandedHistoryItem, setExpandedHistoryItem] = useState<number | null>(null); // Item expandido no histórico
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -186,6 +186,23 @@ export default function TrainingDiaryPage() {
     },
     { enabled: !!progressExercise }
   );
+  
+  // Query para buscar todos os exercícios únicos do aluno
+  const { data: uniqueExercises } = trpc.trainingDiary.uniqueExercises.useQuery(
+    { studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined },
+    { enabled: true }
+  );
+  
+  // Estado para filtro de busca de exercícios
+  const [exerciseSearchFilter, setExerciseSearchFilter] = useState<string>("");
+  
+  // Exercícios filtrados e ordenados alfabeticamente
+  const filteredExercises = useMemo(() => {
+    if (!uniqueExercises) return [];
+    return uniqueExercises
+      .filter(name => name.toLowerCase().includes(exerciseSearchFilter.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [uniqueExercises, exerciseSearchFilter]);
   
   // Mutations
   const createLog = trpc.trainingDiary.create.useMutation({
@@ -874,17 +891,38 @@ export default function TrainingDiaryPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Filtros */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <Label className="text-sm">Exercício</Label>
+                        <Label className="text-sm">Buscar Exercício</Label>
                         <Input
-                          placeholder="Digite o nome do exercício"
-                          value={progressExercise}
-                          onChange={(e) => {
-                            setProgressExercise(e.target.value);
-                            setExpandedHistoryItem(null);
-                          }}
+                          placeholder="Digite para filtrar..."
+                          value={exerciseSearchFilter}
+                          onChange={(e) => setExerciseSearchFilter(e.target.value)}
                         />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Exercício Selecionado</Label>
+                        <Select value={progressExercise} onValueChange={(v) => {
+                          setProgressExercise(v);
+                          setExpandedHistoryItem(null);
+                        }}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um exercício" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {filteredExercises.length > 0 ? (
+                              filteredExercises.map((name) => (
+                                <SelectItem key={name} value={name}>
+                                  {name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-2 text-sm text-muted-foreground text-center">
+                                Nenhum exercício encontrado
+                              </div>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label className="text-sm">Período</Label>
@@ -903,6 +941,29 @@ export default function TrainingDiaryPage() {
                         </Select>
                       </div>
                     </div>
+                    
+                    {/* Lista de exercícios disponíveis */}
+                    {!progressExercise && filteredExercises.length > 0 && (
+                      <div className="border rounded-lg p-4 bg-muted/20">
+                        <p className="text-sm font-medium mb-3">Exercícios disponíveis ({filteredExercises.length}):</p>
+                        <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
+                          {filteredExercises.map((name) => (
+                            <Button
+                              key={name}
+                              variant="outline"
+                              size="sm"
+                              className="text-xs"
+                              onClick={() => {
+                                setProgressExercise(name);
+                                setExpandedHistoryItem(null);
+                              }}
+                            >
+                              {name}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     {/* Conteúdo */}
                     {exerciseProgress && exerciseProgress.length > 0 ? (() => {

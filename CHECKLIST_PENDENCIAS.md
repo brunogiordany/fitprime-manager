@@ -11,7 +11,7 @@
 - [x] A3. Bug: UX Mensagens Internas - Tela quebrada, nada funciona, tudo encavalado (CORRIGIDO - Ajustado layout e overflow)
 - [x] A4. Bug: Calendário cinza abre automaticamente ao abrir qualquer coisa (CORRIGIDO - Adicionado onOpenAutoFocus nos modais)
 - [x] A5. Bug: UX Diário de Treino - Campo de descanso desalinhado, precisa ajustar (CORRIGIDO - Adicionado sm:flex-nowrap para evitar quebra)
-- [ ] A6. Melhoria: Evolução de Carga - Abrir todos exercícios em ordem alfabética com filtro 1 sem, permitir digitar para filtrar
+- [x] A6. Melhoria: Evolução de Carga - Abrir todos exercícios em ordem alfabética com filtro 1 sem, permitir digitar para filtrar (CONCLUÍDO)
 - [ ] A7. Melhoria: Dashboard de Evolução - Criar dash dedicada com gráficos (pizza, colunas, ondas) e botão para mudar tipos
 - [ ] A8. Melhoria: Evolução muito escondida - Criar opção no menu lateral ou incorporar em Relatórios
 

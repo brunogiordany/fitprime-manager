@@ -5044,6 +5044,16 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
         return await db.getExerciseProgressHistory(ctx.personal.id, input.studentId, input.exerciseName, input.limit);
       }),
     
+    // Listar exercícios únicos do aluno (para lista de evolução)
+    uniqueExercises: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getUniqueExerciseNames(ctx.personal.id, input?.studentId);
+      }),
+    
     // Listar sugestões pendentes
     suggestions: personalProcedure
       .input(z.object({
