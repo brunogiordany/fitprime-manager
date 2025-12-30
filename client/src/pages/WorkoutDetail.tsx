@@ -69,11 +69,53 @@ const DAYS_OF_WEEK = [
   { value: 'sunday', label: 'Domingo', short: 'Dom' },
 ];
 
-const MUSCLE_GROUPS = [
-  'Peito', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Antebraço',
-  'Abdômen', 'Quadríceps', 'Posterior', 'Glúteos', 'Panturrilha',
-  'Trapézio', 'Lombar', 'Core', 'Cardio', 'Corpo Inteiro'
-];
+// Grupos musculares organizados por região com subdivisões
+const MUSCLE_GROUPS_DETAILED = {
+  'Peito': [
+    { value: 'Peito Superior', label: 'Peito Superior (Inclinado)' },
+    { value: 'Peito Médio', label: 'Peito Médio (Reto)' },
+    { value: 'Peito Inferior', label: 'Peito Inferior (Declinado)' },
+  ],
+  'Ombros': [
+    { value: 'Deltóide Lateral', label: 'Deltóide Lateral' },
+    { value: 'Deltóide Frontal', label: 'Deltóide Frontal (Anterior)' },
+    { value: 'Deltóide Posterior', label: 'Deltóide Posterior' },
+  ],
+  'Costas': [
+    { value: 'Dorsais', label: 'Dorsais (Latíssimo)' },
+    { value: 'Trapézio Superior', label: 'Trapézio Superior' },
+    { value: 'Trapézio Médio', label: 'Trapézio Médio' },
+    { value: 'Trapézio Inferior', label: 'Trapézio Inferior' },
+    { value: 'Romboides', label: 'Romboides' },
+    { value: 'Lombar', label: 'Lombar (Eretores)' },
+  ],
+  'Braços': [
+    { value: 'Bíceps', label: 'Bíceps' },
+    { value: 'Tríceps', label: 'Tríceps' },
+    { value: 'Antebraço', label: 'Antebraço' },
+  ],
+  'Pernas': [
+    { value: 'Quadríceps', label: 'Quadríceps' },
+    { value: 'Glúteos', label: 'Glúteos' },
+    { value: 'Posteriores da Coxa', label: 'Posteriores da Coxa (Isquiotibiais)' },
+    { value: 'Adutores', label: 'Adutores' },
+    { value: 'Abdutores', label: 'Abdutores' },
+    { value: 'Panturrilha', label: 'Panturrilha' },
+  ],
+  'Core': [
+    { value: 'Abdômen Superior', label: 'Abdômen Superior' },
+    { value: 'Abdômen Inferior', label: 'Abdômen Inferior' },
+    { value: 'Oblíquos', label: 'Oblíquos' },
+    { value: 'Core', label: 'Core (Estabilização)' },
+  ],
+  'Outros': [
+    { value: 'Cardio', label: 'Cardio' },
+    { value: 'Corpo Inteiro', label: 'Corpo Inteiro' },
+  ],
+};
+
+// Lista simples para compatibilidade
+const MUSCLE_GROUPS = Object.values(MUSCLE_GROUPS_DETAILED).flat().map(g => g.value);
 
 export default function WorkoutDetail() {
   const params = useParams<{ id: string }>();
@@ -803,10 +845,17 @@ export default function WorkoutDetail() {
                     <SelectValue placeholder="Selecione o grupo muscular" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MUSCLE_GROUPS.map((group) => (
-                      <SelectItem key={group} value={group}>
-                        {group}
-                      </SelectItem>
+                    {Object.entries(MUSCLE_GROUPS_DETAILED).map(([region, muscles]) => (
+                      <div key={region}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
+                          {region}
+                        </div>
+                        {muscles.map((muscle) => (
+                          <SelectItem key={muscle.value} value={muscle.value}>
+                            {muscle.label}
+                          </SelectItem>
+                        ))}
+                      </div>
                     ))}
                   </SelectContent>
                 </Select>
@@ -917,10 +966,17 @@ export default function WorkoutDetail() {
                     <SelectValue placeholder="Selecione o grupo muscular" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MUSCLE_GROUPS.map((group) => (
-                      <SelectItem key={group} value={group}>
-                        {group}
-                      </SelectItem>
+                    {Object.entries(MUSCLE_GROUPS_DETAILED).map(([region, muscles]) => (
+                      <div key={region}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
+                          {region}
+                        </div>
+                        {muscles.map((muscle) => (
+                          <SelectItem key={muscle.value} value={muscle.value}>
+                            {muscle.label}
+                          </SelectItem>
+                        ))}
+                      </div>
                     ))}
                   </SelectContent>
                 </Select>

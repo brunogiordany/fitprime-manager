@@ -504,7 +504,7 @@ export default function StudentChat() {
   
   return (
     <>
-      <Card className="h-[600px] flex flex-col">
+      <Card className="h-[calc(100vh-200px)] min-h-[400px] max-h-[800px] flex flex-col">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-emerald-500" />

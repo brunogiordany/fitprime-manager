@@ -1346,3 +1346,19 @@
 ## Bug Crítico - Anamnese Portal do Aluno (v5.56)
 - [x] PRIORIDADE: Erro ao salvar anamnese no portal do aluno - corrigido valor inválido 'early_morning' para preferredTime
 - [x] Valores de preferredTime agora são: morning, afternoon, evening, flexible (conforme schema)
+
+
+## Próximos Passos v5.58
+- [ ] Vincular treinos automaticamente nas sessões recorrentes
+- [ ] Implementar transcrição automática de áudio para texto no chat
+- [ ] Adicionar funcionalidade de mensagem em massa (broadcast)
+
+
+## Bugs Críticos v5.59
+- [x] Separar grupos musculares detalhados na análise:
+  - Peito: Superior (inclinado), Médio (reto), Inferior (declinado)
+  - Ombros: Lateral, Frontal, Posterior
+  - Costas: Dorsais, Trapézio, Romboides, Lombar
+  - Pernas: Quadríceps, Glúteos, Posteriores, Panturrilha, Adutores
+- [x] Atualizar seletor de grupos musculares no cadastro de exercícios (organizado por região)
+- [x] Corrigir chat do PWA travado (altura dinâmica para mobile)

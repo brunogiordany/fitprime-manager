@@ -2734,18 +2734,122 @@ export async function getMuscleGroupAnalysis(
     .from(workoutLogExercises)
     .where(inArray(workoutLogExercises.workoutLogId, logIds.map(l => l.id)));
   
+  // Normalizar nomes de grupos musculares
+  const normalizeGroup = (group: string | null): string => {
+    if (!group) return 'Outros';
+    const g = group.toLowerCase().trim();
+    
+    // Quadríceps
+    if (g.includes('quadríceps') || g.includes('quadriceps') || g === 'pernas') {
+      if (g.includes('glúteo') || g.includes('gluteo')) {
+        // Se menciona ambos, separar - retornar apenas quadríceps aqui
+        return 'Quadríceps';
+      }
+      return 'Quadríceps';
+    }
+    
+    // Glúteos
+    if (g.includes('glúteo') || g.includes('gluteo')) {
+      return 'Glúteos';
+    }
+    
+    // Posteriores da coxa / Isquiotibiais
+    if (g.includes('posterior') || g.includes('isquiotibiai')) {
+      return 'Posteriores da Coxa';
+    }
+    
+    // Panturrilha
+    if (g.includes('panturrilha')) {
+      return 'Panturrilha';
+    }
+    
+    // Peito
+    if (g.includes('peito') || g.includes('peitoral')) {
+      return 'Peito';
+    }
+    
+    // Costas
+    if (g.includes('costa') || g.includes('dorsal') || g.includes('latíssimo')) {
+      return 'Costas';
+    }
+    
+    // Ombros
+    if (g.includes('ombro') || g.includes('deltóide') || g.includes('deltoide')) {
+      return 'Ombros';
+    }
+    
+    // Bíceps
+    if (g.includes('bíceps') || g.includes('biceps')) {
+      return 'Bíceps';
+    }
+    
+    // Tríceps
+    if (g.includes('tríceps') || g.includes('triceps')) {
+      return 'Tríceps';
+    }
+    
+    // Abdômen / Core
+    if (g.includes('abdômen') || g.includes('abdomen') || g.includes('core') || g.includes('abdominal')) {
+      return 'Abdômen';
+    }
+    
+    // Antebraço
+    if (g.includes('antebraço') || g.includes('antebraco')) {
+      return 'Antebraço';
+    }
+    
+    // Trapézio
+    if (g.includes('trapézio') || g.includes('trapezio')) {
+      return 'Trapézio';
+    }
+    
+    // Lombar
+    if (g.includes('lombar')) {
+      return 'Lombar';
+    }
+    
+    // Retornar o grupo original com primeira letra maiúscula
+    return group.charAt(0).toUpperCase() + group.slice(1);
+  };
+  
+  // Função para verificar se um grupo combinado precisa ser dividido
+  const splitCombinedGroups = (group: string | null): string[] => {
+    if (!group) return ['Outros'];
+    const g = group.toLowerCase();
+    
+    // Grupos combinados que precisam ser divididos
+    if ((g.includes('quadríceps') || g.includes('quadriceps') || g.includes('pernas')) && 
+        (g.includes('glúteo') || g.includes('gluteo'))) {
+      return ['Quadríceps', 'Glúteos'];
+    }
+    
+    if ((g.includes('glúteo') || g.includes('gluteo')) && 
+        (g.includes('isquiotibiai') || g.includes('posterior'))) {
+      return ['Glúteos', 'Posteriores da Coxa'];
+    }
+    
+    return [normalizeGroup(group)];
+  };
+  
   // Agrupar por grupo muscular
   const muscleGroups: Record<string, { volume: number; sets: number; reps: number; count: number }> = {};
   
   for (const ex of exercises) {
-    const group = ex.muscleGroup || 'Outros';
-    if (!muscleGroups[group]) {
-      muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
+    // Dividir grupos combinados e distribuir o volume igualmente
+    const groups = splitCombinedGroups(ex.muscleGroup);
+    const volumePerGroup = parseFloat(ex.totalVolume?.toString() || '0') / groups.length;
+    const setsPerGroup = Math.ceil((ex.completedSets || 0) / groups.length);
+    const repsPerGroup = Math.ceil((ex.totalReps || 0) / groups.length);
+    
+    for (const group of groups) {
+      if (!muscleGroups[group]) {
+        muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
+      }
+      muscleGroups[group].volume += volumePerGroup;
+      muscleGroups[group].sets += setsPerGroup;
+      muscleGroups[group].reps += repsPerGroup;
+      muscleGroups[group].count += 1;
     }
-    muscleGroups[group].volume += parseFloat(ex.totalVolume?.toString() || '0');
-    muscleGroups[group].sets += ex.completedSets || 0;
-    muscleGroups[group].reps += ex.totalReps || 0;
-    muscleGroups[group].count += 1;
   }
   
   // Converter para array e ordenar por volume

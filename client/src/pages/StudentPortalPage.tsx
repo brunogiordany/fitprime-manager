@@ -1743,7 +1743,7 @@ export default function StudentPortalPage() {
           </TabsContent>
 
           {/* Chat Tab */}
-          <TabsContent value="chat" className="space-y-6">
+          <TabsContent value="chat" className="h-full">
             <StudentChat />
           </TabsContent>
 
