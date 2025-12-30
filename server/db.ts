@@ -2297,7 +2297,6 @@ export async function getSessionsByPersonalIdAndDateRange(personalId: number, st
       eq(sessions.personalId, personalId),
       gte(sessions.scheduledAt, startDate),
       lte(sessions.scheduledAt, endDate),
-      isNull(sessions.deletedAt),
       not(eq(sessions.status, 'cancelled'))
     ))
     .orderBy(asc(sessions.scheduledAt));

@@ -158,9 +158,9 @@ export default function StudentPortalPage() {
     { enabled: !!studentData?.id }
   );
 
-  // Buscar cobranças do aluno
-  const { data: charges } = trpc.charges.listByStudent.useQuery(
-    { studentId: studentData?.id || 0 },
+  // Buscar cobranças do aluno (usando endpoint do portal que valida o aluno logado)
+  const { data: charges } = trpc.studentPortal.charges.useQuery(
+    undefined,
     { enabled: !!studentData?.id }
   );
 
@@ -716,12 +716,13 @@ export default function StudentPortalPage() {
                                 onClick={() => {
                                   if (session.workoutInfo) {
                                     setSelectedSession(session);
-                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any) => ({
+                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any, idx: number) => ({
                                       exerciseId: 0,
                                       exerciseName: ex.name,
-                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0 })),
+                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0, setType: 'working', restTime: 60 })),
                                       notes: '',
                                       completed: false,
+                                      isExpanded: idx === 0, // Primeiro exercício expandido por padrão
                                     })));
                                     setShowDiaryModal(true);
                                   } else {
@@ -765,12 +766,13 @@ export default function StudentPortalPage() {
                                 onClick={() => {
                                   if (session.workoutInfo) {
                                     setSelectedSession(session);
-                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any) => ({
+                                    setDiaryExercises(session.workoutInfo.exercises.map((ex: any, idx: number) => ({
                                       exerciseId: 0,
                                       exerciseName: ex.name,
-                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0 })),
+                                      sets: Array(ex.sets || 3).fill(null).map(() => ({ weight: '', reps: ex.reps || 0, setType: 'working', restTime: 60 })),
                                       notes: '',
                                       completed: false,
+                                      isExpanded: idx === 0, // Primeiro exercício expandido por padrão
                                     })));
                                     setShowDiaryModal(true);
                                   } else {
@@ -1389,85 +1391,305 @@ export default function StudentPortalPage() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Visualização */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          Dados Pessoais
-                        </h3>
-                        <dl className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500">Ocupação:</dt>
-                            <dd>{anamnesis?.occupation || "-"}</dd>
+                    {/* Visualização Melhorada */}
+                    {anamnesis?.mainGoal ? (
+                      <>
+                        {/* Cards de Resumo */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Target className="h-4 w-4 text-emerald-600" />
+                              <span className="text-xs font-medium text-emerald-700">Objetivo</span>
+                            </div>
+                            <p className="text-sm font-semibold text-emerald-900">{getGoalLabel(anamnesis?.mainGoal || null)}</p>
                           </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500">Horas de sono:</dt>
-                            <dd>{anamnesis?.sleepHours ? `${anamnesis.sleepHours}h` : "-"}</dd>
+                          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Activity className="h-4 w-4 text-blue-600" />
+                              <span className="text-xs font-medium text-blue-700">Experiência</span>
+                            </div>
+                            <p className="text-sm font-semibold text-blue-900">
+                              {anamnesis?.exerciseExperience === 'none' ? 'Nenhuma' :
+                               anamnesis?.exerciseExperience === 'beginner' ? 'Iniciante' :
+                               anamnesis?.exerciseExperience === 'intermediate' ? 'Intermediário' :
+                               anamnesis?.exerciseExperience === 'advanced' ? 'Avançado' : '-'}
+                            </p>
                           </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500">Nível de estresse:</dt>
-                            <dd>{getStressLabel(anamnesis?.stressLevel || null)}</dd>
+                          <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Calendar className="h-4 w-4 text-purple-600" />
+                              <span className="text-xs font-medium text-purple-700">Frequência</span>
+                            </div>
+                            <p className="text-sm font-semibold text-purple-900">
+                              {anamnesis?.weeklyFrequency ? `${anamnesis.weeklyFrequency}x/semana` : '-'}
+                            </p>
                           </div>
-                        </dl>
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2">
-                          <Target className="h-4 w-4" />
-                          Objetivos
-                        </h3>
-                        <dl className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500">Objetivo principal:</dt>
-                            <dd>{getGoalLabel(anamnesis?.mainGoal || null)}</dd>
+                          <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="h-4 w-4 text-amber-600" />
+                              <span className="text-xs font-medium text-amber-700">Duração</span>
+                            </div>
+                            <p className="text-sm font-semibold text-amber-900">
+                              {anamnesis?.sessionDuration ? `${anamnesis.sessionDuration} min` : '-'}
+                            </p>
                           </div>
-                          <div className="flex justify-between">
-                            <dt className="text-gray-500">Peso desejado:</dt>
-                            <dd>{anamnesis?.targetWeight ? `${anamnesis.targetWeight} kg` : "-"}</dd>
-                          </div>
-                        </dl>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold mb-3 flex items-center gap-2">
-                        <Heart className="h-4 w-4" />
-                        Saúde
-                      </h3>
-                      <dl className="space-y-2 text-sm">
-                        <div>
-                          <dt className="text-gray-500">Histórico médico:</dt>
-                          <dd className="mt-1">{anamnesis?.medicalHistory || "-"}</dd>
                         </div>
-                        <div>
-                          <dt className="text-gray-500">Medicamentos:</dt>
-                          <dd className="mt-1">{anamnesis?.medications || "-"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-gray-500">Lesões/Limitações:</dt>
-                          <dd className="mt-1">{anamnesis?.injuries || "-"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-gray-500">Alergias:</dt>
-                          <dd className="mt-1">{anamnesis?.allergies || "-"}</dd>
-                        </div>
-                      </dl>
-                    </div>
 
-                    {anamnesis?.observations && (
-                      <div>
-                        <h3 className="font-semibold mb-3">Observações</h3>
-                        <p className="text-sm text-gray-600">{anamnesis.observations}</p>
-                      </div>
-                    )}
+                        {/* Seções Detalhadas */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* Dados Pessoais */}
+                          <Card className="border-gray-200">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <User className="h-4 w-4 text-gray-600" />
+                                Dados Pessoais
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <dl className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center py-2 border-b">
+                                  <dt className="text-gray-500">Ocupação</dt>
+                                  <dd className="font-medium">{anamnesis?.occupation || "-"}</dd>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b">
+                                  <dt className="text-gray-500">Horas de sono</dt>
+                                  <dd className="font-medium">{anamnesis?.sleepHours ? `${anamnesis.sleepHours}h` : "-"}</dd>
+                                </div>
+                                <div className="flex justify-between items-center py-2">
+                                  <dt className="text-gray-500">Nível de estresse</dt>
+                                  <dd>
+                                    <Badge variant="outline" className={`${
+                                      anamnesis?.stressLevel === 'low' ? 'border-green-500 text-green-700 bg-green-50' :
+                                      anamnesis?.stressLevel === 'moderate' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' :
+                                      anamnesis?.stressLevel === 'high' ? 'border-orange-500 text-orange-700 bg-orange-50' :
+                                      anamnesis?.stressLevel === 'very_high' ? 'border-red-500 text-red-700 bg-red-50' : ''
+                                    }`}>
+                                      {getStressLabel(anamnesis?.stressLevel || null)}
+                                    </Badge>
+                                  </dd>
+                                </div>
+                              </dl>
+                            </CardContent>
+                          </Card>
 
-                    {!anamnesis?.mainGoal && (
-                      <div className="text-center py-8 bg-gray-50 rounded-lg">
-                        <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">Anamnese não preenchida</p>
-                        <Button className="mt-4" onClick={() => setShowOnboarding(true)}>
-                          Preencher agora
+                          {/* Objetivos */}
+                          <Card className="border-emerald-200 bg-emerald-50/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <Target className="h-4 w-4 text-emerald-600" />
+                                Objetivos
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <dl className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center py-2 border-b border-emerald-200">
+                                  <dt className="text-gray-500">Objetivo principal</dt>
+                                  <dd className="font-medium text-emerald-700">{getGoalLabel(anamnesis?.mainGoal || null)}</dd>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-emerald-200">
+                                  <dt className="text-gray-500">Peso desejado</dt>
+                                  <dd className="font-medium">{anamnesis?.targetWeight ? `${anamnesis.targetWeight} kg` : "-"}</dd>
+                                </div>
+                                {anamnesis?.secondaryGoals && (
+                                  <div className="py-2">
+                                    <dt className="text-gray-500 mb-1">Objetivos secundários</dt>
+                                    <dd className="text-gray-700">{anamnesis.secondaryGoals}</dd>
+                                  </div>
+                                )}
+                              </dl>
+                            </CardContent>
+                          </Card>
+
+                          {/* Saúde */}
+                          <Card className="border-red-200 bg-red-50/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <Heart className="h-4 w-4 text-red-600" />
+                                Saúde
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <dl className="space-y-3 text-sm">
+                                {anamnesis?.medicalHistory && (
+                                  <div className="py-2 border-b border-red-200">
+                                    <dt className="text-gray-500 mb-1">Histórico médico</dt>
+                                    <dd className="text-gray-700">{anamnesis.medicalHistory}</dd>
+                                  </div>
+                                )}
+                                {anamnesis?.medications && (
+                                  <div className="py-2 border-b border-red-200">
+                                    <dt className="text-gray-500 mb-1">Medicamentos</dt>
+                                    <dd className="text-gray-700">{anamnesis.medications}</dd>
+                                  </div>
+                                )}
+                                {anamnesis?.injuries && (
+                                  <div className="py-2 border-b border-red-200">
+                                    <dt className="text-gray-500 mb-1">Lesões/Limitações</dt>
+                                    <dd className="text-gray-700">{anamnesis.injuries}</dd>
+                                  </div>
+                                )}
+                                {anamnesis?.allergies && (
+                                  <div className="py-2">
+                                    <dt className="text-gray-500 mb-1">Alergias</dt>
+                                    <dd className="text-gray-700">{anamnesis.allergies}</dd>
+                                  </div>
+                                )}
+                                {!anamnesis?.medicalHistory && !anamnesis?.medications && !anamnesis?.injuries && !anamnesis?.allergies && (
+                                  <p className="text-gray-400 text-center py-4">Nenhuma informação de saúde registrada</p>
+                                )}
+                              </dl>
+                            </CardContent>
+                          </Card>
+
+                          {/* Preferências de Treino */}
+                          <Card className="border-blue-200 bg-blue-50/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <Dumbbell className="h-4 w-4 text-blue-600" />
+                                Preferências de Treino
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <dl className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center py-2 border-b border-blue-200">
+                                  <dt className="text-gray-500">Horário preferido</dt>
+                                  <dd className="font-medium">
+                                    {anamnesis?.preferredTime === 'morning' ? 'Manhã (8h-12h)' :
+                                     anamnesis?.preferredTime === 'afternoon' ? 'Tarde (12h-18h)' :
+                                     anamnesis?.preferredTime === 'evening' ? 'Noite (18h-22h)' :
+                                     anamnesis?.preferredTime === 'flexible' ? 'Flexível' : '-'}
+                                  </dd>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-blue-200">
+                                  <dt className="text-gray-500">Local de treino</dt>
+                                  <dd className="font-medium">
+                                    {anamnesis?.trainingLocation === 'full_gym' ? 'Academia Completa' :
+                                     anamnesis?.trainingLocation === 'home_gym' ? 'Academia em Casa' :
+                                     anamnesis?.trainingLocation === 'home_basic' ? 'Casa (básico)' :
+                                     anamnesis?.trainingLocation === 'outdoor' ? 'Ar Livre' :
+                                     anamnesis?.trainingLocation === 'studio' ? 'Estúdio' : '-'}
+                                  </dd>
+                                </div>
+                                {anamnesis?.availableEquipment && (
+                                  <div className="py-2">
+                                    <dt className="text-gray-500 mb-1">Equipamentos disponíveis</dt>
+                                    <dd className="text-gray-700">{anamnesis.availableEquipment}</dd>
+                                  </div>
+                                )}
+                              </dl>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Nutrição */}
+                        {(anamnesis?.mealsPerDay || anamnesis?.waterIntake || anamnesis?.supplements) && (
+                          <Card className="border-orange-200 bg-orange-50/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-orange-600" />
+                                Nutrição
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <div className="grid md:grid-cols-3 gap-4">
+                                {anamnesis?.mealsPerDay && (
+                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                    <p className="text-2xl font-bold text-orange-600">{anamnesis.mealsPerDay}</p>
+                                    <p className="text-xs text-gray-500">Refeições/dia</p>
+                                  </div>
+                                )}
+                                {anamnesis?.waterIntake && (
+                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                    <p className="text-2xl font-bold text-blue-600">
+                                      {anamnesis.waterIntake === 'less_1l' ? '<1L' :
+                                       anamnesis.waterIntake === '1_2l' ? '1-2L' :
+                                       anamnesis.waterIntake === '2_3l' ? '2-3L' :
+                                       anamnesis.waterIntake === 'more_3l' ? '>3L' : '-'}
+                                    </p>
+                                    <p className="text-xs text-gray-500">Água/dia</p>
+                                  </div>
+                                )}
+                                {anamnesis?.dailyCalories && (
+                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                    <p className="text-2xl font-bold text-green-600">{anamnesis.dailyCalories}</p>
+                                    <p className="text-xs text-gray-500">Calorias/dia</p>
+                                  </div>
+                                )}
+                              </div>
+                              {anamnesis?.supplements && (
+                                <div className="mt-4">
+                                  <p className="text-sm text-gray-500 mb-1">Suplementos</p>
+                                  <p className="text-sm">{anamnesis.supplements}</p>
+                                </div>
+                              )}
+                              {anamnesis?.dietRestrictions && (
+                                <div className="mt-3">
+                                  <p className="text-sm text-gray-500 mb-1">Restrições alimentares</p>
+                                  <p className="text-sm">{anamnesis.dietRestrictions}</p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Ênfases e Restrições */}
+                        {(anamnesis?.muscleEmphasis || anamnesis?.trainingRestrictions) && (
+                          <Card className="border-purple-200 bg-purple-50/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4 text-purple-600" />
+                                Ênfases e Restrições
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <div className="grid md:grid-cols-2 gap-4">
+                                {anamnesis?.muscleEmphasis && (
+                                  <div>
+                                    <p className="text-sm text-gray-500 mb-2">Ênfases musculares</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {anamnesis.muscleEmphasis.split(',').map((muscle, i) => (
+                                        <Badge key={i} variant="outline" className="bg-purple-100 border-purple-300 text-purple-700">
+                                          {muscle.trim()}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {anamnesis?.trainingRestrictions && (
+                                  <div>
+                                    <p className="text-sm text-gray-500 mb-2">Restrições de treino</p>
+                                    <p className="text-sm text-red-700 bg-red-50 p-2 rounded border border-red-200">
+                                      {anamnesis.trainingRestrictions}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Observações */}
+                        {anamnesis?.observations && (
+                          <Card>
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base">Observações</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <p className="text-sm text-gray-600">{anamnesis.observations}</p>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Anamnese não preenchida</h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                          Preencha sua anamnese para que seu personal possa criar treinos personalizados para você.
+                        </p>
+                        <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setShowOnboarding(true)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Preencher Agora
                         </Button>
                       </div>
                     )}
@@ -1534,7 +1756,7 @@ export default function StudentPortalPage() {
       
       {/* Modal de Registro de Treino */}
       <Dialog open={showDiaryModal} onOpenChange={setShowDiaryModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Dumbbell className="h-5 w-5 text-emerald-500" />
@@ -1551,99 +1773,279 @@ export default function StudentPortalPage() {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
+            {/* Barra de Progresso */}
+            {diaryExercises.length > 0 && (
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex-1">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-emerald-700 font-medium">Progresso do Treino</span>
+                    <span className="text-emerald-600">
+                      {diaryExercises.filter(ex => ex.completed).length}/{diaryExercises.length} exercícios
+                    </span>
+                  </div>
+                  <Progress 
+                    value={(diaryExercises.filter(ex => ex.completed).length / diaryExercises.length) * 100} 
+                    className="h-2"
+                  />
+                </div>
+              </div>
+            )}
+            
             {/* Exercícios */}
             <div className="space-y-4">
-              <h4 className="font-medium">Exercícios</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium flex items-center gap-2">
+                  <Target className="h-4 w-4 text-emerald-500" />
+                  Exercícios
+                </h4>
+              </div>
               {diaryExercises.map((exercise, exIndex) => (
-                <Card key={exIndex} className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="font-medium">{exercise.exerciseName}</h5>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const updated = [...diaryExercises];
-                        updated[exIndex].completed = !updated[exIndex].completed;
-                        setDiaryExercises(updated);
-                      }}
-                      className={exercise.completed ? "text-emerald-600" : "text-gray-400"}
-                    >
-                      <CheckCircle2 className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {exercise.sets.map((set: any, setIndex: number) => (
-                      <div key={setIndex} className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 w-8">S{setIndex + 1}</span>
-                        <Input
-                          type="number"
-                          placeholder="Carga"
-                          value={set.weight}
-                          onChange={(e) => {
-                            const updated = [...diaryExercises];
-                            updated[exIndex].sets[setIndex].weight = e.target.value;
-                            setDiaryExercises(updated);
-                          }}
-                          className="w-20"
-                        />
-                        <span className="text-sm text-gray-500">kg</span>
-                        <Input
-                          type="number"
-                          placeholder="Reps"
-                          value={set.reps}
-                          onChange={(e) => {
-                            const updated = [...diaryExercises];
-                            updated[exIndex].sets[setIndex].reps = parseInt(e.target.value) || 0;
-                            setDiaryExercises(updated);
-                          }}
-                          className="w-20"
-                        />
-                        <span className="text-sm text-gray-500">reps</span>
+                <Card key={exIndex} className={`overflow-hidden transition-all ${exercise.completed ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
+                  <div 
+                    className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      const updated = [...diaryExercises];
+                      updated[exIndex].isExpanded = !updated[exIndex].isExpanded;
+                      setDiaryExercises(updated);
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-bold ${exercise.completed ? 'bg-emerald-500' : 'bg-gray-400'}`}>
+                          {exIndex + 1}
+                        </span>
+                        <div>
+                          <h5 className="font-medium">{exercise.exerciseName}</h5>
+                          <p className="text-xs text-gray-500">
+                            {exercise.sets.filter((s: any) => s.weight && s.reps).length}/{exercise.sets.length} séries preenchidas
+                          </p>
+                        </div>
                       </div>
-                    ))}
-                    
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const updated = [...diaryExercises];
-                          updated[exIndex].sets.push({ weight: '', reps: 0 });
-                          setDiaryExercises(updated);
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Série
-                      </Button>
-                      {exercise.sets.length > 1 && (
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => {
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             const updated = [...diaryExercises];
-                            updated[exIndex].sets.pop();
+                            updated[exIndex].completed = !updated[exIndex].completed;
                             setDiaryExercises(updated);
                           }}
+                          className={exercise.completed ? "text-emerald-600" : "text-gray-400"}
                         >
-                          <Minus className="h-4 w-4 mr-1" />
-                          Remover
+                          <CheckCircle2 className="h-5 w-5" />
                         </Button>
-                      )}
+                        <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform ${exercise.isExpanded ? 'rotate-90' : ''}`} />
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="mt-3">
-                    <Input
-                      placeholder="Observações do exercício..."
-                      value={exercise.notes}
-                      onChange={(e) => {
-                        const updated = [...diaryExercises];
-                        updated[exIndex].notes = e.target.value;
-                        setDiaryExercises(updated);
-                      }}
-                    />
-                  </div>
+                  {exercise.isExpanded && (
+                    <div className="border-t p-4 bg-gray-50/50">
+                      <div className="space-y-3">
+                        {exercise.sets.map((set: any, setIndex: number) => (
+                          <div key={setIndex} className="flex items-center gap-2 flex-wrap p-2 bg-white rounded-lg border">
+                            {/* Número da série com cor baseada no tipo */}
+                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${
+                              set.setType === 'warmup' ? 'bg-yellow-500' :
+                              set.setType === 'feeler' ? 'bg-blue-500' :
+                              set.setType === 'drop' ? 'bg-purple-500' :
+                              set.setType === 'rest_pause' ? 'bg-orange-500' :
+                              set.setType === 'failure' ? 'bg-red-500' :
+                              'bg-green-500'
+                            }`}>
+                              {setIndex + 1}
+                            </span>
+                            
+                            {/* Tipo de série */}
+                            <Select
+                              value={set.setType || 'working'}
+                              onValueChange={(v) => {
+                                const updated = [...diaryExercises];
+                                updated[exIndex].sets[setIndex].setType = v;
+                                setDiaryExercises(updated);
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-[110px] text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="warmup">Aquecimento</SelectItem>
+                                <SelectItem value="feeler">Reconhecimento</SelectItem>
+                                <SelectItem value="working">Série Válida</SelectItem>
+                                <SelectItem value="drop">Drop Set</SelectItem>
+                                <SelectItem value="rest_pause">Rest-Pause</SelectItem>
+                                <SelectItem value="failure">Falha</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            {/* Peso */}
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={set.weight}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets[setIndex].weight = e.target.value;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-16 text-center text-sm"
+                              />
+                              <span className="text-xs text-gray-500">kg</span>
+                            </div>
+                            
+                            {/* Reps */}
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={set.reps}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets[setIndex].reps = parseInt(e.target.value) || 0;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-14 text-center text-sm"
+                              />
+                              <span className="text-xs text-gray-500">reps</span>
+                            </div>
+                            
+                            {/* Descanso */}
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                placeholder="60"
+                                value={set.restTime || ''}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets[setIndex].restTime = parseInt(e.target.value) || 0;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-14 text-center text-sm"
+                              />
+                              <span className="text-xs text-gray-500">s</span>
+                            </div>
+                            
+                            {/* Botão remover série */}
+                            {exercise.sets.length > 1 && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-red-500 hover:text-red-700 ml-auto"
+                                onClick={() => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets.splice(setIndex, 1);
+                                  setDiaryExercises(updated);
+                                }}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {/* Drop Set / Rest-Pause extras */}
+                        {exercise.sets.some((s: any) => s.setType === 'drop') && (
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                              <span className="text-xs text-gray-500">Reduza a carga e continue</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Carga drop"
+                                value={exercise.dropWeight || ''}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].dropWeight = e.target.value;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-20"
+                              />
+                              <span className="text-xs text-gray-500">kg ×</span>
+                              <Input
+                                type="number"
+                                placeholder="Reps"
+                                value={exercise.dropReps || ''}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].dropReps = e.target.value;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-16"
+                              />
+                              <span className="text-xs text-gray-500">reps</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {exercise.sets.some((s: any) => s.setType === 'rest_pause') && (
+                          <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                              <span className="text-xs text-gray-500">Pausa curta e continue</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Pausa"
+                                value={exercise.restPausePause || ''}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].restPausePause = e.target.value;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-16"
+                              />
+                              <span className="text-xs text-gray-500">s →</span>
+                              <Input
+                                type="number"
+                                placeholder="Reps"
+                                value={exercise.restPauseReps || ''}
+                                onChange={(e) => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].restPauseReps = e.target.value;
+                                  setDiaryExercises(updated);
+                                }}
+                                className="h-8 w-16"
+                              />
+                              <span className="text-xs text-gray-500">reps extras</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Botão adicionar série */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            const updated = [...diaryExercises];
+                            updated[exIndex].sets.push({ weight: '', reps: 0, setType: 'working', restTime: 60 });
+                            setDiaryExercises(updated);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Adicionar Série
+                        </Button>
+                      </div>
+                      
+                      {/* Observações do exercício */}
+                      <div className="mt-3">
+                        <Input
+                          placeholder="Observações do exercício..."
+                          value={exercise.notes}
+                          onChange={(e) => {
+                            const updated = [...diaryExercises];
+                            updated[exIndex].notes = e.target.value;
+                            setDiaryExercises(updated);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>

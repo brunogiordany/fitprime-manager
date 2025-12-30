@@ -1,0 +1,26 @@
+{
+  "query": "SELECT COUNT(*) as total, status FROM sessions GROUP BY status;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COUNT(*) as total, status FROM sessions GROUP BY status;",
+  "rows": [
+    {
+      "total": "1",
+      "status": "cancelled"
+    },
+    {
+      "total": "12",
+      "status": "no_show"
+    },
+    {
+      "total": "91",
+      "status": "scheduled"
+    },
+    {
+      "total": "4",
+      "status": "completed"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tstatus\n1\tcancelled\n12\tno_show\n91\tscheduled\n4\tcompleted\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

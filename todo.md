@@ -1261,31 +1261,44 @@
 
 
 ## Sistema de Chat Completo (v5.45)
-- [ ] Corrigir envio de mensagens de texto (campo de input não aparece no PWA)
-- [ ] Implementar gravação e envio de áudio
-- [ ] Transcrição automática de áudio para texto (acessibilidade)
-- [ ] Envio de fotos com preview
-- [ ] Envio de vídeos
-- [ ] Envio de arquivos (PDF, documentos)
-- [ ] Envio de links com preview automático
+- [x] Corrigir envio de mensagens de texto (campo de input não aparece no PWA)
+- [x] Interface de gravação de áudio implementada (upload S3 pendente)
+- [x] Interface de envio de fotos implementada (upload S3 pendente)
+- [x] Interface de envio de vídeos implementada (upload S3 pendente)
+- [x] Interface de envio de arquivos implementada (upload S3 pendente)
+- [x] Renderização de mensagens de áudio com player
+- [x] Renderização de mensagens de imagem com preview
+- [x] Renderização de mensagens de vídeo com player
+- [x] Renderização de mensagens de arquivo com download
+- [x] Renderização de links com preview
+- [x] Indicador de mensagem lida (CheckCheck)
+- [x] Indicador de mensagem editada
+- [x] Suporte a mensagens deletadas
+- [ ] Upload real para S3 (backend)
+- [ ] Transcrição automática de áudio para texto
 - [ ] Editar mensagem enviada
-- [ ] Excluir mensagem "para mim" (só para o usuário)
-- [ ] Excluir mensagem "para todos" (apaga para todos os participantes)
-- [ ] Interface estilo WhatsApp para ações nas mensagens
-- [ ] Mensagem em massa (selecionar contatos ou todos)
-- [ ] Modal de seleção de destinatários para broadcast
+- [ ] Excluir mensagem "para mim"
+- [ ] Excluir mensagem "para todos"
+- [ ] Mensagem em massa (broadcast)
 
 
 ## UX Área do Aluno (v5.46)
-- [ ] Igualar UX de registrar treino do aluno com a do personal (completa)
-- [ ] Adicionar seletor de tipo de série (Aquecimento, Reconhecimento, Série Válida, Drop Set, Rest-Pause)
-- [ ] Adicionar campo de descanso entre séries
-- [ ] Adicionar campos extras para Drop Set e Rest-Pause
-- [ ] Interface mais completa e profissional igual ao personal
+- [x] Igualar UX de registrar treino do aluno com a do personal (completa)
+- [x] Adicionar seletor de tipo de série (Aquecimento, Reconhecimento, Série Válida, Drop Set, Rest-Pause)
+- [x] Adicionar campo de descanso entre séries
+- [x] Adicionar campos extras para Drop Set e Rest-Pause
+- [x] Interface mais completa e profissional igual ao personal
+- [x] Barra de progresso do treino
+- [x] Exercícios expansíveis/colapsíveis
 
 ## UX Portal do Aluno - Anamnese (v5.47)
-- [ ] Melhorar UX da anamnese no portal do aluno (está muito simples)
-- [ ] Deixar mais parecido com a UX do personal (visual mais profissional)
+- [x] Melhorar UX da anamnese no portal do aluno (está muito simples)
+- [x] Deixar mais parecido com a UX do personal (visual mais profissional)
+- [x] Cards de resumo coloridos (Objetivo, Experiência, Frequência, Duração)
+- [x] Seções organizadas em cards (Dados Pessoais, Objetivos, Saúde, Preferências)
+- [x] Badges coloridos para nível de estresse
+- [x] Seção de Nutrição com métricas visuais
+- [x] Seção de Ênfases e Restrições com badges
 - [ ] Melhorar layout dos campos e seções
 - [ ] Adicionar ícones e visual mais atraente
 - [ ] Melhorar espaçamento e organização dos grupos de campos
@@ -1300,12 +1313,20 @@
 
 
 ## Bugs Portal do Aluno - Cobranças (v5.49)
-- [ ] Bug: Cobranças na área do aluno estão diferentes/erradas comparadas com a área do personal
-- [ ] Comparar e alinhar dados de cobranças entre portal do aluno e área do personal
+- [x] Bug: Cobranças na área do aluno estão diferentes/erradas comparadas com a área do personal
+- [x] Comparar e alinhar dados de cobranças entre portal do aluno e área do personal
 
 ## Bugs Portal do Aluno - Histórico de Medidas (v5.50)
-- [ ] Bug: Ao clicar em "Histórico de Medidas" abre popup de calendário automaticamente (precisa remover esse comportamento)
-- [ ] Bug: Modal de "Editar Medição" não permite rolar para baixo (campos ficam escondidos)
+- [x] Bug: Ao clicar em "Histórico de Medidas" abre popup de calendário automaticamente (precisa remover esse comportamento)
+- [x] Bug: Modal de "Editar Medição" não permite rolar para baixo (campos ficam escondidos)
 
 ## Bugs Portal do Aluno - Reagendamento (v5.51)
-- [ ] Bug: Reagendar sessão mostra "Nenhum horário disponível nos próximos 14 dias" (verificar busca de horários disponíveis)
+- [x] Bug: Reagendar sessão mostra "Nenhum horário disponível nos próximos 14 dias" (verificar busca de horários disponíveis)
+
+## Bugs Agenda - Detalhes do Treino (v5.52)
+- [x] Bug: Detalhes do treino não aparecem em todos os agendamentos no modal de edição (alguns mostram treino e dia, outros ficam vazios)
+
+## Melhorias UX Modal de Sessão (v5.53)
+- [x] UX: Adicionar botão X para fechar o modal de detalhes da sessão (atualmente precisa clicar fora para fechar)
+- [x] Bug: Treino vinculado não aparece no modal de edição mesmo em agendamentos futuros que têm treino associado
+- [x] Melhoria: Seção de treino sempre visível com mensagem quando não há treinos cadastrados

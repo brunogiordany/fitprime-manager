@@ -1731,7 +1731,17 @@ export default function Schedule() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0">
             <DialogHeader className="sticky top-0 bg-background z-10 p-5 pb-4 border-b">
-              <DialogTitle className="text-lg font-semibold">Detalhes da Sessão</DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-lg font-semibold">Detalhes da Sessão</DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </DialogHeader>
             
             {editingSession && (
@@ -1988,8 +1998,7 @@ export default function Schedule() {
 
                 {/* Seleção de Treino */}
                 {editingSession && (() => {
-                  const editStudentWorkouts = editingStudentWorkouts;
-                  if (!editStudentWorkouts || editStudentWorkouts.length === 0) return null;
+                  const editStudentWorkouts = editingStudentWorkouts || [];
                   
                   return (
                     <div className="p-4 mx-4 mt-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg space-y-3">
@@ -2000,28 +2009,36 @@ export default function Schedule() {
                       <div className="space-y-3">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
-                          <Select
-                            value={editForm.workoutId}
-                            onValueChange={(value) => {
-                              setEditForm({ 
-                                ...editForm, 
-                                workoutId: value,
-                                workoutDayIndex: '' // Reset day when workout changes
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Escolha um treino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Sem treino vinculado</SelectItem>
-                              {editStudentWorkouts.map((workout) => (
-                                <SelectItem key={workout.id} value={workout.id.toString()}>
-                                  {workout.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {editStudentWorkouts.length > 0 ? (
+                            <Select
+                              value={editForm.workoutId}
+                              onValueChange={(value) => {
+                                setEditForm({ 
+                                  ...editForm, 
+                                  workoutId: value,
+                                  workoutDayIndex: '' // Reset day when workout changes
+                                });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Escolha um treino" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Sem treino vinculado</SelectItem>
+                                {editStudentWorkouts.map((workout) => (
+                                  <SelectItem key={workout.id} value={workout.id.toString()}>
+                                    {workout.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic py-2">
+                              Nenhum treino cadastrado para este aluno.
+                              <br />
+                              Crie um treino no perfil do aluno para vincular.
+                            </p>
+                          )}
                         </div>
                         {editForm.workoutId && editForm.workoutId !== 'none' && (() => {
                           const selectedWorkout = editStudentWorkouts.find(w => w.id.toString() === editForm.workoutId);

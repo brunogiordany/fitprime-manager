@@ -225,6 +225,9 @@ export default function StudentMeasurementForm({
           type="date"
           value={formData.measureDate}
           onChange={(e) => setFormData({ ...formData, measureDate: e.target.value })}
+          tabIndex={-1}
+          autoFocus={false}
+          onFocus={(e) => e.target.blur()}
         />
       </div>
 
@@ -550,7 +553,10 @@ export default function StudentMeasurementForm({
 
       {/* Dialog Adicionar */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent 
+          className="max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />
@@ -585,7 +591,10 @@ export default function StudentMeasurementForm({
 
       {/* Dialog Editar */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent 
+          className="max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-blue-500" />
@@ -595,7 +604,7 @@ export default function StudentMeasurementForm({
               Atualize suas medidas corporais
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <ScrollArea className="flex-1 max-h-[70vh] pr-4 overflow-y-auto">
             <MeasurementFormFields />
           </ScrollArea>
           <DialogFooter className="pt-4">
