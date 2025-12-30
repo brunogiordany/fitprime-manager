@@ -408,8 +408,8 @@ export default function StudentProfile() {
     },
   });
 
-  // @ts-ignore - aiAnalysis existe no router workoutLogs
-  const aiAnalysisMutation = trpc.workoutLogs.aiAnalysis.useMutation({
+  // Análise por IA do aluno
+  const aiAnalysisMutation = trpc.trainingDiary.aiAnalysis.useMutation({
     onSuccess: (data: any) => {
       setAIAnalysis(data);
       toast.success("Análise gerada com sucesso!");

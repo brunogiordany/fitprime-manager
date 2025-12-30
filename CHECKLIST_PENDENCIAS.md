@@ -4,7 +4,20 @@
 
 ---
 
-## 🔴 BUGS CRÍTICOS (Prioridade Alta)
+## 🔴 BUGS CRÍTICOS - NOVOS (Prioridade Máxima)
+
+- [x] A1. Bug: Erro ao clicar em "Análise IA" - "No procedure found on path workoutLogs.aiAnalysis" (CORRIGIDO - Mudado para trainingDiary.aiAnalysis)
+- [x] A2. Bug: Diário de Treino - Remover aba "Sessões" (duplicada com Registros), manter apenas "Registros" e "Dashboard" (CORRIGIDO)
+- [x] A3. Bug: UX Mensagens Internas - Tela quebrada, nada funciona, tudo encavalado (CORRIGIDO - Ajustado layout e overflow)
+- [x] A4. Bug: Calendário cinza abre automaticamente ao abrir qualquer coisa (CORRIGIDO - Adicionado onOpenAutoFocus nos modais)
+- [x] A5. Bug: UX Diário de Treino - Campo de descanso desalinhado, precisa ajustar (CORRIGIDO - Adicionado sm:flex-nowrap para evitar quebra)
+- [ ] A6. Melhoria: Evolução de Carga - Abrir todos exercícios em ordem alfabética com filtro 1 sem, permitir digitar para filtrar
+- [ ] A7. Melhoria: Dashboard de Evolução - Criar dash dedicada com gráficos (pizza, colunas, ondas) e botão para mudar tipos
+- [ ] A8. Melhoria: Evolução muito escondida - Criar opção no menu lateral ou incorporar em Relatórios
+
+---
+
+## 🔴 BUGS CRÍTICOS - ANTERIORES (Prioridade Alta)
 
 - [x] 1. Exportar PDF não funciona (VERIFICADO - Está funcionando)
 - [x] 2. Bug: Erro validação trainingLocation ao salvar anamnese (CORRIGIDO - Validação de enums melhorada)

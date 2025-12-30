@@ -381,10 +381,10 @@ export default function Messages() {
           </TabsList>
 
           {/* Chat FitPrime Tab */}
-          <TabsContent value="chat" className="mt-6">
-            <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+          <TabsContent value="chat" className="mt-4">
+            <div className="grid md:grid-cols-3 gap-4" style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}>
               {/* Lista de Conversas */}
-              <Card className="md:col-span-1 flex flex-col">
+              <Card className="md:col-span-1 flex flex-col h-full overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Conversas</CardTitle>
@@ -454,7 +454,7 @@ export default function Messages() {
               </Card>
 
               {/* Área de Chat */}
-              <Card className="md:col-span-2 flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
+              <Card className="md:col-span-2 flex flex-col h-full overflow-hidden">
                 {selectedStudent ? (
                   <>
                     <CardHeader className="pb-3 border-b flex-shrink-0">

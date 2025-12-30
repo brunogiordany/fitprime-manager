@@ -110,7 +110,7 @@ interface ExerciseData {
 export default function TrainingDiaryPage() {
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("sessoes");
+  const [activeTab, setActiveTab] = useState("registros");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
@@ -573,11 +573,7 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="sessoes" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Sessões
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="registros" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Registros
@@ -588,270 +584,6 @@ export default function TrainingDiaryPage() {
             </TabsTrigger>
           </TabsList>
           
-          {/* Tab: Sessões */}
-          <TabsContent value="sessoes" className="space-y-4">
-            {upcomingSessions && upcomingSessions.length > 0 ? (
-              <div className="space-y-6">
-                {/* Sessões de Hoje */}
-                {(() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  const todaySessions = upcomingSessions.filter((s: any) => {
-                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
-                    return sessionDate === todayStr;
-                  });
-                  
-                  if (todaySessions.length === 0) return null;
-                  
-                  return (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        Hoje ({new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })})
-                      </h3>
-                      <div className="grid gap-3">
-                        {todaySessions.map((session: any) => (
-                          <Card 
-                            key={session.id}
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              session.status === 'completed' ? 'border-green-500 bg-green-50/50' :
-                              session.status === 'cancelled' ? 'border-red-300 bg-red-50/50 opacity-60' :
-                              'hover:border-primary'
-                            }`}
-onClick={() => {
-                                              if (session.status !== 'cancelled') {
-                                                // Se a sessão já tem um registro de treino, abrir detalhes
-                                                if (session.status === 'completed' && session.workoutLogId) {
-                                                  openLogDetail(session.workoutLogId);
-                                                } else {
-                                                  // Senão, abrir modal para registrar treino
-                                                  setSelectedSession(session);
-                                                  setNewLog({
-                                                    studentId: session.studentId,
-                                                    workoutId: session.workoutId || 0,
-                                                    workoutDayId: 0,
-                                                    trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                                    dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                                    startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                                    notes: session.notes || '',
-                                                    feeling: '',
-                                                  });
-                                                  setShowSessionLogModal(true);
-                                                }
-                                              }
-                                            }}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                                    session.status === 'completed' ? 'bg-green-100' :
-                                    session.status === 'cancelled' ? 'bg-red-100' :
-                                    'bg-primary/10'
-                                  }`}>
-                                    {session.status === 'completed' ? (
-                                      <CheckCircle2 className="h-6 w-6 text-green-600" />
-                                    ) : session.status === 'cancelled' ? (
-                                      <AlertCircle className="h-6 w-6 text-red-500" />
-                                    ) : (
-                                      <Dumbbell className="h-6 w-6 text-primary" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                      {session.duration && ` • ${session.duration}min`}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {session.workoutId && (
-                                    <Badge variant="outline" className="flex items-center gap-1">
-                                      <Dumbbell className="h-3 w-3" />
-                                      Treino {session.workoutDayIndex !== null ? String.fromCharCode(65 + session.workoutDayIndex) : ''}
-                                    </Badge>
-                                  )}
-                                  <Badge variant={
-                                    session.status === 'completed' ? 'default' :
-                                    session.status === 'cancelled' ? 'destructive' :
-                                    session.status === 'confirmed' ? 'default' :
-                                    'secondary'
-                                  }>
-                                    {session.status === 'completed' ? 'Concluído' :
-                                     session.status === 'cancelled' ? 'Cancelado' :
-                                     session.status === 'confirmed' ? 'Confirmado' :
-                                     session.status === 'no_show' ? 'Faltou' :
-                                     'Agendado'}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                
-                {/* Próximas Sessões */}
-                {(() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  const futureSessions = upcomingSessions.filter((s: any) => {
-                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
-                    return sessionDate > todayStr && s.status !== 'cancelled';
-                  }).sort((a: any, b: any) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-                  
-                  if (futureSessions.length === 0) return null;
-                  
-                  return (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-blue-500" />
-                        Próximas Sessões
-                      </h3>
-                      <div className="grid gap-3">
-                        {futureSessions.slice(0, 10).map((session: any) => (
-                          <Card 
-                            key={session.id}
-                            className={`cursor-pointer transition-all hover:shadow-md ${session.status === 'completed' ? 'border-green-500 bg-green-50/50' : 'hover:border-primary'}`}
-                            onClick={() => {
-                              // Se a sessão já tem um registro de treino, abrir detalhes
-                              if (session.status === 'completed' && session.workoutLogId) {
-                                openLogDetail(session.workoutLogId);
-                              } else {
-                                // Senão, abrir modal para registrar treino
-                                setSelectedSession(session);
-                                setNewLog({
-                                  studentId: session.studentId,
-                                  workoutId: session.workoutId || 0,
-                                  workoutDayId: 0,
-                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                  notes: session.notes || '',
-                                  feeling: '',
-                                });
-                                setShowSessionLogModal(true);
-                              }
-                            }}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <Calendar className="h-6 w-6 text-blue-600" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      {new Date(session.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                                      {' às '}
-                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {session.workoutId && (
-                                    <Badge variant="outline" className="flex items-center gap-1">
-                                      <Dumbbell className="h-3 w-3" />
-                                      Treino {session.workoutDayIndex !== null ? String.fromCharCode(65 + session.workoutDayIndex) : ''}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                
-                {/* Sessões Passadas (sem registro) */}
-                {(() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  const pastSessions = upcomingSessions.filter((s: any) => {
-                    const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
-                    return sessionDate < todayStr && s.status !== 'cancelled' && s.status !== 'completed';
-                  }).sort((a: any, b: any) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
-                  
-                  if (pastSessions.length === 0) return null;
-                  
-                  return (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-600">
-                        <AlertCircle className="h-5 w-5" />
-                        Pendentes de Registro
-                      </h3>
-                      <div className="grid gap-3">
-                        {pastSessions.map((session: any) => (
-                          <Card 
-                            key={session.id}
-                            className={`cursor-pointer transition-all hover:shadow-md ${session.status === 'completed' && session.workoutLogId ? 'border-green-500 bg-green-50/50' : 'border-amber-300 bg-amber-50/50'}`}
-                            onClick={() => {
-                              // Se a sessão já tem um registro de treino, abrir detalhes
-                              if (session.status === 'completed' && session.workoutLogId) {
-                                openLogDetail(session.workoutLogId);
-                              } else {
-                                // Senão, abrir modal para registrar treino
-                                setSelectedSession(session);
-                                setNewLog({
-                                  studentId: session.studentId,
-                                  workoutId: session.workoutId || 0,
-                                  workoutDayId: 0,
-                                  trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
-                                  dayName: session.workoutDayIndex !== null ? `Treino ${String.fromCharCode(65 + session.workoutDayIndex)}` : '',
-                                  startTime: new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                                  notes: session.notes || '',
-                                  feeling: '',
-                                });
-                                setShowSessionLogModal(true);
-                              }
-                            }}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                                    <AlertCircle className="h-6 w-6 text-amber-600" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold">{session.student?.name || 'Aluno'}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      {new Date(session.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                                      {' às '}
-                                      {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-amber-600 border-amber-300">
-                                  Sem registro
-                                </Badge>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhuma sessão encontrada</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Não há sessões agendadas para os próximos dias.
-                  </p>
-                  <Button variant="outline" onClick={() => window.location.href = '/agenda'}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agendar Sessão
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
           
           {/* Tab: Registros */}
           <TabsContent value="registros" className="space-y-4">
@@ -1421,7 +1153,7 @@ onClick={() => {
         
         {/* Modal: Novo Registro */}
         <Dialog open={showNewLogModal} onOpenChange={setShowNewLogModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Dumbbell className="h-5 w-5" />
@@ -1621,7 +1353,7 @@ onClick={() => {
                               {exercise.sets.map((set, setIndex) => (
                                 <div key={setIndex} className="p-3">
                                   {/* Linha principal da série */}
-                                  <div className="flex items-center gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                                     <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
                                       {set.setNumber}
                                     </span>
@@ -1833,8 +1565,8 @@ onClick={() => {
             setSelectedLogId(null);
             setIsEditing(false);
           }
-        }}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+         }}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -1956,7 +1688,7 @@ onClick={() => {
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="p-3">
                                 {/* Linha principal da série */}
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                                   <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
                                     {set.setNumber}
                                   </span>
@@ -2234,7 +1966,7 @@ onClick={() => {
             resetNewLog();
           }
         }}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Dumbbell className="h-5 w-5" />
@@ -2364,7 +2096,7 @@ onClick={() => {
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="py-3">
                                 {/* Linha principal da série */}
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                                   <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${SET_TYPES.find(t => t.value === set.setType)?.color || 'bg-green-500'}`}>
                                     {set.setNumber}
                                   </span>
