@@ -19,16 +19,16 @@
 - [x] 6. Vincular treinos automaticamente nas sessões recorrentes (JÁ IMPLEMENTADO)
 - [x] 7. Implementar transcrição automática de áudio para texto no chat (CONCLUÍDO)
 - [x] 8. Adicionar funcionalidade de mensagem em massa (broadcast) (CONCLUÍDO)
-- [ ] 9. Notificação para personal quando aluno cria sugestão
+- [x] 9. Notificação para personal quando aluno cria sugestão (JÁ IMPLEMENTADO)
 
 ---
 
 ## 🟢 MELHORIAS DE UX (Prioridade Média-Baixa)
 
-- [ ] 10. Melhorar layout dos campos e seções da anamnese
-- [ ] 11. Adicionar botões Salvar/Cancelar no final do formulário de anamnese
-- [ ] 12. Drop Set com múltiplos drops - Botão "+ Adicionar Drop"
-- [ ] 13. Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa"
+- [x] 10. Melhorar layout dos campos e seções da anamnese (JÁ IMPLEMENTADO - seções com ícones, grid responsivo)
+- [x] 11. Adicionar botões Salvar/Cancelar no final do formulário de anamnese (JÁ IMPLEMENTADO)
+- [x] 12. Drop Set com múltiplos drops - Botão "+ Adicionar Drop" (CONCLUÍDO - Portal do Aluno)
+- [x] 13. Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa" (CONCLUÍDO - Portal do Aluno)
 - [ ] 14. Melhorar UX geral do popup de detalhes de registro
 - [ ] 15. Modal Agenda: Melhorar espaçamentos e hierarquia visual
 
