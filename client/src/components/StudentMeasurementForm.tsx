@@ -35,7 +35,9 @@ import {
   TrendingDown,
   Minus,
   Calendar,
+  Share2,
 } from "lucide-react";
+import ShareProgressCard from "@/components/ShareProgressCard";
 
 interface Measurement {
   id: number;
@@ -61,11 +63,13 @@ interface Measurement {
 interface StudentMeasurementFormProps {
   measurements: Measurement[];
   onUpdate: () => void;
+  studentName?: string;
 }
 
 export default function StudentMeasurementForm({
   measurements,
   onUpdate,
+  studentName = "Aluno",
 }: StudentMeasurementFormProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -418,9 +422,40 @@ export default function StudentMeasurementForm({
   );
 
   return (
-    <div className="space-y-4">
-      {/* Botão Adicionar */}
-      <div className="flex justify-end">
+    <div className="space-y-4">      {/* Botões de Ação */}
+      <div className="flex justify-between items-center">
+        {/* Botão Compartilhar - só mostra se tiver medidas */}
+        {sortedMeasurements.length >= 2 && (() => {
+          const latest = sortedMeasurements[0];
+          const oldest = sortedMeasurements[sortedMeasurements.length - 1];
+          const weightChange = latest.weight && oldest.weight 
+            ? parseFloat(latest.weight) - parseFloat(oldest.weight) 
+            : undefined;
+          const bodyFatChange = latest.bodyFat && oldest.bodyFat
+            ? parseFloat(latest.bodyFat) - parseFloat(oldest.bodyFat)
+            : undefined;
+          const waistChange = latest.waist && oldest.waist
+            ? parseFloat(latest.waist) - parseFloat(oldest.waist)
+            : undefined;
+          
+          return (
+            <ShareProgressCard
+              context="measurements"
+              studentName={studentName}
+              data={{
+                currentWeight: latest.weight ? parseFloat(latest.weight) : undefined,
+                initialWeight: oldest.weight ? parseFloat(oldest.weight) : undefined,
+                weightChange,
+                currentBodyFat: latest.bodyFat ? parseFloat(latest.bodyFat) : undefined,
+                initialBodyFat: oldest.bodyFat ? parseFloat(oldest.bodyFat) : undefined,
+                bodyFatChange,
+                waistChange,
+                period: `${sortedMeasurements.length} avaliações`,
+              }}
+            />
+          );
+        })()}
+        <div className="flex-1" />
         <Button onClick={() => setIsAddDialogOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
           <Plus className="h-4 w-4 mr-2" />
           Nova Medição

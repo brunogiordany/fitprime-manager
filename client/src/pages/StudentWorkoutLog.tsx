@@ -178,7 +178,7 @@ export default function StudentWorkoutLog() {
       await createLogMutation.mutateAsync({
         workoutId,
         workoutDayId: parseInt(selectedDayId),
-        sessionDate: new Date().toISOString(),
+        trainingDate: new Date().toISOString(),
         duration: parseInt(duration),
         notes: sessionNotes,
         exercises,

@@ -1,0 +1,9 @@
+{
+  "query": "DELETE m FROM measurements m LEFT JOIN (SELECT MIN(id) as min_id, studentId, DATE(measureDate) as measureDate FROM measurements GROUP BY studentId, DATE(measureDate)) keep ON m.id = keep.min_id WHERE keep.min_id IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute DELETE m FROM measurements m LEFT JOIN (SELECT MIN(id) as min_id, studentId, DATE(measureDate) as measureDate FROM measurements GROUP BY studentId, DATE(measureDate)) keep ON m.id = keep.min_id WHERE keep.min_id IS NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 71
+}

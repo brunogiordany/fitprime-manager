@@ -1898,35 +1898,33 @@ Retorne APENAS o JSON, sem texto adicional.`;
         workoutId: z.number(),
         workoutDayId: z.number(),
         studentId: z.number(),
-        sessionDate: z.string(),
+        trainingDate: z.string(),
         duration: z.number().optional(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { sessionDate, ...data } = input;
-        const sessionNumber = await db.getNextSessionNumber(input.workoutId, input.workoutDayId);
+        const { trainingDate, ...data } = input;
         const id = await db.createWorkoutLog({
           ...data,
           personalId: ctx.personal.id,
-          sessionDate: new Date(sessionDate),
-          sessionNumber,
+          trainingDate: new Date(trainingDate),
         });
-        return { id, sessionNumber };
+        return { id };
       }),
     
     update: personalProcedure
       .input(z.object({
         id: z.number(),
-        sessionDate: z.string().optional(),
+        trainingDate: z.string().optional(),
         duration: z.number().optional(),
         notes: z.string().optional(),
         completed: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, sessionDate, ...data } = input;
+        const { id, trainingDate, ...data } = input;
         await db.updateWorkoutLog(id, {
           ...data,
-          sessionDate: sessionDate ? new Date(sessionDate) : undefined,
+          trainingDate: trainingDate ? new Date(trainingDate) : undefined,
         });
         return { success: true };
       }),
@@ -3376,7 +3374,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
       .input(z.object({
         workoutId: z.number(),
         workoutDayId: z.number(),
-        sessionDate: z.string(),
+        trainingDate: z.string(),
         duration: z.number().optional(),
         notes: z.string().optional(),
         exercises: z.array(z.object({
@@ -3397,20 +3395,18 @@ Retorne APENAS o JSON, sem texto adicional.`;
         })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { sessionDate, exercises, ...data } = input;
+        const { trainingDate, exercises, ...data } = input;
         
         // Buscar o personal do aluno
         const student = ctx.student;
         
         // Criar o log de treino
-        const sessionNumber = await db.getNextSessionNumber(input.workoutId, input.workoutDayId);
         const logId = await db.createWorkoutLog({
           ...data,
           personalId: student.personalId,
           studentId: student.id,
-          sessionDate: new Date(sessionDate),
-          sessionNumber,
-          completed: true,
+          trainingDate: new Date(trainingDate),
+          status: 'completed',
         });
         
         // Criar logs de exercícios se fornecidos
@@ -3441,10 +3437,10 @@ Retorne APENAS o JSON, sem texto adicional.`;
         const workout = await db.getWorkoutById(input.workoutId);
         await notifyOwner({
           title: `🏋️ Treino Registrado - ${student.name}`,
-          content: `O aluno ${student.name} registrou um treino:\n\n📝 Treino: ${workout?.name || 'N/A'}\n📅 Data: ${new Date(sessionDate).toLocaleDateString('pt-BR')}\n⏱️ Duração: ${input.duration || 60} minutos\n\n${input.notes ? `Observações: ${input.notes}` : ''}`,
+          content: `O aluno ${student.name} registrou um treino:\n\n📝 Treino: ${workout?.name || 'N/A'}\n📅 Data: ${new Date(trainingDate).toLocaleDateString('pt-BR')}\n⏱️ Duração: ${input.duration || 60} minutos\n\n${input.notes ? `Observações: ${input.notes}` : ''}`,
         });
         
-        return { id: logId, sessionNumber };
+        return { id: logId };
       }),
     
     // Solicitar alteração de dados (cria pending change)
@@ -3628,6 +3624,21 @@ Retorne APENAS o JSON, sem texto adicional.`;
         }
         
         const { measureDate, ...measurements } = input;
+        
+        // Verificar se já existe uma medida na mesma data para evitar duplicação
+        const existingMeasurements = await db.getMeasurementsByStudentId(ctx.student.id);
+        const measureDateObj = new Date(measureDate + 'T12:00:00');
+        const existingOnSameDate = existingMeasurements.find(m => {
+          const existingDate = new Date(m.measureDate);
+          return existingDate.toDateString() === measureDateObj.toDateString();
+        });
+        
+        if (existingOnSameDate) {
+          throw new TRPCError({ 
+            code: 'CONFLICT', 
+            message: 'Já existe uma medida registrada nesta data. Edite a medida existente ou escolha outra data.' 
+          });
+        }
         
         // Calcular IMC se tiver peso e altura
         let bmi: string | undefined;
@@ -4124,6 +4135,372 @@ Retorne APENAS o JSON, sem texto adicional.`;
         }
         
         return { processed: false, reason: 'no_action_needed' };
+      }),
+  }),
+
+  // ==================== DIÁRIO DE TREINO DO MAROMBA ====================
+  trainingDiary: router({
+    // Listar registros de treino com filtro por aluno
+    list: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        limit: z.number().optional().default(50),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        const logs = await db.getWorkoutLogsByPersonalId(ctx.personal.id, input);
+        return logs;
+      }),
+    
+    // Obter um registro de treino com todos os detalhes
+    get: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        const log = await db.getWorkoutLogWithDetails(input.id);
+        return log;
+      }),
+    
+    // Criar novo registro de treino
+    create: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        sessionId: z.number().optional(),
+        workoutId: z.number().optional(),
+        workoutDayId: z.number().optional(),
+        trainingDate: z.string(),
+        dayName: z.string().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+        totalDuration: z.number().optional(),
+        notes: z.string().optional(),
+        feeling: z.enum(['great', 'good', 'normal', 'tired', 'exhausted']).optional(),
+        exercises: z.array(z.object({
+          exerciseId: z.number().optional(),
+          exerciseName: z.string(),
+          muscleGroup: z.string().optional(),
+          plannedSets: z.number().optional(),
+          plannedReps: z.string().optional(),
+          plannedRest: z.number().optional(),
+          notes: z.string().optional(),
+          sets: z.array(z.object({
+            setNumber: z.number(),
+            setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
+            weight: z.number().optional(),
+            reps: z.number().optional(),
+            restTime: z.number().optional(),
+            isDropSet: z.boolean().optional(),
+            dropWeight: z.number().optional(),
+            dropReps: z.number().optional(),
+            isRestPause: z.boolean().optional(),
+            restPauseWeight: z.number().optional(),
+            restPauseReps: z.number().optional(),
+            restPausePause: z.number().optional(),
+            rpe: z.number().optional(),
+            isCompleted: z.boolean().optional(),
+            notes: z.string().optional(),
+          })).optional(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        const { exercises, trainingDate, ...logData } = input;
+        
+        // Helper para converter number para string (decimal)
+        const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
+        
+        // Criar o log principal
+        const logId = await db.createWorkoutLog({
+          ...logData,
+          personalId: ctx.personal.id,
+          trainingDate: new Date(trainingDate),
+          status: 'in_progress',
+        });
+        
+        // Criar exercícios e séries
+        if (exercises && exercises.length > 0) {
+          for (let i = 0; i < exercises.length; i++) {
+            const ex = exercises[i];
+            const { sets, ...exData } = ex;
+            
+            const exerciseId = await db.createWorkoutLogExercise({
+              workoutLogId: logId,
+              orderIndex: i,
+              ...exData,
+            });
+            
+            // Criar séries do exercício
+            if (sets && sets.length > 0) {
+              for (const set of sets) {
+                await db.createWorkoutLogSet({
+                  workoutLogExerciseId: exerciseId,
+                  setNumber: set.setNumber,
+                  setType: set.setType,
+                  weight: toDecimal(set.weight),
+                  reps: set.reps,
+                  restTime: set.restTime,
+                  isDropSet: set.isDropSet,
+                  dropWeight: toDecimal(set.dropWeight),
+                  dropReps: set.dropReps,
+                  isRestPause: set.isRestPause,
+                  restPauseWeight: toDecimal(set.restPauseWeight),
+                  restPauseReps: set.restPauseReps,
+                  restPausePause: set.restPausePause,
+                  rpe: set.rpe,
+                  isCompleted: set.isCompleted,
+                  notes: set.notes,
+                });
+              }
+            }
+          }
+        }
+        
+        return { id: logId };
+      }),
+    
+    // Atualizar registro de treino
+    update: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        dayName: z.string().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+        totalDuration: z.number().optional(),
+        notes: z.string().optional(),
+        feeling: z.enum(['great', 'good', 'normal', 'tired', 'exhausted']).optional(),
+        status: z.enum(['in_progress', 'completed', 'cancelled']).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        await db.updateWorkoutLog(id, {
+          ...data,
+          completedAt: data.status === 'completed' ? new Date() : undefined,
+        });
+        return { success: true };
+      }),
+    
+    // Adicionar exercício ao registro
+    addExercise: personalProcedure
+      .input(z.object({
+        workoutLogId: z.number(),
+        exerciseId: z.number().optional(),
+        exerciseName: z.string(),
+        muscleGroup: z.string().optional(),
+        plannedSets: z.number().optional(),
+        plannedReps: z.string().optional(),
+        plannedRest: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        // Obter o próximo índice
+        const exercises = await db.getWorkoutLogExercises(input.workoutLogId);
+        const orderIndex = exercises.length;
+        
+        const id = await db.createWorkoutLogExercise({
+          ...input,
+          orderIndex,
+        });
+        return { id };
+      }),
+    
+    // Atualizar exercício
+    updateExercise: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        exerciseName: z.string().optional(),
+        muscleGroup: z.string().optional(),
+        plannedSets: z.number().optional(),
+        plannedReps: z.string().optional(),
+        plannedRest: z.number().optional(),
+        notes: z.string().optional(),
+        isCompleted: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        const db = await import('./db');
+        await db.updateWorkoutLogExercise(id, data);
+        return { success: true };
+      }),
+    
+    // Remover exercício
+    deleteExercise: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        await db.deleteWorkoutLogExercise(input.id);
+        return { success: true };
+      }),
+    
+    // Adicionar série ao exercício
+    addSet: personalProcedure
+      .input(z.object({
+        workoutLogExerciseId: z.number(),
+        setNumber: z.number(),
+        setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
+        weight: z.number().optional(),
+        reps: z.number().optional(),
+        restTime: z.number().optional(),
+        isDropSet: z.boolean().optional(),
+        dropWeight: z.number().optional(),
+        dropReps: z.number().optional(),
+        isRestPause: z.boolean().optional(),
+        restPauseWeight: z.number().optional(),
+        restPauseReps: z.number().optional(),
+        restPausePause: z.number().optional(),
+        rpe: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
+        const id = await db.createWorkoutLogSet({
+          workoutLogExerciseId: input.workoutLogExerciseId,
+          setNumber: input.setNumber,
+          setType: input.setType,
+          weight: toDecimal(input.weight),
+          reps: input.reps,
+          restTime: input.restTime,
+          isDropSet: input.isDropSet,
+          dropWeight: toDecimal(input.dropWeight),
+          dropReps: input.dropReps,
+          isRestPause: input.isRestPause,
+          restPauseWeight: toDecimal(input.restPauseWeight),
+          restPauseReps: input.restPauseReps,
+          restPausePause: input.restPausePause,
+          rpe: input.rpe,
+          notes: input.notes,
+        });
+        return { id };
+      }),
+    
+    // Atualizar série
+    updateSet: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        weight: z.number().optional(),
+        reps: z.number().optional(),
+        restTime: z.number().optional(),
+        isDropSet: z.boolean().optional(),
+        dropWeight: z.number().optional(),
+        dropReps: z.number().optional(),
+        isRestPause: z.boolean().optional(),
+        restPauseWeight: z.number().optional(),
+        restPauseReps: z.number().optional(),
+        restPausePause: z.number().optional(),
+        rpe: z.number().optional(),
+        isCompleted: z.boolean().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, weight, dropWeight, restPauseWeight, ...rest } = input;
+        const db = await import('./db');
+        const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
+        await db.updateWorkoutLogSet(id, {
+          ...rest,
+          weight: toDecimal(weight),
+          dropWeight: toDecimal(dropWeight),
+          restPauseWeight: toDecimal(restPauseWeight),
+        });
+        return { success: true };
+      }),
+    
+    // Remover série
+    deleteSet: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        await db.deleteWorkoutLogSet(input.id);
+        return { success: true };
+      }),
+    
+    // Finalizar treino (calcula estatísticas)
+    complete: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        feeling: z.enum(['great', 'good', 'normal', 'tired', 'exhausted']).optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        
+        // Calcular estatísticas
+        const stats = await db.calculateWorkoutLogStats(input.id);
+        
+        // Atualizar o log
+        await db.updateWorkoutLog(input.id, {
+          status: 'completed',
+          completedAt: new Date(),
+          feeling: input.feeling,
+          notes: input.notes,
+          totalSets: stats.totalSets,
+          totalReps: stats.totalReps,
+          totalVolume: stats.totalVolume.toString(),
+          totalExercises: stats.totalExercises,
+        });
+        
+        return { success: true, stats };
+      }),
+    
+    // Dashboard de evolução
+    dashboard: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getTrainingDashboard(ctx.personal.id, input);
+      }),
+    
+    // Histórico de evolução de um exercício
+    exerciseProgress: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        exerciseName: z.string(),
+        limit: z.number().optional().default(20),
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getExerciseProgressHistory(input.studentId, input.exerciseName, input.limit);
+      }),
+    
+    // Listar sugestões pendentes
+    suggestions: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+        status: z.enum(['pending', 'approved', 'rejected']).optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getWorkoutLogSuggestions(ctx.personal.id, input);
+      }),
+    
+    // Aprovar sugestão
+    approveSuggestion: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        await db.approveWorkoutLogSuggestion(input.id, input.reviewNotes);
+        return { success: true };
+      }),
+    
+    // Rejeitar sugestão
+    rejectSuggestion: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        reviewNotes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        await db.rejectWorkoutLogSuggestion(input.id, input.reviewNotes);
+        return { success: true };
       }),
   }),
 });

@@ -497,32 +497,13 @@ export type MessageLogEntry = typeof messageLog.$inferSelect;
 export type InsertMessageLog = typeof messageLog.$inferInsert;
 
 
-// ==================== WORKOUT LOGS (Diário de Treino) ====================
-export const workoutLogs = mysqlTable("workout_logs", {
-  id: int("id").autoincrement().primaryKey(),
-  workoutId: int("workoutId").notNull().references(() => workouts.id),
-  workoutDayId: int("workoutDayId").notNull().references(() => workoutDays.id),
-  studentId: int("studentId").notNull().references(() => students.id),
-  personalId: int("personalId").notNull().references(() => personals.id),
-  sessionDate: timestamp("sessionDate").notNull(),
-  sessionNumber: int("sessionNumber").default(1), // Sessão 1, 2, 3...
-  duration: int("duration"), // Duração em minutos
-  notes: text("notes"),
-  completed: boolean("completed").default(false),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type WorkoutLog = typeof workoutLogs.$inferSelect;
-export type InsertWorkoutLog = typeof workoutLogs.$inferInsert;
-
-// ==================== EXERCISE LOGS (Registro de Exercícios por Sessão) ====================
+// ==================== EXERCISE LOGS (Registro de Exercícios - LEGACY) ====================
+// Tabela legada - mantida para compatibilidade. Use workoutLogExercises e workoutLogSets para novos registros.
 export const exerciseLogs = mysqlTable("exercise_logs", {
   id: int("id").autoincrement().primaryKey(),
-  workoutLogId: int("workoutLogId").notNull().references(() => workoutLogs.id),
+  workoutLogId: int("workoutLogId").notNull(),
   exerciseId: int("exerciseId").notNull().references(() => exercises.id),
-  exerciseName: varchar("exerciseName", { length: 255 }).notNull(), // Snapshot do nome
-  // Séries realizadas (cada série com peso/reps)
+  exerciseName: varchar("exerciseName", { length: 255 }).notNull(),
   set1Weight: varchar("set1Weight", { length: 20 }),
   set1Reps: int("set1Reps"),
   set2Weight: varchar("set2Weight", { length: 20 }),
@@ -533,7 +514,6 @@ export const exerciseLogs = mysqlTable("exercise_logs", {
   set4Reps: int("set4Reps"),
   set5Weight: varchar("set5Weight", { length: 20 }),
   set5Reps: int("set5Reps"),
-  // Campos adicionais
   notes: text("notes"),
   completed: boolean("completed").default(false),
   order: int("order").default(0),
@@ -674,3 +654,143 @@ export const sessionFeedback = mysqlTable("session_feedback", {
 
 export type SessionFeedback = typeof sessionFeedback.$inferSelect;
 export type InsertSessionFeedback = typeof sessionFeedback.$inferInsert;
+
+
+// ==================== WORKOUT LOGS (Diário de Treino do Maromba) ====================
+export const workoutLogs = mysqlTable("workout_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").references(() => sessions.id), // Sessão vinculada (opcional)
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  workoutId: int("workoutId").references(() => workouts.id), // Treino vinculado (opcional)
+  workoutDayId: int("workoutDayId").references(() => workoutDays.id), // Dia do treino (A, B, C...)
+  
+  // Informações do treino
+  trainingDate: date("trainingDate").notNull(), // Data do treino
+  dayName: varchar("dayName", { length: 100 }), // Nome do dia (ex: "Treino A - Peito e Tríceps")
+  startTime: varchar("startTime", { length: 5 }), // Horário início (HH:MM)
+  endTime: varchar("endTime", { length: 5 }), // Horário fim (HH:MM)
+  totalDuration: int("totalDuration"), // Duração total em minutos
+  
+  // Estatísticas calculadas
+  totalSets: int("totalSets").default(0), // Total de séries
+  totalReps: int("totalReps").default(0), // Total de repetições
+  totalVolume: decimal("totalVolume", { precision: 10, scale: 2 }).default("0"), // Volume total (carga × reps)
+  totalExercises: int("totalExercises").default(0), // Total de exercícios
+  
+  // Observações gerais
+  notes: text("notes"),
+  feeling: mysqlEnum("feeling", ["great", "good", "normal", "tired", "exhausted"]), // Como se sentiu
+  
+  // Status
+  status: mysqlEnum("status", ["in_progress", "completed", "cancelled"]).default("in_progress"),
+  completedAt: timestamp("completedAt"),
+  
+  // Aprovação de alterações
+  hasPendingSuggestions: boolean("hasPendingSuggestions").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WorkoutLog = typeof workoutLogs.$inferSelect;
+export type InsertWorkoutLog = typeof workoutLogs.$inferInsert;
+
+// ==================== WORKOUT LOG EXERCISES (Exercícios do Registro) ====================
+export const workoutLogExercises = mysqlTable("workout_log_exercises", {
+  id: int("id").autoincrement().primaryKey(),
+  workoutLogId: int("workoutLogId").notNull().references(() => workoutLogs.id),
+  exerciseId: int("exerciseId").references(() => exercises.id), // Exercício vinculado (opcional)
+  
+  // Informações do exercício
+  orderIndex: int("orderIndex").notNull(), // Ordem no treino
+  exerciseName: varchar("exerciseName", { length: 255 }).notNull(), // Nome do exercício
+  muscleGroup: varchar("muscleGroup", { length: 100 }), // Grupo muscular
+  
+  // Configuração planejada
+  plannedSets: int("plannedSets"), // Séries planejadas
+  plannedReps: varchar("plannedReps", { length: 20 }), // Reps planejadas (ex: "8-12")
+  plannedRest: int("plannedRest"), // Descanso planejado em segundos
+  
+  // Estatísticas calculadas
+  completedSets: int("completedSets").default(0), // Séries completadas
+  totalReps: int("totalReps").default(0), // Total de reps realizadas
+  totalVolume: decimal("totalVolume", { precision: 10, scale: 2 }).default("0"), // Volume do exercício
+  maxWeight: decimal("maxWeight", { precision: 6, scale: 2 }), // Maior carga usada
+  
+  // Observações
+  notes: text("notes"),
+  isCompleted: boolean("isCompleted").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WorkoutLogExercise = typeof workoutLogExercises.$inferSelect;
+export type InsertWorkoutLogExercise = typeof workoutLogExercises.$inferInsert;
+
+// ==================== WORKOUT LOG SETS (Séries do Exercício) ====================
+export const workoutLogSets = mysqlTable("workout_log_sets", {
+  id: int("id").autoincrement().primaryKey(),
+  workoutLogExerciseId: int("workoutLogExerciseId").notNull().references(() => workoutLogExercises.id),
+  
+  // Informações da série
+  setNumber: int("setNumber").notNull(), // Número da série (1-6)
+  setType: mysqlEnum("setType", ["warmup", "feeler", "working", "drop", "rest_pause", "failure"]).default("working"),
+  // warmup = aquecimento, feeler = reconhecimento de carga, working = série válida, drop = drop set, rest_pause = rest-pause, failure = falha
+  
+  // Dados da série
+  weight: decimal("weight", { precision: 6, scale: 2 }), // Carga em kg
+  reps: int("reps"), // Repetições realizadas
+  restTime: int("restTime"), // Tempo de descanso em segundos
+  
+  // Técnicas avançadas
+  isDropSet: boolean("isDropSet").default(false),
+  dropWeight: decimal("dropWeight", { precision: 6, scale: 2 }), // Carga do drop
+  dropReps: int("dropReps"), // Reps do drop
+  
+  isRestPause: boolean("isRestPause").default(false),
+  restPauseWeight: decimal("restPauseWeight", { precision: 6, scale: 2 }), // Carga do rest-pause
+  restPauseReps: int("restPauseReps"), // Reps do rest-pause
+  restPausePause: int("restPausePause"), // Pausa do rest-pause em segundos
+  
+  // RPE (Rate of Perceived Exertion) - Escala de esforço 1-10
+  rpe: int("rpe"),
+  
+  // Status
+  isCompleted: boolean("isCompleted").default(false),
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WorkoutLogSet = typeof workoutLogSets.$inferSelect;
+export type InsertWorkoutLogSet = typeof workoutLogSets.$inferInsert;
+
+// ==================== WORKOUT LOG SUGGESTIONS (Sugestões de Ajuste do Aluno) ====================
+export const workoutLogSuggestions = mysqlTable("workout_log_suggestions", {
+  id: int("id").autoincrement().primaryKey(),
+  workoutLogId: int("workoutLogId").notNull().references(() => workoutLogs.id),
+  workoutLogExerciseId: int("workoutLogExerciseId").references(() => workoutLogExercises.id), // Exercício específico (opcional)
+  workoutLogSetId: int("workoutLogSetId").references(() => workoutLogSets.id), // Série específica (opcional)
+  
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Tipo de sugestão
+  suggestionType: mysqlEnum("suggestionType", ["weight_change", "reps_change", "exercise_change", "add_set", "remove_set", "note", "other"]).notNull(),
+  
+  // Valores originais e sugeridos
+  originalValue: text("originalValue"), // JSON com valores originais
+  suggestedValue: text("suggestedValue"), // JSON com valores sugeridos
+  reason: text("reason"), // Motivo da sugestão
+  
+  // Status da aprovação
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending"),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewNotes: text("reviewNotes"), // Comentário do personal ao aprovar/rejeitar
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WorkoutLogSuggestion = typeof workoutLogSuggestions.$inferSelect;
+export type InsertWorkoutLogSuggestion = typeof workoutLogSuggestions.$inferInsert;

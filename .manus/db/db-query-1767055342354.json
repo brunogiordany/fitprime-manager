@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, studentId, DATE(measureDate) as measureDate, weight, bodyFat, waist FROM measurements WHERE studentId = 2 ORDER BY measureDate DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, DATE(measureDate) as measureDate, weight, bodyFat, waist FROM measurements WHERE studentId = 2 ORDER BY measureDate DESC;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 51
+}

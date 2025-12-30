@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, studentId, measureDate, weight, bodyFat, waist, createdAt FROM measurements ORDER BY studentId, measureDate DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, measureDate, weight, bodyFat, waist, createdAt FROM measurements ORDER BY studentId, measureDate DESC;",
+  "rows": [
+    {
+      "id": "30001",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 00:26:21"
+    },
+    {
+      "id": "30002",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 03:06:09"
+    },
+    {
+      "id": "60001",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 04:33:38"
+    },
+    {
+      "id": "60002",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:26:26"
+    },
+    {
+      "id": "60003",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:27:03"
+    },
+    {
+      "id": "60004",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:56:59"
+    },
+    {
+      "id": "60005",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:58:12"
+    },
+    {
+      "id": "60006",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:58:48"
+    },
+    {
+      "id": "60007",
+      "studentId": "1",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-29 05:59:44"
+    },
+    {
+      "id": "1",
+      "studentId": "1",
+      "measureDate": "2025-12-24",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50",
+      "createdAt": "2025-12-24 18:02:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tmeasureDate\tweight\tbodyFat\twaist\tcreatedAt\n30001\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 00:26:21\n30002\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 03:06:09\n60001\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 04:33:38\n60002\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:26:26\n60003\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:27:03\n60004\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:56:59\n60005\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:58:12\n60006\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:58:48\n60007\t1\t2025-12-29\t88.50\t15.50\t93.50\t2025-12-29 05:59:44\n1\t1\t2025-12-24\t88.50\t15.50\t93.50\t2025-12-24 18:02:45\n",
+  "stderr": "",
+  "execution_time_ms": 71
+}

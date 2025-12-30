@@ -1,0 +1,18 @@
+{
+  "query": "SELECT DATE(measureDate) as data, COUNT(*) as quantidade FROM measurements WHERE studentId = 1 GROUP BY DATE(measureDate) ORDER BY data DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT DATE(measureDate) as data, COUNT(*) as quantidade FROM measurements WHERE studentId = 1 GROUP BY DATE(measureDate) ORDER BY data DESC;",
+  "rows": [
+    {
+      "data": "2025-12-29",
+      "quantidade": "9"
+    },
+    {
+      "data": "2025-12-24",
+      "quantidade": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "data\tquantidade\n2025-12-29\t9\n2025-12-24\t1\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

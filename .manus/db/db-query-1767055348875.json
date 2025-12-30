@@ -1,0 +1,100 @@
+{
+  "query": "SELECT m.id, m.studentId, s.name as studentName, DATE(m.measureDate) as measureDate, m.weight, m.bodyFat, m.waist FROM measurements m JOIN students s ON m.studentId = s.id ORDER BY m.studentId, m.measureDate DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT m.id, m.studentId, s.name as studentName, DATE(m.measureDate) as measureDate, m.weight, m.bodyFat, m.waist FROM measurements m JOIN students s ON m.studentId = s.id ORDER BY m.studentId, m.measureDate DESC;",
+  "rows": [
+    {
+      "id": "30001",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "30002",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60001",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60002",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60003",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60004",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60005",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60006",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "60007",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-29",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    },
+    {
+      "id": "1",
+      "studentId": "1",
+      "studentName": "Bruno",
+      "measureDate": "2025-12-24",
+      "weight": "88.50",
+      "bodyFat": "15.50",
+      "waist": "93.50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tstudentName\tmeasureDate\tweight\tbodyFat\twaist\n30001\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n30002\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60001\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60002\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60003\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60004\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60005\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60006\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n60007\t1\tBruno\t2025-12-29\t88.50\t15.50\t93.50\n1\t1\tBruno\t2025-12-24\t88.50\t15.50\t93.50\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

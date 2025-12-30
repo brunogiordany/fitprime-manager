@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS workout_log_exercises (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  workoutLogId INT NOT NULL,\n  exerciseId INT,\n  orderIndex INT NOT NULL,\n  exerciseName VARCHAR(255) NOT NULL,\n  muscleGroup VARCHAR(100),\n  plannedSets INT,\n  plannedReps VARCHAR(20),\n  plannedRest INT,\n  completedSets INT DEFAULT 0,\n  totalReps INT DEFAULT 0,\n  totalVolume DECIMAL(10,2) DEFAULT 0,\n  maxWeight DECIMAL(6,2),\n  notes TEXT,\n  isCompleted BOOLEAN DEFAULT FALSE,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (workoutLogId) REFERENCES workout_logs(id),\n  FOREIGN KEY (exerciseId) REFERENCES exercises(id)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS workout_log_exercises (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  workoutLogId INT NOT NULL,\n  exerciseId INT,\n  orderIndex INT NOT NULL,\n  exerciseName VARCHAR(255) NOT NULL,\n  muscleGroup VARCHAR(100),\n  plannedSets INT,\n  plannedReps VARCHAR(20),\n  plannedRest INT,\n  completedSets INT DEFAULT 0,\n  totalReps INT DEFAULT 0,\n  totalVolume DECIMAL(10,2) DEFAULT 0,\n  maxWeight DECIMAL(6,2),\n  notes TEXT,\n  isCompleted BOOLEAN DEFAULT FALSE,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (workoutLogId) REFERENCES workout_logs(id),\n  FOREIGN KEY (exerciseId) REFERENCES exercises(id)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 341
+}

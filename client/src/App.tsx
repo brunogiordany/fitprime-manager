@@ -33,6 +33,7 @@ import StudentPortalPage from "./pages/StudentPortalPage";
 import PortalPreview from "./pages/PortalPreview";
 import Sessions from "./pages/Sessions";
 import StudentAccess from "./pages/StudentAccess";
+import TrainingDiaryPage from "./pages/TrainingDiaryPage";
 
 function Router() {
   return (
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/alteracoes-pendentes" component={PendingChanges} />
       <Route path="/portal-preview" component={PortalPreview} />
       <Route path="/acessos-aluno" component={StudentAccess} />
+      <Route path="/diario-treino" component={TrainingDiaryPage} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

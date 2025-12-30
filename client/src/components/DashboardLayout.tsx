@@ -39,12 +39,15 @@ import {
   BarChart3,
   AlertTriangle,
   Eye,
-  Shield
+  Shield,
+  BookOpen
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { trpc } from "@/lib/trpc";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -52,6 +55,7 @@ const menuItems = [
   { icon: Calendar, label: "Agenda", path: "/agenda" },
   { icon: CalendarCheck, label: "Sessões", path: "/sessoes" },
   { icon: Dumbbell, label: "Treinos", path: "/treinos" },
+  { icon: BookOpen, label: "Diário de Treino", path: "/diario-treino" },
   { icon: CreditCard, label: "Cobranças", path: "/cobrancas" },
   { icon: FileText, label: "Planos", path: "/planos" },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
@@ -146,6 +150,12 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  
+  // Query para mensagens não lidas do chat
+  const { data: totalUnread } = trpc.chat.totalUnread.useQuery(
+    undefined,
+    { refetchInterval: 30000 } // Atualizar a cada 30 segundos
+  );
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -239,7 +249,14 @@ function DashboardLayoutContent({
                       <item.icon
                         className={`h-5 w-5 ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}
                       />
-                      <span>{item.label}</span>
+                      <span className="flex items-center gap-2">
+                        {item.label}
+                        {item.path === "/mensagens" && totalUnread && totalUnread > 0 && (
+                          <Badge className="bg-red-500 text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
+                            {totalUnread > 99 ? "99+" : totalUnread}
+                          </Badge>
+                        )}
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

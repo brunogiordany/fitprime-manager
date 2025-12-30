@@ -1,0 +1,34 @@
+{
+  "query": "SELECT m.id FROM measurements m LEFT JOIN (SELECT MIN(id) as min_id, studentId, DATE(measureDate) as measureDate FROM measurements GROUP BY studentId, DATE(measureDate)) keep ON m.id = keep.min_id WHERE keep.min_id IS NULL AND m.studentId = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT m.id FROM measurements m LEFT JOIN (SELECT MIN(id) as min_id, studentId, DATE(measureDate) as measureDate FROM measurements GROUP BY studentId, DATE(measureDate)) keep ON m.id = keep.min_id WHERE keep.min_id IS NULL AND m.studentId = 1;",
+  "rows": [
+    {
+      "id": "30002"
+    },
+    {
+      "id": "60001"
+    },
+    {
+      "id": "60002"
+    },
+    {
+      "id": "60003"
+    },
+    {
+      "id": "60004"
+    },
+    {
+      "id": "60005"
+    },
+    {
+      "id": "60006"
+    },
+    {
+      "id": "60007"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n30002\n60001\n60002\n60003\n60004\n60005\n60006\n60007\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

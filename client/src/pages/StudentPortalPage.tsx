@@ -18,7 +18,7 @@ import StudentChat from "@/components/StudentChat";
 import StudentBadges from "@/components/StudentBadges";
 import StudentFeedback from "@/components/StudentFeedback";
 import StudentTrainingTips from "@/components/StudentTrainingTips";
-import StudentProgressShare from "@/components/StudentProgressShare";
+// StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
   Dumbbell, 
@@ -453,20 +453,7 @@ export default function StudentPortalPage() {
               nextSession={upcomingSessions[0]} 
               studentGoal={studentData?.goal || undefined}
             />
-            
-            {/* Compartilhar Progresso */}
-            {studentData && (
-              <StudentProgressShare
-                studentName={studentData.name}
-                progressData={{
-                  totalSessions: upcomingSessions.length + (sessions?.filter((s: any) => s.status === 'completed').length || 0),
-                  completedSessions: sessions?.filter((s: any) => s.status === 'completed').length || 0,
-                  currentStreak: 0, // Calculado baseado em sessões consecutivas
-                  totalBadges: 0, // Seria buscado via query
-                  memberSince: new Date(studentData.createdAt),
-                }}
-              />
-            )}
+
             
             <div className="grid md:grid-cols-2 gap-6">
               {/* Próximas Sessões */}

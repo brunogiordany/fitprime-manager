@@ -28,6 +28,9 @@ import {
   chatMessages, InsertChatMessage, ChatMessage,
   studentBadges, InsertStudentBadge, StudentBadge,
   sessionFeedback, InsertSessionFeedback, SessionFeedback,
+  workoutLogExercises, InsertWorkoutLogExercise, WorkoutLogExercise,
+  workoutLogSets, InsertWorkoutLogSet, WorkoutLogSet,
+  workoutLogSuggestions, InsertWorkoutLogSuggestion, WorkoutLogSuggestion,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -1077,7 +1080,7 @@ export async function getWorkoutLogsByWorkoutId(workoutId: number) {
   if (!db) return [];
   return await db.select().from(workoutLogs)
     .where(eq(workoutLogs.workoutId, workoutId))
-    .orderBy(desc(workoutLogs.sessionDate));
+    .orderBy(desc(workoutLogs.trainingDate));
 }
 
 export async function getWorkoutLogById(id: number) {
@@ -1094,7 +1097,7 @@ export async function getWorkoutLogsByStudentId(studentId: number) {
   if (!db) return [];
   return await db.select().from(workoutLogs)
     .where(eq(workoutLogs.studentId, studentId))
-    .orderBy(desc(workoutLogs.sessionDate));
+    .orderBy(desc(workoutLogs.trainingDate));
 }
 
 export async function createWorkoutLog(data: InsertWorkoutLog) {
@@ -1190,7 +1193,7 @@ export async function getExerciseHistory(exerciseId: number, limit: number = 10)
   }).from(exerciseLogs)
     .innerJoin(workoutLogs, eq(exerciseLogs.workoutLogId, workoutLogs.id))
     .where(eq(exerciseLogs.exerciseId, exerciseId))
-    .orderBy(desc(workoutLogs.sessionDate))
+    .orderBy(desc(workoutLogs.trainingDate))
     .limit(limit);
 }
 
@@ -2188,4 +2191,482 @@ export async function getSessionsNeedingFeedback(studentId: number) {
   }
   
   return sessionsWithoutFeedback;
+}
+
+
+// ==================== DIÁRIO DE TREINO DO MAROMBA ====================
+
+// Listar registros de treino com filtros
+export async function getWorkoutLogsByPersonalId(
+  personalId: number, 
+  filters?: { studentId?: number; startDate?: string; endDate?: string; limit?: number }
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(workoutLogs.personalId, personalId)];
+  
+  if (filters?.studentId) {
+    conditions.push(eq(workoutLogs.studentId, filters.studentId));
+  }
+  if (filters?.startDate) {
+    conditions.push(gte(workoutLogs.trainingDate, new Date(filters.startDate)));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(workoutLogs.trainingDate, new Date(filters.endDate)));
+  }
+  
+  const logs = await db.select().from(workoutLogs)
+    .where(and(...conditions))
+    .orderBy(desc(workoutLogs.trainingDate))
+    .limit(filters?.limit || 50);
+  
+  // Buscar dados do aluno para cada log
+  const logsWithStudent = await Promise.all(logs.map(async (log) => {
+    const student = await db.select().from(students)
+      .where(eq(students.id, log.studentId))
+      .limit(1);
+    return {
+      ...log,
+      student: student[0] || null,
+    };
+  }));
+  
+  return logsWithStudent;
+}
+
+// Obter registro de treino com todos os detalhes (exercícios e séries)
+export async function getWorkoutLogWithDetails(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Buscar log principal
+  const logResult = await db.select().from(workoutLogs)
+    .where(eq(workoutLogs.id, id))
+    .limit(1);
+  
+  if (!logResult[0]) return null;
+  const log = logResult[0];
+  
+  // Buscar aluno
+  const studentResult = await db.select().from(students)
+    .where(eq(students.id, log.studentId))
+    .limit(1);
+  
+  // Buscar exercícios
+  const exercisesResult = await db.select().from(workoutLogExercises)
+    .where(eq(workoutLogExercises.workoutLogId, id))
+    .orderBy(asc(workoutLogExercises.orderIndex));
+  
+  // Buscar séries de cada exercício
+  const exercisesWithSets = await Promise.all(exercisesResult.map(async (ex) => {
+    const sets = await db.select().from(workoutLogSets)
+      .where(eq(workoutLogSets.workoutLogExerciseId, ex.id))
+      .orderBy(asc(workoutLogSets.setNumber));
+    return {
+      ...ex,
+      sets,
+    };
+  }));
+  
+  return {
+    ...log,
+    student: studentResult[0] || null,
+    exercises: exercisesWithSets,
+  };
+}
+
+// Obter exercícios de um log
+export async function getWorkoutLogExercises(workoutLogId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(workoutLogExercises)
+    .where(eq(workoutLogExercises.workoutLogId, workoutLogId))
+    .orderBy(asc(workoutLogExercises.orderIndex));
+}
+
+// Criar exercício do log
+export async function createWorkoutLogExercise(data: InsertWorkoutLogExercise) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(workoutLogExercises).values(data);
+  return result[0].insertId;
+}
+
+// Atualizar exercício do log
+export async function updateWorkoutLogExercise(id: number, data: Partial<InsertWorkoutLogExercise>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(workoutLogExercises).set(data).where(eq(workoutLogExercises.id, id));
+}
+
+// Excluir exercício do log
+export async function deleteWorkoutLogExercise(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Excluir séries primeiro
+  await db.delete(workoutLogSets).where(eq(workoutLogSets.workoutLogExerciseId, id));
+  // Excluir exercício
+  await db.delete(workoutLogExercises).where(eq(workoutLogExercises.id, id));
+}
+
+// Criar série do exercício
+export async function createWorkoutLogSet(data: InsertWorkoutLogSet) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(workoutLogSets).values(data);
+  return result[0].insertId;
+}
+
+// Atualizar série
+export async function updateWorkoutLogSet(id: number, data: Partial<InsertWorkoutLogSet>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(workoutLogSets).set(data).where(eq(workoutLogSets.id, id));
+}
+
+// Excluir série
+export async function deleteWorkoutLogSet(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(workoutLogSets).where(eq(workoutLogSets.id, id));
+}
+
+// Calcular estatísticas do treino
+export async function calculateWorkoutLogStats(workoutLogId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar todos os exercícios e séries
+  const exercises = await getWorkoutLogExercises(workoutLogId);
+  
+  let totalSets = 0;
+  let totalReps = 0;
+  let totalVolume = 0;
+  let totalExercises = exercises.length;
+  
+  for (const ex of exercises) {
+    const sets = await db.select().from(workoutLogSets)
+      .where(and(
+        eq(workoutLogSets.workoutLogExerciseId, ex.id),
+        eq(workoutLogSets.isCompleted, true)
+      ));
+    
+    for (const set of sets) {
+      totalSets++;
+      totalReps += set.reps || 0;
+      const weight = parseFloat(set.weight?.toString() || '0');
+      totalVolume += weight * (set.reps || 0);
+      
+      // Adicionar drop set se houver
+      if (set.isDropSet && set.dropWeight && set.dropReps) {
+        totalReps += set.dropReps;
+        totalVolume += parseFloat(set.dropWeight.toString()) * set.dropReps;
+      }
+      
+      // Adicionar rest-pause se houver
+      if (set.isRestPause && set.restPauseWeight && set.restPauseReps) {
+        totalReps += set.restPauseReps;
+        totalVolume += parseFloat(set.restPauseWeight.toString()) * set.restPauseReps;
+      }
+    }
+    
+    // Atualizar estatísticas do exercício
+    const exSets = sets.length;
+    const exReps = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+    const exVolume = sets.reduce((sum, s) => {
+      const w = parseFloat(s.weight?.toString() || '0');
+      return sum + w * (s.reps || 0);
+    }, 0);
+    const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight?.toString() || '0')));
+    
+    await updateWorkoutLogExercise(ex.id, {
+      completedSets: exSets,
+      totalReps: exReps,
+      totalVolume: exVolume.toFixed(2),
+      maxWeight: maxWeight > 0 ? maxWeight.toFixed(2) : null,
+      isCompleted: exSets > 0,
+    });
+  }
+  
+  return { totalSets, totalReps, totalVolume, totalExercises };
+}
+
+// Dashboard de evolução
+export async function getTrainingDashboard(
+  personalId: number,
+  filters?: { studentId?: number; startDate?: string; endDate?: string }
+) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const conditions = [
+    eq(workoutLogs.personalId, personalId),
+    eq(workoutLogs.status, 'completed'),
+  ];
+  
+  if (filters?.studentId) {
+    conditions.push(eq(workoutLogs.studentId, filters.studentId));
+  }
+  if (filters?.startDate) {
+    conditions.push(gte(workoutLogs.trainingDate, new Date(filters.startDate)));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(workoutLogs.trainingDate, new Date(filters.endDate)));
+  }
+  
+  // Buscar logs completados
+  const logs = await db.select().from(workoutLogs)
+    .where(and(...conditions))
+    .orderBy(desc(workoutLogs.trainingDate));
+  
+  // Calcular totais
+  const totalWorkouts = logs.length;
+  const totalSets = logs.reduce((sum, l) => sum + (l.totalSets || 0), 0);
+  const totalReps = logs.reduce((sum, l) => sum + (l.totalReps || 0), 0);
+  const totalVolume = logs.reduce((sum, l) => sum + parseFloat(l.totalVolume?.toString() || '0'), 0);
+  const totalExercises = logs.reduce((sum, l) => sum + (l.totalExercises || 0), 0);
+  
+  // Média de duração
+  const avgDuration = logs.length > 0 
+    ? logs.reduce((sum, l) => sum + (l.totalDuration || 0), 0) / logs.length 
+    : 0;
+  
+  // Distribuição de sentimento
+  const feelingDistribution = {
+    great: logs.filter(l => l.feeling === 'great').length,
+    good: logs.filter(l => l.feeling === 'good').length,
+    normal: logs.filter(l => l.feeling === 'normal').length,
+    tired: logs.filter(l => l.feeling === 'tired').length,
+    exhausted: logs.filter(l => l.feeling === 'exhausted').length,
+  };
+  
+  // Treinos por mês (últimos 6 meses)
+  const workoutsByMonth: { month: string; count: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    const monthLogs = logs.filter(l => {
+      const d = new Date(l.trainingDate);
+      return d >= monthStart && d <= monthEnd;
+    });
+    workoutsByMonth.push({
+      month: monthStart.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+      count: monthLogs.length,
+    });
+  }
+  
+  // Volume por mês (últimos 6 meses)
+  const volumeByMonth: { month: string; volume: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    const monthLogs = logs.filter(l => {
+      const d = new Date(l.trainingDate);
+      return d >= monthStart && d <= monthEnd;
+    });
+    const monthVolume = monthLogs.reduce((sum, l) => sum + parseFloat(l.totalVolume?.toString() || '0'), 0);
+    volumeByMonth.push({
+      month: monthStart.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+      volume: Math.round(monthVolume),
+    });
+  }
+  
+  return {
+    totalWorkouts,
+    totalSets,
+    totalReps,
+    totalVolume: Math.round(totalVolume),
+    totalExercises,
+    avgDuration: Math.round(avgDuration),
+    feelingDistribution,
+    workoutsByMonth,
+    volumeByMonth,
+    recentLogs: logs.slice(0, 10),
+  };
+}
+
+// Histórico de evolução de um exercício específico
+export async function getExerciseProgressHistory(
+  studentId: number,
+  exerciseName: string,
+  limit: number = 20
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar exercícios do aluno com esse nome
+  const exerciseHistory = await db.select({
+    exercise: workoutLogExercises,
+    log: workoutLogs,
+  }).from(workoutLogExercises)
+    .innerJoin(workoutLogs, eq(workoutLogExercises.workoutLogId, workoutLogs.id))
+    .where(and(
+      eq(workoutLogs.studentId, studentId),
+      like(workoutLogExercises.exerciseName, `%${exerciseName}%`),
+      eq(workoutLogs.status, 'completed')
+    ))
+    .orderBy(desc(workoutLogs.trainingDate))
+    .limit(limit);
+  
+  // Buscar séries de cada exercício
+  const historyWithSets = await Promise.all(exerciseHistory.map(async (item) => {
+    const sets = await db.select().from(workoutLogSets)
+      .where(eq(workoutLogSets.workoutLogExerciseId, item.exercise.id))
+      .orderBy(asc(workoutLogSets.setNumber));
+    
+    // Calcular carga máxima e volume
+    const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight?.toString() || '0')));
+    const totalVolume = sets.reduce((sum, s) => {
+      const w = parseFloat(s.weight?.toString() || '0');
+      return sum + w * (s.reps || 0);
+    }, 0);
+    
+    return {
+      date: item.log.trainingDate,
+      exerciseName: item.exercise.exerciseName,
+      maxWeight,
+      totalVolume,
+      totalSets: sets.length,
+      totalReps: sets.reduce((sum, s) => sum + (s.reps || 0), 0),
+      sets,
+    };
+  }));
+  
+  return historyWithSets;
+}
+
+// ==================== SUGESTÕES DE AJUSTE DO ALUNO ====================
+
+// Listar sugestões
+export async function getWorkoutLogSuggestions(
+  personalId: number,
+  filters?: { studentId?: number; status?: 'pending' | 'approved' | 'rejected' }
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(workoutLogSuggestions.personalId, personalId)];
+  
+  if (filters?.studentId) {
+    conditions.push(eq(workoutLogSuggestions.studentId, filters.studentId));
+  }
+  if (filters?.status) {
+    conditions.push(eq(workoutLogSuggestions.status, filters.status));
+  }
+  
+  const suggestions = await db.select().from(workoutLogSuggestions)
+    .where(and(...conditions))
+    .orderBy(desc(workoutLogSuggestions.createdAt));
+  
+  // Buscar dados do aluno
+  const suggestionsWithStudent = await Promise.all(suggestions.map(async (s) => {
+    const student = await db.select().from(students)
+      .where(eq(students.id, s.studentId))
+      .limit(1);
+    return {
+      ...s,
+      student: student[0] || null,
+    };
+  }));
+  
+  return suggestionsWithStudent;
+}
+
+// Criar sugestão
+export async function createWorkoutLogSuggestion(data: InsertWorkoutLogSuggestion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(workoutLogSuggestions).values(data);
+  
+  // Marcar o log como tendo sugestões pendentes
+  if (data.workoutLogId) {
+    await db.update(workoutLogs)
+      .set({ hasPendingSuggestions: true })
+      .where(eq(workoutLogs.id, data.workoutLogId));
+  }
+  
+  return result[0].insertId;
+}
+
+// Aprovar sugestão
+export async function approveWorkoutLogSuggestion(id: number, reviewNotes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar a sugestão
+  const suggestionResult = await db.select().from(workoutLogSuggestions)
+    .where(eq(workoutLogSuggestions.id, id))
+    .limit(1);
+  
+  if (!suggestionResult[0]) throw new Error("Sugestão não encontrada");
+  const suggestion = suggestionResult[0];
+  
+  // Aplicar a alteração conforme o tipo
+  if (suggestion.suggestionType === 'weight_change' && suggestion.workoutLogSetId) {
+    const newValues = JSON.parse(suggestion.suggestedValue || '{}');
+    await updateWorkoutLogSet(suggestion.workoutLogSetId, { weight: newValues.weight });
+  } else if (suggestion.suggestionType === 'reps_change' && suggestion.workoutLogSetId) {
+    const newValues = JSON.parse(suggestion.suggestedValue || '{}');
+    await updateWorkoutLogSet(suggestion.workoutLogSetId, { reps: newValues.reps });
+  }
+  
+  // Marcar como aprovada
+  await db.update(workoutLogSuggestions).set({
+    status: 'approved',
+    reviewedAt: new Date(),
+    reviewNotes,
+  }).where(eq(workoutLogSuggestions.id, id));
+  
+  // Verificar se ainda há sugestões pendentes
+  const pendingSuggestions = await db.select().from(workoutLogSuggestions)
+    .where(and(
+      eq(workoutLogSuggestions.workoutLogId, suggestion.workoutLogId),
+      eq(workoutLogSuggestions.status, 'pending')
+    ));
+  
+  if (pendingSuggestions.length === 0 && suggestion.workoutLogId) {
+    await db.update(workoutLogs)
+      .set({ hasPendingSuggestions: false })
+      .where(eq(workoutLogs.id, suggestion.workoutLogId));
+  }
+}
+
+// Rejeitar sugestão
+export async function rejectWorkoutLogSuggestion(id: number, reviewNotes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar a sugestão
+  const suggestionResult = await db.select().from(workoutLogSuggestions)
+    .where(eq(workoutLogSuggestions.id, id))
+    .limit(1);
+  
+  if (!suggestionResult[0]) throw new Error("Sugestão não encontrada");
+  const suggestion = suggestionResult[0];
+  
+  // Marcar como rejeitada
+  await db.update(workoutLogSuggestions).set({
+    status: 'rejected',
+    reviewedAt: new Date(),
+    reviewNotes,
+  }).where(eq(workoutLogSuggestions.id, id));
+  
+  // Verificar se ainda há sugestões pendentes
+  const pendingSuggestions = await db.select().from(workoutLogSuggestions)
+    .where(and(
+      eq(workoutLogSuggestions.workoutLogId, suggestion.workoutLogId),
+      eq(workoutLogSuggestions.status, 'pending')
+    ));
+  
+  if (pendingSuggestions.length === 0 && suggestion.workoutLogId) {
+    await db.update(workoutLogs)
+      .set({ hasPendingSuggestions: false })
+      .where(eq(workoutLogs.id, suggestion.workoutLogId));
+  }
 }

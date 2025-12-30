@@ -999,3 +999,64 @@
 - [x] Corrigir ordenação das sessões no portal do aluno (mostrar mais próximas primeiro)
 - [x] Completar formulário de anamnese no portal do aluno com todos os campos do personal
 - [x] Adicionar informações de treino nas próximas sessões do portal do aluno
+
+
+## Diário de Treino do Maromba (v5.42) - GAME CHANGER
+- [ ] Schema do banco de dados:
+  - [ ] Tabela workout_logs (registro de treino por sessão)
+  - [ ] Tabela workout_log_exercises (exercícios do registro)
+  - [ ] Tabela workout_log_sets (séries com carga, reps, descanso, técnicas)
+  - [ ] Tabela workout_log_suggestions (sugestões de ajuste do aluno)
+- [ ] Endpoints de API:
+  - [ ] CRUD de registros de treino
+  - [ ] Listar registros por aluno
+  - [ ] Estatísticas de evolução
+  - [ ] Sistema de sugestões e aprovação
+- [ ] Página Diário de Treino (Personal):
+  - [ ] Filtro por aluno
+  - [ ] Lista de registros de treino
+  - [ ] Formulário de registro com exercícios e séries
+  - [ ] Até 6 séries por exercício (aquecimento + reconhecimento + 3 válidas + extra)
+  - [ ] Campos: Carga (kg), Repetições, Descanso (s)
+  - [ ] Técnicas: Drop Set, Rest-Pause com carga/rep extras
+  - [ ] Observações/Anotações por exercício
+  - [ ] Checkbox de concluído
+- [ ] Dashboard de Evolução:
+  - [ ] Evolução de carga por exercício
+  - [ ] Total de séries e repetições por treino/semana/mês
+  - [ ] Volume total (carga × reps × séries)
+  - [ ] Gráficos de progressão
+  - [ ] Filtro por aluno
+- [ ] Portal do Aluno:
+  - [ ] Visualização do diário de treino
+  - [ ] Sugerir ajustes nos registros
+  - [ ] Histórico de evolução pessoal
+- [ ] Sistema de Aprovação:
+  - [ ] Aluno sugere ajuste
+  - [ ] Personal recebe notificação
+  - [ ] Personal aprova ou rejeita
+
+
+## Bugs Críticos v4.3
+- [x] Corrigir duplicação de medidas no Portal do Aluno e no painel do Personal (limpeza de dados + proteção contra duplicação)
+- [x] Remover card de Hidratação do Dia do Portal do Aluno
+- [x] Remover dica de Hidratação das Dicas para seu Treino
+
+## Melhorias Compartilhar Progresso v4.4
+- [ ] Criar componente de compartilhamento contextual (adapta ao contexto da página)
+- [ ] Compartilhamento de Medidas: mostrar evolução de peso, % gordura, medidas corporais
+- [ ] Compartilhamento de Sessões: mostrar total de treinos, sequência, frequência
+- [ ] Compartilhamento de Evolução: mostrar comparativo antes/depois, progresso visual
+- [ ] Adicionar botão de compartilhar no Dashboard do Personal (por aluno)
+- [ ] Remover card genérico atual do Portal do Aluno
+
+## Bugs Chat v4.5
+- [x] Mensagens do chat do aluno não aparecem para o Personal
+- [x] Botão Atualizar na página de Mensagens não funciona (removido, agora atualiza automaticamente)
+- [x] Criar seção de Chat com Alunos separada da página de Mensagens WhatsApp
+
+## Melhorias Sistema de Mensagens v4.6
+- [x] Adicionar abas na página de Mensagens: Chat FitPrime e WhatsApp
+- [x] Criar interface de chat do Personal com alunos
+- [x] Adicionar badge de notificação no menu lateral com mensagens não lidas
+- [x] Mostrar lista de conversas com alunos no Chat FitPrime

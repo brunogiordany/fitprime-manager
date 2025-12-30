@@ -1,0 +1,20 @@
+{
+  "query": "SELECT * FROM chat_messages ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM chat_messages ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "personalId": "1",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Ola",
+      "isRead": "0",
+      "readAt": "NULL",
+      "createdAt": "2025-12-29 22:34:50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tstudentId\tsenderType\tmessage\tisRead\treadAt\tcreatedAt\n1\t1\t1\tstudent\tOla\t0\tNULL\t2025-12-29 22:34:50\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}
