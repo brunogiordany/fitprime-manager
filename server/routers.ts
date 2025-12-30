@@ -4550,13 +4550,13 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
     // Histórico de evolução de um exercício
     exerciseProgress: personalProcedure
       .input(z.object({
-        studentId: z.number(),
+        studentId: z.number().optional(),
         exerciseName: z.string(),
         limit: z.number().optional().default(20),
       }))
       .query(async ({ ctx, input }) => {
         const db = await import('./db');
-        return await db.getExerciseProgressHistory(input.studentId, input.exerciseName, input.limit);
+        return await db.getExerciseProgressHistory(ctx.personal.id, input.studentId, input.exerciseName, input.limit);
       }),
     
     // Listar sugestões pendentes

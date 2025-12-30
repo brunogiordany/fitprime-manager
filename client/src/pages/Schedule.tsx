@@ -1729,71 +1729,73 @@ export default function Schedule() {
 
         {/* Modal de Edição de Sessão - Estilo Belasis */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
-            <DialogHeader className="p-6 pb-0">
-              <DialogTitle className="text-xl">Editando agendamento</DialogTitle>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="sticky top-0 bg-background z-10 p-5 pb-4 border-b">
+              <DialogTitle className="text-lg font-semibold">Detalhes da Sessão</DialogTitle>
             </DialogHeader>
             
             {editingSession && (
-              <div className="flex flex-col">
+              <div className="flex flex-col pb-20">
                 {/* Informações do Cliente */}
-                <div className="p-4 mx-4 bg-muted/30 rounded-lg space-y-3">
-                  <h4 className="font-semibold text-sm">Informações</h4>
+                <div className="p-4 border-b">
                   <div 
-                    className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 -mx-2 rounded-lg transition-colors"
+                    className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-3 -m-3 rounded-xl transition-colors"
                     onClick={() => {
                       setIsEditDialogOpen(false);
                       setLocation(`/alunos/${editingSession.studentId}`);
                     }}
                   >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                        {editingSession.student?.name?.charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-primary">{editingSession.student?.name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground truncate">{editingSession.student?.name}</p>
                       <p className="text-sm text-muted-foreground">{editingSession.student?.phone || 'Sem telefone'}</p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   </div>
-                  <div className="flex gap-2 pt-2 border-t">
+                  <div className="flex gap-2 mt-3">
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm" 
-                      className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+                      className="flex-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
                       onClick={() => openWhatsApp(editingSession.student?.phone)}
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Conversar
                     </Button>
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm" 
-                      className="flex-1 text-primary hover:bg-primary/10"
+                      className="flex-1"
                       onClick={() => {
                         setIsEditDialogOpen(false);
                         setLocation(`/alunos/${editingSession.studentId}`);
                       }}
                     >
                       <User className="h-4 w-4 mr-2" />
-                      Ver cliente
+                      Ver perfil
                     </Button>
                   </div>
                 </div>
 
-                {/* Data clicável */}
-                <div className="px-4 py-3 border-b">
-                  <div className="flex items-center justify-between cursor-pointer hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors">
-                    <span className="text-sm">
-                      {editForm.scheduledAt && !isNaN(new Date(editForm.scheduledAt).getTime()) 
-                        ? format(new Date(editForm.scheduledAt), "EEEE, dd/MM/yyyy", { locale: ptBR })
-                        : 'Data não definida'}
-                    </span>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                {/* Data e Status */}
+                <div className="p-4 space-y-3">
+                  {/* Data */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        {editForm.scheduledAt && !isNaN(new Date(editForm.scheduledAt).getTime()) 
+                          ? format(new Date(editForm.scheduledAt), "EEEE, dd 'de' MMMM", { locale: ptBR })
+                          : 'Data não definida'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Status com cor */}
-                <div className="px-4 py-3 border-b">
+                  
+                  {/* Status */}
                   <Select
                     value={editForm.status}
                     onValueChange={(value) => setEditForm({ ...editForm, status: value })}
@@ -1852,24 +1854,13 @@ export default function Schedule() {
                 </div>
 
                 {/* Serviços */}
-                <div className="p-4 mx-4 mt-4 bg-muted/30 rounded-lg space-y-4">
-                  <h4 className="font-semibold text-sm">Serviços</h4>
-                  
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Descrição</Label>
-                    <Select defaultValue="sessao">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sessao">Sessão de treino</SelectItem>
-                        <SelectItem value="avaliacao">Avaliação física</SelectItem>
-                        <SelectItem value="consultoria">Consultoria</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="p-4 border-b space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>Horário e Serviço</span>
                   </div>
-
-                  <div className="grid grid-cols-[1fr_auto] gap-3">
+                  
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Horário</Label>
                       <Input

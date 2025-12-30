@@ -1203,3 +1203,27 @@
 
 ## Bugs da Agenda
 - [ ] UX: Modal de edição de agendamento está encavalado/cortado - precisa ajustar layout
+
+## Bugs do Registro de Treino
+- [ ] Bug: Ao selecionar "Reconhecimento" no tipo de série, muda automaticamente para "Série Válida" - verificar se outras opções também têm esse problema
+
+## Bugs Evolução de Carga por Exercício
+- [x] Adicionar opção "Todos os alunos" para mostrar evolução de todos (sem duplicação)
+- [x] Gráfico não aparece - campo não está finalizado, não mostra dados
+- [x] Seletor de aluno removido (usa o filtro global do header)
+
+## Dashboard por Grupo Muscular (Análise Detalhada)
+- [ ] Segmentar dados do treino por grupo muscular para análise de equilíbrio
+- [ ] Grupos: Peito (inclinado/reto/declinado), Costas (porções), Quadríceps, Panturrilha, Posterior, Trapézio, Ombros (lateral/frontal/posterior), Glúteos, Bíceps, Tríceps, Antebraço, Abdômen
+- [ ] Mostrar volume, séries e frequência por grupo muscular
+- [ ] Identificar desequilíbrios para ajustar o treino
+
+## Melhorias UX Gerais (Experiência Profissional)
+- [ ] Modal Agenda: Melhorar espaçamentos e hierarquia visual
+- [ ] Modal Agenda: Organização mais limpa das seções
+- [ ] Modal Registro de Treino: Layout profissional e limpo
+- [ ] Consistência visual entre todos os modais
+- [ ] Garantir responsividade em diferentes tamanhos de tela
+
+## Bugs PWA (Mobile)
+- [x] Bug: No PWA, ao clicar na sessão do Diário de Treino, o calendário abre automaticamente - corrigido com campo de data customizado

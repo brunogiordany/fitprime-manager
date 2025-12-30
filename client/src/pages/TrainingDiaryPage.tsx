@@ -174,11 +174,11 @@ export default function TrainingDiaryPage() {
   // Query para buscar histórico de evolução de carga
   const { data: exerciseProgress } = trpc.trainingDiary.exerciseProgress.useQuery(
     { 
-      studentId: parseInt(selectedStudentId || '0'), 
+      studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined, 
       exerciseName: progressExercise,
       limit: 30
     },
-    { enabled: !!selectedStudentId && !!progressExercise }
+    { enabled: !!progressExercise }
   );
   
   // Mutations
@@ -1139,17 +1139,11 @@ export default function TrainingDiaryPage() {
                           </div>
                         </div>
                       </div>
-                    ) : selectedStudentId && progressExercise ? (
+                    ) : progressExercise ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
                         <p>Nenhum registro encontrado para este exercício.</p>
                         <p className="text-sm">Registre treinos para ver a evolução.</p>
-                      </div>
-                    ) : !selectedStudentId ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>Selecione um aluno no filtro acima</p>
-                        <p className="text-sm">para ver a evolução de carga ao longo do tempo.</p>
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
@@ -1987,11 +1981,24 @@ export default function TrainingDiaryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Data do Treino</Label>
-                  <Input
-                    type="date"
-                    value={newLog.trainingDate}
-                    onChange={(e) => setNewLog({ ...newLog, trainingDate: e.target.value })}
-                  />
+                  <div 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
+                    onClick={(e) => {
+                      const input = e.currentTarget.querySelector('input');
+                      if (input) input.showPicker?.();
+                    }}
+                  >
+                    <input
+                      type="date"
+                      className="sr-only"
+                      value={newLog.trainingDate}
+                      onChange={(e) => setNewLog({ ...newLog, trainingDate: e.target.value })}
+                    />
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {newLog.trainingDate ? new Date(newLog.trainingDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Selecionar data'}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

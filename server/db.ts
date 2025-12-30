@@ -2590,24 +2590,32 @@ export async function getTrainingDashboard(
 
 // Histórico de evolução de um exercício específico
 export async function getExerciseProgressHistory(
-  studentId: number,
+  personalId: number,
+  studentId: number | undefined,
   exerciseName: string,
   limit: number = 20
 ) {
   const db = await getDb();
   if (!db) return [];
   
-  // Buscar exercícios do aluno com esse nome
+  // Buscar exercícios do aluno (ou todos os alunos) com esse nome
+  const conditions = [
+    eq(workoutLogs.personalId, personalId),
+    like(workoutLogExercises.exerciseName, `%${exerciseName}%`),
+    eq(workoutLogs.status, 'completed')
+  ];
+  
+  // Se studentId for fornecido, filtrar por aluno específico
+  if (studentId) {
+    conditions.push(eq(workoutLogs.studentId, studentId));
+  }
+  
   const exerciseHistory = await db.select({
     exercise: workoutLogExercises,
     log: workoutLogs,
   }).from(workoutLogExercises)
     .innerJoin(workoutLogs, eq(workoutLogExercises.workoutLogId, workoutLogs.id))
-    .where(and(
-      eq(workoutLogs.studentId, studentId),
-      like(workoutLogExercises.exerciseName, `%${exerciseName}%`),
-      eq(workoutLogs.status, 'completed')
-    ))
+    .where(and(...conditions))
     .orderBy(desc(workoutLogs.trainingDate))
     .limit(limit);
   
