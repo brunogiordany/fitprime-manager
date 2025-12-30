@@ -2179,6 +2179,16 @@ export async function deleteChatMessageForAll(messageId: number, personalId: num
     .where(eq(chatMessages.id, messageId));
 }
 
+// Atualizar transcrição de áudio de uma mensagem
+export async function updateChatMessageTranscription(messageId: number, transcription: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(chatMessages)
+    .set({ audioTranscription: transcription })
+    .where(eq(chatMessages.id, messageId));
+}
+
 // ==================== STUDENT BADGES FUNCTIONS ====================
 export async function getStudentBadges(studentId: number) {
   const db = await getDb();

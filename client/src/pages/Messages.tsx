@@ -489,10 +489,81 @@ export default function Messages() {
                                       {msg.senderType === "student" ? selectedStudent.studentName : "Você"}
                                     </span>
                                   </div>
-                                  <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
-                                  <p className={`text-xs mt-1 ${msg.senderType === "personal" ? "text-emerald-100" : "text-gray-500"}`}>
-                                    {formatMessageDate(msg.createdAt)}
-                                  </p>
+                                  {/* Renderização baseada no tipo de mensagem */}
+                                  {msg.messageType === 'audio' && msg.mediaUrl ? (
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <audio 
+                                          src={msg.mediaUrl} 
+                                          controls 
+                                          className="h-8 max-w-[200px]"
+                                        />
+                                        {msg.mediaDuration && (
+                                          <span className="text-xs opacity-75">
+                                            {Math.floor(msg.mediaDuration / 60)}:{String(msg.mediaDuration % 60).padStart(2, '0')}
+                                          </span>
+                                        )}
+                                      </div>
+                                      {msg.audioTranscription ? (
+                                        <p className="text-xs opacity-75 italic">
+                                          "{msg.audioTranscription}"
+                                        </p>
+                                      ) : (
+                                        <TranscribeButton 
+                                          messageId={msg.id} 
+                                          audioUrl={msg.mediaUrl} 
+                                          onSuccess={() => refetchChat()}
+                                        />
+                                      )}
+                                    </div>
+                                  ) : msg.messageType === 'image' && msg.mediaUrl ? (
+                                    <div className="space-y-2">
+                                      <img 
+                                        src={msg.mediaUrl} 
+                                        alt={msg.mediaName || 'Imagem'} 
+                                        className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => window.open(msg.mediaUrl!, '_blank')}
+                                      />
+                                      {msg.message && <p className="text-sm">{msg.message}</p>}
+                                    </div>
+                                  ) : msg.messageType === 'video' && msg.mediaUrl ? (
+                                    <div className="space-y-2">
+                                      <video 
+                                        src={msg.mediaUrl} 
+                                        controls 
+                                        className="max-w-full rounded-lg"
+                                      />
+                                      {msg.message && <p className="text-sm">{msg.message}</p>}
+                                    </div>
+                                  ) : msg.messageType === 'file' && msg.mediaUrl ? (
+                                    <div className="flex items-center gap-3 p-2 bg-black/10 rounded-lg">
+                                      <FileText className="h-8 w-8 flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">{msg.mediaName || 'Arquivo'}</p>
+                                        {msg.mediaSize && (
+                                          <p className="text-xs opacity-75">
+                                            {(msg.mediaSize / 1024).toFixed(1)} KB
+                                          </p>
+                                        )}
+                                      </div>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8"
+                                        onClick={() => window.open(msg.mediaUrl!, '_blank')}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                                  )}
+                                  <div className={`flex items-center gap-1 mt-1 ${msg.senderType === "personal" ? "text-emerald-100" : "text-gray-500"}`}>
+                                    <span className="text-xs">{formatMessageDate(msg.createdAt)}</span>
+                                    {msg.senderType === "personal" && msg.isRead && (
+                                      <CheckCheck className="h-3 w-3" />
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))
@@ -797,5 +868,40 @@ export default function Messages() {
         </Tabs>
       </div>
     </DashboardLayout>
+  );
+}
+
+// Componente de botão de transcrição de áudio
+function TranscribeButton({ messageId, audioUrl, onSuccess }: { messageId: number; audioUrl: string; onSuccess: () => void }) {
+  const transcribe = trpc.chat.transcribeAudio.useMutation({
+    onSuccess: (data) => {
+      toast.success('Transcrição concluída!');
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao transcrever áudio');
+    },
+  });
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-6 text-xs opacity-75 hover:opacity-100"
+      onClick={() => transcribe.mutate({ messageId, audioUrl })}
+      disabled={transcribe.isPending}
+    >
+      {transcribe.isPending ? (
+        <>
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Transcrevendo...
+        </>
+      ) : (
+        <>
+          <FileText className="h-3 w-3 mr-1" />
+          Transcrever
+        </>
+      )}
+    </Button>
   );
 }

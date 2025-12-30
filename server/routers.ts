@@ -277,6 +277,41 @@ export const appRouter = router({
       return unreadCounts.reduce((sum, item) => sum + item.count, 0);
     }),
     
+    // Transcrever áudio para texto
+    transcribeAudio: personalProcedure
+      .input(z.object({
+        messageId: z.number(),
+        audioUrl: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { transcribeAudio } = await import('./_core/voiceTranscription');
+        
+        // Chamar serviço de transcrição
+        const result = await transcribeAudio({
+          audioUrl: input.audioUrl,
+          language: 'pt', // Português como padrão
+        });
+        
+        // Verificar se houve erro
+        if ('error' in result) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: result.error,
+            cause: result,
+          });
+        }
+        
+        // Atualizar a mensagem com a transcrição
+        await db.updateChatMessageTranscription(input.messageId, result.text);
+        
+        return {
+          success: true,
+          text: result.text,
+          language: result.language,
+          duration: result.duration,
+        };
+      }),
+    
     // Upload de mídia para o chat
     uploadMedia: personalProcedure
       .input(z.object({
@@ -4075,6 +4110,41 @@ Retorne APENAS o JSON, sem texto adicional.`;
       .mutation(async ({ ctx, input }) => {
         await db.deleteChatMessageForAll(input.messageId, ctx.student.personalId, 'student', ctx.student.id);
         return { success: true };
+      }),
+    
+    // Transcrever áudio para texto (portal do aluno)
+    transcribeAudio: studentProcedure
+      .input(z.object({
+        messageId: z.number(),
+        audioUrl: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { transcribeAudio } = await import('./_core/voiceTranscription');
+        
+        // Chamar serviço de transcrição
+        const result = await transcribeAudio({
+          audioUrl: input.audioUrl,
+          language: 'pt', // Português como padrão
+        });
+        
+        // Verificar se houve erro
+        if ('error' in result) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: result.error,
+            cause: result,
+          });
+        }
+        
+        // Atualizar a mensagem com a transcrição
+        await db.updateChatMessageTranscription(input.messageId, result.text);
+        
+        return {
+          success: true,
+          text: result.text,
+          language: result.language,
+          duration: result.duration,
+        };
       }),
     
     // Upload de mídia para o chat

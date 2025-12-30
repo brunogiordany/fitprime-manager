@@ -410,10 +410,16 @@ export default function StudentChat() {
               </span>
             )}
           </div>
-          {msg.audioTranscription && (
+          {msg.audioTranscription ? (
             <p className="text-xs opacity-75 italic">
               "{msg.audioTranscription}"
             </p>
+          ) : (
+            <StudentTranscribeButton 
+              messageId={msg.id} 
+              audioUrl={msg.mediaUrl} 
+              onSuccess={() => refetchMessages()}
+            />
           )}
         </div>
       );
@@ -793,5 +799,40 @@ export default function StudentChat() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// Componente de botão de transcrição de áudio para o portal do aluno
+function StudentTranscribeButton({ messageId, audioUrl, onSuccess }: { messageId: number; audioUrl: string; onSuccess: () => void }) {
+  const transcribe = trpc.studentPortal.transcribeAudio.useMutation({
+    onSuccess: (data) => {
+      toast.success('Transcrição concluída!');
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao transcrever áudio');
+    },
+  });
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-6 text-xs opacity-75 hover:opacity-100"
+      onClick={() => transcribe.mutate({ messageId, audioUrl })}
+      disabled={transcribe.isPending}
+    >
+      {transcribe.isPending ? (
+        <>
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Transcrevendo...
+        </>
+      ) : (
+        <>
+          <FileText className="h-3 w-3 mr-1" />
+          Transcrever
+        </>
+      )}
+    </Button>
   );
 }
