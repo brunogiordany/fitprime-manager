@@ -14,6 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { 
   MessageSquare, 
@@ -376,7 +386,18 @@ export default function Messages() {
               {/* Lista de Conversas */}
               <Card className="md:col-span-1 flex flex-col">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Conversas</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Conversas</CardTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowBroadcastModal(true)}
+                      className="gap-1"
+                    >
+                      <Users className="h-4 w-4" />
+                      <span className="hidden sm:inline">Broadcast</span>
+                    </Button>
+                  </div>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -867,7 +888,137 @@ export default function Messages() {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Modal de Broadcast */}
+      <Dialog open={showBroadcastModal} onOpenChange={setShowBroadcastModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-emerald-500" />
+              Mensagem em Massa
+            </DialogTitle>
+            <DialogDescription>
+              Envie uma mensagem para múltiplos alunos de uma vez
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden flex flex-col gap-4">
+            {/* Seleção de alunos */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Selecionar alunos</label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (selectAllForBroadcast) {
+                      setSelectedStudentsForBroadcast([]);
+                      setSelectAllForBroadcast(false);
+                    } else {
+                      setSelectedStudentsForBroadcast(allStudents?.map((s: any) => s.id) || []);
+                      setSelectAllForBroadcast(true);
+                    }
+                  }}
+                >
+                  {selectAllForBroadcast ? 'Desmarcar todos' : 'Selecionar todos'}
+                </Button>
+              </div>
+              <ScrollArea className="h-[200px] border rounded-lg p-2">
+                <div className="space-y-2">
+                  {allStudents?.map((student: any) => (
+                    <div key={student.id} className="flex items-center gap-3 p-2 rounded hover:bg-accent">
+                      <Checkbox
+                        id={`student-${student.id}`}
+                        checked={selectedStudentsForBroadcast.includes(student.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStudentsForBroadcast([...selectedStudentsForBroadcast, student.id]);
+                          } else {
+                            setSelectedStudentsForBroadcast(selectedStudentsForBroadcast.filter(id => id !== student.id));
+                            setSelectAllForBroadcast(false);
+                          }
+                        }}
+                      />
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs">
+                          {student.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label htmlFor={`student-${student.id}`} className="flex-1 cursor-pointer">
+                        {student.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              <p className="text-xs text-muted-foreground">
+                {selectedStudentsForBroadcast.length} aluno(s) selecionado(s)
+              </p>
+            </div>
+            
+            {/* Mensagem */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Mensagem</label>
+              <Textarea
+                placeholder="Digite sua mensagem..."
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBroadcastModal(false)}>
+              Cancelar
+            </Button>
+            <BroadcastSendButton
+              studentIds={selectedStudentsForBroadcast}
+              message={broadcastMessage}
+              onSuccess={() => {
+                setShowBroadcastModal(false);
+                setBroadcastMessage('');
+                setSelectedStudentsForBroadcast([]);
+                setSelectAllForBroadcast(false);
+                refetchStudents();
+              }}
+            />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
+  );
+}
+
+// Componente de botão de envio de broadcast
+function BroadcastSendButton({ studentIds, message, onSuccess }: { studentIds: number[]; message: string; onSuccess: () => void }) {
+  const broadcast = trpc.chat.broadcast.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Mensagem enviada para ${data.sent} aluno(s)!`);
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao enviar mensagem');
+    },
+  });
+
+  return (
+    <Button
+      onClick={() => broadcast.mutate({ studentIds, message })}
+      disabled={broadcast.isPending || studentIds.length === 0 || !message.trim()}
+      className="gap-2"
+    >
+      {broadcast.isPending ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Enviando...
+        </>
+      ) : (
+        <>
+          <Send className="h-4 w-4" />
+          Enviar para {studentIds.length} aluno(s)
+        </>
+      )}
+    </Button>
   );
 }
 

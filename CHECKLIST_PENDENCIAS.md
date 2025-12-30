@@ -18,7 +18,7 @@
 - [x] 5. Implementar botão e modal de análise por IA na interface do personal (CONCLUÍDO)
 - [x] 6. Vincular treinos automaticamente nas sessões recorrentes (JÁ IMPLEMENTADO)
 - [x] 7. Implementar transcrição automática de áudio para texto no chat (CONCLUÍDO)
-- [ ] 8. Adicionar funcionalidade de mensagem em massa (broadcast)
+- [x] 8. Adicionar funcionalidade de mensagem em massa (broadcast) (CONCLUÍDO)
 - [ ] 9. Notificação para personal quando aluno cria sugestão
 
 ---
