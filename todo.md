@@ -1178,3 +1178,28 @@
 
 - [x] Bug: Aba Registros não mostra registros quando "Todos os alunos" está selecionado
 - [x] Bug: Recalculadas estatísticas dos registros existentes no banco
+
+## Melhorias UX Registro de Treino (v5.2)
+- [ ] UX: Drop Set com múltiplos drops (drop 1, drop 2, drop 3...) + botão "+ Adicionar Drop"
+- [ ] UX: Rest-Pause com múltiplas pausas/continuações + botão "+ Adicionar Pausa"
+- [ ] UX: Campo de descanso dentro da área expandida do Drop Set e Rest-Pause
+
+## CHECKLIST COMPLETO - Diário de Treino do Maromba
+
+### FEITO:
+- [x] Remover checkbox de concluído das séries
+- [x] Drop Set e Rest-Pause como tipo de série (não checkbox separado)
+- [x] Cálculo de estatísticas (conta séries com peso E reps preenchidos)
+- [x] Trocar toneladas para kg no Dashboard
+- [x] Registros aparecem quando "Todos os alunos" está selecionado
+- [x] Remover campo "Duração" do popup de detalhes
+- [x] Remover seletor duplicado de aluno no Dashboard (Evolução de Carga usa filtro global)
+- [x] Layout de visualização das séries mais elegante
+
+### FALTA FAZER:
+- [x] Drop Set com múltiplos drops - Botão "+ Adicionar Drop"
+- [x] Rest-Pause com múltiplas pausas - Botão "+ Adicionar Pausa"
+- [x] Campo de descanso no Drop Set e Rest-Pause
+
+## Bugs da Agenda
+- [ ] UX: Modal de edição de agendamento está encavalado/cortado - precisa ajustar layout

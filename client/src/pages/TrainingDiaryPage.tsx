@@ -57,6 +57,20 @@ const FEELINGS = [
 ];
 
 // Interface para série
+// Interface para drop set individual
+interface DropData {
+  weight?: number;
+  reps?: number;
+  restTime?: number;
+}
+
+// Interface para pausa rest-pause individual
+interface RestPauseData {
+  weight?: number;
+  reps?: number;
+  pauseTime?: number;
+}
+
 interface SetData {
   id?: number;
   setNumber: number;
@@ -67,10 +81,12 @@ interface SetData {
   isDropSet?: boolean;
   dropWeight?: number;
   dropReps?: number;
+  drops?: DropData[]; // Múltiplos drops
   isRestPause?: boolean;
   restPauseWeight?: number;
   restPauseReps?: number;
   restPausePause?: number;
+  restPauses?: RestPauseData[]; // Múltiplas pausas
   rpe?: number;
   isCompleted?: boolean;
   notes?: string;
@@ -101,8 +117,7 @@ export default function TrainingDiaryPage() {
   const [showSessionLogModal, setShowSessionLogModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
   
-  // Estados para gráfico de evolução de carga
-  const [progressStudentId, setProgressStudentId] = useState<string>("");
+  // Estado para gráfico de evolução de carga
   const [progressExercise, setProgressExercise] = useState<string>("");
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -159,11 +174,11 @@ export default function TrainingDiaryPage() {
   // Query para buscar histórico de evolução de carga
   const { data: exerciseProgress } = trpc.trainingDiary.exerciseProgress.useQuery(
     { 
-      studentId: parseInt(progressStudentId), 
+      studentId: parseInt(selectedStudentId || '0'), 
       exerciseName: progressExercise,
       limit: 30
     },
-    { enabled: !!progressStudentId && !!progressExercise }
+    { enabled: !!selectedStudentId && !!progressExercise }
   );
   
   // Mutations
@@ -1034,31 +1049,14 @@ export default function TrainingDiaryPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Filtros */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm">Aluno</Label>
-                        <Select value={progressStudentId} onValueChange={setProgressStudentId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione um aluno" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {students?.map((student: any) => (
-                              <SelectItem key={student.id} value={student.id.toString()}>
-                                {student.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Exercício</Label>
-                        <Input
-                          placeholder="Digite o nome do exercício"
-                          value={progressExercise}
-                          onChange={(e) => setProgressExercise(e.target.value)}
-                        />
-                      </div>
+                    {/* Filtro de exercício */}
+                    <div>
+                      <Label className="text-sm">Exercício</Label>
+                      <Input
+                        placeholder="Digite o nome do exercício"
+                        value={progressExercise}
+                        onChange={(e) => setProgressExercise(e.target.value)}
+                      />
                     </div>
                     
                     {/* Gráfico */}
@@ -1141,16 +1139,22 @@ export default function TrainingDiaryPage() {
                           </div>
                         </div>
                       </div>
-                    ) : progressStudentId && progressExercise ? (
+                    ) : selectedStudentId && progressExercise ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
                         <p>Nenhum registro encontrado para este exercício.</p>
                         <p className="text-sm">Registre treinos para ver a evolução.</p>
                       </div>
+                    ) : !selectedStudentId ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>Selecione um aluno no filtro acima</p>
+                        <p className="text-sm">para ver a evolução de carga ao longo do tempo.</p>
+                      </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>Selecione um aluno e digite o nome do exercício</p>
+                        <p>Digite o nome do exercício</p>
                         <p className="text-sm">para ver a evolução de carga ao longo do tempo.</p>
                       </div>
                     )}
@@ -1624,7 +1628,7 @@ export default function TrainingDiaryPage() {
                 
                 {/* Estatísticas */}
                 {logDetail.status === 'completed' && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <Card>
                       <CardContent className="p-3 text-center">
                         <Weight className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
@@ -1646,13 +1650,7 @@ export default function TrainingDiaryPage() {
                         <p className="text-xs text-muted-foreground">Reps</p>
                       </CardContent>
                     </Card>
-                    <Card>
-                      <CardContent className="p-3 text-center">
-                        <Timer className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-lg font-bold">{logDetail.totalDuration || 0}min</p>
-                        <p className="text-xs text-muted-foreground">Duração</p>
-                      </CardContent>
-                    </Card>
+
                   </div>
                 )}
                 
@@ -1774,9 +1772,20 @@ export default function TrainingDiaryPage() {
                                       </Button>
                                     </>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">
-                                      {set.weight || 0}kg × {set.reps || 0} reps | {set.restTime || 60}s
-                                    </span>
+                                    <div className="flex items-center gap-3 flex-1">
+                                      <span className="font-semibold text-foreground">
+                                        {set.weight || 0}kg
+                                      </span>
+                                      <span className="text-muted-foreground">×</span>
+                                      <span className="font-semibold text-foreground">
+                                        {set.reps || 0} reps
+                                      </span>
+                                      {set.restTime && (
+                                        <span className="text-xs text-muted-foreground ml-auto">
+                                          ⏱️ {set.restTime}s
+                                        </span>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
                                 
@@ -2175,97 +2184,223 @@ export default function TrainingDiaryPage() {
                                 {/* Área expandida para Drop Set */}
                                 {(set.setType === 'drop' || set.isDropSet) && (
                                   <div className="mt-2 ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
-                                      <span className="text-xs text-muted-foreground">Redução de carga após a série principal</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-16 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.dropWeight || ''}
-                                          onChange={(e) => {
-                                            const updated = [...currentExercises];
-                                            updated[exIndex].sets[setIndex].dropWeight = e.target.value ? parseFloat(e.target.value) : undefined;
-                                            setCurrentExercises(updated);
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">kg</span>
-                                      </div>
-                                      <span className="text-muted-foreground">×</span>
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-14 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.dropReps || ''}
-                                          onChange={(e) => {
-                                            const updated = [...currentExercises];
-                                            updated[exIndex].sets[setIndex].dropReps = e.target.value ? parseInt(e.target.value) : undefined;
-                                            setCurrentExercises(updated);
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">reps</span>
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                                        <span className="text-xs text-muted-foreground">Reduções de carga</span>
                                       </div>
                                     </div>
+                                    
+                                    {/* Lista de drops */}
+                                    <div className="space-y-2">
+                                      {(set.drops && set.drops.length > 0 ? set.drops : [{ weight: set.dropWeight, reps: set.dropReps, restTime: undefined }]).map((drop, dropIndex) => (
+                                        <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                          <span className="text-xs font-medium text-purple-600 dark:text-purple-400 w-14">Drop {dropIndex + 1}</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-14 text-center text-sm"
+                                              placeholder="0"
+                                              value={drop.weight || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
+                                                drops[dropIndex] = { ...drops[dropIndex], weight: e.target.value ? parseFloat(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].drops = drops;
+                                                // Manter compatibilidade com campos antigos
+                                                if (dropIndex === 0) {
+                                                  updated[exIndex].sets[setIndex].dropWeight = drops[0].weight;
+                                                }
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">kg</span>
+                                          </div>
+                                          <span className="text-muted-foreground">×</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-12 text-center text-sm"
+                                              placeholder="0"
+                                              value={drop.reps || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
+                                                drops[dropIndex] = { ...drops[dropIndex], reps: e.target.value ? parseInt(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].drops = drops;
+                                                if (dropIndex === 0) {
+                                                  updated[exIndex].sets[setIndex].dropReps = drops[0].reps;
+                                                }
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">reps</span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-12 text-center text-sm"
+                                              placeholder="0"
+                                              value={drop.restTime || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
+                                                drops[dropIndex] = { ...drops[dropIndex], restTime: e.target.value ? parseInt(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].drops = drops;
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">s</span>
+                                          </div>
+                                          {(set.drops?.length || 0) > 1 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-6 w-6 text-destructive"
+                                              onClick={() => {
+                                                const updated = [...currentExercises];
+                                                const drops = [...(updated[exIndex].sets[setIndex].drops || [])];
+                                                drops.splice(dropIndex, 1);
+                                                updated[exIndex].sets[setIndex].drops = drops;
+                                                setCurrentExercises(updated);
+                                              }}
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    
+                                    {/* Botão adicionar drop */}
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="mt-2 text-purple-600 hover:text-purple-700 hover:bg-purple-100 dark:text-purple-400 dark:hover:bg-purple-900/30"
+                                      onClick={() => {
+                                        const updated = [...currentExercises];
+                                        const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
+                                        drops.push({ weight: undefined, reps: undefined, restTime: undefined });
+                                        updated[exIndex].sets[setIndex].drops = drops;
+                                        setCurrentExercises(updated);
+                                      }}
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Adicionar Drop
+                                    </Button>
                                   </div>
                                 )}
                                 
                                 {/* Área expandida para Rest-Pause */}
                                 {(set.setType === 'rest_pause' || set.isRestPause) && (
                                   <div className="mt-2 ml-9 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
-                                      <span className="text-xs text-muted-foreground">Pausa curta e continuação</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-16 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.restPauseWeight || ''}
-                                          onChange={(e) => {
-                                            const updated = [...currentExercises];
-                                            updated[exIndex].sets[setIndex].restPauseWeight = e.target.value ? parseFloat(e.target.value) : undefined;
-                                            setCurrentExercises(updated);
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">kg</span>
-                                      </div>
-                                      <span className="text-muted-foreground">×</span>
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-14 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.restPauseReps || ''}
-                                          onChange={(e) => {
-                                            const updated = [...currentExercises];
-                                            updated[exIndex].sets[setIndex].restPauseReps = e.target.value ? parseInt(e.target.value) : undefined;
-                                            setCurrentExercises(updated);
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">reps</span>
-                                      </div>
-                                      <span className="text-muted-foreground">|</span>
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-14 text-center text-sm"
-                                          placeholder="15"
-                                          value={set.restPausePause || ''}
-                                          onChange={(e) => {
-                                            const updated = [...currentExercises];
-                                            updated[exIndex].sets[setIndex].restPausePause = e.target.value ? parseInt(e.target.value) : undefined;
-                                            setCurrentExercises(updated);
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">s pausa</span>
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                                        <span className="text-xs text-muted-foreground">Pausas curtas e continuações</span>
                                       </div>
                                     </div>
+                                    
+                                    {/* Lista de pausas */}
+                                    <div className="space-y-2">
+                                      {(set.restPauses && set.restPauses.length > 0 ? set.restPauses : [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }]).map((pause, pauseIndex) => (
+                                        <div key={pauseIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                          <span className="text-xs font-medium text-orange-600 dark:text-orange-400 w-14">Pausa {pauseIndex + 1}</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-12 text-center text-sm"
+                                              placeholder="15"
+                                              value={pause.pauseTime || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
+                                                pauses[pauseIndex] = { ...pauses[pauseIndex], pauseTime: e.target.value ? parseInt(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].restPauses = pauses;
+                                                if (pauseIndex === 0) {
+                                                  updated[exIndex].sets[setIndex].restPausePause = pauses[0].pauseTime;
+                                                }
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">s</span>
+                                          </div>
+                                          <span className="text-muted-foreground">→</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-14 text-center text-sm"
+                                              placeholder="0"
+                                              value={pause.weight || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
+                                                pauses[pauseIndex] = { ...pauses[pauseIndex], weight: e.target.value ? parseFloat(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].restPauses = pauses;
+                                                if (pauseIndex === 0) {
+                                                  updated[exIndex].sets[setIndex].restPauseWeight = pauses[0].weight;
+                                                }
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">kg</span>
+                                          </div>
+                                          <span className="text-muted-foreground">×</span>
+                                          <div className="flex items-center gap-1">
+                                            <Input
+                                              type="number"
+                                              className="h-7 w-12 text-center text-sm"
+                                              placeholder="0"
+                                              value={pause.reps || ''}
+                                              onChange={(e) => {
+                                                const updated = [...currentExercises];
+                                                const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
+                                                pauses[pauseIndex] = { ...pauses[pauseIndex], reps: e.target.value ? parseInt(e.target.value) : undefined };
+                                                updated[exIndex].sets[setIndex].restPauses = pauses;
+                                                if (pauseIndex === 0) {
+                                                  updated[exIndex].sets[setIndex].restPauseReps = pauses[0].reps;
+                                                }
+                                                setCurrentExercises(updated);
+                                              }}
+                                            />
+                                            <span className="text-xs text-muted-foreground">reps</span>
+                                          </div>
+                                          {(set.restPauses?.length || 0) > 1 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-6 w-6 text-destructive"
+                                              onClick={() => {
+                                                const updated = [...currentExercises];
+                                                const pauses = [...(updated[exIndex].sets[setIndex].restPauses || [])];
+                                                pauses.splice(pauseIndex, 1);
+                                                updated[exIndex].sets[setIndex].restPauses = pauses;
+                                                setCurrentExercises(updated);
+                                              }}
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    
+                                    {/* Botão adicionar pausa */}
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="mt-2 text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:text-orange-400 dark:hover:bg-orange-900/30"
+                                      onClick={() => {
+                                        const updated = [...currentExercises];
+                                        const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
+                                        pauses.push({ weight: undefined, reps: undefined, pauseTime: 15 });
+                                        updated[exIndex].sets[setIndex].restPauses = pauses;
+                                        setCurrentExercises(updated);
+                                      }}
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Adicionar Pausa
+                                    </Button>
                                   </div>
                                 )}
                               </div>
