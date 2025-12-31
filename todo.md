@@ -1548,3 +1548,28 @@
 - [ ] Corrigir título da página (atual: 16 caracteres, ideal: 30-60 caracteres)
 - [ ] Usar document.title para definir título adequado
 
+
+
+### D18. Bug: Corrigir erro RangeError: Invalid time value na página de Evolução do portal do aluno
+- [x] Corrigido uso incorreto de session.date para session.scheduledAt em múltiplos componentes
+- [x] StudentEvolutionCharts - adicionada validação robusta de datas com parseDate()
+- [x] StudentPortalPage - corrigido filtro de upcomingSessions
+- [x] StudentSessionManager - corrigida interface Session e todas as referências
+- [x] StudentMetricsCards - corrigida interface nextSession para aceitar scheduledAt
+- [x] Checkpoint salvo com correções (versão 1a50cd91)
+- [ ] **PENDENTE**: Publicar novo checkpoint para aplicar correções em produção
+
+
+### D19. Bug: Campos de bioimpedância/adipometria sumiram do portal do aluno
+- [x] Verificar se campos existem no schema do banco de dados (existem)
+- [x] Verificar se campos existem na interface do personal (existem em Measurements.tsx)
+- [x] Verificar se campos existem no portal do aluno (NÃO existiam em StudentMeasurementForm.tsx)
+- [x] Adicionar campos de bioimpedância na interface Measurement do portal do aluno
+- [x] Adicionar campos de adipometria e dobras cutâneas na interface Measurement
+- [x] Atualizar formData inicial com os novos campos
+- [x] Atualizar função resetForm com os novos campos
+- [x] Atualizar função handleEdit para carregar os novos campos
+- [x] Atualizar função handleSubmit para enviar os novos campos
+- [x] Adicionar seções de Bioimpedância e Adipômetro no formulário (Accordion)
+- [x] Atualizar endpoint addMeasurement no backend com os novos campos
+- [x] Atualizar endpoint updateMeasurement no backend com os novos campos

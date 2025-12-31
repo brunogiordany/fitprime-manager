@@ -36,6 +36,8 @@ import {
   Minus,
   Calendar,
   Share2,
+  Heart,
+  Clipboard,
 } from "lucide-react";
 import ShareProgressCard from "@/components/ShareProgressCard";
 
@@ -58,6 +60,24 @@ interface Measurement {
   leftCalf?: string | null;
   neck?: string | null;
   notes?: string | null;
+  // Bioimpedância
+  bioBodyFat?: string | null;
+  bioMuscleMass?: string | null;
+  bioFatMass?: string | null;
+  bioVisceralFat?: string | null;
+  bioBasalMetabolism?: string | null;
+  // Adipômetro
+  adipBodyFat?: string | null;
+  adipMuscleMass?: string | null;
+  adipFatMass?: string | null;
+  // Dobras cutâneas
+  tricepsFold?: string | null;
+  subscapularFold?: string | null;
+  suprailiacFold?: string | null;
+  abdominalFold?: string | null;
+  thighFold?: string | null;
+  chestFold?: string | null;
+  axillaryFold?: string | null;
 }
 
 interface StudentMeasurementFormProps {
@@ -91,6 +111,24 @@ export default function StudentMeasurementForm({
     rightCalf: "",
     leftCalf: "",
     notes: "",
+    // Bioimpedância
+    bioBodyFat: "",
+    bioMuscleMass: "",
+    bioFatMass: "",
+    bioVisceralFat: "",
+    bioBasalMetabolism: "",
+    // Adipômetro
+    adipBodyFat: "",
+    adipMuscleMass: "",
+    adipFatMass: "",
+    // Dobras cutâneas
+    tricepsFold: "",
+    subscapularFold: "",
+    suprailiacFold: "",
+    abdominalFold: "",
+    thighFold: "",
+    chestFold: "",
+    axillaryFold: "",
   });
 
   const addMutation = trpc.studentPortal.addMeasurement.useMutation({
@@ -136,6 +174,24 @@ export default function StudentMeasurementForm({
       rightCalf: "",
       leftCalf: "",
       notes: "",
+      // Bioimpedância
+      bioBodyFat: "",
+      bioMuscleMass: "",
+      bioFatMass: "",
+      bioVisceralFat: "",
+      bioBasalMetabolism: "",
+      // Adipômetro
+      adipBodyFat: "",
+      adipMuscleMass: "",
+      adipFatMass: "",
+      // Dobras cutâneas
+      tricepsFold: "",
+      subscapularFold: "",
+      suprailiacFold: "",
+      abdominalFold: "",
+      thighFold: "",
+      chestFold: "",
+      axillaryFold: "",
     });
   };
 
@@ -158,6 +214,24 @@ export default function StudentMeasurementForm({
       rightCalf: measurement.rightCalf || "",
       leftCalf: measurement.leftCalf || "",
       notes: measurement.notes || "",
+      // Bioimpedância
+      bioBodyFat: measurement.bioBodyFat || "",
+      bioMuscleMass: measurement.bioMuscleMass || "",
+      bioFatMass: measurement.bioFatMass || "",
+      bioVisceralFat: measurement.bioVisceralFat || "",
+      bioBasalMetabolism: measurement.bioBasalMetabolism || "",
+      // Adipômetro
+      adipBodyFat: measurement.adipBodyFat || "",
+      adipMuscleMass: measurement.adipMuscleMass || "",
+      adipFatMass: measurement.adipFatMass || "",
+      // Dobras cutâneas
+      tricepsFold: measurement.tricepsFold || "",
+      subscapularFold: measurement.subscapularFold || "",
+      suprailiacFold: measurement.suprailiacFold || "",
+      abdominalFold: measurement.abdominalFold || "",
+      thighFold: measurement.thighFold || "",
+      chestFold: measurement.chestFold || "",
+      axillaryFold: measurement.axillaryFold || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -185,6 +259,24 @@ export default function StudentMeasurementForm({
       rightCalf: formData.rightCalf || undefined,
       leftCalf: formData.leftCalf || undefined,
       notes: formData.notes || undefined,
+      // Bioimpedância
+      bioBodyFat: formData.bioBodyFat || undefined,
+      bioMuscleMass: formData.bioMuscleMass || undefined,
+      bioFatMass: formData.bioFatMass || undefined,
+      bioVisceralFat: formData.bioVisceralFat || undefined,
+      bioBasalMetabolism: formData.bioBasalMetabolism || undefined,
+      // Adipômetro
+      adipBodyFat: formData.adipBodyFat || undefined,
+      adipMuscleMass: formData.adipMuscleMass || undefined,
+      adipFatMass: formData.adipFatMass || undefined,
+      // Dobras cutâneas
+      tricepsFold: formData.tricepsFold || undefined,
+      subscapularFold: formData.subscapularFold || undefined,
+      suprailiacFold: formData.suprailiacFold || undefined,
+      abdominalFold: formData.abdominalFold || undefined,
+      thighFold: formData.thighFold || undefined,
+      chestFold: formData.chestFold || undefined,
+      axillaryFold: formData.axillaryFold || undefined,
     };
 
     if (editingMeasurement) {
@@ -406,6 +498,199 @@ export default function StudentMeasurementForm({
                   value={formData.leftCalf}
                   onChange={(e) => setFormData({ ...formData, leftCalf: e.target.value })}
                 />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="bioimpedancia">
+          <AccordionTrigger className="text-sm font-semibold">
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4 text-red-500" />
+              Bioimpedância
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+              <p className="text-xs text-blue-700">
+                <strong>Bioimpedância:</strong> Preencha com os dados obtidos em exame de bioimpedância profissional.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">% Gordura</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 15.5"
+                  value={formData.bioBodyFat}
+                  onChange={(e) => setFormData({ ...formData, bioBodyFat: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Massa Muscular (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 35.0"
+                  value={formData.bioMuscleMass}
+                  onChange={(e) => setFormData({ ...formData, bioMuscleMass: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Massa Gorda (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 12.0"
+                  value={formData.bioFatMass}
+                  onChange={(e) => setFormData({ ...formData, bioFatMass: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Gordura Visceral</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 8"
+                  value={formData.bioVisceralFat}
+                  onChange={(e) => setFormData({ ...formData, bioVisceralFat: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label className="text-xs">Metabolismo Basal (kcal)</Label>
+                <Input
+                  type="number"
+                  step="1"
+                  placeholder="Ex: 1800"
+                  value={formData.bioBasalMetabolism}
+                  onChange={(e) => setFormData({ ...formData, bioBasalMetabolism: e.target.value })}
+                />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="adipometro">
+          <AccordionTrigger className="text-sm font-semibold">
+            <div className="flex items-center gap-2">
+              <Clipboard className="h-4 w-4 text-amber-500" />
+              Adipômetro
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 mb-4">
+              <p className="text-xs text-amber-700">
+                <strong>Adipômetro:</strong> Preencha com os dados obtidos em avaliação com adipômetro profissional.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">% Gordura</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 15.5"
+                  value={formData.adipBodyFat}
+                  onChange={(e) => setFormData({ ...formData, adipBodyFat: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Massa Muscular (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 35.0"
+                  value={formData.adipMuscleMass}
+                  onChange={(e) => setFormData({ ...formData, adipMuscleMass: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Massa Gorda (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 12.0"
+                  value={formData.adipFatMass}
+                  onChange={(e) => setFormData({ ...formData, adipFatMass: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            {/* Dobras Cutâneas */}
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-xs font-medium text-muted-foreground mb-3">Dobras Cutâneas (mm)</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Tríceps</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 12"
+                    value={formData.tricepsFold}
+                    onChange={(e) => setFormData({ ...formData, tricepsFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Subescapular</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 15"
+                    value={formData.subscapularFold}
+                    onChange={(e) => setFormData({ ...formData, subscapularFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Supra-ilíaca</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 18"
+                    value={formData.suprailiacFold}
+                    onChange={(e) => setFormData({ ...formData, suprailiacFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Abdominal</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 22"
+                    value={formData.abdominalFold}
+                    onChange={(e) => setFormData({ ...formData, abdominalFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Coxa</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 20"
+                    value={formData.thighFold}
+                    onChange={(e) => setFormData({ ...formData, thighFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Peitoral</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 10"
+                    value={formData.chestFold}
+                    onChange={(e) => setFormData({ ...formData, chestFold: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Axilar Média</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 14"
+                    value={formData.axillaryFold}
+                    onChange={(e) => setFormData({ ...formData, axillaryFold: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
           </AccordionContent>

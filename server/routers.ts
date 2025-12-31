@@ -4074,6 +4074,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
         rightCalf: z.string().optional(),
         leftCalf: z.string().optional(),
         notes: z.string().optional(),
+        // Bioimpedância
+        bioBodyFat: z.string().optional(),
+        bioMuscleMass: z.string().optional(),
+        bioFatMass: z.string().optional(),
+        bioVisceralFat: z.string().optional(),
+        bioBasalMetabolism: z.string().optional(),
+        // Adipômetro
+        adipBodyFat: z.string().optional(),
+        adipMuscleMass: z.string().optional(),
+        adipFatMass: z.string().optional(),
+        // Dobras cutâneas
+        tricepsFold: z.string().optional(),
+        subscapularFold: z.string().optional(),
+        suprailiacFold: z.string().optional(),
+        abdominalFold: z.string().optional(),
+        thighFold: z.string().optional(),
+        chestFold: z.string().optional(),
+        axillaryFold: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Verificar permissão
@@ -4148,6 +4166,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
         rightCalf: z.string().optional(),
         leftCalf: z.string().optional(),
         notes: z.string().optional(),
+        // Bioimpedância
+        bioBodyFat: z.string().optional(),
+        bioMuscleMass: z.string().optional(),
+        bioFatMass: z.string().optional(),
+        bioVisceralFat: z.string().optional(),
+        bioBasalMetabolism: z.string().optional(),
+        // Adipômetro
+        adipBodyFat: z.string().optional(),
+        adipMuscleMass: z.string().optional(),
+        adipFatMass: z.string().optional(),
+        // Dobras cutâneas
+        tricepsFold: z.string().optional(),
+        subscapularFold: z.string().optional(),
+        suprailiacFold: z.string().optional(),
+        abdominalFold: z.string().optional(),
+        thighFold: z.string().optional(),
+        chestFold: z.string().optional(),
+        axillaryFold: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Verificar permissão
