@@ -1603,50 +1603,50 @@ export default function Workouts() {
             setStudentAnalysis(null);
           }
         }}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-cyan-600" />
-                Análise do Aluno: {studentAnalysis?.studentName}
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader className="pr-8">
+              <DialogTitle className="flex items-center gap-2 flex-wrap text-base sm:text-lg">
+                <Brain className="h-5 w-5 text-cyan-600 shrink-0" />
+                <span className="break-words">Análise: {studentAnalysis?.studentName}</span>
               </DialogTitle>
-              <DialogDescription>
-                Análise detalhada da evolução e recomendações da IA
+              <DialogDescription className="text-xs sm:text-sm">
+                Evolução e recomendações da IA
               </DialogDescription>
             </DialogHeader>
             
             {studentAnalysis && (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Resumo */}
                 <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50">
-                  <CardContent className="pt-4">
-                    <p className="text-sm">{studentAnalysis.analysis.summary}</p>
+                  <CardContent className="p-3 sm:pt-4">
+                    <p className="text-xs sm:text-sm leading-relaxed">{studentAnalysis.analysis.summary}</p>
                   </CardContent>
                 </Card>
                 
                 {/* Métricas Rápidas */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {studentAnalysis.latestMeasurement?.weight && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Peso Atual</p>
-                      <p className="text-lg font-bold">{studentAnalysis.latestMeasurement.weight} kg</p>
+                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Peso</p>
+                      <p className="text-sm sm:text-lg font-bold">{studentAnalysis.latestMeasurement.weight} kg</p>
                     </div>
                   )}
                   {studentAnalysis.latestMeasurement?.bodyFat && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Gordura</p>
-                      <p className="text-lg font-bold">{studentAnalysis.latestMeasurement.bodyFat}%</p>
+                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Gordura</p>
+                      <p className="text-sm sm:text-lg font-bold">{studentAnalysis.latestMeasurement.bodyFat}%</p>
                     </div>
                   )}
                   {studentAnalysis.workoutPerformance && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Treinos (30d)</p>
-                      <p className="text-lg font-bold">{studentAnalysis.workoutPerformance.totalWorkouts}</p>
+                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Treinos (30d)</p>
+                      <p className="text-sm sm:text-lg font-bold">{studentAnalysis.workoutPerformance.totalWorkouts}</p>
                     </div>
                   )}
                   {studentAnalysis.workoutPerformance?.consistency && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-xs text-muted-foreground">Consistência</p>
-                      <p className="text-lg font-bold">{studentAnalysis.workoutPerformance.consistency}</p>
+                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Consistência</p>
+                      <p className="text-sm sm:text-lg font-bold">{studentAnalysis.workoutPerformance.consistency}</p>
                     </div>
                   )}
                 </div>
@@ -1654,42 +1654,42 @@ export default function Workouts() {
                 {/* Evolução das Medidas */}
                 {studentAnalysis.measurementEvolution && (
                   <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
+                    <CardHeader className="p-3 pb-1 sm:pb-2">
+                      <CardTitle className="text-xs sm:text-sm flex items-center gap-2">
+                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
                         Evolução ({studentAnalysis.measurementEvolution.periodDays} dias)
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <CardContent className="p-3 pt-0">
+                      <div className="grid grid-cols-2 gap-2">
                         {studentAnalysis.measurementEvolution.weightChange !== null && (
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Peso</p>
-                            <p className={`font-bold ${studentAnalysis.measurementEvolution.weightChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.weightChange > 0 ? 'text-red-600' : ''}`}>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Peso</p>
+                            <p className={`text-xs sm:text-sm font-bold ${studentAnalysis.measurementEvolution.weightChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.weightChange > 0 ? 'text-red-600' : ''}`}>
                               {studentAnalysis.measurementEvolution.weightChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.weightChange.toFixed(1)} kg
                             </p>
                           </div>
                         )}
                         {studentAnalysis.measurementEvolution.bodyFatChange !== null && (
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Gordura</p>
-                            <p className={`font-bold ${studentAnalysis.measurementEvolution.bodyFatChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.bodyFatChange > 0 ? 'text-red-600' : ''}`}>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Gordura</p>
+                            <p className={`text-xs sm:text-sm font-bold ${studentAnalysis.measurementEvolution.bodyFatChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.bodyFatChange > 0 ? 'text-red-600' : ''}`}>
                               {studentAnalysis.measurementEvolution.bodyFatChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.bodyFatChange.toFixed(1)}%
                             </p>
                           </div>
                         )}
                         {studentAnalysis.measurementEvolution.muscleMassChange !== null && (
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Músculo</p>
-                            <p className={`font-bold ${studentAnalysis.measurementEvolution.muscleMassChange > 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.muscleMassChange < 0 ? 'text-red-600' : ''}`}>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Músculo</p>
+                            <p className={`text-xs sm:text-sm font-bold ${studentAnalysis.measurementEvolution.muscleMassChange > 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.muscleMassChange < 0 ? 'text-red-600' : ''}`}>
                               {studentAnalysis.measurementEvolution.muscleMassChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.muscleMassChange.toFixed(1)} kg
                             </p>
                           </div>
                         )}
                         {studentAnalysis.measurementEvolution.waistChange !== null && (
                           <div className="text-center">
-                            <p className="text-xs text-muted-foreground">Cintura</p>
-                            <p className={`font-bold ${studentAnalysis.measurementEvolution.waistChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.waistChange > 0 ? 'text-red-600' : ''}`}>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Cintura</p>
+                            <p className={`text-xs sm:text-sm font-bold ${studentAnalysis.measurementEvolution.waistChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.waistChange > 0 ? 'text-red-600' : ''}`}>
                               {studentAnalysis.measurementEvolution.waistChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.waistChange.toFixed(1)} cm
                             </p>
                           </div>
@@ -1700,21 +1700,21 @@ export default function Workouts() {
                 )}
                 
                 {/* Pontos Fortes e Déficits */}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-3">
                   {studentAnalysis.analysis.strengths?.length > 0 && (
                     <Card className="border-green-200">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm text-green-700 flex items-center gap-2">
-                          <Check className="h-4 w-4" />
+                      <CardHeader className="p-3 pb-1">
+                        <CardTitle className="text-xs sm:text-sm text-green-700 flex items-center gap-2">
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                           Pontos Fortes
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <ul className="space-y-1">
                           {studentAnalysis.analysis.strengths.map((s: string, i: number) => (
-                            <li key={i} className="text-sm flex items-start gap-2">
-                              <span className="text-green-500 mt-1">•</span>
-                              {s}
+                            <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
+                              <span className="text-green-500 mt-0.5 shrink-0">•</span>
+                              <span className="break-words">{s}</span>
                             </li>
                           ))}
                         </ul>
@@ -1724,18 +1724,18 @@ export default function Workouts() {
                   
                   {studentAnalysis.analysis.deficits?.length > 0 && (
                     <Card className="border-red-200">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm text-red-700 flex items-center gap-2">
-                          <X className="h-4 w-4" />
+                      <CardHeader className="p-3 pb-1">
+                        <CardTitle className="text-xs sm:text-sm text-red-700 flex items-center gap-2">
+                          <X className="h-3 w-3 sm:h-4 sm:w-4" />
                           Déficits / Atenção
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <ul className="space-y-1">
                           {studentAnalysis.analysis.deficits.map((d: string, i: number) => (
-                            <li key={i} className="text-sm flex items-start gap-2">
-                              <span className="text-red-500 mt-1">•</span>
-                              {d}
+                            <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
+                              <span className="text-red-500 mt-0.5 shrink-0">•</span>
+                              <span className="break-words">{d}</span>
                             </li>
                           ))}
                         </ul>
@@ -1745,13 +1745,13 @@ export default function Workouts() {
                 </div>
                 
                 {/* Grupos Musculares */}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-3">
                   {studentAnalysis.analysis.muscleGroupsProgressing?.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Grupos Evoluindo Bem</p>
+                      <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5">Grupos Evoluindo Bem</p>
                       <div className="flex flex-wrap gap-1">
                         {studentAnalysis.analysis.muscleGroupsProgressing.map((g: string, i: number) => (
-                          <Badge key={i} className="bg-green-100 text-green-700">{g}</Badge>
+                          <Badge key={i} className="bg-green-100 text-green-700 text-[10px] sm:text-xs px-1.5 py-0.5">{g}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1759,10 +1759,10 @@ export default function Workouts() {
                   
                   {studentAnalysis.analysis.muscleGroupsToFocus?.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Grupos para Focar</p>
+                      <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5">Grupos para Focar</p>
                       <div className="flex flex-wrap gap-1">
                         {studentAnalysis.analysis.muscleGroupsToFocus.map((g: string, i: number) => (
-                          <Badge key={i} className="bg-orange-100 text-orange-700">{g}</Badge>
+                          <Badge key={i} className="bg-orange-100 text-orange-700 text-[10px] sm:text-xs px-1.5 py-0.5">{g}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1772,18 +1772,18 @@ export default function Workouts() {
                 {/* Recomendações */}
                 {studentAnalysis.analysis.recommendations?.length > 0 && (
                   <Card className="border-blue-200 bg-blue-50">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm text-blue-700 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
+                    <CardHeader className="p-3 pb-1">
+                      <CardTitle className="text-xs sm:text-sm text-blue-700 flex items-center gap-2">
+                        <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                         Recomendações
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-3 pt-0">
                       <ul className="space-y-1">
                         {studentAnalysis.analysis.recommendations.map((r: string, i: number) => (
-                          <li key={i} className="text-sm text-blue-700 flex items-start gap-2">
-                            <span className="mt-1">{i + 1}.</span>
-                            {r}
+                          <li key={i} className="text-xs sm:text-sm text-blue-700 flex items-start gap-2">
+                            <span className="mt-0.5 shrink-0">{i + 1}.</span>
+                            <span className="break-words">{r}</span>
                           </li>
                         ))}
                       </ul>
@@ -1793,21 +1793,21 @@ export default function Workouts() {
                 
                 {/* Botão de Gerar Treino 2.0 */}
                 <Card className={`border-2 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50' : 'border-gray-200'}`}>
-                  <CardContent className="pt-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <CardContent className="p-3">
+                    <div className="space-y-3">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <RefreshCw className={`h-5 w-5 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'text-orange-600' : 'text-gray-400'}`} />
-                          <h4 className="font-semibold">
-                            {studentAnalysis.analysis.shouldAdaptWorkout ? 'Recomendado: Criar Treino 2.0' : 'Adaptação Não Necessária'}
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <RefreshCw className={`h-4 w-4 shrink-0 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'text-orange-600' : 'text-gray-400'}`} />
+                          <h4 className="text-xs sm:text-sm font-semibold">
+                            {studentAnalysis.analysis.shouldAdaptWorkout ? 'Recomendado: Criar Treino' : 'Adaptação Não Necessária'}
                           </h4>
                           {studentAnalysis.analysis.adaptationPriority && studentAnalysis.analysis.adaptationPriority !== 'none' && (
-                            <Badge className={{
+                            <Badge className={`text-[10px] sm:text-xs ${{
                               high: 'bg-red-100 text-red-700',
                               medium: 'bg-orange-100 text-orange-700',
                               low: 'bg-yellow-100 text-yellow-700',
-                            }[studentAnalysis.analysis.adaptationPriority] || 'bg-gray-100'}>
-                              Prioridade {{
+                            }[studentAnalysis.analysis.adaptationPriority] || 'bg-gray-100'}`}>
+                              {{
                                 high: 'Alta',
                                 medium: 'Média',
                                 low: 'Baixa',
@@ -1815,7 +1815,7 @@ export default function Workouts() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-words">
                           {studentAnalysis.analysis.adaptationReason}
                         </p>
                       </div>
@@ -1826,14 +1826,14 @@ export default function Workouts() {
                           });
                         }}
                         disabled={generateAdaptedMutation.isPending}
-                        className={studentAnalysis.analysis.shouldAdaptWorkout 
+                        className={`w-full text-xs sm:text-sm ${studentAnalysis.analysis.shouldAdaptWorkout 
                           ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600' 
-                          : ''}
+                          : ''}`}
                       >
                         {generateAdaptedMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                         ) : (
-                          <RefreshCw className="h-4 w-4 mr-2" />
+                          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         )}
                         Gerar Treino {studentAnalysis.totalWorkouts + 1}.0
                       </Button>

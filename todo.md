@@ -1782,3 +1782,12 @@
 - [x] Fluxo: Análise → Ver análise detalhada → Gerar Treino baseado na análise
 - [x] Criar procedimento getStudentAnalysis no backend
 - [x] Modal de análise com métricas, evolução, pontos fortes, déficits e recomendações
+
+
+## Responsividade Modal Análise (v4.7)
+- [x] Ajustar modal de análise para caber em telas mobile
+- [x] Corrigir texto cortado nas laterais
+- [x] Melhorar espaçamento e padding para mobile
+- [x] Ajustar tamanho de fontes para mobile (text-xs, text-[10px])
+- [x] Usar break-words para textos longos
+- [x] Botão de gerar treino em largura total no mobile
