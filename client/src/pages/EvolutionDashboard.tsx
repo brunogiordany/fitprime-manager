@@ -52,13 +52,13 @@ export default function EvolutionDashboard() {
   const { data: students } = trpc.students.list.useQuery();
   
   const { data: uniqueExercises } = trpc.trainingDiary.uniqueExercises.useQuery(
-    { studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined },
+    { studentId: selectedStudentId && selectedStudentId !== 'all' ? parseInt(selectedStudentId) : undefined },
     { enabled: true }
   );
 
   const { data: exerciseProgress } = trpc.trainingDiary.exerciseProgress.useQuery(
     { 
-      studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined, 
+      studentId: selectedStudentId && selectedStudentId !== 'all' ? parseInt(selectedStudentId) : undefined, 
       exerciseName: selectedExercise,
       limit: 50
     },
@@ -66,7 +66,7 @@ export default function EvolutionDashboard() {
   );
 
   const { data: muscleGroupAnalysis } = trpc.trainingDiary.muscleGroupAnalysis.useQuery(
-    { studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined },
+    { studentId: selectedStudentId && selectedStudentId !== 'all' ? parseInt(selectedStudentId) : undefined },
     { enabled: true }
   );
 
@@ -243,7 +243,7 @@ export default function EvolutionDashboard() {
                     <SelectValue placeholder="Todos os alunos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os alunos</SelectItem>
+                    <SelectItem value="all">Todos os alunos</SelectItem>
                     {students?.map((student) => (
                       <SelectItem key={student.id} value={student.id.toString()}>
                         {student.name}
