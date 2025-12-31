@@ -532,3 +532,95 @@ FitPrime - Seu parceiro de treinos 💪
     text,
   });
 }
+
+
+/**
+ * Envia email de recuperação de senha com código de 6 dígitos
+ */
+export async function sendPasswordResetEmail(
+  studentEmail: string,
+  studentName: string,
+  code: string
+): Promise<boolean> {
+  const subject = '🔐 Código de Recuperação de Senha - FitPrime';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">🔐</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Recuperação de Senha</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${studentName}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Recebemos uma solicitação para redefinir a senha da sua conta no FitPrime. Use o código abaixo para continuar:
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 2px solid #10b981; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center;">
+        <p style="color: #166534; font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 1px;">
+          Seu código de verificação
+        </p>
+        <p style="color: #10b981; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: monospace;">
+          ${code}
+        </p>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
+        ⏱️ Este código expira em <strong>15 minutos</strong>
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
+        Se você não solicitou a recuperação de senha, ignore este email. Sua conta permanece segura.
+      </p>
+      
+      <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
+        Por segurança, nunca compartilhe este código com ninguém.
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime - Seu parceiro de treinos 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${studentName},
+
+Recebemos uma solicitação para redefinir a senha da sua conta no FitPrime.
+
+Seu código de verificação: ${code}
+
+⏱️ Este código expira em 15 minutos.
+
+Se você não solicitou a recuperação de senha, ignore este email.
+
+FitPrime - Seu parceiro de treinos 💪
+  `;
+
+  return sendEmail({
+    to: studentEmail,
+    subject,
+    html,
+    text,
+  });
+}

@@ -3073,3 +3073,72 @@ export async function rejectWorkoutLogSuggestion(id: number, reviewNotes?: strin
       .where(eq(workoutLogs.id, suggestion.workoutLogId));
   }
 }
+
+
+// ==================== PASSWORD RESET ====================
+
+// Salvar código de reset de senha
+export async function savePasswordResetCode(studentId: number, code: string, expiresAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Usar o campo notes temporariamente para armazenar o código
+  // Formato: RESET:código:timestamp_expiracao
+  const resetData = `RESET:${code}:${expiresAt.getTime()}`;
+  
+  // Buscar notes atual para preservar
+  const student = await db.select({ notes: students.notes }).from(students)
+    .where(eq(students.id, studentId))
+    .limit(1);
+  
+  const currentNotes = student[0]?.notes || '';
+  // Remover código anterior se existir
+  const cleanNotes = currentNotes.replace(/\nRESET:[^:]+:\d+$/, '').replace(/^RESET:[^:]+:\d+\n?/, '');
+  const newNotes = cleanNotes ? `${cleanNotes}\n${resetData}` : resetData;
+  
+  await db.update(students).set({ notes: newNotes }).where(eq(students.id, studentId));
+}
+
+// Verificar código de reset de senha
+export async function verifyPasswordResetCode(studentId: number, code: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const student = await db.select({ notes: students.notes }).from(students)
+    .where(eq(students.id, studentId))
+    .limit(1);
+  
+  const notes = student[0]?.notes || '';
+  const match = notes.match(/RESET:(\d{6}):(\d+)/);
+  
+  if (!match) return false;
+  
+  const [, savedCode, expiresAt] = match;
+  const now = Date.now();
+  
+  // Verificar se o código é válido e não expirou
+  return savedCode === code && parseInt(expiresAt) > now;
+}
+
+// Limpar código de reset de senha
+export async function clearPasswordResetCode(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const student = await db.select({ notes: students.notes }).from(students)
+    .where(eq(students.id, studentId))
+    .limit(1);
+  
+  const currentNotes = student[0]?.notes || '';
+  const cleanNotes = currentNotes.replace(/\nRESET:[^:]+:\d+$/, '').replace(/^RESET:[^:]+:\d+\n?/, '');
+  
+  await db.update(students).set({ notes: cleanNotes || null }).where(eq(students.id, studentId));
+}
+
+// Atualizar senha do aluno
+export async function updateStudentPassword(studentId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(students).set({ passwordHash }).where(eq(students.id, studentId));
+}

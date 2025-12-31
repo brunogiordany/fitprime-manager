@@ -818,3 +818,82 @@ export const workoutLogSuggestions = mysqlTable("workout_log_suggestions", {
 
 export type WorkoutLogSuggestion = typeof workoutLogSuggestions.$inferSelect;
 export type InsertWorkoutLogSuggestion = typeof workoutLogSuggestions.$inferInsert;
+
+
+// ==================== PERSONAL SUBSCRIPTIONS (Planos SaaS do Personal) ====================
+export const personalSubscriptions = mysqlTable("personal_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Plano atual
+  planId: varchar("planId", { length: 50 }).notNull(), // fitprime_br_starter, fitprime_br_growth, etc.
+  planName: varchar("planName", { length: 100 }).notNull(), // Starter, Growth, Pro, etc.
+  country: mysqlEnum("country", ["BR", "US"]).default("BR").notNull(),
+  
+  // Limites e uso
+  studentLimit: int("studentLimit").notNull(), // Limite de alunos do plano
+  currentStudents: int("currentStudents").default(0).notNull(), // Alunos ativos atuais
+  extraStudents: int("extraStudents").default(0).notNull(), // Alunos extras (acima do limite)
+  
+  // Preços
+  planPrice: decimal("planPrice", { precision: 10, scale: 2 }).notNull(), // Preço do plano
+  extraStudentPrice: decimal("extraStudentPrice", { precision: 10, scale: 2 }).notNull(), // Preço por aluno extra
+  currency: mysqlEnum("currency", ["BRL", "USD"]).default("BRL").notNull(),
+  
+  // Stripe
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  stripePriceId: varchar("stripePriceId", { length: 255 }),
+  
+  // Status
+  status: mysqlEnum("status", ["active", "trial", "past_due", "cancelled", "expired"]).default("trial").notNull(),
+  trialEndsAt: timestamp("trialEndsAt"),
+  currentPeriodStart: timestamp("currentPeriodStart"),
+  currentPeriodEnd: timestamp("currentPeriodEnd"),
+  cancelledAt: timestamp("cancelledAt"),
+  
+  // Histórico de cobrança de extras
+  lastExtraCharge: decimal("lastExtraCharge", { precision: 10, scale: 2 }).default("0"),
+  lastExtraChargeAt: timestamp("lastExtraChargeAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PersonalSubscription = typeof personalSubscriptions.$inferSelect;
+export type InsertPersonalSubscription = typeof personalSubscriptions.$inferInsert;
+
+// ==================== SUBSCRIPTION USAGE LOGS (Histórico de uso/cobrança) ====================
+export const subscriptionUsageLogs = mysqlTable("subscription_usage_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  subscriptionId: int("subscriptionId").notNull().references(() => personalSubscriptions.id),
+  
+  // Tipo de evento
+  eventType: mysqlEnum("eventType", [
+    "student_added",      // Aluno adicionado
+    "student_removed",    // Aluno removido
+    "limit_exceeded",     // Limite excedido
+    "extra_charged",      // Cobrança de extra realizada
+    "plan_upgraded",      // Upgrade de plano
+    "plan_downgraded",    // Downgrade de plano
+    "upgrade_suggested",  // Sugestão de upgrade
+    "payment_failed",     // Falha no pagamento
+    "subscription_renewed" // Renovação de assinatura
+  ]).notNull(),
+  
+  // Dados do evento
+  previousValue: int("previousValue"), // Valor anterior (ex: número de alunos)
+  newValue: int("newValue"), // Novo valor
+  chargeAmount: decimal("chargeAmount", { precision: 10, scale: 2 }), // Valor cobrado (se aplicável)
+  currency: mysqlEnum("currency", ["BRL", "USD"]).default("BRL"),
+  
+  // Detalhes
+  details: text("details"), // JSON com detalhes adicionais
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SubscriptionUsageLog = typeof subscriptionUsageLogs.$inferSelect;
+export type InsertSubscriptionUsageLog = typeof subscriptionUsageLogs.$inferInsert;

@@ -8,6 +8,7 @@ import * as db from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription, getSubscription, createPaymentLink } from "./stripe";
+import { subscriptionRouter } from "./subscription/subscriptionRouter";
 import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
 
 // Default plans to seed for new personals
@@ -52,6 +53,9 @@ const studentProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  
+  // ==================== SUBSCRIPTION (Planos SaaS) ====================
+  subscription: subscriptionRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -393,12 +397,32 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Verificar limite de alunos antes de criar
+        const { canAddStudent, updateStudentCount } = await import('./subscription/subscriptionService');
+        const canAdd = await canAddStudent(ctx.personal.id);
+        
+        if (!canAdd.canAdd) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: canAdd.message || 'Limite de alunos atingido. Faça upgrade do seu plano.' 
+          });
+        }
+        
         const id = await db.createStudent({
           ...input,
           personalId: ctx.personal.id,
           birthDate: input.birthDate ? new Date(input.birthDate) : undefined,
         });
-        return { id };
+        
+        // Atualizar contagem de alunos na subscription
+        await updateStudentCount(ctx.personal.id);
+        
+        return { 
+          id,
+          willBeCharged: canAdd.willBeCharged,
+          extraCost: canAdd.extraCost,
+          message: canAdd.message || null,
+        };
       }),
     
     update: personalProcedure
@@ -642,6 +666,86 @@ export const appRouter = router({
         );
         
         return { success: true, token, studentId: student.id, studentName: student.name };
+      }),
+    
+    // Solicitar recuperação de senha
+    requestPasswordReset: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        // Buscar aluno pelo email
+        const student = await db.getStudentByEmail(input.email);
+        if (!student) {
+          // Por segurança, não revelar se o email existe ou não
+          return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
+        }
+        
+        // Gerar código de 6 dígitos
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Expira em 15 minutos
+        
+        // Salvar código no banco (usando uma tabela temporária ou campo no aluno)
+        await db.savePasswordResetCode(student.id, code, expiresAt);
+        
+        // Enviar email com o código
+        try {
+          const { sendPasswordResetEmail } = await import('./email');
+          await sendPasswordResetEmail(input.email, student.name, code);
+        } catch (error) {
+          console.error('Erro ao enviar email de recuperação:', error);
+          // Não falhar a requisição, apenas logar
+        }
+        
+        return { success: true, message: 'Código enviado para seu email.' };
+      }),
+    
+    // Verificar código de recuperação
+    verifyResetCode: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+      }))
+      .mutation(async ({ input }) => {
+        const student = await db.getStudentByEmail(input.email);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
+        }
+        
+        const isValid = await db.verifyPasswordResetCode(student.id, input.code);
+        if (!isValid) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Código inválido ou expirado' });
+        }
+        
+        return { success: true };
+      }),
+    
+    // Redefinir senha com código
+    resetPassword: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+        newPassword: z.string().min(6),
+      }))
+      .mutation(async ({ input }) => {
+        const student = await db.getStudentByEmail(input.email);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
+        }
+        
+        const isValid = await db.verifyPasswordResetCode(student.id, input.code);
+        if (!isValid) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Código inválido ou expirado' });
+        }
+        
+        // Hash da nova senha
+        const bcrypt = await import('bcryptjs');
+        const passwordHash = await bcrypt.hash(input.newPassword, 10);
+        
+        // Atualizar senha e limpar código
+        await db.updateStudentPassword(student.id, passwordHash);
+        await db.clearPasswordResetCode(student.id);
+        
+        return { success: true, message: 'Senha redefinida com sucesso!' };
       }),
     
     // Verificar token de aluno

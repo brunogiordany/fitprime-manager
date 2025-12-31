@@ -3,10 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { Dumbbell, Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Dumbbell, Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, KeyRound, CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function StudentLogin() {
   const [, setLocation] = useLocation();
@@ -17,6 +24,15 @@ export default function StudentLogin() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  
+  // Estados para recuperação de senha
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'code' | 'newPassword' | 'success'>('email');
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   // Verificar se já está logado
   useEffect(() => {
@@ -41,6 +57,38 @@ export default function StudentLogin() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Erro ao fazer login");
+    },
+  });
+
+  // Mutation para solicitar recuperação de senha
+  const requestResetMutation = trpc.students.requestPasswordReset.useMutation({
+    onSuccess: () => {
+      toast.success("Código enviado para seu email!");
+      setForgotPasswordStep('code');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao enviar código");
+    },
+  });
+
+  // Mutation para verificar código
+  const verifyCodeMutation = trpc.students.verifyResetCode.useMutation({
+    onSuccess: () => {
+      setForgotPasswordStep('newPassword');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Código inválido ou expirado");
+    },
+  });
+
+  // Mutation para redefinir senha
+  const resetPasswordMutation = trpc.students.resetPassword.useMutation({
+    onSuccess: () => {
+      setForgotPasswordStep('success');
+      toast.success("Senha redefinida com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao redefinir senha");
     },
   });
 
@@ -75,6 +123,52 @@ export default function StudentLogin() {
     }
   };
 
+  const handleRequestReset = () => {
+    if (!forgotPasswordEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
+      toast.error("Digite um email válido");
+      return;
+    }
+    requestResetMutation.mutate({ email: forgotPasswordEmail });
+  };
+
+  const handleVerifyCode = () => {
+    if (!resetCode.trim() || resetCode.length !== 6) {
+      toast.error("Digite o código de 6 dígitos");
+      return;
+    }
+    verifyCodeMutation.mutate({ email: forgotPasswordEmail, code: resetCode });
+  };
+
+  const handleResetPassword = () => {
+    if (newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    resetPasswordMutation.mutate({ 
+      email: forgotPasswordEmail, 
+      code: resetCode, 
+      newPassword 
+    });
+  };
+
+  const closeForgotPasswordDialog = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordStep('email');
+    setForgotPasswordEmail("");
+    setResetCode("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const openForgotPassword = () => {
+    setForgotPasswordEmail(loginForm.email);
+    setShowForgotPassword(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -106,10 +200,19 @@ export default function StudentLogin() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="flex items-center gap-2">
-              <Lock className="h-4 w-4" />
-              Senha
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Senha
+              </Label>
+              <button
+                type="button"
+                onClick={openForgotPassword}
+                className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
+              >
+                Esqueci minha senha
+              </button>
+            </div>
             <div className="relative">
               <Input
                 id="password"
@@ -165,6 +268,165 @@ export default function StudentLogin() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Dialog de Recuperação de Senha */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-emerald-600" />
+              {forgotPasswordStep === 'success' ? 'Senha Redefinida!' : 'Recuperar Senha'}
+            </DialogTitle>
+            <DialogDescription>
+              {forgotPasswordStep === 'email' && 'Digite seu email para receber um código de recuperação.'}
+              {forgotPasswordStep === 'code' && 'Digite o código de 6 dígitos enviado para seu email.'}
+              {forgotPasswordStep === 'newPassword' && 'Crie uma nova senha para sua conta.'}
+              {forgotPasswordStep === 'success' && 'Sua senha foi redefinida com sucesso!'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {forgotPasswordStep === 'email' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    onKeyPress={(e) => e.key === 'Enter' && handleRequestReset()}
+                  />
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={handleRequestReset}
+                  disabled={requestResetMutation.isPending}
+                >
+                  {requestResetMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Enviando...
+                    </>
+                  ) : (
+                    "Enviar código"
+                  )}
+                </Button>
+              </>
+            )}
+
+            {forgotPasswordStep === 'code' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-code">Código de verificação</Label>
+                  <Input
+                    id="reset-code"
+                    type="text"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    className="text-center text-2xl tracking-widest"
+                    maxLength={6}
+                    onKeyPress={(e) => e.key === 'Enter' && handleVerifyCode()}
+                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    Código enviado para {forgotPasswordEmail}
+                  </p>
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={handleVerifyCode}
+                  disabled={verifyCodeMutation.isPending}
+                >
+                  {verifyCodeMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Verificando...
+                    </>
+                  ) : (
+                    "Verificar código"
+                  )}
+                </Button>
+                <Button 
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setForgotPasswordStep('email')}
+                >
+                  Voltar
+                </Button>
+              </>
+            )}
+
+            {forgotPasswordStep === 'newPassword' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nova senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmar nova senha</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Digite novamente"
+                    onKeyPress={(e) => e.key === 'Enter' && handleResetPassword()}
+                  />
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={handleResetPassword}
+                  disabled={resetPasswordMutation.isPending}
+                >
+                  {resetPasswordMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Redefinindo...
+                    </>
+                  ) : (
+                    "Redefinir senha"
+                  )}
+                </Button>
+              </>
+            )}
+
+            {forgotPasswordStep === 'success' && (
+              <div className="text-center space-y-4">
+                <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+                </div>
+                <p className="text-gray-600">
+                  Você já pode fazer login com sua nova senha.
+                </p>
+                <Button 
+                  className="w-full"
+                  onClick={closeForgotPasswordDialog}
+                >
+                  Fazer login
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
