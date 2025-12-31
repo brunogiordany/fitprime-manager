@@ -5578,14 +5578,46 @@ Seja profissional, respeitoso e motivador.`
       .query(async ({ ctx }) => {
         const photos = await db.getPhotosByStudentId(ctx.student.id);
         
-        // Extrair poseId das notas e retornar com a informação
-        return photos.map(photo => {
+        // Extrair poseId das notas e organizar por pose com histórico
+        const photosByPose: Record<string, Array<{
+          id: number;
+          url: string;
+          date: Date;
+          category: string | null;
+        }>> = {};
+        
+        photos.forEach(photo => {
           const poseMatch = photo.notes?.match(/^pose:(.+)$/);
-          return {
-            ...photo,
-            poseId: poseMatch ? poseMatch[1] : null,
-          };
+          const poseId = poseMatch ? poseMatch[1] : null;
+          
+          if (poseId) {
+            if (!photosByPose[poseId]) {
+              photosByPose[poseId] = [];
+            }
+            photosByPose[poseId].push({
+              id: photo.id,
+              url: photo.url,
+              date: photo.createdAt,
+              category: photo.category,
+            });
+          }
         });
+        
+        // Ordenar cada pose por data (mais recente primeiro)
+        Object.keys(photosByPose).forEach(poseId => {
+          photosByPose[poseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        });
+        
+        return {
+          photosByPose,
+          allPhotos: photos.map(photo => {
+            const poseMatch = photo.notes?.match(/^pose:(.+)$/);
+            return {
+              ...photo,
+              poseId: poseMatch ? poseMatch[1] : null,
+            };
+          }),
+        };
       }),
   }),
   

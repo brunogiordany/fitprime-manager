@@ -381,9 +381,36 @@ export default function StudentPortalPage() {
       trainingLocation: cleanEnum(anamnesisForm.trainingLocation, ['full_gym', 'home_gym', 'home_basic', 'outdoor', 'studio']),
       availableEquipment: cleanValue(anamnesisForm.availableEquipment),
       // Restrições e ênfases
-      trainingRestrictions: cleanValue(anamnesisForm.trainingRestrictions),
+      // Converter arrays para strings JSON se necessário
+      trainingRestrictions: (() => {
+        const val = anamnesisForm.trainingRestrictions;
+        if (!val || val === '') return undefined;
+        // Se já é uma string JSON válida, usar diretamente
+        if (typeof val === 'string') {
+          // Se parece com array JSON, manter como está
+          if (val.startsWith('[')) return val;
+          // Se é texto simples, converter para string
+          return val;
+        }
+        // Se é array, converter para JSON string
+        if (Array.isArray(val)) return JSON.stringify(val);
+        return String(val);
+      })(),
       restrictionNotes: cleanValue(anamnesisForm.restrictionNotes),
-      muscleEmphasis: cleanValue(anamnesisForm.muscleEmphasis),
+      muscleEmphasis: (() => {
+        const val = anamnesisForm.muscleEmphasis;
+        if (!val || val === '') return undefined;
+        // Se já é uma string JSON válida, usar diretamente
+        if (typeof val === 'string') {
+          // Se parece com array JSON, manter como está
+          if (val.startsWith('[')) return val;
+          // Se é texto simples, converter para string
+          return val;
+        }
+        // Se é array, converter para JSON string
+        if (Array.isArray(val)) return JSON.stringify(val);
+        return String(val);
+      })(),
     });
   };
 

@@ -1711,3 +1711,10 @@
 - [ ] Incluir comparativo de fotos na análise de 30 dias
 - [ ] IA cruza: evolução visual + medidas + eficiência do treino
 - [ ] Validar se treino está gerando resultados visuais esperados
+
+
+## Correções e Melhorias Fotos (v6.0)
+- [x] Corrigir erro de serialização na anamnese (trainingRestrictions e muscleEmphasis como arrays)
+- [x] Otimizar imagens de referência das poses (reduzir de 44MB para 6MB total)
+- [x] Criar histórico de evolução de fotos no portal do aluno (timeline por pose)
+- [x] Implementar visualização de fotos no lado do personal (StudentProfile)

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Camera, Upload, X, Check, ChevronDown, ChevronUp, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronDown, ChevronUp, Image as ImageIcon, Trash2, History, Calendar } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -54,7 +54,13 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
   const [selectedPose, setSelectedPose] = useState<{ id: string; name: string; description: string; image: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [uploadedPhotos, setUploadedPhotos] = useState<{ poseId: string; url: string }[]>(existingPhotos);
+  const [showHistory, setShowHistory] = useState<string | null>(null); // poseId para mostrar histórico
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Buscar fotos guiadas com histórico
+  const { data: guidedPhotosData } = trpc.studentPortal.guidedPhotos.useQuery(undefined, {
+    enabled: !readOnly,
+  });
 
   const uploadMutation = trpc.studentPortal.uploadPhoto.useMutation({
     onSuccess: (data) => {
@@ -122,7 +128,20 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
   };
 
   const getPhotoForPose = (poseId: string) => {
-    return uploadedPhotos.find(p => p.poseId === poseId)?.url;
+    // Primeiro verifica nas fotos recém enviadas, depois no histórico
+    const recentPhoto = uploadedPhotos.find(p => p.poseId === poseId)?.url;
+    if (recentPhoto) return recentPhoto;
+    
+    // Buscar a foto mais recente do histórico
+    const historyPhotos = guidedPhotosData?.photosByPose?.[poseId];
+    if (historyPhotos && historyPhotos.length > 0) {
+      return historyPhotos[0].url;
+    }
+    return undefined;
+  };
+  
+  const getPhotoHistory = (poseId: string) => {
+    return guidedPhotosData?.photosByPose?.[poseId] || [];
   };
 
   const removePhoto = (poseId: string) => {
@@ -182,20 +201,39 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
                                 alt={pose.name}
                                 className="w-full h-full object-cover"
                               />
-                              {!readOnly && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removePhoto(pose.id);
-                                  }}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              )}
-                              <div className="absolute bottom-0 left-0 right-0 bg-green-500/90 text-white text-xs p-1 text-center">
-                                <Check className="h-3 w-3 inline mr-1" />
-                                Foto enviada
+                              {/* Botões de ação */}
+                              <div className="absolute top-2 right-2 flex gap-1">
+                                {getPhotoHistory(pose.id).length > 1 && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowHistory(pose.id);
+                                    }}
+                                    className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                    title="Ver histórico"
+                                  >
+                                    <History className="h-3 w-3" />
+                                  </button>
+                                )}
+                                {!readOnly && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      removePhoto(pose.id);
+                                    }}
+                                    className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
+                              <div className="absolute bottom-0 left-0 right-0 bg-green-500/90 text-white text-xs p-1 text-center flex items-center justify-center gap-1">
+                                <Check className="h-3 w-3" />
+                                {getPhotoHistory(pose.id).length > 1 ? (
+                                  <span>{getPhotoHistory(pose.id).length} fotos</span>
+                                ) : (
+                                  <span>Foto enviada</span>
+                                )}
                               </div>
                             </>
                           ) : (
@@ -314,6 +352,86 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal de histórico de fotos */}
+      <Dialog open={!!showHistory} onOpenChange={(open) => !open && setShowHistory(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Histórico de Evolução
+            </DialogTitle>
+            <DialogDescription>
+              {showHistory && POSE_CATEGORIES.flatMap(c => c.poses).find(p => p.id === showHistory)?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {showHistory && (
+            <div className="space-y-4">
+              {/* Timeline de fotos */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {getPhotoHistory(showHistory).map((photo, index) => (
+                  <div key={photo.id} className="relative">
+                    <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={photo.url}
+                        alt={`Foto ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="mt-1 text-center">
+                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(photo.date).toLocaleDateString('pt-BR')}
+                      </p>
+                      {index === 0 && (
+                        <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                          Mais recente
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Comparação lado a lado (primeira vs última) */}
+              {getPhotoHistory(showHistory).length >= 2 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3 text-center">Comparação: Primeira vs Mais Recente</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-center text-muted-foreground">Primeira foto</p>
+                      <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={getPhotoHistory(showHistory)[getPhotoHistory(showHistory).length - 1].url}
+                          alt="Primeira foto"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground">
+                        {new Date(getPhotoHistory(showHistory)[getPhotoHistory(showHistory).length - 1].date).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-center text-muted-foreground">Mais recente</p>
+                      <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={getPhotoHistory(showHistory)[0].url}
+                          alt="Foto mais recente"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground">
+                        {new Date(getPhotoHistory(showHistory)[0].date).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
