@@ -2518,6 +2518,20 @@ export async function deleteWorkoutLogExercise(id: number) {
   await db.delete(workoutLogExercises).where(eq(workoutLogExercises.id, id));
 }
 
+// Excluir todos os exercícios de um workout log
+export async function deleteExerciseLogsByWorkoutLogId(workoutLogId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Primeiro buscar todos os exercícios do log
+  const exercises = await db.select().from(workoutLogExercises).where(eq(workoutLogExercises.workoutLogId, workoutLogId));
+  // Excluir séries de cada exercício
+  for (const ex of exercises) {
+    await db.delete(workoutLogSets).where(eq(workoutLogSets.workoutLogExerciseId, ex.id));
+  }
+  // Excluir todos os exercícios
+  await db.delete(workoutLogExercises).where(eq(workoutLogExercises.workoutLogId, workoutLogId));
+}
+
 // Criar série do exercício
 export async function createWorkoutLogSet(data: InsertWorkoutLogSet) {
   const db = await getDb();

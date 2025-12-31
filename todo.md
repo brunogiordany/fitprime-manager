@@ -1662,3 +1662,12 @@
 - [x] Adicionar botão "Ações em Lote" na página Sessions.tsx (menu lateral)
 - [x] Implementar funcionalidade igual à página de Sessões do perfil do aluno
 - [x] Melhorar UX: mover botão para junto do título "Sessões do Mês"
+
+
+## Correções de UX (v3.8)
+- [x] Corrigir layout da anamnese no portal do aluno (cards com cores e espaçamento)
+- [x] Adicionar botão de editar no histórico de treinos do portal do aluno
+- [x] Criar mutation updateWorkoutLog para alunos editarem seus registros
+- [x] Modal de edição de registro de treino com exercícios e séries
+
+- [x] Corrigir Drop Set e Rest-Pause - devem ser extensões da série, não séries separadas

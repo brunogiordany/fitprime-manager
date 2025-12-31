@@ -4256,6 +4256,81 @@ Forneça:
         return { id: logId };
       }),
     
+    // Atualizar registro de treino manual
+    updateWorkoutLog: studentProcedure
+      .input(z.object({
+        logId: z.number(),
+        trainingDate: z.string().optional(),
+        duration: z.number().optional(),
+        notes: z.string().optional(),
+        feeling: z.string().optional(),
+        status: z.enum(['in_progress', 'completed']).optional(),
+        exercises: z.array(z.object({
+          exerciseName: z.string(),
+          sets: z.array(z.object({
+            weight: z.string().optional(),
+            reps: z.number().optional(),
+            setType: z.string().optional(),
+            restTime: z.number().optional(),
+          })),
+          notes: z.string().optional(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o log pertence ao aluno
+        const existingLog = await db.getWorkoutLogById(input.logId);
+        if (!existingLog) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro não encontrado' });
+        }
+        if (existingLog.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem permissão para editar este registro' });
+        }
+        
+        // Atualizar o log
+        await db.updateWorkoutLog(input.logId, {
+          trainingDate: input.trainingDate,
+          duration: input.duration,
+          notes: input.notes,
+          feeling: input.feeling,
+          status: input.status,
+        });
+        
+        // Se houver exercícios, deletar os antigos e criar novos
+        if (input.exercises && input.exercises.length > 0) {
+          // Deletar exercícios e séries existentes
+          await db.deleteExerciseLogsByWorkoutLogId(input.logId);
+          
+          // Criar novos exercícios e séries
+          for (let index = 0; index < input.exercises.length; index++) {
+            const ex = input.exercises[index];
+            const exerciseLogId = await db.createWorkoutLogExercise({
+              workoutLogId: input.logId,
+              exerciseName: ex.exerciseName,
+              notes: ex.notes,
+              isCompleted: true,
+              orderIndex: index,
+            });
+            
+            // Criar as séries
+            for (let setIndex = 0; setIndex < ex.sets.length; setIndex++) {
+              const set = ex.sets[setIndex];
+              if (set.weight || set.reps) {
+                await db.createWorkoutLogSet({
+                  workoutLogExerciseId: exerciseLogId,
+                  setNumber: setIndex + 1,
+                  setType: set.setType || 'working',
+                  weight: set.weight,
+                  reps: set.reps ? parseInt(String(set.reps)) : 0,
+                  restTime: set.restTime,
+                });
+              }
+            }
+          }
+        }
+        
+        return { success: true };
+      }),
+    
     // Solicitar alteração de dados (cria pending change)
     requestChange: studentProcedure
       .input(z.object({
