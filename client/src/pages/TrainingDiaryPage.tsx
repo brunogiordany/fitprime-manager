@@ -110,7 +110,7 @@ interface ExerciseData {
 export default function TrainingDiaryPage() {
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("registros");
+  const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
@@ -583,17 +583,21 @@ export default function TrainingDiaryPage() {
             
             <Button onClick={() => setShowNewLogModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Novo Registro
+              Registro Maromba
             </Button>
           </div>
         </div>
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="sessoes" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Sessões
+            </TabsTrigger>
             <TabsTrigger value="registros" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Registros
+              Registros Maromba
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -601,6 +605,94 @@ export default function TrainingDiaryPage() {
             </TabsTrigger>
           </TabsList>
           
+          {/* Tab: Sessões */}
+          <TabsContent value="sessoes" className="space-y-4">
+            {upcomingSessions && upcomingSessions.length > 0 ? (
+              <div className="grid gap-4">
+                {upcomingSessions.map((session: any) => {
+                  const sessionDate = new Date(session.date);
+                  const isToday = sessionDate.toDateString() === new Date().toDateString();
+                  const isPast = sessionDate < new Date() && !isToday;
+                  const statusColor = session.status === 'completed' ? 'bg-green-500' : 
+                                     session.status === 'cancelled' ? 'bg-red-500' : 
+                                     isToday ? 'bg-yellow-500' : 'bg-blue-500';
+                  
+                  return (
+                    <Card 
+                      key={session.id} 
+                      className={`cursor-pointer hover:border-primary transition-colors ${isPast && session.status !== 'completed' ? 'opacity-60' : ''}`}
+                      onClick={() => {
+                        setSelectedSession(session);
+                        setNewLog({
+                          studentId: session.studentId,
+                          workoutId: session.workoutId || 0,
+                          workoutDayId: 0,
+                          trainingDate: session.date.split('T')[0],
+                          dayName: session.notes || `Sessão ${session.time}`,
+                          startTime: session.time || '',
+                          notes: '',
+                          feeling: '',
+                        });
+                        setShowSessionLogModal(true);
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`h-12 w-12 rounded-full ${statusColor}/20 flex items-center justify-center`}>
+                              <Calendar className={`h-6 w-6 ${statusColor.replace('bg-', 'text-')}`} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">{session.student?.name || 'Aluno'}</h3>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {session.notes || 'Sessão de treino'} • {new Date(session.date).toLocaleDateString('pt-BR')}
+                              </p>
+                              {session.time && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                  <Clock className="h-3 w-3" />
+                                  {session.time}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant={session.status === 'completed' ? 'default' : 
+                                          session.status === 'cancelled' ? 'destructive' : 
+                                          isToday ? 'secondary' : 'outline'}>
+                              {session.status === 'completed' ? 'Concluído' : 
+                               session.status === 'cancelled' ? 'Cancelado' : 
+                               isToday ? 'Hoje' : 
+                               isPast ? 'Pendente' : 'Agendado'}
+                            </Badge>
+                            
+                            {session.workout?.name && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Dumbbell className="h-3 w-3" />
+                                {session.workout.name}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhuma sessão encontrada</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Não há sessões agendadas para os próximos dias.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
           
           {/* Tab: Registros */}
           <TabsContent value="registros" className="space-y-4">
