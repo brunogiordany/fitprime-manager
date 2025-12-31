@@ -7,11 +7,22 @@ export const getLoginUrl = () => {
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
-  const url = new URL(`${oauthPortalUrl}/app-auth`);
-  url.searchParams.set("appId", appId);
-  url.searchParams.set("redirectUri", redirectUri);
-  url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
+  // Se não houver URL do OAuth configurada, retornar para página de login local
+  if (!oauthPortalUrl || oauthPortalUrl === 'undefined' || oauthPortalUrl === '') {
+    return '/login';
+  }
 
-  return url.toString();
+  try {
+    const url = new URL(`${oauthPortalUrl}/app-auth`);
+    url.searchParams.set("appId", appId || '');
+    url.searchParams.set("redirectUri", redirectUri);
+    url.searchParams.set("state", state);
+    url.searchParams.set("type", "signIn");
+
+    return url.toString();
+  } catch (error) {
+    // Se a URL for inválida, retornar para página de login local
+    console.warn('OAuth URL inválida, usando login local:', error);
+    return '/login';
+  }
 };

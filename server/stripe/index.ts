@@ -1,10 +1,25 @@
 import Stripe from 'stripe';
 import { ENV } from '../_core/env';
 
-// Inicializar cliente Stripe
-export const stripe = new Stripe(ENV.stripeSecretKey || '', {
-  apiVersion: '2025-12-15.clover',
-});
+// Inicializar cliente Stripe apenas se a chave estiver configurada
+const stripeKey = ENV.stripeSecretKey || process.env.STRIPE_SECRET_KEY;
+
+// Criar instância do Stripe com verificação de chave
+let stripe: Stripe | null = null;
+
+if (stripeKey && stripeKey.length > 0) {
+  stripe = new Stripe(stripeKey, {
+    apiVersion: '2025-12-15.clover' as any,
+  });
+}
+
+// Helper para verificar se Stripe está configurado
+function getStripe(): Stripe {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
+  }
+  return stripe;
+}
 
 // Criar ou recuperar cliente Stripe
 export async function getOrCreateStripeCustomer(
@@ -12,8 +27,9 @@ export async function getOrCreateStripeCustomer(
   name: string,
   metadata?: Record<string, string>
 ): Promise<Stripe.Customer> {
+  const s = getStripe();
   // Buscar cliente existente pelo email
-  const existingCustomers = await stripe.customers.list({
+  const existingCustomers = await s.customers.list({
     email,
     limit: 1,
   });
@@ -23,7 +39,7 @@ export async function getOrCreateStripeCustomer(
   }
 
   // Criar novo cliente
-  return stripe.customers.create({
+  return s.customers.create({
     email,
     name,
     metadata,
@@ -36,7 +52,7 @@ export async function createStripeProduct(
   description: string,
   metadata?: Record<string, string>
 ): Promise<Stripe.Product> {
-  return stripe.products.create({
+  return getStripe().products.create({
     name,
     description,
     metadata,
@@ -53,7 +69,7 @@ export async function createStripePrice(
     interval_count?: number;
   }
 ): Promise<Stripe.Price> {
-  return stripe.prices.create({
+  return getStripe().prices.create({
     product: productId,
     unit_amount: unitAmount,
     currency,
@@ -73,7 +89,7 @@ export async function createCheckoutSession(options: {
   clientReferenceId?: string;
   allowPromotionCodes?: boolean;
 }): Promise<Stripe.Checkout.Session> {
-  return stripe.checkout.sessions.create({
+  return getStripe().checkout.sessions.create({
     customer: options.customerId,
     customer_email: options.customerId ? undefined : options.customerEmail,
     line_items: [
@@ -98,21 +114,22 @@ export async function createPaymentLink(options: {
   description: string;
   metadata?: Record<string, string>;
 }): Promise<Stripe.PaymentLink> {
+  const s = getStripe();
   // Criar produto temporário
-  const product = await stripe.products.create({
+  const product = await s.products.create({
     name: options.description,
     metadata: options.metadata,
   });
 
   // Criar preço
-  const price = await stripe.prices.create({
+  const price = await s.prices.create({
     product: product.id,
     unit_amount: options.amount,
     currency: options.currency || 'brl',
   });
 
   // Criar link de pagamento
-  return stripe.paymentLinks.create({
+  return s.paymentLinks.create({
     line_items: [
       {
         price: price.id,
@@ -130,9 +147,9 @@ export async function cancelSubscription(
   immediately: boolean = false
 ): Promise<Stripe.Subscription> {
   if (immediately) {
-    return stripe.subscriptions.cancel(subscriptionId);
+    return getStripe().subscriptions.cancel(subscriptionId);
   }
-  return stripe.subscriptions.update(subscriptionId, {
+  return getStripe().subscriptions.update(subscriptionId, {
     cancel_at_period_end: true,
   });
 }
@@ -141,7 +158,7 @@ export async function cancelSubscription(
 export async function getSubscription(
   subscriptionId: string
 ): Promise<Stripe.Subscription> {
-  return stripe.subscriptions.retrieve(subscriptionId);
+  return getStripe().subscriptions.retrieve(subscriptionId);
 }
 
 // Buscar pagamentos de um cliente
@@ -149,7 +166,7 @@ export async function getCustomerPayments(
   customerId: string,
   limit: number = 10
 ): Promise<Stripe.PaymentIntent[]> {
-  const paymentIntents = await stripe.paymentIntents.list({
+  const paymentIntents = await getStripe().paymentIntents.list({
     customer: customerId,
     limit,
   });
@@ -162,7 +179,12 @@ export function constructWebhookEvent(
   signature: string,
   webhookSecret: string
 ): Stripe.Event {
-  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+  return getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
 }
 
-export { Stripe };
+// Verificar se Stripe está configurado
+export function isStripeConfigured(): boolean {
+  return stripe !== null;
+}
+
+export { stripe, Stripe };
