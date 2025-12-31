@@ -658,171 +658,29 @@ export default function StudentChat() {
           </div>
           
           <div className="p-4 border-t">
-            {/* Input de arquivos ocultos */}
-            <input
-              type="file"
-              ref={imageInputRef}
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleFileSelect(e, 'image')}
-            />
-            <input
-              type="file"
-              ref={videoInputRef}
-              accept="video/*"
-              className="hidden"
-              onChange={(e) => handleFileSelect(e, 'video')}
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-              className="hidden"
-              onChange={(e) => handleFileSelect(e, 'file')}
-            />
-            
-            {/* Preview de áudio gravado */}
-            {audioBlob && (
-              <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3">
-                <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
-                <Button variant="ghost" size="icon" onClick={() => setAudioBlob(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button size="icon" onClick={handleSendAudio} disabled={uploadingMedia}>
-                  {uploadingMedia ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-            )}
-            
-            {/* Barra de gravação */}
-            {isRecording && (
-              <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center gap-3">
-                <div className={`w-3 h-3 bg-red-500 rounded-full ${!isPaused ? 'animate-pulse' : ''}`} />
-                <span className="text-red-600 dark:text-red-400 font-medium">
-                  {isPaused ? 'Pausado' : 'Gravando'} {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
-                </span>
-                <div className="flex-1" />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-full hover:bg-red-100 dark:hover:bg-red-900/40"
-                  onClick={cancelRecording}
-                  title="Cancelar gravação"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40"
-                  onClick={isPaused ? resumeRecording : pauseRecording}
-                  title={isPaused ? 'Continuar' : 'Pausar'}
-                >
-                  {isPaused ? <Play className="h-4 w-4 text-amber-600" /> : <Pause className="h-4 w-4 text-amber-600" />}
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="icon" 
-                  className="rounded-full"
-                  onClick={stopRecording}
-                  title="Parar e salvar"
-                >
-                  <Square className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            
-            {/* Indicador de upload */}
-            {uploadingMedia && !audioBlob && (
-              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                <span className="text-blue-600 dark:text-blue-400 font-medium">
-                  Enviando arquivo...
-                </span>
-              </div>
-            )}
-            
             <div className="flex gap-2 items-center">
-              {/* Menu de anexos */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowAttachMenu(!showAttachMenu)}
-                  disabled={isRecording || uploadingMedia}
-                >
-                  <Paperclip className="h-5 w-5" />
-                </Button>
-                {showAttachMenu && (
-                  <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start gap-2"
-                      onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
-                    >
-                      <Image className="h-4 w-4 text-blue-500" />
-                      Foto
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start gap-2"
-                      onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
-                    >
-                      <Video className="h-4 w-4 text-purple-500" />
-                      Vídeo
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start gap-2"
-                      onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
-                    >
-                      <FileText className="h-4 w-4 text-orange-500" />
-                      Arquivo
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
               {/* Campo de texto */}
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Digite sua mensagem..."
-                disabled={sendMessage.isPending || isRecording || uploadingMedia}
+                disabled={sendMessage.isPending}
                 className="flex-1"
               />
               
-              {/* Botão de gravação de áudio ou enviar */}
-              {newMessage.trim() ? (
-                <Button
-                  onClick={handleSend}
-                  disabled={sendMessage.isPending}
-                  size="icon"
-                >
-                  {sendMessage.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  variant={isRecording ? "destructive" : "ghost"}
-                  size="icon"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={uploadingMedia}
-                >
-                  {isRecording ? (
-                    <MicOff className="h-5 w-5" />
-                  ) : (
-                    <Mic className="h-5 w-5" />
-                  )}
-                </Button>
-              )}
+              {/* Botão de enviar */}
+              <Button
+                onClick={handleSend}
+                disabled={sendMessage.isPending || !newMessage.trim()}
+                size="icon"
+              >
+                {sendMessage.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
         </CardContent>

@@ -761,131 +761,8 @@ export default function Messages() {
 
                     {/* Input de mensagem */}
                     <div className="flex-shrink-0 p-3 bg-gray-100 dark:bg-gray-900">
-                      {/* Input de arquivos ocultos */}
-                      <input
-                        type="file"
-                        ref={imageInputRef}
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleFileSelect(e, 'image')}
-                      />
-                      <input
-                        type="file"
-                        ref={videoInputRef}
-                        accept="video/*"
-                        className="hidden"
-                        onChange={(e) => handleFileSelect(e, 'video')}
-                      />
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
-                        className="hidden"
-                        onChange={(e) => handleFileSelect(e, 'file')}
-                      />
-                      
-                      {/* Preview de áudio gravado */}
-                      {audioBlob && (
-                        <div className="mb-3 p-3 bg-white dark:bg-gray-800 rounded-full flex items-center gap-3 shadow-sm">
-                          <audio src={URL.createObjectURL(audioBlob)} controls className="flex-1 h-10" />
-                          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setAudioBlob(null)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" className="rounded-full bg-emerald-500 hover:bg-emerald-600" onClick={handleSendAudio} disabled={sendMessage.isPending}>
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {/* Barra de gravação */}
-                      {isRecording && (
-                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center gap-3 shadow-sm">
-                          <div className={`w-3 h-3 bg-red-500 rounded-full ${!isPaused ? 'animate-pulse' : ''}`} />
-                          <span className="text-red-600 dark:text-red-400 font-medium flex-1">
-                            {isPaused ? 'Pausado' : 'Gravando'} {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
-                          </span>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="rounded-full hover:bg-red-100 dark:hover:bg-red-900/40" 
-                            onClick={cancelRecording}
-                            title="Cancelar gravação"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40" 
-                            onClick={isPaused ? resumeRecording : pauseRecording}
-                            title={isPaused ? 'Continuar' : 'Pausar'}
-                          >
-                            {isPaused ? <Play className="h-4 w-4 text-amber-600" /> : <Pause className="h-4 w-4 text-amber-600" />}
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="icon" 
-                            className="rounded-full" 
-                            onClick={stopRecording}
-                            title="Parar e salvar"
-                          >
-                            <Square className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                      
                       {/* Barra de input */}
                       <div className="flex items-center gap-2">
-                        {/* Menu de anexos */}
-                        <div className="relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full text-gray-600 hover:text-emerald-600 hover:bg-emerald-50"
-                            onClick={() => setShowAttachMenu(!showAttachMenu)}
-                            disabled={isRecording || uploadingMedia}
-                          >
-                            <Paperclip className="h-5 w-5" />
-                          </Button>
-                          {showAttachMenu && (
-                            <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg border p-2 flex flex-col gap-1 min-w-[140px] z-50">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start gap-2 rounded-lg"
-                                onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
-                              >
-                                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                                  <Image className="h-4 w-4 text-white" />
-                                </div>
-                                Foto
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start gap-2 rounded-lg"
-                                onClick={() => { videoInputRef.current?.click(); setShowAttachMenu(false); }}
-                              >
-                                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
-                                  <Video className="h-4 w-4 text-white" />
-                                </div>
-                                Vídeo
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start gap-2 rounded-lg"
-                                onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
-                              >
-                                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-                                  <FileText className="h-4 w-4 text-white" />
-                                </div>
-                                Arquivo
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                        
                         {/* Campo de texto */}
                         <div className="flex-1 relative">
                           <Input
@@ -893,7 +770,7 @@ export default function Messages() {
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={handleKeyPress}
                             placeholder="Digite uma mensagem"
-                            disabled={sendMessage.isPending || isRecording || uploadingMedia}
+                            disabled={sendMessage.isPending}
                             className="rounded-full pr-10 bg-white dark:bg-gray-800 border-0 shadow-sm"
                           />
                           <Button
@@ -905,35 +782,19 @@ export default function Messages() {
                           </Button>
                         </div>
                         
-                        {/* Botão de enviar ou gravar */}
-                        {newMessage.trim() ? (
-                          <Button
-                            onClick={handleSendMessage}
-                            disabled={sendMessage.isPending}
-                            size="icon"
-                            className="rounded-full bg-emerald-500 hover:bg-emerald-600 h-10 w-10"
-                          >
-                            {sendMessage.isPending ? (
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                              <Send className="h-5 w-5" />
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant={isRecording ? "destructive" : "default"}
-                            size="icon"
-                            onClick={isRecording ? stopRecording : startRecording}
-                            disabled={uploadingMedia}
-                            className={`rounded-full h-10 w-10 ${!isRecording ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
-                          >
-                            {isRecording ? (
-                              <MicOff className="h-5 w-5" />
-                            ) : (
-                              <Mic className="h-5 w-5" />
-                            )}
-                          </Button>
-                        )}
+                        {/* Botão de enviar */}
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={sendMessage.isPending || !newMessage.trim()}
+                          size="icon"
+                          className="rounded-full bg-emerald-500 hover:bg-emerald-600 h-10 w-10 disabled:opacity-50"
+                        >
+                          {sendMessage.isPending ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Send className="h-5 w-5" />
+                          )}
+                        </Button>
                       </div>
                     </div>
                   </>

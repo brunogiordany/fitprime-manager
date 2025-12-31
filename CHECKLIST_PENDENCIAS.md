@@ -62,6 +62,7 @@
 ## 🟠 BUGS SÉRIE C (Novos)
 
 - [x] C1. Botão Convidar não funciona bem (CORRIGIDO - Popup com link, botão copiar, WhatsApp e Email)
+- [x] C2. Simplificar chat - remover vídeo, áudio, fotos, arquivos (manter só texto)
 
 ---
 
