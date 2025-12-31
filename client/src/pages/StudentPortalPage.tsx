@@ -198,8 +198,8 @@ export default function StudentPortalPage() {
   );
 
   // Buscar treinos do aluno
-  const { data: workouts } = trpc.workouts.list.useQuery(
-    { studentId: studentData?.id || 0 },
+  const { data: workouts } = trpc.studentPortal.workouts.useQuery(
+    undefined,
     { enabled: !!studentData?.id }
   );
 

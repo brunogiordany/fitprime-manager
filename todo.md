@@ -1678,3 +1678,5 @@
 - [x] Corrigir layout da anamnese - campos desalinhados em Estilo de Vida e Nutrição
 
 - [x] Corrigir calendário abrindo automaticamente no modal de Criar Registro Manual de Treino
+
+- [x] Corrigir Meus Treinos no portal do aluno - não está carregando treinos do personal

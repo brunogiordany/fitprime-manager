@@ -3947,7 +3947,15 @@ Forneça:
     }),
     
     workouts: studentProcedure.query(async ({ ctx }) => {
-      return await db.getWorkoutsByStudentId(ctx.student.id);
+      const workouts = await db.getWorkoutsByStudentId(ctx.student.id);
+      // Incluir os dias de cada treino
+      const workoutsWithDays = await Promise.all(
+        workouts.map(async (workout) => {
+          const days = await db.getWorkoutDaysByWorkoutId(workout.id);
+          return { ...workout, days };
+        })
+      );
+      return workoutsWithDays;
     }),
     
     workout: studentProcedure
