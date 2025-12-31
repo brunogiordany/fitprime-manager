@@ -1495,3 +1495,12 @@
 - [ ] Verificar se o endpoint de envio de email está funcionando
 - [ ] Verificar se o Resend está configurado corretamente
 - [ ] Garantir que o email seja enviado com o código de verificação
+
+### D14. Melhoria: Diário de Treino completo no portal do aluno
+- [ ] Portal do aluno precisa ter Diário de Treino igual ao do personal
+- [ ] Opção de criar registro de treino manualmente
+- [ ] Editar registros existentes
+- [ ] Dashboard com relatórios e gráficos de evolução
+- [ ] Todas as personalizações do Diário de Treino
+- [ ] Sessões e Registros Maromba completos
+- [ ] Remover apenas opções de gerenciar outros alunos (é aluno único)
