@@ -39,6 +39,12 @@ import {
   Heart,
   Clipboard,
   Calculator,
+  Upload,
+  FileText,
+  Image,
+  Loader2,
+  Sparkles,
+  Brain,
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import { useState } from "react";
@@ -103,6 +109,16 @@ export default function Measurements() {
     axillaryFold: "",
   });
   const [activeTab, setActiveTab] = useState("basic");
+  
+  // Estados para upload de bioimpedância
+  const [bioFile, setBioFile] = useState<File | null>(null);
+  const [isUploadingBio, setIsUploadingBio] = useState(false);
+  const [bioAnalysis, setBioAnalysis] = useState<any>(null);
+  
+  // Estado para análise completa do aluno
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [fullAnalysis, setFullAnalysis] = useState<any>(null);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   
   // Cálculos automáticos
   const calculateIMC = (weight: string, height: string): string => {
@@ -384,19 +400,56 @@ export default function Measurements() {
               <p className="text-muted-foreground">{student.name}</p>
             </div>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setEditingId(null);
-              resetForm();
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Medição
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setIsAnalyzing(true);
+                try {
+                  const response = await fetch('/api/trpc/studentPortal.getFullAnalysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId }),
+                  });
+                  const result = await response.json();
+                  if (result.result?.data) {
+                    setFullAnalysis(result.result.data);
+                    setIsAnalysisModalOpen(true);
+                  }
+                } catch (error) {
+                  toast.error('Erro ao gerar análise');
+                } finally {
+                  setIsAnalyzing(false);
+                }
+              }}
+              disabled={isAnalyzing}
+              className="border-purple-200 hover:bg-purple-50"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4 mr-2 text-purple-600" />
+                  Análise Completa IA
+                </>
+              )}
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setEditingId(null);
+                resetForm();
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Medição
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingId ? 'Editar Medição' : 'Nova Medição'}</DialogTitle>
@@ -650,8 +703,143 @@ export default function Measurements() {
                   <TabsContent value="bio" className="space-y-6 mt-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <p className="text-sm text-blue-700">
-                        <strong>Bioimpedância:</strong> Preencha com os dados obtidos em exame de bioimpedância profissional.
+                        <strong>Bioimpedância:</strong> Preencha manualmente ou faça upload do PDF/foto do exame para extração automática por IA.
                       </p>
+                    </div>
+                    
+                    {/* Upload de Bioimpedância com IA */}
+                    <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-purple-600" />
+                          Upload com Análise por IA
+                        </CardTitle>
+                        <CardDescription>
+                          Envie o PDF ou foto do exame de bioimpedância e a IA extrairá os dados automaticamente
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,.webp"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  // Verificar tamanho
+                                  const maxSize = file.type === 'application/pdf' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+                                  if (file.size > maxSize) {
+                                    toast.error(`Arquivo muito grande. Máximo: ${file.type === 'application/pdf' ? '10MB' : '5MB'}`);
+                                    return;
+                                  }
+                                  setBioFile(file);
+                                  setBioAnalysis(null);
+                                }
+                              }}
+                              className="hidden"
+                              id="bio-upload"
+                            />
+                            <label
+                              htmlFor="bio-upload"
+                              className="flex-1 border-2 border-dashed border-purple-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors"
+                            >
+                              {bioFile ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  {bioFile.type === 'application/pdf' ? (
+                                    <FileText className="h-5 w-5 text-purple-600" />
+                                  ) : (
+                                    <Image className="h-5 w-5 text-purple-600" />
+                                  )}
+                                  <span className="text-sm font-medium text-purple-700">{bioFile.name}</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="h-8 w-8 text-purple-400" />
+                                  <span className="text-sm text-muted-foreground">
+                                    Clique para selecionar PDF ou foto
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    Máx: 5MB (fotos) / 10MB (PDF)
+                                  </span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                          
+                          {bioFile && (
+                            <Button
+                              onClick={async () => {
+                                if (!bioFile) return;
+                                setIsUploadingBio(true);
+                                try {
+                                  const formDataUpload = new FormData();
+                                  formDataUpload.append('file', bioFile);
+                                  formDataUpload.append('studentId', studentId.toString());
+                                  
+                                  const response = await fetch('/api/upload-bioimpedance', {
+                                    method: 'POST',
+                                    body: formDataUpload,
+                                  });
+                                  
+                                  if (!response.ok) throw new Error('Erro no upload');
+                                  
+                                  const result = await response.json();
+                                  setBioAnalysis(result);
+                                  
+                                  // Preencher campos automaticamente
+                                  if (result.extractedData) {
+                                    const data = result.extractedData;
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      bioBodyFat: data.bodyFatPercentage?.toString() || prev.bioBodyFat,
+                                      bioMuscleMass: data.muscleMass?.toString() || prev.bioMuscleMass,
+                                      bioFatMass: data.fatMass?.toString() || prev.bioFatMass,
+                                      bioVisceralFat: data.visceralFat?.toString() || prev.bioVisceralFat,
+                                      bioBasalMetabolism: data.basalMetabolism?.toString() || prev.bioBasalMetabolism,
+                                    }));
+                                    toast.success('Dados extraídos com sucesso!');
+                                  }
+                                } catch (error) {
+                                  toast.error('Erro ao processar arquivo');
+                                } finally {
+                                  setIsUploadingBio(false);
+                                }
+                              }}
+                              disabled={isUploadingBio}
+                              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                            >
+                              {isUploadingBio ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Analisando com IA...
+                                </>
+                              ) : (
+                                <>
+                                  <Brain className="h-4 w-4 mr-2" />
+                                  Analisar e Extrair Dados
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          
+                          {bioAnalysis && (
+                            <div className="p-3 bg-white rounded-lg border border-purple-200">
+                              <p className="text-xs font-medium text-purple-700 mb-2">Análise da IA:</p>
+                              <p className="text-sm text-muted-foreground">{bioAnalysis.analysis}</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">ou preencha manualmente</span>
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="grid gap-2">
@@ -839,8 +1027,125 @@ export default function Measurements() {
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
+        
+        {/* Modal de Análise Completa por IA */}
+        <Dialog open={isAnalysisModalOpen} onOpenChange={setIsAnalysisModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                Análise Completa por IA - {student.name}
+              </DialogTitle>
+              <DialogDescription>
+                Relatório gerado pela IA cruzando todos os dados do aluno
+              </DialogDescription>
+            </DialogHeader>
+            {fullAnalysis && (
+              <div className="space-y-6 py-4">
+                {/* Resumo Geral */}
+                <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Resumo Geral</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm whitespace-pre-wrap">{fullAnalysis.summary}</p>
+                  </CardContent>
+                </Card>
+                
+                {/* Pontos Fortes */}
+                {fullAnalysis.strengths && fullAnalysis.strengths.length > 0 && (
+                  <Card className="border-green-200 bg-green-50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base text-green-700 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Pontos Fortes
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1">
+                        {fullAnalysis.strengths.map((s: string, i: number) => (
+                          <li key={i} className="text-sm text-green-700">{s}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Déficits Identificados */}
+                {fullAnalysis.deficits && fullAnalysis.deficits.length > 0 && (
+                  <Card className="border-amber-200 bg-amber-50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base text-amber-700 flex items-center gap-2">
+                        <TrendingDown className="h-4 w-4" />
+                        Déficits Identificados
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1">
+                        {fullAnalysis.deficits.map((d: string, i: number) => (
+                          <li key={i} className="text-sm text-amber-700">{d}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Recomendações */}
+                {fullAnalysis.recommendations && fullAnalysis.recommendations.length > 0 && (
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base text-blue-700 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Recomendações
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1">
+                        {fullAnalysis.recommendations.map((r: string, i: number) => (
+                          <li key={i} className="text-sm text-blue-700">{r}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Análise Detalhada */}
+                {fullAnalysis.detailedAnalysis && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Análise Detalhada</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                        {fullAnalysis.detailedAnalysis}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Botões de Ação */}
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsAnalysisModalOpen(false)}>
+                    Fechar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsAnalysisModalOpen(false);
+                      setLocation(`/alunos/${studentId}/treinos`);
+                    }}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar Treino Adaptado
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* KPIs de Última Medição */}
         {latestMeasurement && (

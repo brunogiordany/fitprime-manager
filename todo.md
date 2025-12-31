@@ -1639,9 +1639,10 @@
 - [x] 7.2 Preview do treino adaptado com informações de adaptação
 - [x] 7.3 Exibição de déficits abordados e melhorias
 - [x] 7.4 Exibição de evolução das medidas e desempenho
-- [ ] 7.5 Tela de Análise Completa do Aluno (modal)
-- [ ] 7.6 Comparação lado a lado de treinos
-- [ ] 7.7 Relatório exportação PDF com análise da IA
+- [x] 7.5 Upload de bioimpedância na área do personal (Measurements)
+- [x] 7.6 Modal de Análise Completa do Aluno para o personal
+- [x] 7.7 Comparação visual lado a lado entre treinos
+- [ ] 7.8 Relatório exportação PDF com análise da IA
 
 ---
 

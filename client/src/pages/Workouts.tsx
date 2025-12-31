@@ -61,7 +61,11 @@ import {
   RefreshCw,
   X,
   Replace,
-  RotateCcw
+  RotateCcw,
+  GitCompare,
+  ArrowRight,
+  TrendingUp,
+  TrendingDown
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -85,6 +89,11 @@ export default function Workouts() {
   const [editingExercise, setEditingExercise] = useState<{dayIndex: number, exIndex: number, exercise: any} | null>(null);
   const [workoutToDuplicate, setWorkoutToDuplicate] = useState<any>(null);
   const [duplicateTargetStudent, setDuplicateTargetStudent] = useState<string>("");
+  const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false);
+  const [compareWorkout1, setCompareWorkout1] = useState<string>("");
+  const [compareWorkout2, setCompareWorkout2] = useState<string>("");
+  const [comparisonResult, setComparisonResult] = useState<any>(null);
+  const [isComparing, setIsComparing] = useState(false);
   const [newWorkout, setNewWorkout] = useState({
     name: "",
     description: "",
@@ -1053,29 +1062,51 @@ export default function Workouts() {
             
             {/* Card de Treino Adaptado - só aparece se já houver treinos */}
             {workouts && workouts.length > 0 && (
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-orange-100 hover:border-orange-300 md:col-span-3"
-                onClick={() => {
-                  generateAdaptedMutation.mutate({
-                    studentId: parseInt(selectedStudent),
-                  });
-                }}
-              >
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100">
-                    <RefreshCw className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">Gerar Treino Adaptado (2.0)</h3>
-                    <p className="text-sm text-muted-foreground">
-                      IA analisa evolução e cria novo treino focando nos déficits
-                    </p>
-                  </div>
-                  {generateAdaptedMutation.isPending && (
-                    <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
-                  )}
-                </CardContent>
-              </Card>
+              <>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-orange-100 hover:border-orange-300"
+                  onClick={() => {
+                    generateAdaptedMutation.mutate({
+                      studentId: parseInt(selectedStudent),
+                    });
+                  }}
+                >
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100">
+                      <RefreshCw className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">Treino Adaptado (2.0)</h3>
+                      <p className="text-sm text-muted-foreground">
+                        IA cria novo treino focando nos déficits
+                      </p>
+                    </div>
+                    {generateAdaptedMutation.isPending && (
+                      <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
+                    )}
+                  </CardContent>
+                </Card>
+                
+                {/* Card de Comparar Treinos */}
+                {workouts.length >= 2 && (
+                  <Card 
+                    className="cursor-pointer hover:shadow-md transition-all border-indigo-100 hover:border-indigo-300"
+                    onClick={() => setIsCompareDialogOpen(true)}
+                  >
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-100 to-violet-100">
+                        <GitCompare className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">Comparar Treinos</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Visualize diferenças entre versões
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         )}
@@ -1334,6 +1365,221 @@ export default function Workouts() {
                   </>
                 )}
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal de Comparação de Treinos */}
+        <Dialog open={isCompareDialogOpen} onOpenChange={setIsCompareDialogOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <GitCompare className="h-5 w-5 text-indigo-600" />
+                Comparar Treinos
+              </DialogTitle>
+              <DialogDescription>
+                Selecione dois treinos para comparar lado a lado
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6 py-4">
+              {/* Seletores de Treino */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Treino 1 (Anterior)</Label>
+                  <Select value={compareWorkout1} onValueChange={setCompareWorkout1}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workouts?.map((w: any) => (
+                        <SelectItem key={w.id} value={w.id.toString()}>
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Treino 2 (Atual)</Label>
+                  <Select value={compareWorkout2} onValueChange={setCompareWorkout2}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workouts?.filter((w: any) => w.id.toString() !== compareWorkout1).map((w: any) => (
+                        <SelectItem key={w.id} value={w.id.toString()}>
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Botão Comparar */}
+              {compareWorkout1 && compareWorkout2 && (
+                <Button
+                  onClick={async () => {
+                    setIsComparing(true);
+                    try {
+                      const response = await fetch('/api/trpc/workouts.compareWorkoutEfficiency', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          studentId: parseInt(selectedStudent),
+                          workout1Id: parseInt(compareWorkout1),
+                          workout2Id: parseInt(compareWorkout2),
+                        }),
+                      });
+                      const result = await response.json();
+                      if (result.result?.data) {
+                        setComparisonResult(result.result.data);
+                      }
+                    } catch (error) {
+                      toast.error('Erro ao comparar treinos');
+                    } finally {
+                      setIsComparing(false);
+                    }
+                  }}
+                  disabled={isComparing}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
+                >
+                  {isComparing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Comparando...
+                    </>
+                  ) : (
+                    <>
+                      <GitCompare className="h-4 w-4 mr-2" />
+                      Comparar Eficiência
+                    </>
+                  )}
+                </Button>
+              )}
+              
+              {/* Resultado da Comparação */}
+              {comparisonResult && (
+                <div className="space-y-4">
+                  {/* Cards de Comparação */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Treino 1 */}
+                    <Card className="border-gray-200">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">
+                          {comparisonResult.workout1?.name || 'Treino 1'}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Sessões</span>
+                          <span className="font-medium">{comparisonResult.workout1?.sessions || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Duração Média</span>
+                          <span className="font-medium">{comparisonResult.workout1?.avgDuration || 0} min</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Consistência</span>
+                          <span className="font-medium">{comparisonResult.workout1?.consistency || 0}%</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Treino 2 */}
+                    <Card className="border-indigo-200 bg-indigo-50/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">
+                          {comparisonResult.workout2?.name || 'Treino 2'}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Sessões</span>
+                          <span className="font-medium">{comparisonResult.workout2?.sessions || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Duração Média</span>
+                          <span className="font-medium">{comparisonResult.workout2?.avgDuration || 0} min</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Consistência</span>
+                          <span className="font-medium">{comparisonResult.workout2?.consistency || 0}%</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Resultado da Eficiência */}
+                  <Card className={`border-2 ${
+                    comparisonResult.efficiencyChange > 0 
+                      ? 'border-green-200 bg-green-50' 
+                      : comparisonResult.efficiencyChange < 0 
+                        ? 'border-red-200 bg-red-50' 
+                        : 'border-gray-200'
+                  }`}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-center gap-4">
+                        {comparisonResult.efficiencyChange > 0 ? (
+                          <TrendingUp className="h-8 w-8 text-green-600" />
+                        ) : comparisonResult.efficiencyChange < 0 ? (
+                          <TrendingDown className="h-8 w-8 text-red-600" />
+                        ) : (
+                          <ArrowRight className="h-8 w-8 text-gray-600" />
+                        )}
+                        <div className="text-center">
+                          <p className="text-2xl font-bold">
+                            {comparisonResult.efficiencyChange > 0 ? '+' : ''}
+                            {comparisonResult.efficiencyChange}%
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {comparisonResult.efficiencyChange > 0 
+                              ? 'Mais eficiente' 
+                              : comparisonResult.efficiencyChange < 0 
+                                ? 'Menos eficiente' 
+                                : 'Mesma eficiência'}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Análise da IA */}
+                  {comparisonResult.analysis && (
+                    <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Brain className="h-4 w-4 text-purple-600" />
+                          Análise da IA
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm whitespace-pre-wrap">{comparisonResult.analysis}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {/* Recomendações */}
+                  {comparisonResult.recommendations && comparisonResult.recommendations.length > 0 && (
+                    <Card className="border-blue-200 bg-blue-50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base text-blue-700 flex items-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          Recomendações
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="list-disc list-inside space-y-1">
+                          {comparisonResult.recommendations.map((r: string, i: number) => (
+                            <li key={i} className="text-sm text-blue-700">{r}</li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
