@@ -1945,6 +1945,340 @@ Retorne APENAS o JSON, sem texto adicional.`;
         };
       }),
     
+    // Gerar Treino 2.0 adaptado baseado na evolução do aluno
+    generateAdaptedWorkout: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        previousWorkoutId: z.number().optional(), // Se informado, compara com este treino
+        customPrompt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese, medidas, treinos anteriores e logs
+        const [anamnesis, measurements, workouts, workoutLogs] = await Promise.all([
+          db.getAnamnesisByStudentId(input.studentId),
+          db.getMeasurementsByStudentId(input.studentId),
+          db.getWorkoutsByStudentId(input.studentId),
+          db.getWorkoutLogsByStudentId(input.studentId),
+        ]);
+        
+        // Identificar treino anterior para comparação
+        let previousWorkout = null;
+        let previousWorkoutDays: any[] = [];
+        if (input.previousWorkoutId) {
+          previousWorkout = await db.getWorkoutById(input.previousWorkoutId);
+          if (previousWorkout) {
+            previousWorkoutDays = await db.getWorkoutDaysByWorkoutId(previousWorkout.id);
+            // Buscar exercícios de cada dia
+            for (const day of previousWorkoutDays) {
+              (day as any).exercises = await db.getExercisesByWorkoutDayId(day.id);
+            }
+          }
+        } else if (workouts.length > 0) {
+          // Pegar o treino mais recente
+          previousWorkout = workouts[0];
+          previousWorkoutDays = await db.getWorkoutDaysByWorkoutId(previousWorkout.id);
+          for (const day of previousWorkoutDays) {
+            (day as any).exercises = await db.getExercisesByWorkoutDayId(day.id);
+          }
+        }
+        
+        // Calcular versão do treino
+        const workoutVersion = workouts.length + 1;
+        
+        // Analisar evolução das medidas
+        let measurementEvolution = null;
+        if (measurements.length >= 2) {
+          const sorted = [...measurements].sort((a, b) => 
+            new Date(b.measureDate).getTime() - new Date(a.measureDate).getTime()
+          );
+          const latest = sorted[0];
+          const oldest = sorted[sorted.length - 1];
+          measurementEvolution = {
+            weightChange: latest.weight && oldest.weight ? 
+              parseFloat(latest.weight) - parseFloat(oldest.weight) : null,
+            bodyFatChange: latest.bodyFat && oldest.bodyFat ?
+              parseFloat(latest.bodyFat) - parseFloat(oldest.bodyFat) : null,
+            muscleMassChange: latest.muscleMass && oldest.muscleMass ?
+              parseFloat(latest.muscleMass) - parseFloat(oldest.muscleMass) : null,
+            waistChange: latest.waist && oldest.waist ?
+              parseFloat(latest.waist) - parseFloat(oldest.waist) : null,
+            periodDays: Math.round((new Date(latest.measureDate).getTime() - new Date(oldest.measureDate).getTime()) / (1000 * 60 * 60 * 24)),
+          };
+        }
+        
+        // Analisar desempenho nos treinos (logs)
+        let workoutPerformance = null;
+        if (workoutLogs.length > 0) {
+          const last30Days = workoutLogs.filter(log => {
+            const logDate = new Date(log.trainingDate);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            return logDate >= thirtyDaysAgo;
+          });
+          
+          workoutPerformance = {
+            totalWorkouts: last30Days.length,
+            averagePerWeek: (last30Days.length / 4.3).toFixed(1),
+            consistency: anamnesis?.weeklyFrequency ? 
+              ((last30Days.length / 4.3) / anamnesis.weeklyFrequency * 100).toFixed(0) + '%' : 'N/A',
+          };
+        }
+        
+        // Montar prompt para a IA
+        const systemPrompt = `Você é um personal trainer experiente. Sua tarefa é criar um TREINO 2.0 ADAPTADO baseado na evolução do aluno.
+
+Você DEVE retornar um JSON válido no seguinte formato:
+{
+  "name": "Treino ${workoutVersion}.0 - [Nome Descritivo]",
+  "description": "Descrição do treino adaptado",
+  "goal": "hypertrophy|weight_loss|recomposition|conditioning|strength|bulking|cutting|general",
+  "difficulty": "beginner|intermediate|advanced",
+  "type": "strength|cardio|flexibility|functional|mixed",
+  "adaptationReason": "Explicação das adaptações feitas baseado na evolução",
+  "deficitsAddressed": ["lista de déficits que este treino aborda"],
+  "improvements": ["lista de melhorias em relação ao treino anterior"],
+  "days": [
+    {
+      "name": "Nome do Dia",
+      "exercises": [
+        {
+          "name": "Nome do Exercício",
+          "muscleGroup": "Grupo Muscular",
+          "sets": 3,
+          "reps": "10-12",
+          "restSeconds": 60,
+          "notes": "Observações"
+        }
+      ]
+    }
+  ]
+}
+
+REGRAS PARA ADAPTAÇÃO:
+1. ANALISE a evolução das medidas - se não houve melhora, ajuste o treino
+2. IDENTIFIQUE déficits - grupos musculares que não evoluíram
+3. COMPARE com o treino anterior - mantenha o que funcionou, mude o que não funcionou
+4. CONSIDERE a consistência - se o aluno não treinou muito, simplifique
+5. AUMENTE progressivamente a intensidade se houve boa evolução
+6. MANTENHA a mesma frequência semanal do treino anterior
+7. SUBSTITUA exercícios que não trouxeram resultados
+8. ADICIONE mais volume nos grupos em déficit`;
+        
+        const userPrompt = `Crie um TREINO ${workoutVersion}.0 ADAPTADO para este aluno:
+
+Informações do Aluno:
+- Nome: ${student.name}
+- Gênero: ${student.gender === 'male' ? 'masculino' : student.gender === 'female' ? 'feminino' : 'não informado'}
+
+Anamnese:
+${anamnesis ? JSON.stringify({
+  objetivo: anamnesis.mainGoal,
+  nivelExperiencia: anamnesis.exerciseExperience,
+  frequenciaSemanal: anamnesis.weeklyFrequency,
+  localTreino: anamnesis.trainingLocation,
+  restricoes: anamnesis.trainingRestrictions,
+  enfasesMusculares: anamnesis.muscleEmphasis,
+}, null, 2) : 'Não preenchida'}
+
+EVOLUÇÃO DAS MEDIDAS:
+${measurementEvolution ? JSON.stringify(measurementEvolution, null, 2) : 'Sem dados de evolução'}
+
+DESEMPENHO NOS TREINOS (Últimos 30 dias):
+${workoutPerformance ? JSON.stringify(workoutPerformance, null, 2) : 'Sem logs de treino'}
+
+TREINO ANTERIOR (${previousWorkout?.name || 'N/A'}):
+${previousWorkoutDays.length > 0 ? JSON.stringify(previousWorkoutDays.map(d => ({
+  dia: d.name,
+  exercicios: (d as any).exercises?.map((e: any) => e.name) || [],
+})), null, 2) : 'Nenhum treino anterior'}
+
+${input.customPrompt ? `Instruções adicionais: ${input.customPrompt}` : ''}
+
+Crie um treino adaptado que:
+1. Mantenha o que funcionou do treino anterior
+2. Ajuste o que não trouxe resultados
+3. Foque nos grupos musculares em déficit
+4. Considere a consistência do aluno
+
+Retorne APENAS o JSON.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'adapted_workout_plan',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  goal: { type: 'string', enum: ['hypertrophy', 'weight_loss', 'recomposition', 'conditioning', 'strength', 'bulking', 'cutting', 'general'] },
+                  difficulty: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'] },
+                  type: { type: 'string', enum: ['strength', 'cardio', 'flexibility', 'functional', 'mixed'] },
+                  adaptationReason: { type: 'string' },
+                  deficitsAddressed: { type: 'array', items: { type: 'string' } },
+                  improvements: { type: 'array', items: { type: 'string' } },
+                  days: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string' },
+                        exercises: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              name: { type: 'string' },
+                              muscleGroup: { type: 'string' },
+                              sets: { type: 'integer' },
+                              reps: { type: 'string' },
+                              restSeconds: { type: 'integer' },
+                              notes: { type: 'string' },
+                            },
+                            required: ['name', 'muscleGroup', 'sets', 'reps', 'restSeconds'],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ['name', 'exercises'],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ['name', 'description', 'goal', 'difficulty', 'type', 'adaptationReason', 'deficitsAddressed', 'improvements', 'days'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino adaptado' });
+        }
+        
+        const workoutPlan = JSON.parse(content);
+        
+        return {
+          preview: workoutPlan,
+          studentId: input.studentId,
+          studentName: student.name,
+          version: workoutVersion,
+          previousWorkoutId: previousWorkout?.id,
+          previousWorkoutName: previousWorkout?.name,
+          measurementEvolution,
+          workoutPerformance,
+        };
+      }),
+    
+    // Comparar eficiência entre dois treinos
+    compareWorkoutEfficiency: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        workoutId1: z.number(),
+        workoutId2: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar os dois treinos
+        const [workout1, workout2] = await Promise.all([
+          db.getWorkoutById(input.workoutId1),
+          db.getWorkoutById(input.workoutId2),
+        ]);
+        
+        if (!workout1 || !workout2) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Treino não encontrado' });
+        }
+        
+        // Buscar medidas do período de cada treino
+        const measurements = await db.getMeasurementsByStudentId(input.studentId);
+        const workoutLogs = await db.getWorkoutLogsByStudentId(input.studentId);
+        
+        // Filtrar logs por treino
+        const logsWorkout1 = workoutLogs.filter(log => log.workoutId === input.workoutId1);
+        const logsWorkout2 = workoutLogs.filter(log => log.workoutId === input.workoutId2);
+        
+        // Calcular métricas de cada treino
+        const metrics1 = {
+          totalSessions: logsWorkout1.length,
+          averageDuration: logsWorkout1.length > 0 ? 
+            logsWorkout1.reduce((sum, log) => sum + (log.duration || 0), 0) / logsWorkout1.length : 0,
+        };
+        
+        const metrics2 = {
+          totalSessions: logsWorkout2.length,
+          averageDuration: logsWorkout2.length > 0 ? 
+            logsWorkout2.reduce((sum, log) => sum + (log.duration || 0), 0) / logsWorkout2.length : 0,
+        };
+        
+        // Montar prompt para análise
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um especialista em análise de desempenho esportivo. Compare a eficiência de dois treinos e forneça insights.'
+            },
+            {
+              role: 'user',
+              content: `Compare a eficiência destes dois treinos:
+
+TREINO 1: ${workout1.name}
+- Sessões realizadas: ${metrics1.totalSessions}
+- Duração média: ${metrics1.averageDuration.toFixed(0)} min
+- Criado em: ${workout1.createdAt}
+
+TREINO 2: ${workout2.name}
+- Sessões realizadas: ${metrics2.totalSessions}
+- Duração média: ${metrics2.averageDuration.toFixed(0)} min
+- Criado em: ${workout2.createdAt}
+
+Forneça:
+1. COMPARAÇÃO: Qual treino foi mais eficiente e por quê
+2. CONSISTÊNCIA: Análise da aderência do aluno
+3. RECOMENDAÇÕES: O que manter e o que mudar
+4. PERCENTUAL: Estime a eficiência relativa (ex: "Treino 2 foi 15% mais eficiente")`
+            }
+          ]
+        });
+        
+        const analysis = response.choices?.[0]?.message?.content || 'Não foi possível gerar a análise.';
+        
+        return {
+          analysis,
+          workout1: {
+            id: workout1.id,
+            name: workout1.name,
+            metrics: metrics1,
+          },
+          workout2: {
+            id: workout2.id,
+            name: workout2.name,
+            metrics: metrics2,
+          },
+        };
+      }),
+    
     // Salvar treino gerado pela IA
     saveAIGenerated: personalProcedure
       .input(z.object({
@@ -4810,6 +5144,255 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
       .query(async ({ ctx }) => {
         const db = await import('./db');
         return await db.getStudentUniqueExercises(ctx.student.id);
+      }),
+    
+    // ==================== ANÁLISE COMPLETA POR IA ====================
+    
+    // Análise completa do aluno (cruza todos os dados)
+    aiCompleteAnalysis: studentProcedure
+      .input(z.object({
+        includePhotos: z.boolean().optional().default(true),
+        includeMeasurements: z.boolean().optional().default(true),
+        includeAnamnesis: z.boolean().optional().default(true),
+        includeWorkoutLogs: z.boolean().optional().default(true),
+        includeBioimpedance: z.boolean().optional().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Coletar todos os dados do aluno
+        const [anamnesis, measurements, photos, workoutLogs] = await Promise.all([
+          input.includeAnamnesis ? db.getAnamnesisByStudentId(ctx.student.id) : null,
+          input.includeMeasurements ? db.getMeasurementsByStudentId(ctx.student.id) : [],
+          input.includePhotos ? db.getPhotosByStudentId(ctx.student.id) : [],
+          input.includeWorkoutLogs ? db.getWorkoutLogsByStudentId(ctx.student.id) : [],
+        ]);
+        
+        // Preparar dados para análise
+        const analysisData: any = {
+          student: {
+            name: ctx.student.name,
+            birthDate: ctx.student.birthDate,
+            gender: ctx.student.gender,
+          },
+        };
+        
+        if (anamnesis) {
+          analysisData.anamnesis = {
+            objectives: anamnesis.objectives,
+            healthConditions: anamnesis.healthConditions,
+            injuries: anamnesis.injuries,
+            medications: anamnesis.medications,
+            exerciseExperience: anamnesis.exerciseExperience,
+            weeklyFrequency: anamnesis.weeklyFrequency,
+            trainingLocation: anamnesis.trainingLocation,
+            availableEquipment: anamnesis.availableEquipment,
+            trainingRestrictions: anamnesis.trainingRestrictions,
+            muscleEmphasis: anamnesis.muscleEmphasis,
+          };
+        }
+        
+        if (measurements.length > 0) {
+          // Ordenar por data e pegar as últimas 3
+          const sortedMeasurements = [...measurements].sort((a, b) => 
+            new Date(b.measureDate).getTime() - new Date(a.measureDate).getTime()
+          ).slice(0, 3);
+          
+          analysisData.measurements = sortedMeasurements.map(m => ({
+            date: m.measureDate,
+            weight: m.weight,
+            bodyFat: m.bodyFat,
+            muscleMass: m.muscleMass,
+            waist: m.waist,
+            chest: m.chest,
+            hip: m.hip,
+            bioBodyFat: m.bioBodyFat,
+            bioMuscleMass: m.bioMuscleMass,
+            bioFatMass: m.bioFatMass,
+            bioVisceralFat: m.bioVisceralFat,
+          }));
+          
+          // Calcular evolução
+          if (sortedMeasurements.length >= 2) {
+            const latest = sortedMeasurements[0];
+            const oldest = sortedMeasurements[sortedMeasurements.length - 1];
+            analysisData.evolution = {
+              weightChange: latest.weight && oldest.weight ? 
+                (parseFloat(latest.weight) - parseFloat(oldest.weight)).toFixed(1) : null,
+              bodyFatChange: latest.bodyFat && oldest.bodyFat ?
+                (parseFloat(latest.bodyFat) - parseFloat(oldest.bodyFat)).toFixed(1) : null,
+              waistChange: latest.waist && oldest.waist ?
+                (parseFloat(latest.waist) - parseFloat(oldest.waist)).toFixed(1) : null,
+              periodDays: Math.round((new Date(latest.measureDate).getTime() - new Date(oldest.measureDate).getTime()) / (1000 * 60 * 60 * 24)),
+            };
+          }
+        }
+        
+        if (workoutLogs.length > 0) {
+          // Agrupar por mês e calcular estatísticas
+          const last30Days = workoutLogs.filter(log => {
+            const logDate = new Date(log.trainingDate);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            return logDate >= thirtyDaysAgo;
+          });
+          
+          analysisData.workoutStats = {
+            totalWorkoutsLast30Days: last30Days.length,
+            totalWorkoutsAllTime: workoutLogs.length,
+            averageWorkoutsPerWeek: (last30Days.length / 4.3).toFixed(1),
+            lastWorkoutDate: workoutLogs[0]?.trainingDate,
+          };
+        }
+        
+        // Preparar conteúdo para a IA (incluindo fotos se houver)
+        const content: any[] = [
+          {
+            type: 'text',
+            text: `Analise os dados deste aluno e forneça uma análise completa:
+
+${JSON.stringify(analysisData, null, 2)}
+
+Forneça:
+1. RESUMO GERAL: Visão geral do aluno e seu progresso
+2. PONTOS FORTES: O que está funcionando bem
+3. DÉFICITS IDENTIFICADOS: Áreas que precisam de atenção (grupos musculares, frequência, etc)
+4. RECOMENDAÇÕES: Sugestões específicas para o próximo treino
+5. METAS SUGERIDAS: Metas realistas para os próximos 30 dias
+
+Responda em português de forma profissional e motivadora.`
+          }
+        ];
+        
+        // Adicionar fotos para análise visual se houver
+        if (photos.length > 0) {
+          // Pegar as 2 fotos mais recentes para comparação
+          const recentPhotos = [...photos].sort((a, b) => 
+            new Date(b.photoDate).getTime() - new Date(a.photoDate).getTime()
+          ).slice(0, 2);
+          
+          for (const photo of recentPhotos) {
+            content.push({
+              type: 'image_url',
+              image_url: {
+                url: photo.url,
+                detail: 'high'
+              }
+            });
+          }
+          
+          content[0].text += '\n\nTambém analise as fotos anexadas para avaliar a progressão visual do aluno.';
+        }
+        
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um personal trainer experiente e especialista em avaliação física. Analise os dados do aluno de forma profissional, identificando pontos fortes, déficits e oportunidades de melhoria. Seja motivador mas realista.'
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ]
+        });
+        
+        const analysis = response.choices?.[0]?.message?.content || 'Não foi possível gerar a análise.';
+        
+        return {
+          analysis,
+          dataUsed: {
+            hasAnamnesis: !!anamnesis,
+            measurementsCount: measurements.length,
+            photosCount: photos.length,
+            workoutLogsCount: workoutLogs.length,
+          },
+          generatedAt: new Date().toISOString(),
+        };
+      }),
+    
+    // Análise de fotos de evolução (antes/depois)
+    aiPhotoAnalysis: studentProcedure
+      .input(z.object({
+        photoIds: z.array(z.number()).optional(), // Se não informado, usa as 2 mais recentes
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        let photos = await db.getPhotosByStudentId(ctx.student.id);
+        
+        if (photos.length === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Nenhuma foto encontrada para análise.' });
+        }
+        
+        // Filtrar por IDs se informado
+        if (input.photoIds && input.photoIds.length > 0) {
+          photos = photos.filter(p => input.photoIds!.includes(p.id));
+        } else {
+          // Pegar as 2 mais recentes
+          photos = [...photos].sort((a, b) => 
+            new Date(b.photoDate).getTime() - new Date(a.photoDate).getTime()
+          ).slice(0, 2);
+        }
+        
+        if (photos.length === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Fotos não encontradas.' });
+        }
+        
+        const content: any[] = [
+          {
+            type: 'text',
+            text: `Analise as fotos de evolução física deste aluno.
+
+Informações das fotos:
+${photos.map(p => `- ${p.category || 'Geral'} (${new Date(p.photoDate).toLocaleDateString('pt-BR')})`).join('\n')}
+
+Forneça:
+1. MUDANÇAS VISÍVEIS: O que mudou entre as fotos
+2. PROGRESSÃO: Avaliação da evolução corporal
+3. ÁREAS DE DESTAQUE: Grupos musculares que mostraram mais desenvolvimento
+4. OPORTUNIDADES: Áreas que podem melhorar
+5. FEEDBACK MOTIVACIONAL: Comentário positivo sobre o progresso
+
+Seja profissional, respeitoso e motivador.`
+          }
+        ];
+        
+        // Adicionar as fotos
+        for (const photo of photos) {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: photo.url,
+              detail: 'high'
+            }
+          });
+        }
+        
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um especialista em avaliação física e transformação corporal. Analise as fotos de forma profissional, identificando mudanças visíveis e fornecendo feedback construtivo. Seja respeitoso e motivador.'
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ]
+        });
+        
+        const analysis = response.choices?.[0]?.message?.content || 'Não foi possível gerar a análise.';
+        
+        return {
+          analysis,
+          photosAnalyzed: photos.map(p => ({
+            id: p.id,
+            category: p.category,
+            date: p.photoDate,
+          })),
+          generatedAt: new Date().toISOString(),
+        };
       }),
   }),
   

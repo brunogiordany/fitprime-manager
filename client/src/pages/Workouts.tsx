@@ -139,6 +139,29 @@ export default function Workouts() {
     },
   });
 
+  const generateAdaptedMutation = trpc.workouts.generateAdaptedWorkout.useMutation({
+    onSuccess: (data) => {
+      setAiPreview({
+        ...data,
+        preview: data.preview,
+        isAdapted: true,
+        adaptationInfo: {
+          version: data.version,
+          previousWorkoutName: data.previousWorkoutName,
+          measurementEvolution: data.measurementEvolution,
+          workoutPerformance: data.workoutPerformance,
+          adaptationReason: data.preview.adaptationReason,
+          deficitsAddressed: data.preview.deficitsAddressed,
+          improvements: data.preview.improvements,
+        }
+      });
+      toast.success(`Treino ${data.version}.0 adaptado gerado! Revise e salve.`);
+    },
+    onError: (error) => {
+      toast.error("Erro ao gerar treino adaptado: " + error.message);
+    },
+  });
+
   const saveAIMutation = trpc.workouts.saveAIGenerated.useMutation({
     onSuccess: (data) => {
       toast.success(`Treino "${data.name}" salvo com sucesso!`);
@@ -424,10 +447,15 @@ export default function Workouts() {
                     {/* Conteúdo com scroll */}
                     <div className="flex-1 overflow-y-auto px-6 py-4">
                       <div className="space-y-4">
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                        <div className={`rounded-lg p-4 border ${aiPreview.isAdapted ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-100' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100'}`}>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                             <h3 className="font-semibold text-lg">{aiPreview.preview.name}</h3>
                             <div className="flex gap-2 flex-wrap">
+                              {aiPreview.isAdapted && (
+                                <Badge className="bg-orange-100 text-orange-700">
+                                  Treino {aiPreview.adaptationInfo?.version}.0
+                                </Badge>
+                              )}
                               <Badge className={getGoalBadge(aiPreview.preview.goal).className}>
                                 {getGoalBadge(aiPreview.preview.goal).label}
                               </Badge>
@@ -440,6 +468,102 @@ export default function Workouts() {
                           <p className="text-xs text-muted-foreground mt-2">
                             Para: {aiPreview.studentName}
                           </p>
+                          
+                          {/* Informações de Adaptação */}
+                          {aiPreview.isAdapted && aiPreview.adaptationInfo && (
+                            <div className="mt-4 space-y-3">
+                              {aiPreview.adaptationInfo.previousWorkoutName && (
+                                <p className="text-xs text-orange-600">
+                                  <strong>Baseado em:</strong> {aiPreview.adaptationInfo.previousWorkoutName}
+                                </p>
+                              )}
+                              
+                              {aiPreview.adaptationInfo.adaptationReason && (
+                                <div className="bg-white/50 rounded p-2">
+                                  <p className="text-xs font-medium text-orange-700">Motivo da Adaptação:</p>
+                                  <p className="text-xs text-muted-foreground">{aiPreview.adaptationInfo.adaptationReason}</p>
+                                </div>
+                              )}
+                              
+                              {aiPreview.adaptationInfo.deficitsAddressed?.length > 0 && (
+                                <div className="bg-white/50 rounded p-2">
+                                  <p className="text-xs font-medium text-orange-700">Déficits Abordados:</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {aiPreview.adaptationInfo.deficitsAddressed.map((deficit: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                        {deficit}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {aiPreview.adaptationInfo.improvements?.length > 0 && (
+                                <div className="bg-white/50 rounded p-2">
+                                  <p className="text-xs font-medium text-orange-700">Melhorias:</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {aiPreview.adaptationInfo.improvements.map((improvement: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                        {improvement}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {aiPreview.adaptationInfo.measurementEvolution && (
+                                <div className="bg-white/50 rounded p-2">
+                                  <p className="text-xs font-medium text-orange-700">Evolução das Medidas ({aiPreview.adaptationInfo.measurementEvolution.periodDays} dias):</p>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+                                    {aiPreview.adaptationInfo.measurementEvolution.weightChange !== null && (
+                                      <div className="text-xs">
+                                        <span className="text-muted-foreground">Peso:</span>
+                                        <span className={aiPreview.adaptationInfo.measurementEvolution.weightChange < 0 ? 'text-green-600' : 'text-red-600'}>
+                                          {' '}{aiPreview.adaptationInfo.measurementEvolution.weightChange > 0 ? '+' : ''}{aiPreview.adaptationInfo.measurementEvolution.weightChange}kg
+                                        </span>
+                                      </div>
+                                    )}
+                                    {aiPreview.adaptationInfo.measurementEvolution.bodyFatChange !== null && (
+                                      <div className="text-xs">
+                                        <span className="text-muted-foreground">Gordura:</span>
+                                        <span className={aiPreview.adaptationInfo.measurementEvolution.bodyFatChange < 0 ? 'text-green-600' : 'text-red-600'}>
+                                          {' '}{aiPreview.adaptationInfo.measurementEvolution.bodyFatChange > 0 ? '+' : ''}{aiPreview.adaptationInfo.measurementEvolution.bodyFatChange}%
+                                        </span>
+                                      </div>
+                                    )}
+                                    {aiPreview.adaptationInfo.measurementEvolution.muscleMassChange !== null && (
+                                      <div className="text-xs">
+                                        <span className="text-muted-foreground">Músculo:</span>
+                                        <span className={aiPreview.adaptationInfo.measurementEvolution.muscleMassChange > 0 ? 'text-green-600' : 'text-red-600'}>
+                                          {' '}{aiPreview.adaptationInfo.measurementEvolution.muscleMassChange > 0 ? '+' : ''}{aiPreview.adaptationInfo.measurementEvolution.muscleMassChange}kg
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {aiPreview.adaptationInfo.workoutPerformance && (
+                                <div className="bg-white/50 rounded p-2">
+                                  <p className="text-xs font-medium text-orange-700">Desempenho (Últimos 30 dias):</p>
+                                  <div className="grid grid-cols-3 gap-2 mt-1">
+                                    <div className="text-xs">
+                                      <span className="text-muted-foreground">Treinos:</span>
+                                      <span className="font-medium"> {aiPreview.adaptationInfo.workoutPerformance.totalWorkouts}</span>
+                                    </div>
+                                    <div className="text-xs">
+                                      <span className="text-muted-foreground">Média/semana:</span>
+                                      <span className="font-medium"> {aiPreview.adaptationInfo.workoutPerformance.averagePerWeek}</span>
+                                    </div>
+                                    <div className="text-xs">
+                                      <span className="text-muted-foreground">Consistência:</span>
+                                      <span className="font-medium"> {aiPreview.adaptationInfo.workoutPerformance.consistency}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="space-y-4">
@@ -926,6 +1050,33 @@ export default function Workouts() {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Card de Treino Adaptado - só aparece se já houver treinos */}
+            {workouts && workouts.length > 0 && (
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-orange-100 hover:border-orange-300 md:col-span-3"
+                onClick={() => {
+                  generateAdaptedMutation.mutate({
+                    studentId: parseInt(selectedStudent),
+                  });
+                }}
+              >
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100">
+                    <RefreshCw className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Gerar Treino Adaptado (2.0)</h3>
+                    <p className="text-sm text-muted-foreground">
+                      IA analisa evolução e cria novo treino focando nos déficits
+                    </p>
+                  </div>
+                  {generateAdaptedMutation.isPending && (
+                    <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 

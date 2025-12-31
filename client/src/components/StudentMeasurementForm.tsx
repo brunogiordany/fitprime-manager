@@ -38,6 +38,8 @@ import {
   Share2,
   Heart,
   Clipboard,
+  Upload,
+  FileCheck,
 } from "lucide-react";
 import ShareProgressCard from "@/components/ShareProgressCard";
 
@@ -66,6 +68,10 @@ interface Measurement {
   bioFatMass?: string | null;
   bioVisceralFat?: string | null;
   bioBasalMetabolism?: string | null;
+  // Arquivo de bioimpedância (PDF/foto)
+  bioFileUrl?: string | null;
+  bioFileKey?: string | null;
+  bioAiAnalysis?: string | null;
   // Adipômetro
   adipBodyFat?: string | null;
   adipMuscleMass?: string | null;
@@ -94,6 +100,11 @@ export default function StudentMeasurementForm({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
+  const [bioFileUploading, setBioFileUploading] = useState(false);
+  const [bioFileUrl, setBioFileUrl] = useState<string | null>(null);
+  const [bioFileKey, setBioFileKey] = useState<string | null>(null);
+  const [bioAiAnalysis, setBioAiAnalysis] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     measureDate: format(new Date(), "yyyy-MM-dd"),
     weight: "",
@@ -513,9 +524,102 @@ export default function StudentMeasurementForm({
           <AccordionContent>
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
               <p className="text-xs text-blue-700">
-                <strong>Bioimpedância:</strong> Preencha com os dados obtidos em exame de bioimpedância profissional.
+                <strong>Bioimpedância:</strong> Faça upload do PDF ou foto do exame para análise automática por IA, ou preencha manualmente.
               </p>
             </div>
+            
+            {/* Upload de Bioimpedância */}
+            <div className="mb-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50/50">
+              <div className="flex flex-col items-center gap-2">
+                <Upload className="h-8 w-8 text-blue-500" />
+                <p className="text-sm font-medium text-blue-700">Upload do Exame de Bioimpedância</p>
+                <p className="text-xs text-blue-600">PDF (até 10MB) ou Foto (até 5MB)</p>
+                <input
+                  type="file"
+                  accept=".pdf,image/*"
+                  className="hidden"
+                  id="bioFile"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    const maxSize = file.type === 'application/pdf' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                      toast.error(`Arquivo muito grande. Máximo: ${file.type === 'application/pdf' ? '10MB' : '5MB'}`);
+                      return;
+                    }
+                    
+                    setBioFileUploading(true);
+                    try {
+                      const formDataUpload = new FormData();
+                      formDataUpload.append('file', file);
+                      
+                      const response = await fetch('/api/upload/bioimpedance', {
+                        method: 'POST',
+                        body: formDataUpload,
+                      });
+                      
+                      if (!response.ok) throw new Error('Erro no upload');
+                      
+                      const result = await response.json();
+                      setBioFileUrl(result.url);
+                      setBioFileKey(result.key);
+                      
+                      if (result.aiAnalysis) {
+                        setBioAiAnalysis(result.aiAnalysis);
+                        // Preencher campos automaticamente se a IA extraiu dados
+                        if (result.extractedData) {
+                          const data = result.extractedData;
+                          setFormData(prev => ({
+                            ...prev,
+                            bioBodyFat: data.bodyFat || prev.bioBodyFat,
+                            bioMuscleMass: data.muscleMass || prev.bioMuscleMass,
+                            bioFatMass: data.fatMass || prev.bioFatMass,
+                            bioVisceralFat: data.visceralFat || prev.bioVisceralFat,
+                            bioBasalMetabolism: data.basalMetabolism || prev.bioBasalMetabolism,
+                          }));
+                          toast.success('Dados extraídos automaticamente pela IA!');
+                        }
+                      }
+                      
+                      toast.success('Arquivo enviado com sucesso!');
+                    } catch (error) {
+                      toast.error('Erro ao enviar arquivo');
+                    } finally {
+                      setBioFileUploading(false);
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('bioFile')?.click()}
+                  disabled={bioFileUploading}
+                  className="mt-2"
+                >
+                  {bioFileUploading ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Upload className="h-4 w-4 mr-2" /> Selecionar Arquivo</>
+                  )}
+                </Button>
+                {bioFileUrl && (
+                  <div className="mt-2 flex items-center gap-2 text-green-600">
+                    <FileCheck className="h-4 w-4" />
+                    <span className="text-xs">Arquivo enviado</span>
+                    <a href={bioFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs underline">Ver</a>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {bioAiAnalysis && (
+              <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-xs font-semibold text-green-700 mb-1">Análise da IA:</p>
+                <p className="text-xs text-green-600 whitespace-pre-wrap">{bioAiAnalysis}</p>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs">% Gordura</Label>

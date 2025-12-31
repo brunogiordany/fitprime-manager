@@ -59,6 +59,113 @@ async function startServer() {
     }
   });
   
+  // Bioimpedância upload endpoint with AI analysis
+  app.post('/api/upload/bioimpedance', upload.single('file'), async (req: any, res: any) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo fornecido' });
+      }
+      
+      // Validate file size
+      const isPdf = req.file.mimetype === 'application/pdf';
+      const maxSize = isPdf ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (req.file.size > maxSize) {
+        return res.status(400).json({ error: `Arquivo muito grande. Máximo: ${isPdf ? '10MB' : '5MB'}` });
+      }
+      
+      // Upload to S3
+      const fileKey = `bioimpedance/${nanoid()}/${req.file.originalname}`;
+      const { url } = await storagePut(fileKey, req.file.buffer, req.file.mimetype);
+      
+      // Analyze with AI
+      let aiAnalysis = null;
+      let extractedData = null;
+      
+      try {
+        const { invokeLLM } = await import('./llm');
+        
+        const content: any[] = [
+          {
+            type: 'text',
+            text: `Analise este exame de bioimpedância e extraia os seguintes dados:
+- Percentual de gordura corporal (%)
+- Massa muscular (kg)
+- Massa gorda (kg)
+- Gordura visceral (nível)
+- Metabolismo basal (kcal)
+
+Retorne um JSON com os campos: bodyFat, muscleMass, fatMass, visceralFat, basalMetabolism.
+Além disso, forneça uma análise resumida dos resultados em português.
+
+Formato de resposta:
+{"extractedData": {...}, "analysis": "..."}`
+          }
+        ];
+        
+        // Add file content based on type
+        if (isPdf) {
+          content.push({
+            type: 'file_url',
+            file_url: {
+              url: url,
+              mime_type: 'application/pdf'
+            }
+          });
+        } else {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: url,
+              detail: 'high'
+            }
+          });
+        }
+        
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um especialista em análise de exames de bioimpedância. Extraia os dados numéricos e forneça uma análise profissional dos resultados. Sempre responda em JSON válido.'
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ]
+        });
+        
+        const responseText = response.choices?.[0]?.message?.content || '';
+        
+        // Try to parse JSON from response
+        try {
+          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            extractedData = parsed.extractedData || null;
+            aiAnalysis = parsed.analysis || responseText;
+          } else {
+            aiAnalysis = responseText;
+          }
+        } catch (parseError) {
+          aiAnalysis = responseText;
+        }
+      } catch (aiError) {
+        console.error('AI analysis error:', aiError);
+        // Continue without AI analysis
+      }
+      
+      res.json({ 
+        url, 
+        key: fileKey, 
+        aiAnalysis, 
+        extractedData 
+      });
+    } catch (error) {
+      console.error('Bioimpedance upload error:', error);
+      res.status(500).json({ error: 'Erro no upload' });
+    }
+  });
+  
   // Health check endpoint
   app.get('/api/health', async (req: any, res: any) => {
     try {

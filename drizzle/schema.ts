@@ -188,6 +188,10 @@ export const measurements = mysqlTable("measurements", {
   bioFatMass: decimal("bioFatMass", { precision: 5, scale: 2 }),
   bioVisceralFat: decimal("bioVisceralFat", { precision: 5, scale: 2 }),
   bioBasalMetabolism: decimal("bioBasalMetabolism", { precision: 7, scale: 2 }),
+  // Arquivo de bioimpedância (PDF/foto para análise por IA)
+  bioFileUrl: text("bioFileUrl"), // URL do arquivo no S3
+  bioFileKey: text("bioFileKey"), // Key do arquivo no S3
+  bioAiAnalysis: text("bioAiAnalysis"), // Análise completa da IA em JSON
   // Adipômetro (manual - profissional)
   adipBodyFat: decimal("adipBodyFat", { precision: 5, scale: 2 }),
   adipMuscleMass: decimal("adipMuscleMass", { precision: 5, scale: 2 }),

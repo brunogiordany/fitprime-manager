@@ -1573,3 +1573,83 @@
 - [x] Adicionar seções de Bioimpedância e Adipômetro no formulário (Accordion)
 - [x] Atualizar endpoint addMeasurement no backend com os novos campos
 - [x] Atualizar endpoint updateMeasurement no backend com os novos campos
+
+
+### D20. Feature: Sistema Completo de Análise por IA
+
+---
+
+#### FASE 1: Upload de Bioimpedância (PDF/Foto)
+- [x] 1.1 Adicionar campo de upload na seção Bioimpedância (portal aluno)
+- [x] 1.2 Limite de tamanho: 5MB fotos, 10MB PDFs
+- [x] 1.3 Criar endpoint de upload com armazenamento no S3
+- [x] 1.4 IA analisa documento e extrai dados automáticos
+- [x] 1.5 Preencher campos de bioimpedância com valores extraídos
+- [x] 1.6 Salvar arquivo original para referência futura
+- [ ] 1.7 Adicionar campo de upload na seção Bioimpedância (personal)
+
+#### FASE 2: Análise de Fotos de Evolução
+- [x] 2.1 IA analisa fotos de antes/depois do aluno
+- [x] 2.2 Comparação visual de progressão corporal
+- [x] 2.3 Gera insights sobre mudanças físicas visíveis
+- [x] 2.4 Identifica áreas de melhoria e pontos fortes
+
+#### FASE 3: Análise Completa do Aluno (Cruzamento de Dados)
+- [x] 3.1 Endpoint que cruza TODOS os dados:
+  - [x] Bioimpedância (PDF/foto)
+  - [x] Fotos de evolução (antes/depois)
+  - [x] Anamnese completa
+  - [x] Histórico de medidas corporais
+  - [x] Diário de treino (se treinou, analisa; se não, ignora)
+- [x] 3.2 Gera relatório completo com insights
+- [x] 3.3 Identifica déficits e pontos fortes
+- [x] 3.4 Sugere ajustes no treino baseado na análise
+
+#### FASE 4: Geração de Treino Personalizado com IA
+- [x] 4.1 IA usa todos os dados para personalizar treinos
+- [x] 4.2 Considera limitações físicas da anamnese
+- [x] 4.3 Adapta carga baseado na evolução do diário
+- [x] 4.4 Considera composição corporal da bioimpedância
+- [x] 4.5 Foca nos grupos musculares em déficit
+
+#### FASE 5: Treino 2.0 - Ciclo de Melhoria Contínua
+- [x] 5.1 Endpoint "generateAdaptedWorkout" para gerar treino adaptado
+- [x] 5.2 IA identifica déficits (grupos que não evoluíram)
+- [x] 5.3 IA compara medidas antes vs depois
+- [x] 5.4 IA analisa desempenho no diário (cargas, frequência)
+- [x] 5.5 Gera Treino 2.0 focando nos pontos fracos
+- [x] 5.6 Personal pode aprovar, editar ou regenerar (usa saveAIGenerated)
+- [x] 5.7 Treinos acumulam (1.0, 2.0, 3.0...) - nunca substituem
+- [x] 5.8 Aluno pode escolher qual treino seguir
+- [ ] 5.9 Botão "Gerar Novo Treino Adaptado" na interface do personal
+
+#### FASE 6: Comparação de Eficiência (Feedback Loop)
+- [x] 6.1 Endpoint "compareWorkoutEfficiency" para comparar treinos
+- [x] 6.2 Métricas de comparação:
+  - [x] Sessões realizadas
+  - [x] Duração média
+  - [x] Consistência
+- [x] 6.3 Gera insight: "Treino 2 foi X% mais eficiente"
+- [x] 6.4 Identifica o que funcionou e o que não funcionou
+- [x] 6.5 Usa aprendizado para gerar Treino 3 ainda melhor
+- [ ] 6.6 Interface para comparar treinos e ver gráficos
+
+#### FASE 7: Interface e Visualização
+- [x] 7.1 Botão "Gerar Treino Adaptado (2.0)" na página de Treinos
+- [x] 7.2 Preview do treino adaptado com informações de adaptação
+- [x] 7.3 Exibição de déficits abordados e melhorias
+- [x] 7.4 Exibição de evolução das medidas e desempenho
+- [ ] 7.5 Tela de Análise Completa do Aluno (modal)
+- [ ] 7.6 Comparação lado a lado de treinos
+- [ ] 7.7 Relatório exportação PDF com análise da IA
+
+---
+
+**JORNADA DO CLIENTE:**
+1. Aluno cadastra → Preenche anamnese → Upload bioimpedância (opcional)
+2. Personal gera Treino 1.0 com IA (baseado em tudo)
+3. 30 dias depois: Aluno atualiza medidas + fotos
+4. Personal clica "Analisar Evolução" → IA cruza tudo
+5. Personal clica "Gerar Treino Adaptado" → Treino 2.0
+6. 30 dias depois: IA compara eficiência Treino 2 vs 1
+7. Ciclo continua: Treino 3.0, 4.0... sempre melhorando
