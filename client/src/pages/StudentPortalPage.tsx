@@ -155,15 +155,15 @@ export default function StudentPortalPage() {
     }
   }, [setLocation]);
 
-  // Buscar anamnese do aluno
-  const { data: anamnesis, refetch: refetchAnamnesis } = trpc.anamnesis.get.useQuery(
-    { studentId: studentData?.id || 0 },
+  // Buscar anamnese do aluno (usa endpoint do studentPortal para autenticação correta)
+  const { data: anamnesis, refetch: refetchAnamnesis } = trpc.studentPortal.anamnesis.useQuery(
+    undefined,
     { enabled: !!studentData?.id }
   );
 
-  // Buscar sessões do aluno
-  const { data: sessions, refetch: refetchSessions } = trpc.sessions.listByStudent.useQuery(
-    { studentId: studentData?.id || 0 },
+  // Buscar sessões do aluno (usa endpoint do studentPortal para autenticação correta)
+  const { data: sessions, refetch: refetchSessions } = trpc.studentPortal.sessions.useQuery(
+    undefined,
     { enabled: !!studentData?.id }
   );
 
