@@ -407,10 +407,10 @@ export default function StudentPortalPage() {
   today.setHours(0, 0, 0, 0);
   
   const upcomingSessions = sessions?.filter(s => {
-    const sessionDate = new Date(s.date);
+    const sessionDate = new Date(s.scheduledAt);
     sessionDate.setHours(0, 0, 0, 0);
     return sessionDate >= today && s.status !== 'cancelled';
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5) || [];
+  }).sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 5) || [];
 
   const pendingCharges = charges?.filter(c => c.status === 'pending') || [];
 
@@ -547,10 +547,10 @@ export default function StudentPortalPage() {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium">
-                                {format(new Date(session.date), "EEEE, dd/MM", { locale: ptBR })}
+                                {format(new Date(session.scheduledAt), "EEEE, dd/MM", { locale: ptBR })}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {format(new Date(session.date), "HH:mm")} - {session.duration} min
+                                {format(new Date(session.scheduledAt), "HH:mm")} - {session.duration} min
                               </p>
                             </div>
                             {getStatusBadge(session.status)}

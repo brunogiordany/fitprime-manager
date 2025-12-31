@@ -148,7 +148,8 @@ interface StudentMetricsCardsProps {
   
   // Próxima sessão
   nextSession?: {
-    date: Date;
+    date?: Date;
+    scheduledAt?: Date | string;
     workoutName?: string;
   } | null;
   
@@ -216,7 +217,7 @@ export default function StudentMetricsCards({
     if (!nextSession) return { value: '-', subtitle: 'Nenhuma sessão agendada' };
     
     const now = new Date();
-    const sessionDate = new Date(nextSession.date);
+    const sessionDate = new Date(nextSession.scheduledAt || nextSession.date!);
     const diffDays = Math.ceil((sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) {
@@ -295,7 +296,7 @@ export default function StudentMetricsCards({
         subtitle={nextSessionInfo.subtitle}
         icon={<Calendar className="h-5 w-5" />}
         color="blue"
-        badge={nextSession && new Date(nextSession.date).toDateString() === new Date().toDateString() ? '📍 Hoje' : undefined}
+        badge={nextSession && new Date(nextSession.scheduledAt || nextSession.date!).toDateString() === new Date().toDateString() ? '📍 Hoje' : undefined}
       />
     </div>
   );

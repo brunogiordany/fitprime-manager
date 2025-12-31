@@ -23,7 +23,7 @@ import {
 
 interface Session {
   id: number;
-  date: string | Date;
+  scheduledAt: string | Date;
   status: string;
   duration: number;
   notes?: string | null;
@@ -137,18 +137,18 @@ export default function StudentSessionManager({
   const now = new Date();
   const upcomingSessions = sessions
     .filter((s) => {
-      const sessionDate = new Date(s.date);
+      const sessionDate = new Date(s.scheduledAt);
       return sessionDate > now && s.status !== "cancelled";
     })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
   // Sessões passadas
   const pastSessions = sessions
     .filter((s) => {
-      const sessionDate = new Date(s.date);
+      const sessionDate = new Date(s.scheduledAt);
       return sessionDate <= now || s.status === "cancelled";
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
     .slice(0, 10);
 
   const getStatusBadge = (status: string) => {
@@ -189,20 +189,20 @@ export default function StudentSessionManager({
   };
 
   const canConfirm = (session: Session) => {
-    const sessionDate = new Date(session.date);
+    const sessionDate = new Date(session.scheduledAt);
     const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     return session.status === "scheduled" && hoursUntil <= 48 && hoursUntil > 0;
   };
 
   const canCancel = (session: Session) => {
-    const sessionDate = new Date(session.date);
+    const sessionDate = new Date(session.scheduledAt);
     const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     // Pode cancelar até 24h antes
     return (session.status === "scheduled" || session.status === "confirmed") && hoursUntil > 24;
   };
 
   const canReschedule = (session: Session) => {
-    const sessionDate = new Date(session.date);
+    const sessionDate = new Date(session.scheduledAt);
     const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     // Pode reagendar até 24h antes
     return (session.status === "scheduled" || session.status === "confirmed") && hoursUntil > 24;
@@ -225,7 +225,7 @@ export default function StudentSessionManager({
           {upcomingSessions.length > 0 ? (
             <div className="space-y-4">
               {upcomingSessions.map((session) => {
-                const sessionDate = new Date(session.date);
+                const sessionDate = new Date(session.scheduledAt);
                 const hoursUntil = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
                 return (
@@ -330,7 +330,7 @@ export default function StudentSessionManager({
                 >
                   <div>
                     <p className="font-medium text-sm">
-                      {format(new Date(session.date), "dd/MM/yyyy - HH:mm")}
+                      {format(new Date(session.scheduledAt), "dd/MM/yyyy - HH:mm")}
                     </p>
                     <p className="text-xs text-gray-500">{session.duration} min</p>
                   </div>
@@ -363,12 +363,12 @@ export default function StudentSessionManager({
             <div className="py-4">
               <div className="bg-emerald-50 rounded-lg p-4">
                 <p className="font-medium">
-                  {format(new Date(selectedSession.date), "EEEE, dd 'de' MMMM", {
+                  {format(new Date(selectedSession.scheduledAt), "EEEE, dd 'de' MMMM", {
                     locale: ptBR,
                   })}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {format(new Date(selectedSession.date), "HH:mm")} -{" "}
+                  {format(new Date(selectedSession.scheduledAt), "HH:mm")} -{" "}
                   {selectedSession.duration} min
                 </p>
               </div>
@@ -412,12 +412,12 @@ export default function StudentSessionManager({
             <div className="space-y-4 py-4">
               <div className="bg-red-50 rounded-lg p-4">
                 <p className="font-medium">
-                  {format(new Date(selectedSession.date), "EEEE, dd 'de' MMMM", {
+                  {format(new Date(selectedSession.scheduledAt), "EEEE, dd 'de' MMMM", {
                     locale: ptBR,
                   })}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {format(new Date(selectedSession.date), "HH:mm")} -{" "}
+                  {format(new Date(selectedSession.scheduledAt), "HH:mm")} -{" "}
                   {selectedSession.duration} min
                 </p>
               </div>
@@ -479,12 +479,12 @@ export default function StudentSessionManager({
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-sm text-blue-700">Sessão atual:</p>
                 <p className="font-medium">
-                  {format(new Date(selectedSession.date), "EEEE, dd 'de' MMMM", {
+                  {format(new Date(selectedSession.scheduledAt), "EEEE, dd 'de' MMMM", {
                     locale: ptBR,
                   })}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {format(new Date(selectedSession.date), "HH:mm")} -{" "}
+                  {format(new Date(selectedSession.scheduledAt), "HH:mm")} -{" "}
                   {selectedSession.duration} min
                 </p>
               </div>
