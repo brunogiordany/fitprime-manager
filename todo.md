@@ -1680,3 +1680,5 @@
 - [x] Corrigir calendário abrindo automaticamente no modal de Criar Registro Manual de Treino
 
 - [x] Corrigir Meus Treinos no portal do aluno - não está carregando treinos do personal
+
+- [x] Corrigir visualização de treino no portal do aluno - tela em branco ao clicar em Ver Treino

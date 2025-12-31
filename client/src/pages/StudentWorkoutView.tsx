@@ -112,7 +112,7 @@ export default function StudentWorkoutView() {
   }, [setLocation]);
 
   // Buscar detalhes do treino com dias e exercícios
-  const { data: workout, isLoading } = trpc.workouts.get.useQuery(
+  const { data: workout, isLoading } = trpc.studentPortal.workout.useQuery(
     { id: workoutId },
     { enabled: workoutId > 0 && !!studentData?.id }
   );
