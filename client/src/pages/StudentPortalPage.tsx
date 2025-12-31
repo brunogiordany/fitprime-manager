@@ -20,6 +20,7 @@ import StudentBadges from "@/components/StudentBadges";
 import StudentFeedback from "@/components/StudentFeedback";
 import StudentTrainingTips from "@/components/StudentTrainingTips";
 import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
+import { GuidedPhotos } from "@/components/GuidedPhotos";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
@@ -620,6 +621,14 @@ export default function StudentPortalPage() {
               sessions={sessions || []}
               canEditMeasurements={editPermissions?.canEditMeasurements || false}
               onMeasurementsUpdate={() => refetchMeasurements()}
+            />
+          </TabsContent>
+
+          {/* Photos Tab */}
+          <TabsContent value="photos" className="space-y-6">
+            <GuidedPhotos
+              studentId={studentData?.id || 0}
+              readOnly={!editPermissions?.canEditPhotos}
             />
           </TabsContent>
 

@@ -32,7 +32,8 @@ import {
   Trophy,
   User,
   Home,
-  ClipboardList
+  ClipboardList,
+  Camera
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -52,6 +53,7 @@ interface StudentData {
 const menuItems = [
   { icon: Home, label: "Início", tab: "dashboard" },
   { icon: Activity, label: "Evolução", tab: "evolution" },
+  { icon: Camera, label: "Fotos", tab: "photos" },
   { icon: Calendar, label: "Sessões", tab: "sessions" },
   { icon: Dumbbell, label: "Treinos", tab: "workouts" },
   { icon: FileText, label: "Diário", tab: "diary" },

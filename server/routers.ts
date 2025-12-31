@@ -5498,6 +5498,95 @@ Seja profissional, respeitoso e motivador.`
           generatedAt: new Date().toISOString(),
         };
       }),
+    // Upload de foto guiada (para evolução)
+    uploadPhoto: studentProcedure
+      .input(z.object({
+        poseId: z.string(), // Identificador da pose (frontal-relaxado, lateral-esquerda, etc)
+        imageBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar permissão
+        if (!ctx.student.canEditPhotos) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Você não tem permissão para enviar fotos. Solicite ao seu personal.' });
+        }
+        
+        // Converter base64 para buffer
+        const base64Data = input.imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Gerar chave única para o arquivo
+        const fileKey = `photos/${ctx.student.personalId}/${ctx.student.id}/poses/${input.poseId}-${nanoid()}.jpg`;
+        
+        // Upload para S3
+        const { url } = await storagePut(fileKey, buffer, 'image/jpeg');
+        
+        // Mapear poseId para categoria do banco
+        const categoryMap: Record<string, 'front' | 'back' | 'side_left' | 'side_right' | 'other'> = {
+          'frontal-relaxado': 'front',
+          'frontal-contraido': 'front',
+          'lateral-esquerda': 'side_left',
+          'lateral-direita': 'side_right',
+          'costas-relaxado': 'back',
+          'costas-contraido': 'back',
+          'biceps-direito': 'other',
+          'biceps-esquerdo': 'other',
+          'perna-direita-relaxada': 'other',
+          'perna-direita-contraida': 'other',
+          'perna-esquerda-relaxada': 'other',
+          'perna-esquerda-contraida': 'other',
+        };
+        const category = categoryMap[input.poseId] || 'other';
+        
+        // Salvar no banco de dados (usando notes para armazenar o poseId completo)
+        const photoId = await db.createPhoto({
+          studentId: ctx.student.id,
+          personalId: ctx.student.personalId,
+          url,
+          fileKey,
+          category,
+          photoDate: new Date(),
+          notes: `pose:${input.poseId}`, // Armazena o poseId completo nas notas
+        });
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        const poseLabels: Record<string, string> = {
+          'frontal-relaxado': 'Frontal Relaxado',
+          'frontal-contraido': 'Frontal Contraído',
+          'lateral-esquerda': 'Lateral Esquerda',
+          'lateral-direita': 'Lateral Direita',
+          'costas-relaxado': 'Costas Relaxado',
+          'costas-contraido': 'Costas Contraído',
+          'biceps-direito': 'Bíceps Direito',
+          'biceps-esquerdo': 'Bíceps Esquerdo',
+          'perna-direita-relaxada': 'Perna Direita Relaxada',
+          'perna-direita-contraida': 'Perna Direita Contraída',
+          'perna-esquerda-relaxada': 'Perna Esquerda Relaxada',
+          'perna-esquerda-contraida': 'Perna Esquerda Contraída',
+        };
+        await notifyOwner({
+          title: `📸 Nova Foto de Evolução - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} enviou uma nova foto de evolução.\n\n📍 Pose: ${poseLabels[input.poseId] || input.poseId}\n📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\nAcesse o sistema para visualizar.`,
+        });
+        
+        return { id: photoId, url };
+      }),
+    
+    // Listar fotos guiadas do aluno
+    guidedPhotos: studentProcedure
+      .query(async ({ ctx }) => {
+        const photos = await db.getPhotosByStudentId(ctx.student.id);
+        
+        // Extrair poseId das notas e retornar com a informação
+        return photos.map(photo => {
+          const poseMatch = photo.notes?.match(/^pose:(.+)$/);
+          return {
+            ...photo,
+            poseId: poseMatch ? poseMatch[1] : null,
+          };
+        });
+      }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================

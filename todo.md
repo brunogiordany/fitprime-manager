@@ -1682,3 +1682,32 @@
 - [x] Corrigir Meus Treinos no portal do aluno - não está carregando treinos do personal
 
 - [x] Corrigir visualização de treino no portal do aluno - tela em branco ao clicar em Ver Treino
+
+
+## Sistema de Fotos Guiadas com IA (v3.9)
+
+### Fotos Guiadas no Portal do Aluno
+- [x] Gerar imagens de referência para cada pose
+- [x] Criar componente de fotos guiadas com imagem de referência + upload
+- [x] Poses: frontal relaxado, frontal contraído, lateral esquerda, lateral direita
+- [x] Poses: costas relaxado, costas contraído
+- [x] Poses: bíceps direito/esquerdo relaxado/contraído
+- [x] Poses: perna direita/esquerda relaxada/contraída
+- [x] Aba "Fotos" adicionada ao menu do portal do aluno
+- [x] Endpoint de upload de fotos guiadas (studentPortal.uploadPhoto)
+- [x] Endpoint de listagem de fotos guiadas (studentPortal.guidedPhotos)
+
+### Integração com Medições
+- [ ] Adicionar campo de fotos no modal de Nova Medição
+- [ ] Vincular fotos à medição específica (data)
+- [ ] Armazenar fotos por categoria/pose
+
+### Comparativo Visual com IA
+- [ ] Tela de comparação lado a lado (antes/depois)
+- [ ] IA analisa diferenças visuais entre fotos
+- [ ] Gerar feedback textual da evolução visual
+
+### Cruzamento com Análise de Treino
+- [ ] Incluir comparativo de fotos na análise de 30 dias
+- [ ] IA cruza: evolução visual + medidas + eficiência do treino
+- [ ] Validar se treino está gerando resultados visuais esperados
