@@ -403,35 +403,13 @@ export default function Sessions() {
         {/* Lista de sessões */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Sessões do Mês
-                </CardTitle>
-                <CardDescription>
-                  {filteredSessions.length} sessões encontradas
-                </CardDescription>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4 mr-2" />
-                    Ações em Lote
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => { setBatchAction('cancel'); setShowBatchSessionModal(true); }}>
-                    <Ban className="h-4 w-4 mr-2 text-orange-500" />
-                    Cancelar Sessões
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setBatchAction('delete'); setShowBatchSessionModal(true); }} className="text-red-600">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir Sessões
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Sessões do Mês
+            </CardTitle>
+            <CardDescription>
+              {filteredSessions.length} sessões encontradas
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
