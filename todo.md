@@ -1527,16 +1527,18 @@
 - [ ] Portal do aluno B2C deve ter acesso completo ao Diário de Treino
 
 ### D16. Feature: Configurar domínio personalizado fitprimemanager.com
-- [ ] Domínio comprado e funcionando: https://fitprimemanager.com
-- [ ] Configurar DNS para apontar para o servidor Manus
-- [ ] Configurar SSL/HTTPS
-- [ ] Todas as páginas devem funcionar no domínio:
-  - [ ] Landing page inicial
-  - [ ] Portal do personal (login e dashboard)
-  - [ ] Portal do aluno (login e dashboard)
-  - [ ] Todas as rotas existentes
-- [ ] Atualizar links internos se necessário
-- [ ] Configurar domínio no Resend para envio de emails (resolve D13)
+- [x] Domínio comprado e funcionando: https://fitprimemanager.com
+- [x] Configurar DNS para apontar para o servidor Manus (feito automaticamente pelo Manus)
+- [x] Configurar SSL/HTTPS (feito automaticamente pelo Manus)
+- [x] Todas as páginas funcionando no domínio:
+  - [x] Landing page inicial
+  - [x] Portal do personal (login e dashboard)
+  - [x] Portal do aluno (login e dashboard)
+  - [x] Todas as rotas existentes
+- [x] Links internos funcionando automaticamente
+- [ ] **PENDENTE**: Configurar registros DNS do Resend para envio de emails
+  - [ ] Precisa acessar painel de DNS (contatar suporte Manus ou usar Cloudflare)
+  - [ ] Adicionar registros DKIM, SPF, DMARC do Resend
 
 
 ### D17. Bug: Correções de SEO na página inicial (/)
