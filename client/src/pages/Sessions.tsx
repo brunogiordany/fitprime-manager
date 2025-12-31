@@ -658,7 +658,7 @@ export default function Sessions() {
 
       {/* Modal de ações em lote */}
       <Dialog open={showBatchSessionModal} onOpenChange={setShowBatchSessionModal}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {batchAction === 'cancel' ? (
@@ -686,6 +686,7 @@ export default function Sessions() {
                   value={batchFromDate}
                   onChange={(e) => setBatchFromDate(e.target.value)}
                   className="w-full"
+                  tabIndex={-1}
                 />
               </div>
               <div className="space-y-2">
@@ -695,6 +696,7 @@ export default function Sessions() {
                   value={batchToDate}
                   onChange={(e) => setBatchToDate(e.target.value)}
                   className="w-full"
+                  tabIndex={-1}
                 />
               </div>
             </div>

@@ -1276,8 +1276,8 @@ export default function Schedule() {
                       <Dumbbell className="h-4 w-4 text-emerald-600" />
                       <Label className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Treino da Sessão</Label>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="grid gap-1.5">
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Selecione o treino</Label>
                         <Select
                           value={newSession.workoutId}
@@ -1289,7 +1289,7 @@ export default function Schedule() {
                             });
                           }}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Escolha um treino" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1306,13 +1306,13 @@ export default function Schedule() {
                         const selectedWorkout = studentWorkouts.find(w => w.id.toString() === newSession.workoutId);
                         const days = selectedWorkout?.days || [];
                         return days.length > 0 ? (
-                          <div className="grid gap-2">
+                          <div className="space-y-1.5">
                             <Label className="text-xs text-muted-foreground">Dia do treino</Label>
                             <Select
                               value={newSession.workoutDayIndex}
                               onValueChange={(value) => setNewSession({ ...newSession, workoutDayIndex: value })}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Escolha o dia" />
                               </SelectTrigger>
                               <SelectContent>
