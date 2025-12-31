@@ -1671,3 +1671,6 @@
 - [x] Modal de edição de registro de treino com exercícios e séries
 
 - [x] Corrigir Drop Set e Rest-Pause - devem ser extensões da série, não séries separadas
+
+- [x] Corrigir tabela de Evolução de Carga - adicionar scroll horizontal para mobile
+- [x] Corrigir modal de Nova Medição - botões sobrepostos e scroll não funciona

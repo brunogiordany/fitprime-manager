@@ -358,25 +358,25 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
                 </ResponsiveContainer>
                 
                 {/* Tabela de histórico */}
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
+                <div className="border rounded-lg overflow-x-auto">
+                  <table className="w-full text-sm min-w-[400px]">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left font-medium text-gray-600">Data</th>
-                        <th className="px-4 py-2 text-center font-medium text-gray-600">Carga Máx</th>
-                        <th className="px-4 py-2 text-center font-medium text-gray-600">Séries</th>
-                        <th className="px-4 py-2 text-center font-medium text-gray-600">Reps</th>
-                        <th className="px-4 py-2 text-center font-medium text-gray-600">Volume</th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-600 whitespace-nowrap">Data</th>
+                        <th className="px-3 py-2 text-center font-medium text-gray-600 whitespace-nowrap">Carga</th>
+                        <th className="px-3 py-2 text-center font-medium text-gray-600 whitespace-nowrap">Séries</th>
+                        <th className="px-3 py-2 text-center font-medium text-gray-600 whitespace-nowrap">Reps</th>
+                        <th className="px-3 py-2 text-center font-medium text-gray-600 whitespace-nowrap">Volume</th>
                       </tr>
                     </thead>
                     <tbody>
                       {progress.slice(-10).reverse().map((p, idx) => (
                         <tr key={idx} className="border-t hover:bg-gray-50">
-                          <td className="px-4 py-2">{new Date(p.date).toLocaleDateString('pt-BR')}</td>
-                          <td className="px-4 py-2 text-center font-medium">{p.maxWeight} kg</td>
-                          <td className="px-4 py-2 text-center">{p.sets}</td>
-                          <td className="px-4 py-2 text-center">{p.reps}</td>
-                          <td className="px-4 py-2 text-center">{p.totalVolume} kg</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{new Date(p.date).toLocaleDateString('pt-BR')}</td>
+                          <td className="px-3 py-2 text-center font-medium whitespace-nowrap">{p.maxWeight}kg</td>
+                          <td className="px-3 py-2 text-center whitespace-nowrap">{p.sets}</td>
+                          <td className="px-3 py-2 text-center whitespace-nowrap">{p.reps}</td>
+                          <td className="px-3 py-2 text-center whitespace-nowrap">{p.totalVolume}kg</td>
                         </tr>
                       ))}
                     </tbody>

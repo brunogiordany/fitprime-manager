@@ -943,10 +943,10 @@ export default function StudentMeasurementForm({
       {/* Dialog Adicionar */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent 
-          className="max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+          className="max-w-md h-[85vh] flex flex-col p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <DialogHeader>
+          <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />
               Nova Medição
@@ -955,17 +955,14 @@ export default function StudentMeasurementForm({
               Registre suas medidas corporais
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <div className="flex-1 overflow-y-auto px-6 pb-4">
             <MeasurementFormFields />
-          </ScrollArea>
-          <DialogFooter className="pt-4">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancelar
-            </Button>
+          </div>
+          <div className="flex-shrink-0 border-t bg-background px-6 py-4 space-y-2">
             <Button
               onClick={handleSubmit}
               disabled={addMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
             >
               {addMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -974,17 +971,20 @@ export default function StudentMeasurementForm({
               )}
               Salvar
             </Button>
-          </DialogFooter>
+            <Button variant="outline" className="w-full" onClick={() => setIsAddDialogOpen(false)}>
+              Cancelar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Dialog Editar */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className="max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+          className="max-w-md h-[85vh] flex flex-col p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <DialogHeader>
+          <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-blue-500" />
               Editar Medição
@@ -993,16 +993,14 @@ export default function StudentMeasurementForm({
               Atualize suas medidas corporais
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 max-h-[70vh] pr-4 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-6 pb-4">
             <MeasurementFormFields />
-          </ScrollArea>
-          <DialogFooter className="pt-4">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
+          </div>
+          <div className="flex-shrink-0 border-t bg-background px-6 py-4 space-y-2">
             <Button
               onClick={handleSubmit}
               disabled={updateMutation.isPending}
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               {updateMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1011,7 +1009,10 @@ export default function StudentMeasurementForm({
               )}
               Atualizar
             </Button>
-          </DialogFooter>
+            <Button variant="outline" className="w-full" onClick={() => setIsEditDialogOpen(false)}>
+              Cancelar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
