@@ -1439,7 +1439,7 @@ export default function StudentPortalPage() {
                         Estilo de Vida
                       </h3>
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-sm">Nível de atividade</Label>
                             <Select
@@ -1469,9 +1469,9 @@ export default function StudentPortalPage() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="none">Nenhuma</SelectItem>
-                                <SelectItem value="beginner">Iniciante (menos de 6 meses)</SelectItem>
-                                <SelectItem value="intermediate">Intermediário (6 meses a 2 anos)</SelectItem>
-                                <SelectItem value="advanced">Avançado (mais de 2 anos)</SelectItem>
+                                <SelectItem value="beginner">Iniciante (&lt;6 meses)</SelectItem>
+                                <SelectItem value="intermediate">Intermediário (6m-2 anos)</SelectItem>
+                                <SelectItem value="advanced">Avançado (&gt;2 anos)</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -1495,7 +1495,7 @@ export default function StudentPortalPage() {
                         Nutrição
                       </h3>
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-sm">Refeições por dia</Label>
                             <Select
@@ -1569,7 +1569,7 @@ export default function StudentPortalPage() {
                             />
                           </div>
                         )}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-sm">Restrições alimentares</Label>
                             <Input
@@ -1599,7 +1599,7 @@ export default function StudentPortalPage() {
                         Preferências de Treino
                       </h3>
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-sm">Frequência semanal</Label>
                             <Select
@@ -2669,7 +2669,7 @@ export default function StudentPortalPage() {
 
       {/* Modal de Registro Manual de Treino */}
       <Dialog open={showManualDiaryModal} onOpenChange={setShowManualDiaryModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />

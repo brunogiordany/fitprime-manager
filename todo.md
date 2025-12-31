@@ -1674,3 +1674,7 @@
 
 - [x] Corrigir tabela de Evolução de Carga - adicionar scroll horizontal para mobile
 - [x] Corrigir modal de Nova Medição - botões sobrepostos e scroll não funciona
+
+- [x] Corrigir layout da anamnese - campos desalinhados em Estilo de Vida e Nutrição
+
+- [x] Corrigir calendário abrindo automaticamente no modal de Criar Registro Manual de Treino
