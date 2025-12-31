@@ -91,3 +91,9 @@
 **Bugs Série B:** 7/7 resolvidos
 **Bugs Série A:** 8/8 resolvidos
 **Total geral:** ~75% concluído
+
+## 🔴 BUGS SÉRIE D (Novos - 31/12)
+
+- [ ] D1. Erro página /evolucao - Select.Item com valor vazio (EM ANDAMENTO)
+- [ ] D2. Diário de Treino - Retornar aba "Sessões" (foi removida por engano)
+- [ ] D3. Diário de Treino - Renomear "Registros" para "Registro Maromba"
