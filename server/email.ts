@@ -20,6 +20,9 @@ export interface EmailPayload {
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   
+  console.log(`[Email] Iniciando envio para ${payload.to}`);
+  console.log(`[Email] API Key presente: ${apiKey ? 'Sim (primeiros 10 chars: ' + apiKey.substring(0, 10) + '...)' : 'NÃO'}`);
+  
   // If no API key, log to console (development mode)
   if (!apiKey) {
     console.log('[Email] Development mode - Email would be sent:');
@@ -30,24 +33,30 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   }
 
   try {
+    const emailData = {
+      from: 'FitPrime <onboarding@resend.dev>',
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    };
+    
+    console.log(`[Email] Enviando para Resend API...`);
+    
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'FitPrime <onboarding@resend.dev>',
-        to: payload.to,
-        subject: payload.subject,
-        html: payload.html,
-        text: payload.text,
-      }),
+      body: JSON.stringify(emailData),
     });
 
+    const responseText = await response.text();
+    console.log(`[Email] Resposta Resend (status ${response.status}): ${responseText}`);
+
     if (!response.ok) {
-      const error = await response.text();
-      console.error('[Email] Failed to send:', error);
+      console.error('[Email] Failed to send:', responseText);
       return false;
     }
 

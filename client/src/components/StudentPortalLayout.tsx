@@ -31,7 +31,8 @@ import {
   MessageCircle,
   Trophy,
   User,
-  Home
+  Home,
+  ClipboardList
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -54,7 +55,7 @@ const menuItems = [
   { icon: Calendar, label: "Sessões", tab: "sessions" },
   { icon: Dumbbell, label: "Treinos", tab: "workouts" },
   { icon: FileText, label: "Diário", tab: "diary" },
-  { icon: User, label: "Perfil", tab: "anamnesis" },
+  { icon: ClipboardList, label: "Anamnese", tab: "anamnesis" },
   { icon: CreditCard, label: "Pagamentos", tab: "payments" },
   { icon: MessageCircle, label: "Chat", tab: "chat" },
   { icon: Trophy, label: "Conquistas", tab: "badges" },

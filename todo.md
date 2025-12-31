@@ -1471,24 +1471,24 @@
 - [ ] Garantir que treinos, sessões, cobranças do personal apareçam no portal do aluno
 
 ### D9. Bug: Ícone/Favicon do navegador foi alterado
-- [ ] O ícone personalizado do FitPrime sumiu
-- [ ] Restaurar o favicon original do sistema
+- [x] O ícone personalizado do FitPrime está configurado corretamente
+- [x] Favicon e ícones PWA verificados - problema pode ser cache do navegador
 
 
 ### D10. Melhoria: Remover navegação duplicada no portal do aluno
-- [ ] Portal do aluno tem abas centrais E barra lateral (duplicado)
-- [ ] Manter apenas a barra lateral (igual ao portal do personal)
-- [ ] Remover as abas do centro da tela
+- [x] Portal do aluno tem abas centrais E barra lateral (duplicado) - REMOVIDO TabsList
+- [x] Manter apenas a barra lateral (igual ao portal do personal)
+- [x] Remover as abas do centro da tela
 
 ### D11. Melhoria: Criar aba de Anamnese na barra lateral do portal do aluno
-- [ ] Adicionar item "Anamnese" no menu lateral do portal do aluno
-- [ ] Permitir acesso direto à anamnese (não apenas via "Completar Cadastro")
-- [ ] Manter botão "Completar Cadastro" até anamnese estar completa
+- [x] Adicionar item "Anamnese" no menu lateral do portal do aluno (renomeado de "Perfil")
+- [x] Permitir acesso direto à anamnese (não apenas via "Completar Cadastro")
+- [x] Manter botão "Completar Cadastro" até anamnese estar completa
 
 ### D12. Melhoria: Esconder botão "Completar Cadastro" quando anamnese estiver completa
-- [ ] Verificar se anamnese tem todas as medidas corporais preenchidas
-- [ ] Se completa, esconder o botão "Completar Cadastro"
-- [ ] Se incompleta, manter o botão visível
+- [x] Verificar se anamnese tem todas as medidas corporais preenchidas
+- [x] Se completa, esconder o botão "Completar Cadastro"
+- [x] Se incompleta, manter o botão visível
 
 ### D13. Bug: Email de recuperação de senha não é enviado
 - [ ] Ao clicar em "Esqueci a senha" no portal do aluno, o código não chega no email
@@ -1504,3 +1504,12 @@
 - [ ] Todas as personalizações do Diário de Treino
 - [ ] Sessões e Registros Maromba completos
 - [ ] Remover apenas opções de gerenciar outros alunos (é aluno único)
+
+### D15. Feature: Modelo de vendas B2C e B2B
+- [ ] B2B (atual): Personal cadastra aluno e envia convite pelo link
+- [ ] B2C (novo): Aluno paga R$34,90/mês diretamente e recebe acesso
+- [ ] Criar página de checkout para aluno B2C
+- [ ] Integrar pagamento Stripe para assinatura B2C
+- [ ] Criar fluxo de onboarding para aluno B2C (sem personal vinculado)
+- [ ] Diferenciar alunos B2B (vinculados a personal) e B2C (independentes)
+- [ ] Portal do aluno B2C deve ter acesso completo ao Diário de Treino

@@ -696,13 +696,18 @@ export const appRouter = router({
         await db.savePasswordResetCode(student.id, code, expiresAt);
         
         // Enviar email com o código
+        let emailSent = false;
         try {
           const { sendPasswordResetEmail } = await import('./email');
-          await sendPasswordResetEmail(input.email, student.name, code);
+          console.log(`[PasswordReset] Tentando enviar email para ${input.email}`);
+          emailSent = await sendPasswordResetEmail(input.email, student.name, code);
+          console.log(`[PasswordReset] Resultado do envio: ${emailSent ? 'sucesso' : 'falha'}`);
         } catch (error) {
-          console.error('Erro ao enviar email de recuperação:', error);
-          // Não falhar a requisição, apenas logar
+          console.error('[PasswordReset] Erro ao enviar email de recuperação:', error);
         }
+        
+        // Retornar o código no console para debug (remover em produção)
+        console.log(`[PasswordReset] Código gerado para ${input.email}: ${code}`);
         
         return { success: true, message: 'Código enviado para seu email.' };
       }),

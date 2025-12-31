@@ -378,16 +378,32 @@ export default function StudentPortalPage() {
 
   const pendingCharges = charges?.filter(c => c.status === 'pending') || [];
 
-  // Calcular progresso do perfil
-  const profileFields = [
+  // Calcular progresso do perfil (inclui anamnese + medidas corporais)
+  const anamnesisFields = [
     anamnesis?.occupation,
     anamnesis?.mainGoal,
     anamnesis?.medicalHistory,
     anamnesis?.sleepHours,
     anamnesis?.stressLevel,
   ];
-  const filledFields = profileFields.filter(f => f).length;
-  const profileProgress = Math.round((filledFields / profileFields.length) * 100);
+  const filledAnamnesisFields = anamnesisFields.filter(f => f).length;
+  
+  // Verificar se tem pelo menos uma medida corporal registrada
+  const hasMeasurements = measurements && measurements.length > 0;
+  const latestMeasurement = hasMeasurements ? measurements[0] : null;
+  const measurementFields = latestMeasurement ? [
+    latestMeasurement.weight,
+    latestMeasurement.height,
+  ] : [];
+  const filledMeasurementFields = measurementFields.filter(f => f).length;
+  
+  // Progresso total: 5 campos de anamnese + 2 campos de medidas = 7 campos
+  const totalFields = 7;
+  const filledFields = filledAnamnesisFields + filledMeasurementFields;
+  const profileProgress = Math.round((filledFields / totalFields) * 100);
+  
+  // Perfil completo quando tem anamnese básica E medidas corporais
+  const isProfileComplete = filledAnamnesisFields >= 3 && hasMeasurements;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -437,8 +453,8 @@ export default function StudentPortalPage() {
       onLogout={handleLogout}
     >
       <div className="space-y-6">
-        {/* Profile Progress */}
-        {profileProgress < 100 && (
+        {/* Profile Progress - Esconde quando perfil está completo (anamnese + medidas) */}
+        {!isProfileComplete && (
           <Card 
             className="mb-6 border-emerald-200 bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors"
             onClick={() => {
@@ -464,45 +480,7 @@ export default function StudentPortalPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Menu de navegação em grid para mobile */}
-          <TabsList className="bg-white border grid grid-cols-4 sm:flex sm:flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="dashboard" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <Calendar className="h-4 w-4" />
-              <span>Início</span>
-            </TabsTrigger>
-            <TabsTrigger value="evolution" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <Activity className="h-4 w-4" />
-              <span>Evolução</span>
-            </TabsTrigger>
-            <TabsTrigger value="sessions" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <Clock className="h-4 w-4" />
-              <span>Sessões</span>
-            </TabsTrigger>
-            <TabsTrigger value="workouts" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <Dumbbell className="h-4 w-4" />
-              <span>Treinos</span>
-            </TabsTrigger>
-            <TabsTrigger value="diary" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <FileText className="h-4 w-4" />
-              <span>Diário</span>
-            </TabsTrigger>
-            <TabsTrigger value="anamnesis" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <FileText className="h-4 w-4" />
-              <span>Perfil</span>
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <CreditCard className="h-4 w-4" />
-              <span>Pagar</span>
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <MessageCircle className="h-4 w-4" />
-              <span>Chat</span>
-            </TabsTrigger>
-            <TabsTrigger value="badges" className="flex flex-col sm:flex-row items-center gap-1 py-2 px-2 text-xs sm:text-sm">
-              <Trophy className="h-4 w-4" />
-              <span>Conquistas</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Navegação agora é feita apenas pela sidebar - TabsList removida para evitar duplicação */}
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
