@@ -1773,3 +1773,12 @@
   - Solução: Adicionado setIsAIDialogOpen(true) no onSuccess do generateAdaptedMutation
 - [x] Verificar se o treino está sendo salvo corretamente no banco
 - [x] Verificar se a lista está sendo atualizada após criação
+
+
+## Fluxo Treino 2.0 em 2 Passos (v4.6)
+- [x] Verificar implementação atual do botão Análise
+- [x] Adicionar botão "Gerar Treino 2.0" dentro do pop-up de Análise
+- [x] Substituir card "Treino Adaptado 2.0" por "Análise do Aluno"
+- [x] Fluxo: Análise → Ver análise detalhada → Gerar Treino baseado na análise
+- [x] Criar procedimento getStudentAnalysis no backend
+- [x] Modal de análise com métricas, evolução, pontos fortes, déficits e recomendações

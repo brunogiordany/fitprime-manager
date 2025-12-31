@@ -94,6 +94,8 @@ export default function Workouts() {
   const [compareWorkout2, setCompareWorkout2] = useState<string>("");
   const [comparisonResult, setComparisonResult] = useState<any>(null);
   const [isComparing, setIsComparing] = useState(false);
+  const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [studentAnalysis, setStudentAnalysis] = useState<any>(null);
   const [newWorkout, setNewWorkout] = useState({
     name: "",
     description: "",
@@ -172,12 +174,25 @@ export default function Workouts() {
     },
   });
 
+  const getAnalysisMutation = trpc.workouts.getStudentAnalysis.useMutation({
+    onSuccess: (data) => {
+      setStudentAnalysis(data);
+      setIsAnalysisDialogOpen(true);
+      toast.success("Análise gerada com sucesso!");
+    },
+    onError: (error) => {
+      toast.error("Erro ao gerar análise: " + error.message);
+    },
+  });
+
   const saveAIMutation = trpc.workouts.saveAIGenerated.useMutation({
     onSuccess: (data) => {
       toast.success(`Treino "${data.name}" salvo com sucesso!`);
       setIsAIDialogOpen(false);
       setAiPreview(null);
       setCustomPrompt("");
+      setIsAnalysisDialogOpen(false);
+      setStudentAnalysis(null);
       refetch();
     },
     onError: (error) => {
@@ -1061,53 +1076,49 @@ export default function Workouts() {
               </CardContent>
             </Card>
             
-            {/* Card de Treino Adaptado - só aparece se já houver treinos */}
-            {workouts && workouts.length > 0 && (
-              <>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-orange-100 hover:border-orange-300"
-                  onClick={() => {
-                    generateAdaptedMutation.mutate({
-                      studentId: parseInt(selectedStudent),
-                    });
-                  }}
-                >
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100">
-                      <RefreshCw className="h-6 w-6 text-orange-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">Treino Adaptado (2.0)</h3>
-                      <p className="text-sm text-muted-foreground">
-                        IA cria novo treino focando nos déficits
-                      </p>
-                    </div>
-                    {generateAdaptedMutation.isPending && (
-                      <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
-                    )}
-                  </CardContent>
-                </Card>
-                
-                {/* Card de Comparar Treinos */}
-                {workouts.length >= 2 && (
-                  <Card 
-                    className="cursor-pointer hover:shadow-md transition-all border-indigo-100 hover:border-indigo-300"
-                    onClick={() => setIsCompareDialogOpen(true)}
-                  >
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-100 to-violet-100">
-                        <GitCompare className="h-6 w-6 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">Comparar Treinos</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Visualize diferenças entre versões
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+            {/* Card de Análise do Aluno - sempre aparece quando tem aluno selecionado */}
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all border-cyan-100 hover:border-cyan-300"
+              onClick={() => {
+                getAnalysisMutation.mutate({
+                  studentId: parseInt(selectedStudent),
+                });
+              }}
+            >
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-100 to-blue-100">
+                  <Brain className="h-6 w-6 text-cyan-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Análise do Aluno</h3>
+                  <p className="text-sm text-muted-foreground">
+                    IA analisa evolução e sugere adaptações
+                  </p>
+                </div>
+                {getAnalysisMutation.isPending && (
+                  <Loader2 className="h-5 w-5 animate-spin text-cyan-600" />
                 )}
-              </>
+              </CardContent>
+            </Card>
+            
+            {/* Card de Comparar Treinos - só aparece se tiver 2+ treinos */}
+            {workouts && workouts.length >= 2 && (
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-indigo-100 hover:border-indigo-300"
+                onClick={() => setIsCompareDialogOpen(true)}
+              >
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-100 to-violet-100">
+                    <GitCompare className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Comparar Treinos</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Visualize diferenças entre versões
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         )}
@@ -1582,6 +1593,262 @@ export default function Workouts() {
                 </div>
               )}
             </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal de Análise do Aluno */}
+        <Dialog open={isAnalysisDialogOpen} onOpenChange={(open) => {
+          setIsAnalysisDialogOpen(open);
+          if (!open) {
+            setStudentAnalysis(null);
+          }
+        }}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-cyan-600" />
+                Análise do Aluno: {studentAnalysis?.studentName}
+              </DialogTitle>
+              <DialogDescription>
+                Análise detalhada da evolução e recomendações da IA
+              </DialogDescription>
+            </DialogHeader>
+            
+            {studentAnalysis && (
+              <div className="space-y-4">
+                {/* Resumo */}
+                <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50">
+                  <CardContent className="pt-4">
+                    <p className="text-sm">{studentAnalysis.analysis.summary}</p>
+                  </CardContent>
+                </Card>
+                
+                {/* Métricas Rápidas */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {studentAnalysis.latestMeasurement?.weight && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Peso Atual</p>
+                      <p className="text-lg font-bold">{studentAnalysis.latestMeasurement.weight} kg</p>
+                    </div>
+                  )}
+                  {studentAnalysis.latestMeasurement?.bodyFat && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Gordura</p>
+                      <p className="text-lg font-bold">{studentAnalysis.latestMeasurement.bodyFat}%</p>
+                    </div>
+                  )}
+                  {studentAnalysis.workoutPerformance && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Treinos (30d)</p>
+                      <p className="text-lg font-bold">{studentAnalysis.workoutPerformance.totalWorkouts}</p>
+                    </div>
+                  )}
+                  {studentAnalysis.workoutPerformance?.consistency && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Consistência</p>
+                      <p className="text-lg font-bold">{studentAnalysis.workoutPerformance.consistency}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Evolução das Medidas */}
+                {studentAnalysis.measurementEvolution && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Evolução ({studentAnalysis.measurementEvolution.periodDays} dias)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {studentAnalysis.measurementEvolution.weightChange !== null && (
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Peso</p>
+                            <p className={`font-bold ${studentAnalysis.measurementEvolution.weightChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.weightChange > 0 ? 'text-red-600' : ''}`}>
+                              {studentAnalysis.measurementEvolution.weightChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.weightChange.toFixed(1)} kg
+                            </p>
+                          </div>
+                        )}
+                        {studentAnalysis.measurementEvolution.bodyFatChange !== null && (
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Gordura</p>
+                            <p className={`font-bold ${studentAnalysis.measurementEvolution.bodyFatChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.bodyFatChange > 0 ? 'text-red-600' : ''}`}>
+                              {studentAnalysis.measurementEvolution.bodyFatChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.bodyFatChange.toFixed(1)}%
+                            </p>
+                          </div>
+                        )}
+                        {studentAnalysis.measurementEvolution.muscleMassChange !== null && (
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Músculo</p>
+                            <p className={`font-bold ${studentAnalysis.measurementEvolution.muscleMassChange > 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.muscleMassChange < 0 ? 'text-red-600' : ''}`}>
+                              {studentAnalysis.measurementEvolution.muscleMassChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.muscleMassChange.toFixed(1)} kg
+                            </p>
+                          </div>
+                        )}
+                        {studentAnalysis.measurementEvolution.waistChange !== null && (
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Cintura</p>
+                            <p className={`font-bold ${studentAnalysis.measurementEvolution.waistChange < 0 ? 'text-green-600' : studentAnalysis.measurementEvolution.waistChange > 0 ? 'text-red-600' : ''}`}>
+                              {studentAnalysis.measurementEvolution.waistChange > 0 ? '+' : ''}{studentAnalysis.measurementEvolution.waistChange.toFixed(1)} cm
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Pontos Fortes e Déficits */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {studentAnalysis.analysis.strengths?.length > 0 && (
+                    <Card className="border-green-200">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-green-700 flex items-center gap-2">
+                          <Check className="h-4 w-4" />
+                          Pontos Fortes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-1">
+                          {studentAnalysis.analysis.strengths.map((s: string, i: number) => (
+                            <li key={i} className="text-sm flex items-start gap-2">
+                              <span className="text-green-500 mt-1">•</span>
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {studentAnalysis.analysis.deficits?.length > 0 && (
+                    <Card className="border-red-200">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-red-700 flex items-center gap-2">
+                          <X className="h-4 w-4" />
+                          Déficits / Atenção
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-1">
+                          {studentAnalysis.analysis.deficits.map((d: string, i: number) => (
+                            <li key={i} className="text-sm flex items-start gap-2">
+                              <span className="text-red-500 mt-1">•</span>
+                              {d}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+                
+                {/* Grupos Musculares */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {studentAnalysis.analysis.muscleGroupsProgressing?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Grupos Evoluindo Bem</p>
+                      <div className="flex flex-wrap gap-1">
+                        {studentAnalysis.analysis.muscleGroupsProgressing.map((g: string, i: number) => (
+                          <Badge key={i} className="bg-green-100 text-green-700">{g}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {studentAnalysis.analysis.muscleGroupsToFocus?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Grupos para Focar</p>
+                      <div className="flex flex-wrap gap-1">
+                        {studentAnalysis.analysis.muscleGroupsToFocus.map((g: string, i: number) => (
+                          <Badge key={i} className="bg-orange-100 text-orange-700">{g}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Recomendações */}
+                {studentAnalysis.analysis.recommendations?.length > 0 && (
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-blue-700 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Recomendações
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-1">
+                        {studentAnalysis.analysis.recommendations.map((r: string, i: number) => (
+                          <li key={i} className="text-sm text-blue-700 flex items-start gap-2">
+                            <span className="mt-1">{i + 1}.</span>
+                            {r}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Botão de Gerar Treino 2.0 */}
+                <Card className={`border-2 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50' : 'border-gray-200'}`}>
+                  <CardContent className="pt-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <RefreshCw className={`h-5 w-5 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'text-orange-600' : 'text-gray-400'}`} />
+                          <h4 className="font-semibold">
+                            {studentAnalysis.analysis.shouldAdaptWorkout ? 'Recomendado: Criar Treino 2.0' : 'Adaptação Não Necessária'}
+                          </h4>
+                          {studentAnalysis.analysis.adaptationPriority && studentAnalysis.analysis.adaptationPriority !== 'none' && (
+                            <Badge className={{
+                              high: 'bg-red-100 text-red-700',
+                              medium: 'bg-orange-100 text-orange-700',
+                              low: 'bg-yellow-100 text-yellow-700',
+                            }[studentAnalysis.analysis.adaptationPriority] || 'bg-gray-100'}>
+                              Prioridade {{
+                                high: 'Alta',
+                                medium: 'Média',
+                                low: 'Baixa',
+                              }[studentAnalysis.analysis.adaptationPriority]}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {studentAnalysis.analysis.adaptationReason}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          generateAdaptedMutation.mutate({
+                            studentId: parseInt(selectedStudent),
+                          });
+                        }}
+                        disabled={generateAdaptedMutation.isPending}
+                        className={studentAnalysis.analysis.shouldAdaptWorkout 
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600' 
+                          : ''}
+                      >
+                        {generateAdaptedMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                        )}
+                        Gerar Treino {studentAnalysis.totalWorkouts + 1}.0
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Info do Treino Atual */}
+                {studentAnalysis.currentWorkout && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Treino atual: <strong>{studentAnalysis.currentWorkout.name}</strong> ({studentAnalysis.currentWorkout.daysCount} dias)
+                  </p>
+                )}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
