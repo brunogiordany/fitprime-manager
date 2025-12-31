@@ -1765,3 +1765,11 @@
 - [x] Serialização de drops/restPauses extras no campo notes
 - [x] Deserialização ao carregar dados
 - [x] Sincronização bidirecional (personal e aluno veem os mesmos dados)
+
+
+## Bug Treino Adaptado 2.0 (v4.5)
+- [x] Treino gerado pelo "Treino Adaptado 2.0" não aparece na lista do personal
+  - Problema: Modal de preview não abria automaticamente após geração
+  - Solução: Adicionado setIsAIDialogOpen(true) no onSuccess do generateAdaptedMutation
+- [x] Verificar se o treino está sendo salvo corretamente no banco
+- [x] Verificar se a lista está sendo atualizada após criação

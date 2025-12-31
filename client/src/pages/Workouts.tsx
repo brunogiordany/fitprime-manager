@@ -164,6 +164,7 @@ export default function Workouts() {
           improvements: data.preview.improvements,
         }
       });
+      setIsAIDialogOpen(true); // Abrir o modal para mostrar a preview
       toast.success(`Treino ${data.version}.0 adaptado gerado! Revise e salve.`);
     },
     onError: (error) => {
