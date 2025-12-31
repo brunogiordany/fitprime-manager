@@ -109,6 +109,8 @@ export default function StudentProfile() {
   const [batchReason, setBatchReason] = useState('');
   const [showAIAnalysisModal, setShowAIAnalysisModal] = useState(false);
   const [aiAnalysis, setAIAnalysis] = useState<any>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string>('');
   const photoInputRef = useRef<HTMLInputElement>(null);
   const materialInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,16 +191,10 @@ export default function StudentProfile() {
 
   const sendInviteMutation = trpc.students.sendInvite.useMutation({
     onSuccess: async (data) => {
-      toast.success("Convite enviado com sucesso!");
-      // Copiar link para clipboard usando utilitário robusto
+      toast.success("Convite gerado com sucesso!");
       const fullLink = window.location.origin + data.inviteLink;
-      const copied = await copyToClipboard(fullLink);
-      if (copied) {
-        toast.info("Link copiado para a área de transferência!");
-      } else {
-        // Se não conseguiu copiar, mostra o link para copiar manualmente
-        toast.info("Copie o link: " + fullLink, { duration: 10000 });
-      }
+      setInviteLink(fullLink);
+      setShowInviteModal(true);
     },
     onError: (error: any) => {
       toast.error("Erro ao enviar convite: " + error.message);
@@ -2397,6 +2393,78 @@ export default function StudentProfile() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Modal de Link de Convite */}
+      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-emerald-600" />
+              Link de Convite
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Compartilhe este link com o aluno para que ele possa acessar o app:
+            </p>
+            <div className="flex items-center gap-2">
+              <Input 
+                value={inviteLink} 
+                readOnly 
+                className="flex-1 text-sm bg-muted"
+              />
+              <Button
+                variant="default"
+                className="shrink-0 bg-emerald-600 hover:bg-emerald-700"
+                onClick={async () => {
+                  const copied = await copyToClipboard(inviteLink);
+                  if (copied) {
+                    toast.success("Link copiado!");
+                  } else {
+                    toast.error("Erro ao copiar. Selecione e copie manualmente.");
+                  }
+                }}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copiar
+              </Button>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  if (student?.phone) {
+                    const message = encodeURIComponent(`Olá! Acesse seu portal de treinos pelo link: ${inviteLink}`);
+                    window.open(`https://wa.me/55${student.phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+                  } else {
+                    toast.error("Aluno não tem telefone cadastrado");
+                  }
+                }}
+              >
+                <Phone className="h-4 w-4 mr-2 text-green-600" />
+                WhatsApp
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  if (student?.email) {
+                    const subject = encodeURIComponent("Seu acesso ao app de treinos");
+                    const body = encodeURIComponent(`Olá!\n\nAcesse seu portal de treinos pelo link:\n${inviteLink}\n\nAbracos!`);
+                    window.open(`mailto:${student.email}?subject=${subject}&body=${body}`, '_blank');
+                  } else {
+                    toast.error("Aluno não tem email cadastrado");
+                  }
+                }}
+              >
+                <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                E-mail
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

@@ -59,6 +59,12 @@
 
 ---
 
+## 🟠 BUGS SÉRIE C (Novos)
+
+- [x] C1. Botão Convidar não funciona bem (CORRIGIDO - Popup com link, botão copiar, WhatsApp e Email)
+
+---
+
 ## 🔵 FUNCIONALIDADES FUTURAS (Prioridade Baixa)
 
 - [x] 16. Métricas SaaS (MRR, ARR, Churn Rate, LTV, Ticket Médio) - JÁ IMPLEMENTADO em Charges.tsx com cards e cálculos completos
