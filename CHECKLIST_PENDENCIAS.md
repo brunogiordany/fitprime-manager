@@ -94,6 +94,6 @@
 
 ## 🔴 BUGS SÉRIE D (Novos - 31/12)
 
-- [ ] D1. Erro página /evolucao - Select.Item com valor vazio (EM ANDAMENTO)
-- [ ] D2. Diário de Treino - Retornar aba "Sessões" (foi removida por engano)
-- [ ] D3. Diário de Treino - Renomear "Registros" para "Registro Maromba"
+- [x] D1. Erro página /evolucao - Select.Item com valor vazio (CORRIGIDO - valor '' alterado para 'all')
+- [x] D2. Diário de Treino - Retornar aba "Sessões" (JÁ IMPLEMENTADO no GitHub)
+- [x] D3. Diário de Treino - Renomear "Registros" para "Registros Maromba" (JÁ IMPLEMENTADO no GitHub)
