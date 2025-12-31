@@ -1452,3 +1452,46 @@
 - [ ] Verificar tanto no lado do personal quanto no portal do aluno
 - [ ] Restaurar se estiverem faltando
 
+
+## Correções Série D (Dezembro 2024)
+
+### D6. Bug: Login do aluno não funciona
+- [x] Aluno brunogiordany@gmail.com não consegue logar
+- [x] Erro "Email não encontrado" mesmo com usuário existente no banco
+- [x] Atualizada senha para "Br896469"
+
+### D7. Melhoria: Filtrar aba "Sessões" no Diário de Treino
+- [x] Aba "Sessões" deve mostrar apenas sessões NÃO preenchidas
+- [x] Sessões já concluídas/preenchidas aparecem em "Registros Maromba"
+- [x] Evitar duplicação de informações entre as abas
+
+### D8. Bug: Vincular dados do personal ao portal do aluno
+- [ ] Portal do aluno não está conectado aos dados do personal
+- [ ] Precisa puxar dados pelo email do aluno para fazer conexão
+- [ ] Garantir que treinos, sessões, cobranças do personal apareçam no portal do aluno
+
+### D9. Bug: Ícone/Favicon do navegador foi alterado
+- [ ] O ícone personalizado do FitPrime sumiu
+- [ ] Restaurar o favicon original do sistema
+
+
+### D10. Melhoria: Remover navegação duplicada no portal do aluno
+- [ ] Portal do aluno tem abas centrais E barra lateral (duplicado)
+- [ ] Manter apenas a barra lateral (igual ao portal do personal)
+- [ ] Remover as abas do centro da tela
+
+### D11. Melhoria: Criar aba de Anamnese na barra lateral do portal do aluno
+- [ ] Adicionar item "Anamnese" no menu lateral do portal do aluno
+- [ ] Permitir acesso direto à anamnese (não apenas via "Completar Cadastro")
+- [ ] Manter botão "Completar Cadastro" até anamnese estar completa
+
+### D12. Melhoria: Esconder botão "Completar Cadastro" quando anamnese estiver completa
+- [ ] Verificar se anamnese tem todas as medidas corporais preenchidas
+- [ ] Se completa, esconder o botão "Completar Cadastro"
+- [ ] Se incompleta, manter o botão visível
+
+### D13. Bug: Email de recuperação de senha não é enviado
+- [ ] Ao clicar em "Esqueci a senha" no portal do aluno, o código não chega no email
+- [ ] Verificar se o endpoint de envio de email está funcionando
+- [ ] Verificar se o Resend está configurado corretamente
+- [ ] Garantir que o email seja enviado com o código de verificação

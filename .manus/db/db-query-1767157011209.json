@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, name, email, userId, personalId, status FROM students;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, userId, personalId, status FROM students;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    },
+    {
+      "id": "30001",
+      "name": "Laura",
+      "email": "lauracriger03@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    },
+    {
+      "id": "60001",
+      "name": "AgenteIA",
+      "email": "agenteiaoficial@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "email": "brunogiordanyps@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    },
+    {
+      "id": "120001",
+      "name": "Julimar vieira",
+      "email": "pedrosavieira17@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tuserId\tpersonalId\tstatus\n1\tBruno\tbrunogiordany@gmail.com\tNULL\t1\tactive\n30001\tLaura\tlauracriger03@gmail.com\tNULL\t1\tactive\n60001\tAgenteIA\tagenteiaoficial@gmail.com\tNULL\t1\tactive\n90001\tbruno ps\tbrunogiordanyps@gmail.com\tNULL\t1\tactive\n120001\tJulimar vieira\tpedrosavieira17@gmail.com\tNULL\t1\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

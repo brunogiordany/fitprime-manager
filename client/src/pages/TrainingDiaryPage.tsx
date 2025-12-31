@@ -605,12 +605,12 @@ export default function TrainingDiaryPage() {
             </TabsTrigger>
           </TabsList>
           
-          {/* Tab: Sessões */}
+          {/* Tab: Sessões - Mostra apenas sessões NÃO preenchidas (sem workoutLog) */}
           <TabsContent value="sessoes" className="space-y-4">
-            {upcomingSessions && upcomingSessions.length > 0 ? (
+            {upcomingSessions && upcomingSessions.filter((s: any) => !s.hasWorkoutLog && s.status !== 'cancelled').length > 0 ? (
               <div className="grid gap-4">
-                {upcomingSessions.map((session: any) => {
-                  const sessionDate = new Date(session.date);
+                {upcomingSessions.filter((s: any) => !s.hasWorkoutLog && s.status !== 'cancelled').map((session: any) => {
+                  const sessionDate = new Date(session.scheduledAt);
                   const isToday = sessionDate.toDateString() === new Date().toDateString();
                   const isPast = sessionDate < new Date() && !isToday;
                   const statusColor = session.status === 'completed' ? 'bg-green-500' : 
@@ -627,7 +627,7 @@ export default function TrainingDiaryPage() {
                           studentId: session.studentId,
                           workoutId: session.workoutId || 0,
                           workoutDayId: 0,
-                          trainingDate: session.date.split('T')[0],
+                          trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
                           dayName: session.notes || `Sessão ${session.time}`,
                           startTime: session.time || '',
                           notes: '',
@@ -647,7 +647,7 @@ export default function TrainingDiaryPage() {
                                 <h3 className="font-semibold">{session.student?.name || 'Aluno'}</h3>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {session.notes || 'Sessão de treino'} • {new Date(session.date).toLocaleDateString('pt-BR')}
+                                {session.notes || 'Sessão de treino'} • {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
                               </p>
                               {session.time && (
                                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -684,10 +684,10 @@ export default function TrainingDiaryPage() {
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhuma sessão encontrada</h3>
+                  <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Tudo em dia!</h3>
                   <p className="text-muted-foreground mb-4">
-                    Não há sessões agendadas para os próximos dias.
+                    Não há sessões pendentes de registro. As sessões já preenchidas aparecem na aba "Registros Maromba".
                   </p>
                 </CardContent>
               </Card>

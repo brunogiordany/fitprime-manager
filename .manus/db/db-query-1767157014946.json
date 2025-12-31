@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, name, email, userId, personalId, status FROM students WHERE email LIKE '%bruno%' OR email LIKE '%giordany%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, userId, personalId, status FROM students WHERE email LIKE '%bruno%' OR email LIKE '%giordany%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "email": "brunogiordanyps@gmail.com",
+      "userId": "NULL",
+      "personalId": "1",
+      "status": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tuserId\tpersonalId\tstatus\n1\tBruno\tbrunogiordany@gmail.com\tNULL\t1\tactive\n90001\tbruno ps\tbrunogiordanyps@gmail.com\tNULL\t1\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}

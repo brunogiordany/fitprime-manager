@@ -58,6 +58,16 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
+      headers() {
+        // Enviar token do aluno se existir (para autenticação do portal do aluno)
+        const studentToken = typeof window !== 'undefined' ? localStorage.getItem('studentToken') : null;
+        if (studentToken) {
+          return {
+            'x-student-token': studentToken,
+          };
+        }
+        return {};
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),

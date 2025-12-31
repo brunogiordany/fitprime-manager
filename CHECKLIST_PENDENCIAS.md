@@ -97,3 +97,8 @@
 - [x] D1. Erro página /evolucao - Select.Item com valor vazio (CORRIGIDO - valor '' alterado para 'all')
 - [x] D2. Diário de Treino - Retornar aba "Sessões" (JÁ IMPLEMENTADO no GitHub)
 - [x] D3. Diário de Treino - Renomear "Registros" para "Registros Maromba" (JÁ IMPLEMENTADO no GitHub)
+
+- [ ] D4. Sessões - Clicar na sessão deve abrir modal de registro do Diário Maromba
+- [x] D5. Sessões - Corrigir data "Invalid Date" nas sessões (session.date -> session.scheduledAt)
+- [x] D6. Login do aluno - Senha resetada para Br896469
+- [ ] D7. Sessões - Mostrar apenas sessões não preenchidas/finalizadas (as concluídas já estão em Registros Maromba)

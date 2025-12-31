@@ -43,11 +43,19 @@ const personalProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 });
 
 // Student procedure - for portal do aluno
-const studentProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  const student = await db.getStudentByUserId(ctx.user.id);
-  if (!student) {
-    throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito a alunos' });
+// Usa autenticação via token JWT (x-student-token header)
+const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  // Verificar se tem autenticação de aluno via token JWT
+  if (!ctx.studentAuth) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Token de aluno não fornecido ou inválido' });
   }
+  
+  // Buscar dados do aluno pelo ID do token (usa versão pública que não requer personalId)
+  const student = await db.getStudentByIdPublic(ctx.studentAuth.studentId);
+  if (!student) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+  }
+  
   return next({ ctx: { ...ctx, student } });
 });
 
@@ -2321,18 +2329,16 @@ Retorne APENAS o JSON, sem texto adicional.`;
           if (student) studentsMap.set(studentId, student);
         }
         
-        // Get workout log IDs for completed sessions
+        // Get workout log IDs for ALL sessions (to know which ones have been filled)
         const sessionsWithLogs = await Promise.all(
           sessions.map(async (session) => {
-            let workoutLogId = null;
-            if (session.status === 'completed') {
-              const log = await db.getWorkoutLogBySessionId(session.id);
-              if (log) workoutLogId = log.id;
-            }
+            const log = await db.getWorkoutLogBySessionId(session.id);
+            const workoutLogId = log ? log.id : null;
             return {
               ...session,
               student: studentsMap.get(session.studentId),
               workoutLogId,
+              hasWorkoutLog: !!log, // Flag to indicate if session has a workout log
             };
           })
         );

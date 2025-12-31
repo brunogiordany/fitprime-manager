@@ -1,0 +1,19 @@
+{
+  "query": "SELECT s.id, s.name, s.email, s.personalId, s.status, p.id as personal_id, p.businessName \nFROM students s \nLEFT JOIN personals p ON s.personalId = p.id \nWHERE s.email = 'brunogiordany@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.name, s.email, s.personalId, s.status, p.id as personal_id, p.businessName \nFROM students s \nLEFT JOIN personals p ON s.personalId = p.id \nWHERE s.email = 'brunogiordany@gmail.com';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com",
+      "personalId": "1",
+      "status": "active",
+      "personal_id": "1",
+      "businessName": "Bruno Personal"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tpersonalId\tstatus\tpersonal_id\tbusinessName\n1\tBruno\tbrunogiordany@gmail.com\t1\tactive\t1\tBruno Personal\n",
+  "stderr": "",
+  "execution_time_ms": 72
+}
