@@ -1656,3 +1656,8 @@
 5. Personal clica "Gerar Treino Adaptado" → Treino 2.0
 6. 30 dias depois: IA compara eficiência Treino 2 vs 1
 7. Ciclo continua: Treino 3.0, 4.0... sempre melhorando
+
+
+### D21. Bug: Adicionar Ações em Lote na página de Sessões do menu lateral
+- [x] Adicionar botão "Ações em Lote" na página Sessions.tsx (menu lateral)
+- [x] Implementar funcionalidade igual à página de Sessões do perfil do aluno
