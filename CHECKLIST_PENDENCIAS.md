@@ -61,8 +61,8 @@
 
 ## 🔵 FUNCIONALIDADES FUTURAS (Prioridade Baixa)
 
-- [ ] 16. Métricas SaaS (MRR, ARR, Churn Rate, LTV, Ticket Médio)
-- [ ] 17. Agrupar cobranças por aluno (expandir/colapsar)
+- [x] 16. Métricas SaaS (MRR, ARR, Churn Rate, LTV, Ticket Médio) - JÁ IMPLEMENTADO em Charges.tsx com cards e cálculos completos
+- [x] 17. Agrupar cobranças por aluno (expandir/colapsar) - JÁ IMPLEMENTADO em Charges.tsx com Collapsible
 - [ ] 18. Planos de fábrica (6 planos mensais pré-definidos)
 - [ ] 19. Comparativo entre métodos de BF (estimado vs bio vs adi)
 - [ ] 20. Histórico de sessões por treino
