@@ -2136,14 +2136,9 @@ export default function Schedule() {
         <Dialog open={isDayListOpen} onOpenChange={setIsDayListOpen}>
           <DialogContent className="max-w-sm p-0">
             <DialogHeader className="p-4 pb-2 border-b">
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-base">
-                  {selectedDayDate && format(selectedDayDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </DialogTitle>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsDayListOpen(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <DialogTitle className="text-base">
+                {selectedDayDate && format(selectedDayDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </DialogTitle>
             </DialogHeader>
             
             <ScrollArea className="max-h-[60vh]">
