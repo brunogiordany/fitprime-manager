@@ -1132,6 +1132,89 @@ export default function Measurements() {
                     Fechar
                   </Button>
                   <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // Gerar PDF da análise
+                      const printContent = document.createElement('div');
+                      printContent.innerHTML = `
+                        <html>
+                          <head>
+                            <title>Análise Completa - ${student.name}</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+                              h1 { color: #7c3aed; border-bottom: 2px solid #7c3aed; padding-bottom: 10px; }
+                              h2 { color: #374151; margin-top: 30px; }
+                              .section { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 15px 0; }
+                              .strength { background: #dcfce7; border-left: 4px solid #22c55e; }
+                              .deficit { background: #fef3c7; border-left: 4px solid #f59e0b; }
+                              .recommendation { background: #dbeafe; border-left: 4px solid #3b82f6; }
+                              ul { margin: 10px 0; padding-left: 20px; }
+                              li { margin: 5px 0; }
+                              .footer { margin-top: 40px; text-align: center; color: #9ca3af; font-size: 12px; }
+                            </style>
+                          </head>
+                          <body>
+                            <h1>Análise Completa por IA</h1>
+                            <p><strong>Aluno:</strong> ${student.name}</p>
+                            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                            
+                            <h2>Resumo Geral</h2>
+                            <div class="section">
+                              <p>${fullAnalysis.summary || 'Não disponível'}</p>
+                            </div>
+                            
+                            ${fullAnalysis.strengths?.length ? `
+                              <h2>Pontos Fortes</h2>
+                              <div class="section strength">
+                                <ul>
+                                  ${fullAnalysis.strengths.map((s: string) => `<li>${s}</li>`).join('')}
+                                </ul>
+                              </div>
+                            ` : ''}
+                            
+                            ${fullAnalysis.deficits?.length ? `
+                              <h2>Déficits Identificados</h2>
+                              <div class="section deficit">
+                                <ul>
+                                  ${fullAnalysis.deficits.map((d: string) => `<li>${d}</li>`).join('')}
+                                </ul>
+                              </div>
+                            ` : ''}
+                            
+                            ${fullAnalysis.recommendations?.length ? `
+                              <h2>Recomendações</h2>
+                              <div class="section recommendation">
+                                <ul>
+                                  ${fullAnalysis.recommendations.map((r: string) => `<li>${r}</li>`).join('')}
+                                </ul>
+                              </div>
+                            ` : ''}
+                            
+                            ${fullAnalysis.detailedAnalysis ? `
+                              <h2>Análise Detalhada</h2>
+                              <div class="section">
+                                <p>${fullAnalysis.detailedAnalysis}</p>
+                              </div>
+                            ` : ''}
+                            
+                            <div class="footer">
+                              <p>Relatório gerado por FitPrime Manager - Sistema de Análise por IA</p>
+                            </div>
+                          </body>
+                        </html>
+                      `;
+                      const printWindow = window.open('', '_blank');
+                      if (printWindow) {
+                        printWindow.document.write(printContent.innerHTML);
+                        printWindow.document.close();
+                        printWindow.print();
+                      }
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Exportar PDF
+                  </Button>
+                  <Button 
                     onClick={() => {
                       setIsAnalysisModalOpen(false);
                       setLocation(`/alunos/${studentId}/treinos`);

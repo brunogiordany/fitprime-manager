@@ -75,6 +75,7 @@ export const students = mysqlTable("students", {
   canCancelSessions: boolean("canCancelSessions").default(true), // Permite aluno cancelar sessões (padrão: liberado)
   canSendMessages: boolean("canSendMessages").default(true), // Permite aluno enviar mensagens (padrão: liberado)
   canViewWorkouts: boolean("canViewWorkouts").default(true), // Permite aluno ver treinos (padrão: liberado)
+  lastAnalyzedAt: timestamp("lastAnalyzedAt"), // Data da última análise completa por IA
   deletedAt: timestamp("deletedAt"), // Soft delete - null = ativo, timestamp = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

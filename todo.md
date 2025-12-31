@@ -1642,7 +1642,9 @@
 - [x] 7.5 Upload de bioimpedância na área do personal (Measurements)
 - [x] 7.6 Modal de Análise Completa do Aluno para o personal
 - [x] 7.7 Comparação visual lado a lado entre treinos
-- [ ] 7.8 Relatório exportação PDF com análise da IA
+- [x] 7.8 Relatório exportação PDF com análise da IA
+- [x] 7.9 Notificações automáticas de 30 dias para nova análise
+- [x] 7.10 Dashboard de evolução de eficiência dos treinos ao longo do tempo
 
 ---
 

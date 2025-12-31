@@ -375,6 +375,27 @@ export const appRouter = router({
         return await db.getStudentsByPersonalId(ctx.personal.id, input);
       }),
     
+    // Listar alunos que precisam de nova análise (mais de 30 dias sem análise)
+    needsAnalysis: personalProcedure.query(async ({ ctx }) => {
+      const allStudents = await db.getStudentsByPersonalId(ctx.personal.id, { status: 'active' });
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      
+      return allStudents.filter(student => {
+        // Nunca foi analisado ou foi analisado há mais de 30 dias
+        if (!student.lastAnalyzedAt) return true;
+        return new Date(student.lastAnalyzedAt) < thirtyDaysAgo;
+      }).map(student => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        avatarUrl: student.avatarUrl,
+        lastAnalyzedAt: student.lastAnalyzedAt,
+        daysSinceAnalysis: student.lastAnalyzedAt 
+          ? Math.floor((Date.now() - new Date(student.lastAnalyzedAt).getTime()) / (24 * 60 * 60 * 1000))
+          : null,
+      }));
+    }),
+    
     get: personalProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
@@ -6142,6 +6163,12 @@ Retorne APENAS o JSON no formato especificado.`;
         
         try {
           const analysis = JSON.parse(content);
+          
+          // Atualizar lastAnalyzedAt do aluno
+          await database.update(students)
+            .set({ lastAnalyzedAt: new Date() })
+            .where(eq(students.id, input.studentId));
+          
           return {
             success: true,
             analysis,

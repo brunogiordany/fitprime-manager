@@ -17,7 +17,9 @@ import {
   Phone,
   MessageCircle,
   User,
-  ChevronRight
+  ChevronRight,
+  Brain,
+  Sparkles
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -40,6 +42,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
   const { data: todaySessions, isLoading: sessionsLoading } = trpc.dashboard.todaySessions.useQuery();
+  const { data: studentsNeedingAnalysis } = trpc.students.needsAnalysis.useQuery();
   const utils = trpc.useUtils();
   
   // Estado para modal de edição de sessão
@@ -200,6 +203,61 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Alunos que Precisam de Análise */}
+        {studentsNeedingAnalysis && studentsNeedingAnalysis.length > 0 && (
+          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-purple-700">
+                <Brain className="h-5 w-5" />
+                Análise de Evolução Pendente
+              </CardTitle>
+              <CardDescription>
+                {studentsNeedingAnalysis.length} aluno(s) precisam de nova análise (mais de 30 dias)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {studentsNeedingAnalysis.slice(0, 5).map((student) => (
+                  <div 
+                    key={student.id} 
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/80 hover:bg-white transition-colors cursor-pointer border border-purple-100"
+                    onClick={() => setLocation(`/alunos/${student.id}/medidas`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                        {student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{student.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {student.daysSinceAnalysis 
+                            ? `Última análise há ${student.daysSinceAnalysis} dias`
+                            : 'Nunca analisado'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" className="text-purple-600 hover:text-purple-700 hover:bg-purple-100">
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      Analisar
+                    </Button>
+                  </div>
+                ))}
+                {studentsNeedingAnalysis.length > 5 && (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-purple-600 hover:text-purple-700"
+                    onClick={() => setLocation('/alunos')}
+                  >
+                    Ver todos os {studentsNeedingAnalysis.length} alunos
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Today's Sessions */}
         <Card>
