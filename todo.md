@@ -1791,3 +1791,11 @@
 - [x] Ajustar tamanho de fontes para mobile (text-xs, text-[10px])
 - [x] Usar break-words para textos longos
 - [x] Botão de gerar treino em largura total no mobile
+
+
+## Responsividade Modal Preview Treino IA (v4.8)
+- [x] Eliminar scroll lateral no modal de preview
+- [x] Ajustar tabela de exercícios para layout de cards em mobile
+- [x] Garantir que todos os detalhes sejam visíveis sem scroll horizontal
+- [x] Ajustar tamanho de fontes e badges para mobile
+- [x] Ajustar botões do rodapé para mobile

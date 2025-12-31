@@ -394,14 +394,14 @@ export default function Workouts() {
                   Gerar com IA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[98vw] max-w-6xl h-[90vh] flex flex-col p-0">
-                <div className="px-6 pt-6 pb-4 border-b">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-purple-600" />
-                      Gerar Treino com Inteligência Artificial
+              <DialogContent className="w-[95vw] max-w-6xl h-[90vh] flex flex-col p-0 overflow-hidden">
+                <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b">
+                  <DialogHeader className="pr-8">
+                    <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 shrink-0" />
+                      <span>Gerar Treino com Inteligência Artificial</span>
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-xs sm:text-sm">
                       A IA criará um treino personalizado baseado na anamnese e medidas do aluno
                     </DialogDescription>
                   </DialogHeader>
@@ -470,33 +470,33 @@ export default function Workouts() {
                 ) : (
                   <>
                     {/* Conteúdo com scroll */}
-                    <div className="flex-1 overflow-y-auto px-6 py-4">
-                      <div className="space-y-4">
-                        <div className={`rounded-lg p-4 border ${aiPreview.isAdapted ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-100' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100'}`}>
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                            <h3 className="font-semibold text-lg">{aiPreview.preview.name}</h3>
-                            <div className="flex gap-2 flex-wrap">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-4">
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className={`rounded-lg p-3 sm:p-4 border ${aiPreview.isAdapted ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-100' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100'}`}>
+                          <div className="flex flex-col gap-2 mb-2">
+                            <h3 className="font-semibold text-sm sm:text-lg break-words">{aiPreview.preview.name}</h3>
+                            <div className="flex gap-1.5 flex-wrap">
                               {aiPreview.isAdapted && (
-                                <Badge className="bg-orange-100 text-orange-700">
+                                <Badge className="bg-orange-100 text-orange-700 text-[10px] sm:text-xs">
                                   Treino {aiPreview.adaptationInfo?.version}.0
                                 </Badge>
                               )}
-                              <Badge className={getGoalBadge(aiPreview.preview.goal).className}>
+                              <Badge className={`text-[10px] sm:text-xs ${getGoalBadge(aiPreview.preview.goal).className}`}>
                                 {getGoalBadge(aiPreview.preview.goal).label}
                               </Badge>
-                              <Badge className={getDifficultyBadge(aiPreview.preview.difficulty).className}>
+                              <Badge className={`text-[10px] sm:text-xs ${getDifficultyBadge(aiPreview.preview.difficulty).className}`}>
                                 {getDifficultyBadge(aiPreview.preview.difficulty).label}
                               </Badge>
                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{aiPreview.preview.description}</p>
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground break-words">{aiPreview.preview.description}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
                             Para: {aiPreview.studentName}
                           </p>
                           
                           {/* Informações de Adaptação */}
                           {aiPreview.isAdapted && aiPreview.adaptationInfo && (
-                            <div className="mt-4 space-y-3">
+                            <div className="mt-3 space-y-2">
                               {aiPreview.adaptationInfo.previousWorkoutName && (
                                 <p className="text-xs text-orange-600">
                                   <strong>Baseado em:</strong> {aiPreview.adaptationInfo.previousWorkoutName}
@@ -602,53 +602,43 @@ export default function Workouts() {
                                   <span className="truncate">{day.name}</span>
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent className="py-2">
-                                <div className="overflow-x-auto">
-                                  <table className="w-full text-sm">
-                                    <thead>
-                                      <tr className="border-b">
-                                        <th className="text-left py-2 pr-4 font-medium">Exercício</th>
-                                        <th className="text-left py-2 pr-4 font-medium">Grupo</th>
-                                        <th className="text-center py-2 px-2 font-medium">Séries</th>
-                                        <th className="text-center py-2 px-2 font-medium">Reps</th>
-                                        <th className="text-center py-2 px-2 font-medium">Descanso</th>
-                                        <th className="text-center py-2 pl-2 font-medium w-[80px]">Ações</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {day.exercises.map((ex: any, exIndex: number) => (
-                                        <tr key={exIndex} className="border-b last:border-0 group hover:bg-muted/50">
-                                          <td className="py-2 pr-4 font-medium">{ex.name}</td>
-                                          <td className="py-2 pr-4 text-muted-foreground">{ex.muscleGroup}</td>
-                                          <td className="py-2 px-2 text-center">{ex.sets}</td>
-                                          <td className="py-2 px-2 text-center">{ex.reps}</td>
-                                          <td className="py-2 px-2 text-center">{ex.restSeconds}s</td>
-                                          <td className="py-2 pl-2 text-center">
-                                            <div className="flex items-center justify-center gap-1">
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={() => setEditingExercise({ dayIndex, exIndex, exercise: { ...ex } })}
-                                                title="Editar exercício"
-                                              >
-                                                <Edit className="h-3.5 w-3.5" />
-                                              </Button>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => handleDeleteExercise(dayIndex, exIndex)}
-                                                title="Remover exercício"
-                                              >
-                                                <X className="h-3.5 w-3.5" />
-                                              </Button>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
+                              <CardContent className="py-2 px-3">
+                                <div className="space-y-2">
+                                  {day.exercises.map((ex: any, exIndex: number) => (
+                                    <div key={exIndex} className="border rounded-lg p-2 bg-muted/30 hover:bg-muted/50">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                          <p className="font-medium text-sm truncate">{ex.name}</p>
+                                          <p className="text-xs text-muted-foreground">{ex.muscleGroup}</p>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            onClick={() => setEditingExercise({ dayIndex, exIndex, exercise: { ...ex } })}
+                                            title="Editar exercício"
+                                          >
+                                            <Edit className="h-3 w-3" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            onClick={() => handleDeleteExercise(dayIndex, exIndex)}
+                                            title="Remover exercício"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-3 mt-1 text-xs">
+                                        <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{ex.sets} séries</span>
+                                        <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{ex.reps} reps</span>
+                                        <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">{ex.restSeconds}s desc.</span>
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </CardContent>
                             </Card>
@@ -658,32 +648,32 @@ export default function Workouts() {
                     </div>
                     
                     {/* Botões fixos no rodapé - SEMPRE VISÍVEIS */}
-                    <div className="border-t bg-background px-6 py-4 flex-shrink-0">
-                      <p className="text-sm text-muted-foreground text-center mb-3">
+                    <div className="border-t bg-background px-3 sm:px-6 py-3 sm:py-4 flex-shrink-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground text-center mb-2 sm:mb-3">
                         Revise o treino acima. Após salvar, você poderá editar os exercícios.
                       </p>
-                      <div className="flex gap-3">
+                      <div className="flex gap-2 sm:gap-3">
                         <Button 
                           variant="outline" 
                           onClick={() => setAiPreview(null)}
-                          className="flex-1"
+                          className="flex-1 text-xs sm:text-sm"
                         >
-                          <RefreshCw className="h-4 w-4 mr-2" />
+                          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                           Gerar Novo
                         </Button>
                         <Button 
                           onClick={handleSaveAIWorkout}
                           disabled={saveAIMutation.isPending}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs sm:text-sm"
                         >
                           {saveAIMutation.isPending ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                               Salvando...
                             </>
                           ) : (
                             <>
-                              <Check className="h-4 w-4 mr-2" />
+                              <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Salvar e Editar
                             </>
                           )}
