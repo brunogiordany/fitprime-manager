@@ -1841,43 +1841,58 @@ export default function TrainingDiaryPage() {
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="p-3">
                                 {/* Linha principal da série */}
-                                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
-                                    {set.setNumber}
-                                  </span>
+                                <div className="space-y-2">
+                                  {/* Linha 1: Número + Tipo de série + Botão remover */}
+                                  <div className="flex items-center gap-2">
+                                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${getSetTypeColor(set.setType)}`}>
+                                      {set.setNumber}
+                                    </span>
+                                    
+                                    {isEditing ? (
+                                      <Select
+                                        value={set.setType || "working"}
+                                        onValueChange={(v) => {
+                                          handleUpdateSet(exIndex, setIndex, 'setType', v);
+                                          if (v === 'drop') {
+                                            handleUpdateSet(exIndex, setIndex, 'isDropSet', true);
+                                          } else if (v === 'rest_pause') {
+                                            handleUpdateSet(exIndex, setIndex, 'isRestPause', true);
+                                          } else {
+                                            handleUpdateSet(exIndex, setIndex, 'isDropSet', false);
+                                            handleUpdateSet(exIndex, setIndex, 'isRestPause', false);
+                                          }
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 flex-1 text-xs">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {SET_TYPES.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                              {type.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <Badge variant="outline" className="text-xs">{getSetTypeLabel(set.setType)}</Badge>
+                                    )}
+                                    
+                                    {isEditing && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive flex-shrink-0"
+                                        onClick={() => handleRemoveSet(exIndex, setIndex)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
                                   
+                                  {/* Linha 2: Peso + Reps + Descanso */}
                                   {isEditing ? (
-                                    <Select
-                                      value={set.setType || "working"}
-                                      onValueChange={(v) => {
-                                        handleUpdateSet(exIndex, setIndex, 'setType', v);
-                                        if (v === 'drop') {
-                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', true);
-                                        } else if (v === 'rest_pause') {
-                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', true);
-                                        } else {
-                                          handleUpdateSet(exIndex, setIndex, 'isDropSet', false);
-                                          handleUpdateSet(exIndex, setIndex, 'isRestPause', false);
-                                        }
-                                      }}
-                                    >
-                                      <SelectTrigger className="h-8 w-[120px] text-xs">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {SET_TYPES.map((type) => (
-                                          <SelectItem key={type.value} value={type.value}>
-                                            {type.label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <Badge variant="outline" className="text-xs">{getSetTypeLabel(set.setType)}</Badge>
-                                  )}
-                                  
-                                  {isEditing ? (
-                                    <>
+                                    <div className="flex items-center gap-3 pl-9">
                                       <div className="flex items-center gap-1">
                                         <Input
                                           type="number"
@@ -1910,18 +1925,9 @@ export default function TrainingDiaryPage() {
                                         />
                                         <span className="text-xs text-muted-foreground">s</span>
                                       </div>
-                                      
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 text-destructive ml-auto"
-                                        onClick={() => handleRemoveSet(exIndex, setIndex)}
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </>
+                                    </div>
                                   ) : (
-                                    <div className="flex items-center gap-3 flex-1">
+                                    <div className="flex items-center gap-3 pl-9">
                                       <span className="font-semibold text-foreground">
                                         {set.weight || 0}kg
                                       </span>

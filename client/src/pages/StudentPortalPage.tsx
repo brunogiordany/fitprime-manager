@@ -2170,104 +2170,105 @@ export default function StudentPortalPage() {
                     <div className="border-t p-4 bg-gray-50/50">
                       <div className="space-y-3">
                         {exercise.sets.map((set: any, setIndex: number) => (
-                          <div key={setIndex} className="flex items-center gap-2 flex-wrap p-2 bg-white rounded-lg border">
-                            {/* Número da série com cor baseada no tipo */}
-                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${
-                              set.setType === 'warmup' ? 'bg-yellow-500' :
-                              set.setType === 'feeler' ? 'bg-blue-500' :
-                              set.setType === 'drop' ? 'bg-purple-500' :
-                              set.setType === 'rest_pause' ? 'bg-orange-500' :
-                              set.setType === 'failure' ? 'bg-red-500' :
-                              'bg-green-500'
-                            }`}>
-                              {setIndex + 1}
-                            </span>
-                            
-                            {/* Tipo de série */}
-                            <Select
-                              value={set.setType || 'working'}
-                              onValueChange={(v) => {
-                                const updated = [...diaryExercises];
-                                updated[exIndex].sets[setIndex].setType = v;
-                                setDiaryExercises(updated);
-                              }}
-                            >
-                              <SelectTrigger className="h-8 w-[110px] text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="warmup">Aquecimento</SelectItem>
-                                <SelectItem value="feeler">Reconhecimento</SelectItem>
-                                <SelectItem value="working">Série Válida</SelectItem>
-                                <SelectItem value="drop">Drop Set</SelectItem>
-                                <SelectItem value="rest_pause">Rest-Pause</SelectItem>
-                                <SelectItem value="failure">Falha</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            
-                            {/* Peso */}
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                value={set.weight}
-                                onChange={(e) => {
+                          <div key={setIndex} className="p-3 bg-white rounded-lg border space-y-2">
+                            {/* Linha 1: Número + Tipo de série */}
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${
+                                set.setType === 'warmup' ? 'bg-yellow-500' :
+                                set.setType === 'feeler' ? 'bg-blue-500' :
+                                set.setType === 'drop' ? 'bg-purple-500' :
+                                set.setType === 'rest_pause' ? 'bg-orange-500' :
+                                set.setType === 'failure' ? 'bg-red-500' :
+                                'bg-green-500'
+                              }`}>
+                                {setIndex + 1}
+                              </span>
+                              
+                              <Select
+                                value={set.setType || 'working'}
+                                onValueChange={(v) => {
                                   const updated = [...diaryExercises];
-                                  updated[exIndex].sets[setIndex].weight = e.target.value;
-                                  setDiaryExercises(updated);
-                                }}
-                                className="h-8 w-16 text-center text-sm"
-                              />
-                              <span className="text-xs text-gray-500">kg</span>
-                            </div>
-                            
-                            {/* Reps */}
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                value={set.reps}
-                                onChange={(e) => {
-                                  const updated = [...diaryExercises];
-                                  updated[exIndex].sets[setIndex].reps = parseInt(e.target.value) || 0;
-                                  setDiaryExercises(updated);
-                                }}
-                                className="h-8 w-14 text-center text-sm"
-                              />
-                              <span className="text-xs text-gray-500">reps</span>
-                            </div>
-                            
-                            {/* Descanso */}
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                placeholder="60"
-                                value={set.restTime || ''}
-                                onChange={(e) => {
-                                  const updated = [...diaryExercises];
-                                  updated[exIndex].sets[setIndex].restTime = parseInt(e.target.value) || 0;
-                                  setDiaryExercises(updated);
-                                }}
-                                className="h-8 w-14 text-center text-sm"
-                              />
-                              <span className="text-xs text-gray-500">s</span>
-                            </div>
-                            
-                            {/* Botão remover série */}
-                            {exercise.sets.length > 1 && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-red-500 hover:text-red-700 ml-auto"
-                                onClick={() => {
-                                  const updated = [...diaryExercises];
-                                  updated[exIndex].sets.splice(setIndex, 1);
+                                  updated[exIndex].sets[setIndex].setType = v;
                                   setDiaryExercises(updated);
                                 }}
                               >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                            )}
+                                <SelectTrigger className="h-8 flex-1 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="warmup">Aquecimento</SelectItem>
+                                  <SelectItem value="feeler">Reconhecimento</SelectItem>
+                                  <SelectItem value="working">Série Válida</SelectItem>
+                                  <SelectItem value="drop">Drop Set</SelectItem>
+                                  <SelectItem value="rest_pause">Rest-Pause</SelectItem>
+                                  <SelectItem value="failure">Falha</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              {/* Botão remover série */}
+                              {exercise.sets.length > 1 && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 text-red-500 hover:text-red-700 flex-shrink-0"
+                                  onClick={() => {
+                                    const updated = [...diaryExercises];
+                                    updated[exIndex].sets.splice(setIndex, 1);
+                                    setDiaryExercises(updated);
+                                  }}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            {/* Linha 2: Peso + Reps + Descanso */}
+                            <div className="flex items-center gap-3 pl-9">
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  value={set.weight}
+                                  onChange={(e) => {
+                                    const updated = [...diaryExercises];
+                                    updated[exIndex].sets[setIndex].weight = e.target.value;
+                                    setDiaryExercises(updated);
+                                  }}
+                                  className="h-8 w-16 text-center text-sm"
+                                />
+                                <span className="text-xs text-gray-500">kg</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  value={set.reps}
+                                  onChange={(e) => {
+                                    const updated = [...diaryExercises];
+                                    updated[exIndex].sets[setIndex].reps = parseInt(e.target.value) || 0;
+                                    setDiaryExercises(updated);
+                                  }}
+                                  className="h-8 w-14 text-center text-sm"
+                                />
+                                <span className="text-xs text-gray-500">reps</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  placeholder="60"
+                                  value={set.restTime || ''}
+                                  onChange={(e) => {
+                                    const updated = [...diaryExercises];
+                                    updated[exIndex].sets[setIndex].restTime = parseInt(e.target.value) || 0;
+                                    setDiaryExercises(updated);
+                                  }}
+                                  className="h-8 w-14 text-center text-sm"
+                                />
+                                <span className="text-xs text-gray-500">s</span>
+                              </div>
+                            </div>
                           </div>
                         ))}
                         
