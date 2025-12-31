@@ -1661,3 +1661,4 @@
 ### D21. Bug: Adicionar Ações em Lote na página de Sessões do menu lateral
 - [x] Adicionar botão "Ações em Lote" na página Sessions.tsx (menu lateral)
 - [x] Implementar funcionalidade igual à página de Sessões do perfil do aluno
+- [x] Melhorar UX: mover botão para junto do título "Sessões do Mês"
