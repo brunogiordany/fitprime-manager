@@ -11,8 +11,8 @@
 - [x] B3. Bug: Portal do Aluno - adicionar barra lateral de navegação (CORRIGIDO - Sidebar estilo DashboardLayout com menu lateral, header e footer)
 - [x] B4. Bug: Gravação de áudio (CORRIGIDO - Envio funcional, pause/resume, codecs compatíveis, tratamento de erros)
 - [x] B5. Bug: Upload de arquivos não funciona (CORRIGIDO - Upload funcional para fotos, vídeos e documentos no chat do personal)
-- [ ] B6. Bug: Campos de bioimpedância e adipômetro sumiram (verificar)
-- [ ] B7. Bug: Scroll não funciona no chat (página e mensagens)
+- [x] B6. Bug: Campos de bioimpedância e adipômetro sumiram (VERIFICADO - Campos estão presentes em Measurements.tsx nas abas 'bio' e 'adip')
+- [x] B7. Bug: Scroll não funciona no chat (VERIFICADO - Scroll funcional com auto-scroll para novas mensagens e overflow-y-auto)
 
 ---
 
@@ -81,6 +81,6 @@
 
 ## 📊 PROGRESSO
 
-**Bugs Série B:** 5/7 resolvidos
+**Bugs Série B:** 7/7 resolvidos
 **Bugs Série A:** 8/8 resolvidos
 **Total geral:** ~75% concluído
