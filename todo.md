@@ -1491,19 +1491,31 @@
 - [x] Se incompleta, manter o botão visível
 
 ### D13. Bug: Email de recuperação de senha não é enviado
-- [ ] Ao clicar em "Esqueci a senha" no portal do aluno, o código não chega no email
-- [ ] Verificar se o endpoint de envio de email está funcionando
+- [x] Ao clicar em "Esqueci a senha" no portal do aluno, o código não chega no email
+- [x] Verificar se o endpoint de envio de email está funcionando - FUNCIONA
+- [ ] **PENDENTE**: Verificar domínio no Resend para enviar emails para outros destinatários
+- [ ] Resend só permite enviar para brunogiordany@gmail.com sem domínio verificado
 - [ ] Verificar se o Resend está configurado corretamente
 - [ ] Garantir que o email seja enviado com o código de verificação
 
-### D14. Melhoria: Diário de Treino completo no portal do aluno
-- [ ] Portal do aluno precisa ter Diário de Treino igual ao do personal
-- [ ] Opção de criar registro de treino manualmente
-- [ ] Editar registros existentes
-- [ ] Dashboard com relatórios e gráficos de evolução
-- [ ] Todas as personalizações do Diário de Treino
-- [ ] Sessões e Registros Maromba completos
-- [ ] Remover apenas opções de gerenciar outros alunos (é aluno único)
+#### D14. Melhoria: Diário de Treino completo no portal do aluno
+**Fase 1 - Registro Manual e Histórico:**
+- [x] D14.1a - Adicionar botão "Criar Registro Manual" no Diário
+- [x] D14.1b - Formulário para criar treino sem sessão vinculada
+- [x] D14.1c - Melhorar visualização do histórico de treinos
+- [x] D14.1d - Mostrar detalhes dos exercícios no histórico
+
+**Fase 2 - Dashboard e Relatórios:**
+- [ ] D14.2a - Dashboard com estatísticas (total treinos, frequência, etc)
+- [ ] D14.2b - Gráfico de evolução de carga por exercício
+- [ ] D14.2c - Gráfico de frequência de treinos
+- [ ] D14.2d - Resumo semanal/mensal
+
+**Fase 3 - Edição e Funcionalidades Avançadas:**
+- [ ] D14.3a - Editar registros de treino existentes
+- [ ] D14.3b - Excluir registros de treino
+- [ ] D14.3c - Duplicar treino anterior
+- [ ] D14.3d - Filtros e busca no históricoo)
 
 ### D15. Feature: Modelo de vendas B2C e B2B
 - [ ] B2B (atual): Personal cadastra aluno e envia convite pelo link
@@ -1513,3 +1525,24 @@
 - [ ] Criar fluxo de onboarding para aluno B2C (sem personal vinculado)
 - [ ] Diferenciar alunos B2B (vinculados a personal) e B2C (independentes)
 - [ ] Portal do aluno B2C deve ter acesso completo ao Diário de Treino
+
+### D16. Feature: Configurar domínio personalizado fitprimemanager.com
+- [ ] Domínio comprado e funcionando: https://fitprimemanager.com
+- [ ] Configurar DNS para apontar para o servidor Manus
+- [ ] Configurar SSL/HTTPS
+- [ ] Todas as páginas devem funcionar no domínio:
+  - [ ] Landing page inicial
+  - [ ] Portal do personal (login e dashboard)
+  - [ ] Portal do aluno (login e dashboard)
+  - [ ] Todas as rotas existentes
+- [ ] Atualizar links internos se necessário
+- [ ] Configurar domínio no Resend para envio de emails (resolve D13)
+
+
+### D17. Bug: Correções de SEO na página inicial (/)
+- [ ] Adicionar palavras-chave relevantes na página
+- [ ] Adicionar título H1 na página inicial
+- [ ] Adicionar títulos H2 nas seções
+- [ ] Corrigir título da página (atual: 16 caracteres, ideal: 30-60 caracteres)
+- [ ] Usar document.title para definir título adequado
+

@@ -109,6 +109,17 @@ export default function StudentPortalPage() {
   const [diaryFeeling, setDiaryFeeling] = useState<string>("");
   const [diaryDuration, setDiaryDuration] = useState(60);
   const [showAnamnesisModal, setShowAnamnesisModal] = useState(false);
+  const [showManualDiaryModal, setShowManualDiaryModal] = useState(false);
+  const [manualDiaryDate, setManualDiaryDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [manualDiaryExercises, setManualDiaryExercises] = useState<any[]>([{
+    exerciseName: '',
+    sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+    notes: '',
+    isExpanded: true
+  }]);
+  const [manualDiaryNotes, setManualDiaryNotes] = useState('');
+  const [manualDiaryFeeling, setManualDiaryFeeling] = useState('');
+  const [manualDiaryDuration, setManualDiaryDuration] = useState(60);
 
   // Restaurar dados do formulário de anamnese do localStorage ao carregar
   useEffect(() => {
@@ -217,6 +228,26 @@ export default function StudentPortalPage() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Erro ao registrar treino");
+    },
+  });
+
+  // Mutation para criar registro de treino manual
+  const createManualWorkoutLogMutation = trpc.studentPortal.createManualWorkoutLog.useMutation({
+    onSuccess: () => {
+      toast.success("Treino manual registrado com sucesso!");
+      setShowManualDiaryModal(false);
+      setManualDiaryExercises([{
+        exerciseName: '',
+        sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+        notes: '',
+        isExpanded: true
+      }]);
+      setManualDiaryNotes('');
+      setManualDiaryFeeling('');
+      refetchWorkoutLogs();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao registrar treino manual");
     },
   });
 
@@ -649,6 +680,33 @@ export default function StudentPortalPage() {
 
           {/* Diário de Treino Tab */}
           <TabsContent value="diary" className="space-y-6">
+            {/* Botão de Criar Registro Manual */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold">Diário de Treino</h2>
+                <p className="text-sm text-gray-500">Registre e acompanhe seus treinos</p>
+              </div>
+              <Button 
+                onClick={() => {
+                  setManualDiaryExercises([{
+                    exerciseName: '',
+                    sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+                    notes: '',
+                    isExpanded: true
+                  }]);
+                  setManualDiaryDate(format(new Date(), 'yyyy-MM-dd'));
+                  setManualDiaryNotes('');
+                  setManualDiaryFeeling('');
+                  setManualDiaryDuration(60);
+                  setShowManualDiaryModal(true);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Registro Manual
+              </Button>
+            </div>
+
             {/* Sessões para Registrar */}
             <Card>
               <CardHeader>
@@ -853,30 +911,75 @@ export default function StudentPortalPage() {
                 ) : (
                   <div className="space-y-3">
                     {workoutLogs.slice(0, 10).map((log: any) => (
-                      <div key={log.id} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{log.dayName || 'Treino'}</p>
-                            <p className="text-sm text-gray-500">
-                              {format(new Date(log.trainingDate), "dd/MM/yyyy", { locale: ptBR })}
-                            </p>
+                      <details key={log.id} className="group border rounded-lg overflow-hidden">
+                        <summary className="p-4 cursor-pointer hover:bg-gray-50 list-none">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-emerald-100 rounded-lg">
+                                <Dumbbell className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{log.dayName || (log.isManual ? 'Treino Manual' : 'Treino')}</p>
+                                  {log.isManual && (
+                                    <Badge variant="outline" className="text-xs">Manual</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-500">
+                                  {format(new Date(log.trainingDate), "dd/MM/yyyy", { locale: ptBR })}
+                                  {log.duration && ` • ${log.duration} min`}
+                                  {log.exerciseCount > 0 && ` • ${log.exerciseCount} exercícios`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {log.feeling && (
+                                <span className="text-lg">
+                                  {log.feeling === 'excellent' || log.feeling === 'great' ? '🔥' : ''}
+                                  {log.feeling === 'good' ? '💪' : ''}
+                                  {log.feeling === 'normal' ? '😐' : ''}
+                                  {log.feeling === 'tired' ? '😓' : ''}
+                                  {log.feeling === 'exhausted' ? '😵' : ''}
+                                </span>
+                              )}
+                              <Badge variant={log.status === 'completed' ? 'default' : 'outline'} className="bg-emerald-600">
+                                {log.status === 'completed' ? 'Concluído' : 'Em andamento'}
+                              </Badge>
+                              <ChevronRight className="h-4 w-4 text-gray-400 group-open:rotate-90 transition-transform" />
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <Badge variant={log.status === 'completed' ? 'default' : 'outline'}>
-                              {log.status === 'completed' ? 'Concluído' : 'Em andamento'}
-                            </Badge>
-                            {log.feeling && (
-                              <p className="text-sm mt-1">
-                                {log.feeling === 'excellent' && '🔥'}
-                                {log.feeling === 'good' && '💪'}
-                                {log.feeling === 'normal' && '😐'}
-                                {log.feeling === 'tired' && '😓'}
-                                {log.feeling === 'exhausted' && '😵'}
-                              </p>
-                            )}
-                          </div>
+                        </summary>
+                        <div className="px-4 pb-4 pt-2 border-t bg-gray-50">
+                          {log.notes && (
+                            <p className="text-sm text-gray-600 mb-3 italic">"{log.notes}"</p>
+                          )}
+                          {log.exerciseLogs && log.exerciseLogs.length > 0 ? (
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-gray-700">Exercícios realizados:</p>
+                              {log.exerciseLogs.map((ex: any, idx: number) => (
+                                <div key={ex.id || idx} className="bg-white p-3 rounded border">
+                                  <p className="font-medium text-sm">{ex.exerciseName}</p>
+                                  {ex.sets && ex.sets.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      {ex.sets.map((set: any, setIdx: number) => (
+                                        <span key={setIdx} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                          {set.weight && `${set.weight}kg`} {set.reps && `x${set.reps}`}
+                                          {set.setType && set.setType !== 'working' && (
+                                            <span className="text-gray-500 ml-1">({set.setType})</span>
+                                          )}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {ex.notes && <p className="text-xs text-gray-500 mt-1">{ex.notes}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Nenhum detalhe de exercício registrado</p>
+                          )}
                         </div>
-                      </div>
+                      </details>
                     ))}
                   </div>
                 )}
@@ -2246,6 +2349,271 @@ export default function StudentPortalPage() {
               className="bg-emerald-600 hover:bg-emerald-700"
             >
               {createWorkoutLogMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salvar Treino
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Registro Manual de Treino */}
+      <Dialog open={showManualDiaryModal} onOpenChange={setShowManualDiaryModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-emerald-500" />
+              Criar Registro Manual de Treino
+            </DialogTitle>
+            <DialogDescription>
+              Registre um treino que você fez por conta própria
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Data e Duração */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data do Treino</Label>
+                <Input
+                  type="date"
+                  value={manualDiaryDate}
+                  onChange={(e) => setManualDiaryDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Duração (minutos)</Label>
+                <Input
+                  type="number"
+                  value={manualDiaryDuration}
+                  onChange={(e) => setManualDiaryDuration(parseInt(e.target.value) || 60)}
+                  min={1}
+                />
+              </div>
+            </div>
+            
+            {/* Sentimento */}
+            <div className="space-y-2">
+              <Label>Como você se sentiu?</Label>
+              <div className="flex gap-2">
+                {[
+                  { value: 'great', label: 'Excelente', emoji: '🔥' },
+                  { value: 'good', label: 'Bom', emoji: '💪' },
+                  { value: 'normal', label: 'Normal', emoji: '😐' },
+                  { value: 'tired', label: 'Cansado', emoji: '😓' },
+                  { value: 'exhausted', label: 'Exausto', emoji: '😵' },
+                ].map((f) => (
+                  <Button
+                    key={f.value}
+                    type="button"
+                    variant={manualDiaryFeeling === f.value ? 'default' : 'outline'}
+                    className={manualDiaryFeeling === f.value ? 'bg-emerald-600' : ''}
+                    onClick={() => setManualDiaryFeeling(f.value)}
+                  >
+                    {f.emoji} {f.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Exercícios */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label className="text-lg font-semibold">Exercícios</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setManualDiaryExercises([...manualDiaryExercises, {
+                      exerciseName: '',
+                      sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+                      notes: '',
+                      isExpanded: true
+                    }]);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar Exercício
+                </Button>
+              </div>
+              
+              {manualDiaryExercises.map((exercise, exIndex) => (
+                <Card key={exIndex} className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Nome do exercício (ex: Supino Reto)"
+                        value={exercise.exerciseName}
+                        onChange={(e) => {
+                          const updated = [...manualDiaryExercises];
+                          updated[exIndex].exerciseName = e.target.value;
+                          setManualDiaryExercises(updated);
+                        }}
+                        className="flex-1"
+                      />
+                      {manualDiaryExercises.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => {
+                            const updated = manualDiaryExercises.filter((_, i) => i !== exIndex);
+                            setManualDiaryExercises(updated);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Séries */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Séries</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const updated = [...manualDiaryExercises];
+                            updated[exIndex].sets.push({ weight: '', reps: '', setType: 'working', restTime: 60 });
+                            setManualDiaryExercises(updated);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Série
+                        </Button>
+                      </div>
+                      
+                      {exercise.sets.map((set: any, setIndex: number) => (
+                        <div key={setIndex} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                          <span className="text-sm font-medium w-8">#{setIndex + 1}</span>
+                          <Input
+                            type="text"
+                            placeholder="Peso (kg)"
+                            value={set.weight}
+                            onChange={(e) => {
+                              const updated = [...manualDiaryExercises];
+                              updated[exIndex].sets[setIndex].weight = e.target.value;
+                              setManualDiaryExercises(updated);
+                            }}
+                            className="w-24"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Reps"
+                            value={set.reps}
+                            onChange={(e) => {
+                              const updated = [...manualDiaryExercises];
+                              updated[exIndex].sets[setIndex].reps = e.target.value;
+                              setManualDiaryExercises(updated);
+                            }}
+                            className="w-20"
+                          />
+                          <Select
+                            value={set.setType || 'working'}
+                            onValueChange={(v) => {
+                              const updated = [...manualDiaryExercises];
+                              updated[exIndex].sets[setIndex].setType = v;
+                              setManualDiaryExercises(updated);
+                            }}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="warmup">Aquecimento</SelectItem>
+                              <SelectItem value="feeler">Reconhecimento</SelectItem>
+                              <SelectItem value="working">Série Válida</SelectItem>
+                              <SelectItem value="drop">Drop Set</SelectItem>
+                              <SelectItem value="rest_pause">Rest-Pause</SelectItem>
+                              <SelectItem value="failure">Falha</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {exercise.sets.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 p-1"
+                              onClick={() => {
+                                const updated = [...manualDiaryExercises];
+                                updated[exIndex].sets = updated[exIndex].sets.filter((_: any, i: number) => i !== setIndex);
+                                setManualDiaryExercises(updated);
+                              }}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Notas do exercício */}
+                    <Input
+                      placeholder="Observações do exercício (opcional)"
+                      value={exercise.notes || ''}
+                      onChange={(e) => {
+                        const updated = [...manualDiaryExercises];
+                        updated[exIndex].notes = e.target.value;
+                        setManualDiaryExercises(updated);
+                      }}
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Notas gerais */}
+            <div className="space-y-2">
+              <Label>Observações gerais (opcional)</Label>
+              <Textarea
+                value={manualDiaryNotes}
+                onChange={(e) => setManualDiaryNotes(e.target.value)}
+                placeholder="Como foi o treino? Alguma observação importante?"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowManualDiaryModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                // Validar que tem pelo menos um exercício com nome
+                const validExercises = manualDiaryExercises.filter(ex => ex.exerciseName.trim());
+                if (validExercises.length === 0) {
+                  toast.error('Adicione pelo menos um exercício');
+                  return;
+                }
+                
+                createManualWorkoutLogMutation.mutate({
+                  trainingDate: manualDiaryDate,
+                  duration: manualDiaryDuration,
+                  notes: manualDiaryNotes,
+                  feeling: manualDiaryFeeling,
+                  exercises: validExercises.map(ex => ({
+                    exerciseName: ex.exerciseName,
+                    sets: ex.sets.map((s: any) => ({
+                      weight: s.weight || undefined,
+                      reps: s.reps ? parseInt(s.reps) : undefined,
+                      setType: s.setType || 'working',
+                      restTime: s.restTime || 60,
+                    })),
+                    notes: ex.notes || undefined,
+                  })),
+                });
+              }}
+              disabled={createManualWorkoutLogMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {createManualWorkoutLogMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />

@@ -3670,9 +3670,29 @@ Retorne APENAS o JSON, sem texto adicional.`;
       return await db.getActivePackageByStudentId(ctx.student.id);
     }),
     
-    // Buscar logs de treino do aluno
+    // Buscar logs de treino do aluno (com exercícios)
     workoutLogs: studentProcedure.query(async ({ ctx }) => {
-      return await db.getWorkoutLogsByStudentId(ctx.student.id);
+      const logs = await db.getWorkoutLogsByStudentId(ctx.student.id);
+      // Buscar exercícios para cada log
+      const logsWithExercises = await Promise.all(
+        logs.map(async (log) => {
+          const exerciseLogs = await db.getExerciseLogsByWorkoutLogId(log.id);
+          // Buscar séries para cada exercício
+          const exercisesWithSets = await Promise.all(
+            exerciseLogs.map(async (exLog) => {
+              const sets = await db.getSetLogsByExerciseLogId(exLog.id);
+              return { ...exLog, sets };
+            })
+          );
+          return { 
+            ...log, 
+            exerciseLogs: exercisesWithSets,
+            isManual: log.workoutId === 0, // Indica se é treino manual
+            exerciseCount: exerciseLogs.length,
+          };
+        })
+      );
+      return logsWithExercises;
     }),
     
     // Criar registro de treino pelo aluno
@@ -3801,6 +3821,82 @@ Retorne APENAS o JSON, sem texto adicional.`;
         await notifyOwner({
           title: `🏋️ Treino Registrado - ${student.name}`,
           content: `O aluno ${student.name} registrou um treino:\n\n📝 Treino: ${workout?.name || 'N/A'}\n📅 Data: ${new Date(trainingDate).toLocaleDateString('pt-BR')}\n⏱️ Duração: ${input.duration || 60} minutos\n\n${input.notes ? `Observações: ${input.notes}` : ''}`,
+        });
+        
+        return { id: logId };
+      }),
+    
+    // Criar registro de treino manual (sem sessão vinculada)
+    createManualWorkoutLog: studentProcedure
+      .input(z.object({
+        trainingDate: z.string(),
+        duration: z.number().optional(),
+        notes: z.string().optional(),
+        feeling: z.string().optional(),
+        exercises: z.array(z.object({
+          exerciseName: z.string(),
+          muscleGroup: z.string().optional(),
+          sets: z.array(z.object({
+            weight: z.string().optional(),
+            reps: z.number().optional(),
+            setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
+            restTime: z.number().optional(),
+          })),
+          notes: z.string().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = ctx.student;
+        
+        // Criar o log de treino manual (sem workoutId/workoutDayId)
+        const logId = await db.createWorkoutLog({
+          personalId: student.personalId,
+          studentId: student.id,
+          workoutId: 0, // 0 indica treino manual
+          workoutDayId: 0, // 0 indica treino manual
+          trainingDate: new Date(input.trainingDate),
+          duration: input.duration || 60,
+          notes: input.notes,
+          status: 'completed',
+        });
+        
+        // Criar logs de exercícios
+        if (input.exercises && input.exercises.length > 0) {
+          for (let index = 0; index < input.exercises.length; index++) {
+            const ex = input.exercises[index];
+            
+            // Criar o exercício log
+            const exerciseLogId = await db.createExerciseLog({
+              workoutLogId: logId,
+              exerciseId: 0, // 0 indica exercício manual
+              exerciseName: ex.exerciseName,
+              notes: ex.notes,
+              completed: true,
+              order: index,
+            });
+            
+            // Criar as séries
+            for (let setIndex = 0; setIndex < ex.sets.length; setIndex++) {
+              const set = ex.sets[setIndex];
+              if (set.weight || set.reps) {
+                await db.createSetLog({
+                  workoutLogExerciseId: exerciseLogId,
+                  setNumber: setIndex + 1,
+                  setType: set.setType || 'working',
+                  weight: set.weight,
+                  reps: set.reps,
+                  restTime: set.restTime,
+                });
+              }
+            }
+          }
+        }
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `🏋️ Treino Manual Registrado - ${student.name}`,
+          content: `O aluno ${student.name} registrou um treino manual:\n\n📅 Data: ${new Date(input.trainingDate).toLocaleDateString('pt-BR')}\n⏱️ Duração: ${input.duration || 60} minutos\n💪 Exercícios: ${input.exercises.length}\n\n${input.notes ? `Observações: ${input.notes}` : ''}`,
         });
         
         return { id: logId };
