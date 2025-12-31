@@ -1718,3 +1718,31 @@
 - [x] Otimizar imagens de referência das poses (reduzir de 44MB para 6MB total)
 - [x] Criar histórico de evolução de fotos no portal do aluno (timeline por pose)
 - [x] Implementar visualização de fotos no lado do personal (StudentProfile)
+
+
+## Melhorias Sistema de Fotos (v6.1)
+
+### UX de Atualização e Histórico
+- [x] Adicionar botão "Atualizar Foto" mais visível em cada pose
+- [x] Mostrar contador de fotos no histórico mesmo com 1 foto
+- [x] Permitir ver histórico mesmo com apenas 1 foto
+- [x] Tornar fluxo de atualização mais intuitivo
+
+### Análise de Fotos com IA
+- [x] Integrar LLM para analisar diferenças visuais entre fotos
+- [x] Gerar feedback automático da evolução visual
+- [x] Mostrar análise no modal de comparação
+
+### Vincular Fotos às Medições
+- [x] Adicionar campo de fotos no modal de Nova Medição
+- [x] Associar fotos à data específica da medição
+- [ ] Mostrar fotos vinculadas na timeline de medições
+
+### Cruzar com Análise de Treino
+- [x] Incluir comparativo de fotos na análise de 30 dias
+- [x] IA cruza evolução visual + medidas + eficiência do treino
+- [x] Validar se treino está gerando resultados visuais esperados
+
+- [x] Mostrar data da foto mais recente em cada pose
+- [x] Mostrar tempo decorrido entre fotos no histórico
+- [x] Mostrar tempo total de evolução na comparação

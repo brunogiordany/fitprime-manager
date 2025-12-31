@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MeasurementPhotos } from "@/components/GuidedPhotos";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,7 @@ export default function StudentMeasurementForm({
   const [bioFileUrl, setBioFileUrl] = useState<string | null>(null);
   const [bioFileKey, setBioFileKey] = useState<string | null>(null);
   const [bioAiAnalysis, setBioAiAnalysis] = useState<string | null>(null);
+  const [measurementPhotos, setMeasurementPhotos] = useState<{ poseId: string; url: string }[]>([]);
   
   const [formData, setFormData] = useState({
     measureDate: format(new Date(), "yyyy-MM-dd"),
@@ -800,6 +802,14 @@ export default function StudentMeasurementForm({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+
+      {/* Fotos de Evolução */}
+      <div className="border-t pt-4">
+        <MeasurementPhotos
+          photos={measurementPhotos}
+          onPhotosChange={setMeasurementPhotos}
+        />
+      </div>
 
       {/* Observações */}
       <div className="space-y-2">

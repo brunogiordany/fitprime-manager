@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Camera, Upload, X, Check, ChevronDown, ChevronUp, Image as ImageIcon, Trash2, History, Calendar } from "lucide-react";
+import { Camera, Upload, X, Check, ChevronDown, ChevronUp, Image as ImageIcon, Trash2, History, Calendar, RefreshCw, Sparkles, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -55,11 +55,24 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [uploadedPhotos, setUploadedPhotos] = useState<{ poseId: string; url: string }[]>(existingPhotos);
   const [showHistory, setShowHistory] = useState<string | null>(null); // poseId para mostrar histórico
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [analyzingAI, setAnalyzingAI] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Buscar fotos guiadas com histórico
   const { data: guidedPhotosData } = trpc.studentPortal.guidedPhotos.useQuery(undefined, {
     enabled: !readOnly,
+  });
+
+  const analyzePhotosMutation = trpc.studentPortal.analyzePhotos.useMutation({
+    onSuccess: (data) => {
+      setAiAnalysis(data.analysis);
+      setAnalyzingAI(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao analisar fotos: " + error.message);
+      setAnalyzingAI(false);
+    }
   });
 
   const uploadMutation = trpc.studentPortal.uploadPhoto.useMutation({
@@ -202,19 +215,20 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
                                 className="w-full h-full object-cover"
                               />
                               {/* Botões de ação */}
-                              <div className="absolute top-2 right-2 flex gap-1">
-                                {getPhotoHistory(pose.id).length > 1 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setShowHistory(pose.id);
-                                    }}
-                                    className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-                                    title="Ver histórico"
-                                  >
-                                    <History className="h-3 w-3" />
-                                  </button>
-                                )}
+                              <div className="absolute top-2 left-2 right-2 flex justify-between">
+                                {/* Botão de histórico - sempre visível */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowHistory(pose.id);
+                                  }}
+                                  className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 flex items-center gap-1"
+                                  title="Ver histórico de evolução"
+                                >
+                                  <History className="h-3 w-3" />
+                                  <span className="text-[10px] font-medium">{getPhotoHistory(pose.id).length}</span>
+                                </button>
+                                {/* Botão de excluir */}
                                 {!readOnly && (
                                   <button
                                     onClick={(e) => {
@@ -222,17 +236,30 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
                                       removePhoto(pose.id);
                                     }}
                                     className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                    title="Excluir foto atual"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
                                 )}
                               </div>
-                              <div className="absolute bottom-0 left-0 right-0 bg-green-500/90 text-white text-xs p-1 text-center flex items-center justify-center gap-1">
-                                <Check className="h-3 w-3" />
-                                {getPhotoHistory(pose.id).length > 1 ? (
-                                  <span>{getPhotoHistory(pose.id).length} fotos</span>
-                                ) : (
-                                  <span>Foto enviada</span>
+                              {/* Barra inferior com ação de atualizar */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                {!readOnly && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePoseClick(pose);
+                                    }}
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs py-1.5 px-2 rounded flex items-center justify-center gap-1 transition-colors"
+                                  >
+                                    <RefreshCw className="h-3 w-3" />
+                                    Atualizar Foto
+                                  </button>
+                                )}
+                                {readOnly && (
+                                  <div className="text-white text-xs text-center">
+                                    {getPhotoHistory(pose.id).length} {getPhotoHistory(pose.id).length === 1 ? 'foto' : 'fotos'}
+                                  </div>
                                 )}
                               </div>
                             </>
@@ -254,9 +281,14 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
                           )}
                         </div>
                         
-                        {/* Nome da pose */}
+                        {/* Nome da pose e data */}
                         <div className="p-2 text-center">
                           <p className="text-xs font-medium truncate">{pose.name}</p>
+                          {uploadedPhoto && getPhotoHistory(pose.id).length > 0 && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {new Date(getPhotoHistory(pose.id)[0].date).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
@@ -372,70 +404,168 @@ export function GuidedPhotos({ studentId, measurementId, onPhotosUploaded, exist
             <div className="space-y-4">
               {/* Timeline de fotos */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {getPhotoHistory(showHistory).map((photo, index) => (
-                  <div key={photo.id} className="relative">
-                    <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                      <img
-                        src={photo.url}
-                        alt={`Foto ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                {getPhotoHistory(showHistory).map((photo, index, arr) => {
+                  // Calcular tempo desde a foto anterior
+                  const prevPhoto = arr[index + 1];
+                  let timeDiff = '';
+                  if (prevPhoto) {
+                    const diffMs = new Date(photo.date).getTime() - new Date(prevPhoto.date).getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    if (diffDays === 0) timeDiff = 'mesmo dia';
+                    else if (diffDays === 1) timeDiff = '1 dia depois';
+                    else if (diffDays < 7) timeDiff = `${diffDays} dias depois`;
+                    else if (diffDays < 30) timeDiff = `${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''} depois`;
+                    else timeDiff = `${Math.floor(diffDays / 30)} mês${Math.floor(diffDays / 30) > 1 ? 'es' : ''} depois`;
+                  }
+                  
+                  return (
+                    <div key={photo.id} className="relative">
+                      <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={photo.url}
+                          alt={`Foto ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="mt-1 text-center space-y-0.5">
+                        <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(photo.date).toLocaleDateString('pt-BR')}
+                        </p>
+                        {index === 0 && (
+                          <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                            Mais recente
+                          </span>
+                        )}
+                        {index === arr.length - 1 && arr.length > 1 && (
+                          <span className="text-xs bg-muted-foreground/20 text-muted-foreground px-2 py-0.5 rounded-full">
+                            Primeira foto
+                          </span>
+                        )}
+                        {timeDiff && index > 0 && index < arr.length - 1 && (
+                          <p className="text-[10px] text-blue-500 font-medium">
+                            {timeDiff}
+                          </p>
+                        )}
+                        {timeDiff && index === 0 && (
+                          <p className="text-[10px] text-green-500 font-medium">
+                            +{timeDiff.replace(' depois', '')}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="mt-1 text-center">
-                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(photo.date).toLocaleDateString('pt-BR')}
-                      </p>
-                      {index === 0 && (
-                        <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                          Mais recente
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               
               {/* Comparação lado a lado (primeira vs última) */}
-              {getPhotoHistory(showHistory).length >= 2 && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-3 text-center">Comparação: Primeira vs Mais Recente</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-center text-muted-foreground">Primeira foto</p>
-                      <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                        <img
-                          src={getPhotoHistory(showHistory)[getPhotoHistory(showHistory).length - 1].url}
-                          alt="Primeira foto"
-                          className="w-full h-full object-cover"
-                        />
+              {getPhotoHistory(showHistory).length >= 2 && (() => {
+                const history = getPhotoHistory(showHistory);
+                const firstPhoto = history[history.length - 1];
+                const lastPhoto = history[0];
+                const diffMs = new Date(lastPhoto.date).getTime() - new Date(firstPhoto.date).getTime();
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                let totalTime = '';
+                if (diffDays === 0) totalTime = 'Mesmo dia';
+                else if (diffDays === 1) totalTime = '1 dia de evolução';
+                else if (diffDays < 7) totalTime = `${diffDays} dias de evolução`;
+                else if (diffDays < 30) totalTime = `${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''} de evolução`;
+                else if (diffDays < 365) totalTime = `${Math.floor(diffDays / 30)} mês${Math.floor(diffDays / 30) > 1 ? 'es' : ''} de evolução`;
+                else totalTime = `${Math.floor(diffDays / 365)} ano${Math.floor(diffDays / 365) > 1 ? 's' : ''} de evolução`;
+                
+                return (
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-1 text-center">Comparação: Primeira vs Mais Recente</h4>
+                    <p className="text-sm text-center text-green-600 font-medium mb-3">
+                      📈 {totalTime}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-center text-muted-foreground">Primeira foto</p>
+                        <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                          <img
+                            src={firstPhoto.url}
+                            alt="Primeira foto"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground">
+                          {new Date(firstPhoto.date).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
-                      <p className="text-xs text-center text-muted-foreground">
-                        {new Date(getPhotoHistory(showHistory)[getPhotoHistory(showHistory).length - 1].date).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-center text-muted-foreground">Mais recente</p>
-                      <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                        <img
-                          src={getPhotoHistory(showHistory)[0].url}
-                          alt="Foto mais recente"
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="space-y-1">
+                        <p className="text-sm text-center text-muted-foreground">Mais recente</p>
+                        <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
+                          <img
+                            src={lastPhoto.url}
+                            alt="Foto mais recente"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground">
+                          {new Date(lastPhoto.date).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
-                      <p className="text-xs text-center text-muted-foreground">
-                        {new Date(getPhotoHistory(showHistory)[0].date).toLocaleDateString('pt-BR')}
-                      </p>
                     </div>
+                  {/* Botão de Análise com IA */}
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      className="w-full"
+                      variant={aiAnalysis ? "outline" : "default"}
+                      disabled={analyzingAI}
+                      onClick={() => {
+                        setAnalyzingAI(true);
+                        setAiAnalysis(null);
+                        const poseName = POSE_CATEGORIES.flatMap(c => c.poses).find(p => p.id === showHistory)?.name || '';
+                        analyzePhotosMutation.mutate({
+                          poseId: showHistory!,
+                          firstPhotoUrl: firstPhoto.url,
+                          lastPhotoUrl: lastPhoto.url,
+                          poseName,
+                          daysBetween: diffDays,
+                        });
+                      }}
+                    >
+                      {analyzingAI ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Analisando com IA...
+                        </>
+                      ) : aiAnalysis ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Analisar Novamente
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Analisar Evolução com IA
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* Resultado da Análise */}
+                    {aiAnalysis && (
+                      <div className="mt-4 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+                        <h5 className="font-medium flex items-center gap-2 mb-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          Análise da IA
+                        </h5>
+                        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {aiAnalysis}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+              );
+            })()}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  </div>
+);
 }
 
 // Componente simplificado para uso no modal de medição

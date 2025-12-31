@@ -5619,6 +5619,59 @@ Seja profissional, respeitoso e motivador.`
           }),
         };
       }),
+    
+    // Análise de fotos com IA
+    analyzePhotos: studentProcedure
+      .input(z.object({
+        poseId: z.string(),
+        firstPhotoUrl: z.string(),
+        lastPhotoUrl: z.string(),
+        poseName: z.string(),
+        daysBetween: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        const prompt = `Você é um personal trainer especialista em análise de evolução física.
+
+Analise as duas fotos do aluno na pose "${input.poseName}" com ${input.daysBetween} dias de diferença entre elas.
+
+Primeira foto (antes): ${input.firstPhotoUrl}
+Segunda foto (depois): ${input.lastPhotoUrl}
+
+Forneça uma análise detalhada em português brasileiro, incluindo:
+1. **Mudanças visíveis**: O que mudou visivelmente entre as fotos (massa muscular, definição, postura, etc.)
+2. **Pontos positivos**: Aspectos que melhoraram
+3. **Pontos de atenção**: Áreas que podem receber mais foco
+4. **Recomendações**: Sugestões para continuar evoluindo
+
+Seja motivador mas realista. Se não conseguir identificar mudanças significativas, seja honesto mas encorajador.`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Você é um personal trainer especialista em análise de evolução física. Responda sempre em português brasileiro de forma profissional e motivadora.' },
+              { 
+                role: 'user', 
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: input.firstPhotoUrl, detail: 'high' } },
+                  { type: 'image_url', image_url: { url: input.lastPhotoUrl, detail: 'high' } },
+                ]
+              },
+            ],
+          });
+          
+          return {
+            analysis: response.choices[0]?.message?.content || 'Não foi possível gerar a análise.',
+          };
+        } catch (error) {
+          console.error('Erro na análise de fotos:', error);
+          return {
+            analysis: 'Desculpe, não foi possível analisar as fotos no momento. Tente novamente mais tarde.',
+          };
+        }
+      }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================
@@ -6205,6 +6258,17 @@ Seja profissional, respeitoso e motivador.`
         const allMeasurements = await db.getMeasurementsByStudentId(input.studentId);
         const measurements = allMeasurements.slice(0, 10);
         
+        // Buscar fotos de evolução
+        const photos = await db.getPhotosByStudentId(input.studentId);
+        const photosByCategory = photos.reduce((acc, photo) => {
+          if (!acc[photo.category]) acc[photo.category] = [];
+          acc[photo.category].push(photo);
+          return acc;
+        }, {} as Record<string, typeof photos>);
+        
+        // Calcular evolução visual (se tiver fotos suficientes)
+        const hasPhotoEvolution = Object.values(photosByCategory).some(arr => arr.length >= 2);
+        
         // Buscar análise de grupos musculares (90 dias)
         const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         const endDate = new Date().toISOString().split('T')[0];
@@ -6302,6 +6366,18 @@ ${Object.entries(exerciseProgress).length > 0 ? Object.entries(exerciseProgress)
 - Treinos nos últimos 30 dias: ${trainingDays}
 - Média semanal: ${avgTrainingsPerWeek.toFixed(1)} treinos/semana
 - Sentimento médio: ${avgFeeling.toFixed(1)}/5
+
+## FOTOS DE EVOLUÇÃO
+${hasPhotoEvolution ? `O aluno possui fotos de evolução registradas:
+${Object.entries(photosByCategory).map(([category, categoryPhotos]) => {
+  const sorted = categoryPhotos.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+  const daysBetween = Math.floor((new Date(last.createdAt).getTime() - new Date(first.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+  return `- ${category}: ${categoryPhotos.length} fotos (${daysBetween > 0 ? daysBetween + ' dias de evolução' : 'registro inicial'})`;
+}).join('\n')}
+
+Considere a consistência do registro fotográfico na análise.` : 'Nenhuma foto de evolução registrada ainda. Sugira ao aluno registrar fotos para acompanhamento visual.'}
 
 ## INSTRUÇÕES
 Com base nesses dados, forneça:
