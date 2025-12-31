@@ -56,7 +56,7 @@ interface Measurement {
 
 interface Session {
   id: number;
-  date: string | Date;
+  scheduledAt: string | Date | number;
   status: string;
   duration: number;
 }
@@ -74,43 +74,62 @@ export default function StudentEvolutionCharts({
   canEditMeasurements = false,
   onMeasurementsUpdate,
 }: StudentEvolutionChartsProps) {
+  // Função auxiliar para criar data válida
+  const parseDate = (dateValue: string | Date | number | null | undefined): Date | null => {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
   // Processar dados de peso
   const weightData = useMemo(() => {
     return measurements
-      .filter((m) => m.weight)
-      .map((m) => ({
-        date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
-        fullDate: format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR }),
-        peso: parseFloat(m.weight || "0"),
-      }))
-      .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+      .filter((m) => m.weight && parseDate(m.measureDate))
+      .map((m) => {
+        const date = parseDate(m.measureDate)!;
+        return {
+          date: format(date, "dd/MM", { locale: ptBR }),
+          fullDate: format(date, "dd/MM/yyyy", { locale: ptBR }),
+          peso: parseFloat(m.weight || "0"),
+          timestamp: date.getTime(),
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [measurements]);
 
   // Processar dados de medidas corporais
   const bodyMeasurementsData = useMemo(() => {
     return measurements
-      .filter((m) => m.waist || m.hip || m.chest)
-      .map((m) => ({
-        date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
-        fullDate: format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR }),
-        cintura: m.waist ? parseFloat(m.waist) : null,
-        quadril: m.hip ? parseFloat(m.hip) : null,
-        peito: m.chest ? parseFloat(m.chest) : null,
-      }))
-      .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+      .filter((m) => (m.waist || m.hip || m.chest) && parseDate(m.measureDate))
+      .map((m) => {
+        const date = parseDate(m.measureDate)!;
+        return {
+          date: format(date, "dd/MM", { locale: ptBR }),
+          fullDate: format(date, "dd/MM/yyyy", { locale: ptBR }),
+          cintura: m.waist ? parseFloat(m.waist) : null,
+          quadril: m.hip ? parseFloat(m.hip) : null,
+          peito: m.chest ? parseFloat(m.chest) : null,
+          timestamp: date.getTime(),
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [measurements]);
 
   // Processar dados de composição corporal
   const compositionData = useMemo(() => {
     return measurements
-      .filter((m) => m.bodyFat || m.muscleMass)
-      .map((m) => ({
-        date: format(new Date(m.measureDate), "dd/MM", { locale: ptBR }),
-        fullDate: format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR }),
-        gordura: m.bodyFat ? parseFloat(m.bodyFat) : null,
-        massaMagra: m.muscleMass ? parseFloat(m.muscleMass) : null,
-      }))
-      .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+      .filter((m) => (m.bodyFat || m.muscleMass) && parseDate(m.measureDate))
+      .map((m) => {
+        const date = parseDate(m.measureDate)!;
+        return {
+          date: format(date, "dd/MM", { locale: ptBR }),
+          fullDate: format(date, "dd/MM/yyyy", { locale: ptBR }),
+          gordura: m.bodyFat ? parseFloat(m.bodyFat) : null,
+          massaMagra: m.muscleMass ? parseFloat(m.muscleMass) : null,
+          timestamp: date.getTime(),
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [measurements]);
 
   // Processar dados de sessões por mês
@@ -118,7 +137,22 @@ export default function StudentEvolutionCharts({
     const monthlyData: Record<string, { total: number; completed: number; missed: number }> = {};
 
     sessions.forEach((session) => {
-      const monthKey = format(new Date(session.date), "MMM/yy", { locale: ptBR });
+      // Tratar diferentes formatos de data
+      let sessionDate: Date;
+      if (typeof session.scheduledAt === 'number') {
+        sessionDate = new Date(session.scheduledAt);
+      } else if (session.scheduledAt) {
+        sessionDate = new Date(session.scheduledAt);
+      } else {
+        return; // Pular sessões sem data válida
+      }
+      
+      // Verificar se a data é válida
+      if (isNaN(sessionDate.getTime())) {
+        return; // Pular datas inválidas
+      }
+      
+      const monthKey = format(sessionDate, "MMM/yy", { locale: ptBR });
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = { total: 0, completed: 0, missed: 0 };
       }
@@ -141,8 +175,12 @@ export default function StudentEvolutionCharts({
   // Calcular estatísticas
   const stats = useMemo(() => {
     const sortedMeasurements = [...measurements]
-      .filter((m) => m.weight)
-      .sort((a, b) => new Date(a.measureDate).getTime() - new Date(b.measureDate).getTime());
+      .filter((m) => m.weight && parseDate(m.measureDate))
+      .sort((a, b) => {
+        const dateA = parseDate(a.measureDate);
+        const dateB = parseDate(b.measureDate);
+        return (dateA?.getTime() || 0) - (dateB?.getTime() || 0);
+      });
 
     const firstWeightStr = sortedMeasurements[0]?.weight;
     const firstWeight = firstWeightStr ? parseFloat(firstWeightStr) : null;

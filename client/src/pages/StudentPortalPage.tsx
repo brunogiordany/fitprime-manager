@@ -19,6 +19,7 @@ import StudentChat from "@/components/StudentChat";
 import StudentBadges from "@/components/StudentBadges";
 import StudentFeedback from "@/components/StudentFeedback";
 import StudentTrainingTips from "@/components/StudentTrainingTips";
+import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
@@ -43,7 +44,10 @@ import {
   Play,
   Plus,
   Minus,
-  X
+  X,
+  Flame,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
@@ -120,6 +124,7 @@ export default function StudentPortalPage() {
   const [manualDiaryNotes, setManualDiaryNotes] = useState('');
   const [manualDiaryFeeling, setManualDiaryFeeling] = useState('');
   const [manualDiaryDuration, setManualDiaryDuration] = useState(60);
+  const [diarySubTab, setDiarySubTab] = useState<'sessions' | 'records' | 'dashboard'>('sessions');
 
   // Restaurar dados do formulário de anamnese do localStorage ao carregar
   useEffect(() => {
@@ -203,7 +208,7 @@ export default function StudentPortalPage() {
   );
 
   // Buscar registros de treino do aluno (para o diário)
-  const { data: workoutLogs, refetch: refetchWorkoutLogs } = trpc.studentPortal.workoutLogs.useQuery(
+  const { data: workoutLogs, refetch: refetchWorkoutLogs, isLoading: workoutLogsLoading } = trpc.studentPortal.workoutLogs.useQuery(
     undefined,
     { enabled: !!studentData?.id }
   );
@@ -680,12 +685,53 @@ export default function StudentPortalPage() {
 
           {/* Diário de Treino Tab */}
           <TabsContent value="diary" className="space-y-6">
-            {/* Botão de Criar Registro Manual */}
-            <div className="flex justify-between items-center">
+            {/* Sub-tabs do Diário */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold">Diário de Treino</h2>
                 <p className="text-sm text-gray-500">Registre e acompanhe seus treinos</p>
               </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={diarySubTab === 'sessions' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDiarySubTab('sessions')}
+                  className="gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Sessões
+                </Button>
+                <Button
+                  variant={diarySubTab === 'records' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDiarySubTab('records')}
+                  className="gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Registros
+                </Button>
+                <Button
+                  variant={diarySubTab === 'dashboard' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDiarySubTab('dashboard')}
+                  className="gap-2"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </div>
+            </div>
+
+            {/* Sub-tab: Dashboard */}
+            {diarySubTab === 'dashboard' && studentData && (
+              <StudentTrainingDashboard studentId={studentData.id} />
+            )}
+
+            {/* Sub-tab: Sessões */}
+            {diarySubTab === 'sessions' && (
+              <>
+                {/* Botão de Criar Registro Manual */}
+                <div className="flex justify-end">
               <Button 
                 onClick={() => {
                   setManualDiaryExercises([{
@@ -985,6 +1031,187 @@ export default function StudentPortalPage() {
                 )}
               </CardContent>
             </Card>
+            
+            {/* Gráfico de Frequência de Treinos */}
+            {workoutLogs && workoutLogs.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    Frequência de Treinos
+                  </CardTitle>
+                  <CardDescription>Últimas 8 semanas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    // Calcular treinos por semana nas últimas 8 semanas
+                    const weeks: { week: string; treinos: number }[] = [];
+                    const today = new Date();
+                    
+                    for (let i = 7; i >= 0; i--) {
+                      const weekStart = new Date(today);
+                      weekStart.setDate(today.getDate() - (i * 7) - today.getDay());
+                      weekStart.setHours(0, 0, 0, 0);
+                      
+                      const weekEnd = new Date(weekStart);
+                      weekEnd.setDate(weekStart.getDate() + 6);
+                      weekEnd.setHours(23, 59, 59, 999);
+                      
+                      const count = (workoutLogs || []).filter((log: any) => {
+                        const logDate = new Date(log.trainingDate);
+                        return logDate >= weekStart && logDate <= weekEnd;
+                      }).length;
+                      
+                      weeks.push({
+                        week: format(weekStart, "dd/MM", { locale: ptBR }),
+                        treinos: count
+                      });
+                    }
+                    
+                    const maxTreinos = Math.max(...weeks.map(w => w.treinos), 1);
+                    
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-end gap-2 h-32">
+                          {weeks.map((week, idx) => (
+                            <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                              <div 
+                                className="w-full bg-emerald-500 rounded-t transition-all"
+                                style={{ 
+                                  height: `${(week.treinos / maxTreinos) * 100}%`,
+                                  minHeight: week.treinos > 0 ? '8px' : '2px',
+                                  backgroundColor: week.treinos > 0 ? '#10b981' : '#e5e7eb'
+                                }}
+                              />
+                              <span className="text-xs text-gray-500">{week.week}</span>
+                              <span className="text-xs font-medium">{week.treinos}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="text-center text-sm text-gray-500">
+                          Média: {(weeks.reduce((acc, w) => acc + w.treinos, 0) / weeks.length).toFixed(1)} treinos/semana
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            )}
+              </>
+            )}
+
+            {/* Sub-tab: Registros */}
+            {diarySubTab === 'records' && (
+              <>
+                {/* Botão de Criar Registro Manual */}
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={() => {
+                      setManualDiaryExercises([{
+                        exerciseName: '',
+                        sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+                        notes: '',
+                        isExpanded: true
+                      }]);
+                      setManualDiaryNotes('');
+                      setManualDiaryFeeling('');
+                      setManualDiaryDuration(60);
+                      setManualDiaryDate(format(new Date(), 'yyyy-MM-dd'));
+                      setShowManualDiaryModal(true);
+                    }}
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Criar Registro Manual
+                  </Button>
+                </div>
+
+                {/* Histórico de Treinos */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-emerald-500" />
+                      Histórico de Treinos
+                    </CardTitle>
+                    <CardDescription>Seus treinos registrados</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {workoutLogsLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+                      </div>
+                    ) : !workoutLogs || workoutLogs.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p>Nenhum treino registrado ainda</p>
+                        <p className="text-sm">Registre seu primeiro treino!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {workoutLogs.map((log: any) => (
+                          <div
+                            key={log.id}
+                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-emerald-100 rounded-lg">
+                                  <Dumbbell className="h-5 w-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">
+                                    {format(new Date(log.trainingDate), "dd 'de' MMMM", { locale: ptBR })}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    {log.workoutName || 'Treino Manual'}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {log.feeling && (
+                                  <span className="text-xl">
+                                    {log.feeling === 'great' && '😄'}
+                                    {log.feeling === 'good' && '🙂'}
+                                    {log.feeling === 'normal' && '😐'}
+                                    {log.feeling === 'tired' && '😓'}
+                                    {log.feeling === 'bad' && '😞'}
+                                  </span>
+                                )}
+                                {log.duration && (
+                                  <Badge variant="outline" className="gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {log.duration}min
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            {log.exercises && log.exercises.length > 0 && (
+                              <div className="mt-2 pt-2 border-t">
+                                <p className="text-sm text-gray-600 mb-1">
+                                  {log.exercises.length} exercício(s)
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {log.exercises.slice(0, 4).map((ex: any, idx: number) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {ex.exerciseName}
+                                    </Badge>
+                                  ))}
+                                  {log.exercises.length > 4 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{log.exercises.length - 4} mais
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
 
           {/* Anamnesis Tab */}

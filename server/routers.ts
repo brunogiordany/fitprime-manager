@@ -3855,7 +3855,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
           workoutId: 0, // 0 indica treino manual
           workoutDayId: 0, // 0 indica treino manual
           trainingDate: new Date(input.trainingDate),
-          duration: input.duration || 60,
+          totalDuration: input.duration || 60,
           notes: input.notes,
           status: 'completed',
         });
@@ -3866,25 +3866,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
             const ex = input.exercises[index];
             
             // Criar o exercício log
-            const exerciseLogId = await db.createExerciseLog({
+            const exerciseLogId = await db.createWorkoutLogExercise({
               workoutLogId: logId,
-              exerciseId: 0, // 0 indica exercício manual
               exerciseName: ex.exerciseName,
               notes: ex.notes,
-              completed: true,
-              order: index,
+              isCompleted: true,
+              orderIndex: index,
             });
             
             // Criar as séries
             for (let setIndex = 0; setIndex < ex.sets.length; setIndex++) {
               const set = ex.sets[setIndex];
               if (set.weight || set.reps) {
-                await db.createSetLog({
+                await db.createWorkoutLogSet({
                   workoutLogExerciseId: exerciseLogId,
                   setNumber: setIndex + 1,
                   setType: set.setType || 'working',
                   weight: set.weight,
-                  reps: set.reps,
+                  reps: set.reps ? parseInt(String(set.reps)) : 0,
                   restTime: set.restTime,
                 });
               }
@@ -4735,6 +4734,46 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
         });
         
         return { success: true, anamnesisId, updated };
+      }),
+    
+    // Dashboard de treinos do aluno
+    dashboard: studentProcedure
+      .input(z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getStudentTrainingDashboard(ctx.student.id, input);
+      }),
+    
+    // Análise por grupo muscular do aluno
+    muscleGroupAnalysis: studentProcedure
+      .input(z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getStudentMuscleGroupAnalysis(ctx.student.id, input);
+      }),
+    
+    // Evolução de carga por exercício do aluno
+    exerciseProgress: studentProcedure
+      .input(z.object({
+        exerciseName: z.string(),
+        limit: z.number().optional().default(20),
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db');
+        return await db.getStudentExerciseProgress(ctx.student.id, input.exerciseName, input.limit);
+      }),
+    
+    // Listar exercícios únicos do aluno
+    uniqueExercises: studentProcedure
+      .query(async ({ ctx }) => {
+        const db = await import('./db');
+        return await db.getStudentUniqueExercises(ctx.student.id);
       }),
   }),
   

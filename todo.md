@@ -1506,9 +1506,9 @@
 - [x] D14.1d - Mostrar detalhes dos exercícios no histórico
 
 **Fase 2 - Dashboard e Relatórios:**
-- [ ] D14.2a - Dashboard com estatísticas (total treinos, frequência, etc)
-- [ ] D14.2b - Gráfico de evolução de carga por exercício
-- [ ] D14.2c - Gráfico de frequência de treinos
+- [x] D14.2a - Dashboard com estatísticas (total treinos, frequência, etc)
+- [x] D14.2b - Gráfico de evolução de carga por exercício (simplificado no dashboard)
+- [x] D14.2c - Gráfico de frequência de treinos (barras por semana)
 - [ ] D14.2d - Resumo semanal/mensal
 
 **Fase 3 - Edição e Funcionalidades Avançadas:**
