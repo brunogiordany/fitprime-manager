@@ -4044,7 +4044,29 @@ Forneça:
           const exercisesWithSets = await Promise.all(
             exerciseLogs.map(async (exLog) => {
               const sets = await db.getSetLogsByExerciseLogId(exLog.id);
-              return { ...exLog, sets };
+              // Deserializar drops e restPauses das notes de cada série
+              const setsWithExtras = sets.map((set: any) => {
+                if (set.notes && set.notes.includes('[[EXTRAS]]')) {
+                  const [notes, extrasJson] = set.notes.split('[[EXTRAS]]');
+                  set.notes = notes.trim();
+                  try {
+                    const extras = JSON.parse(extrasJson);
+                    if (extras.drops) {
+                      set.drops = extras.drops;
+                    }
+                    if (extras.restPauses) {
+                      set.restPauses = extras.restPauses;
+                    }
+                  } catch (e) {
+                    // Ignorar erros de parse
+                  }
+                }
+                // Garantir que hasDropSet e hasRestPause estejam definidos
+                set.hasDropSet = set.isDropSet || (set.drops && set.drops.length > 0);
+                set.hasRestPause = set.isRestPause || (set.restPauses && set.restPauses.length > 0);
+                return set;
+              });
+              return { ...exLog, sets: setsWithExtras };
             })
           );
           return { 
@@ -4204,6 +4226,24 @@ Forneça:
             reps: z.number().optional(),
             setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
             restTime: z.number().optional(),
+            isDropSet: z.boolean().optional(),
+            dropWeight: z.number().optional(),
+            dropReps: z.number().optional(),
+            drops: z.array(z.object({
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+              restTime: z.number().optional(),
+            })).optional(),
+            isRestPause: z.boolean().optional(),
+            restPauseWeight: z.number().optional(),
+            restPauseReps: z.number().optional(),
+            restPausePause: z.number().optional(),
+            restPauses: z.array(z.object({
+              pauseTime: z.number().optional(),
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+            })).optional(),
+            notes: z.string().optional(),
           })),
           notes: z.string().optional(),
         })),
@@ -4241,6 +4281,20 @@ Forneça:
             for (let setIndex = 0; setIndex < ex.sets.length; setIndex++) {
               const set = ex.sets[setIndex];
               if (set.weight || set.reps) {
+                // Serializar drops e restPauses extras no campo notes como JSON
+                let notesWithExtras = set.notes || '';
+                const extras: { drops?: typeof set.drops; restPauses?: typeof set.restPauses } = {};
+                if (set.drops && set.drops.length > 0) {
+                  extras.drops = set.drops;
+                }
+                if (set.restPauses && set.restPauses.length > 0) {
+                  extras.restPauses = set.restPauses;
+                }
+                if (Object.keys(extras).length > 0) {
+                  const existingNotes = notesWithExtras.replace(/\n?\[\[EXTRAS\]\][\s\S]*$/, '');
+                  notesWithExtras = existingNotes + (existingNotes ? '\n' : '') + '[[EXTRAS]]' + JSON.stringify(extras);
+                }
+                
                 await db.createWorkoutLogSet({
                   workoutLogExerciseId: exerciseLogId,
                   setNumber: setIndex + 1,
@@ -4248,6 +4302,14 @@ Forneça:
                   weight: set.weight,
                   reps: set.reps ? parseInt(String(set.reps)) : 0,
                   restTime: set.restTime,
+                  isDropSet: set.isDropSet || (set.drops && set.drops.length > 0),
+                  dropWeight: set.dropWeight?.toString() || (set.drops?.[0]?.weight?.toString()),
+                  dropReps: set.dropReps || set.drops?.[0]?.reps,
+                  isRestPause: set.isRestPause || (set.restPauses && set.restPauses.length > 0),
+                  restPauseWeight: set.restPauseWeight?.toString() || (set.restPauses?.[0]?.weight?.toString()),
+                  restPauseReps: set.restPauseReps || set.restPauses?.[0]?.reps,
+                  restPausePause: set.restPausePause || set.restPauses?.[0]?.pauseTime,
+                  notes: notesWithExtras,
                 });
               }
             }
@@ -4280,6 +4342,24 @@ Forneça:
             reps: z.number().optional(),
             setType: z.string().optional(),
             restTime: z.number().optional(),
+            isDropSet: z.boolean().optional(),
+            dropWeight: z.number().optional(),
+            dropReps: z.number().optional(),
+            drops: z.array(z.object({
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+              restTime: z.number().optional(),
+            })).optional(),
+            isRestPause: z.boolean().optional(),
+            restPauseWeight: z.number().optional(),
+            restPauseReps: z.number().optional(),
+            restPausePause: z.number().optional(),
+            restPauses: z.array(z.object({
+              pauseTime: z.number().optional(),
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+            })).optional(),
+            notes: z.string().optional(),
           })),
           notes: z.string().optional(),
         })).optional(),
@@ -4296,10 +4376,10 @@ Forneça:
         
         // Atualizar o log
         await db.updateWorkoutLog(input.logId, {
-          trainingDate: input.trainingDate,
-          duration: input.duration,
+          trainingDate: input.trainingDate ? new Date(input.trainingDate) : undefined,
+          totalDuration: input.duration,
           notes: input.notes,
-          feeling: input.feeling,
+          feeling: input.feeling as 'great' | 'good' | 'normal' | 'tired' | 'exhausted' | undefined,
           status: input.status,
         });
         
@@ -4319,17 +4399,43 @@ Forneça:
               orderIndex: index,
             });
             
-            // Criar as séries
+            // Criar as séries com serialização de drops e restPauses
             for (let setIndex = 0; setIndex < ex.sets.length; setIndex++) {
               const set = ex.sets[setIndex];
               if (set.weight || set.reps) {
+                // Serializar drops e restPauses extras no campo notes como JSON
+                let notesWithExtras = set.notes || '';
+                const extras: { drops?: typeof set.drops; restPauses?: typeof set.restPauses } = {};
+                if (set.drops && set.drops.length > 0) {
+                  extras.drops = set.drops;
+                }
+                if (set.restPauses && set.restPauses.length > 0) {
+                  extras.restPauses = set.restPauses;
+                }
+                if (Object.keys(extras).length > 0) {
+                  const existingNotes = notesWithExtras.replace(/\n?\[\[EXTRAS\]\][\s\S]*$/, '');
+                  notesWithExtras = existingNotes + (existingNotes ? '\n' : '') + '[[EXTRAS]]' + JSON.stringify(extras);
+                }
+                
+                const validSetType = ['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure'].includes(set.setType || '') 
+                  ? (set.setType as 'warmup' | 'feeler' | 'working' | 'drop' | 'rest_pause' | 'failure') 
+                  : 'working';
+                
                 await db.createWorkoutLogSet({
                   workoutLogExerciseId: exerciseLogId,
                   setNumber: setIndex + 1,
-                  setType: set.setType || 'working',
+                  setType: validSetType,
                   weight: set.weight,
                   reps: set.reps ? parseInt(String(set.reps)) : 0,
                   restTime: set.restTime,
+                  isDropSet: set.isDropSet || (set.drops && set.drops.length > 0),
+                  dropWeight: set.dropWeight?.toString() || (set.drops?.[0]?.weight?.toString()),
+                  dropReps: set.dropReps || set.drops?.[0]?.reps,
+                  isRestPause: set.isRestPause || (set.restPauses && set.restPauses.length > 0),
+                  restPauseWeight: set.restPauseWeight?.toString() || (set.restPauses?.[0]?.weight?.toString()),
+                  restPauseReps: set.restPauseReps || set.restPauses?.[0]?.reps,
+                  restPausePause: set.restPausePause || set.restPauses?.[0]?.pauseTime,
+                  notes: notesWithExtras,
                 });
               }
             }
@@ -5856,6 +5962,35 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
       .query(async ({ ctx, input }) => {
         const db = await import('./db');
         const log = await db.getWorkoutLogWithDetails(input.id);
+        
+        // Deserializar drops e restPauses das notes de cada série
+        if (log?.exercises) {
+          for (const ex of log.exercises) {
+            if (ex.sets) {
+              for (const set of ex.sets) {
+                if (set.notes && set.notes.includes('[[EXTRAS]]')) {
+                  const [notes, extrasJson] = set.notes.split('[[EXTRAS]]');
+                  set.notes = notes.trim();
+                  try {
+                    const extras = JSON.parse(extrasJson);
+                    if (extras.drops) {
+                      (set as any).drops = extras.drops;
+                    }
+                    if (extras.restPauses) {
+                      (set as any).restPauses = extras.restPauses;
+                    }
+                  } catch (e) {
+                    // Ignorar erros de parse
+                  }
+                }
+                // Garantir que hasDropSet e hasRestPause estejam definidos
+                (set as any).hasDropSet = set.isDropSet || ((set as any).drops && (set as any).drops.length > 0);
+                (set as any).hasRestPause = set.isRestPause || ((set as any).restPauses && (set as any).restPauses.length > 0);
+              }
+            }
+          }
+        }
+        
         return log;
       }),
     
@@ -5890,10 +6025,20 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
             isDropSet: z.boolean().optional(),
             dropWeight: z.number().optional(),
             dropReps: z.number().optional(),
+            drops: z.array(z.object({
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+              restTime: z.number().optional(),
+            })).optional(),
             isRestPause: z.boolean().optional(),
             restPauseWeight: z.number().optional(),
             restPauseReps: z.number().optional(),
             restPausePause: z.number().optional(),
+            restPauses: z.array(z.object({
+              pauseTime: z.number().optional(),
+              weight: z.number().optional(),
+              reps: z.number().optional(),
+            })).optional(),
             rpe: z.number().optional(),
             isCompleted: z.boolean().optional(),
             notes: z.string().optional(),
@@ -5940,6 +6085,21 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
             // Criar séries do exercício
             if (sets && sets.length > 0) {
               for (const set of sets) {
+                // Serializar drops e restPauses extras no campo notes como JSON
+                let notesWithExtras = set.notes || '';
+                const extras: { drops?: typeof set.drops; restPauses?: typeof set.restPauses } = {};
+                if (set.drops && set.drops.length > 0) {
+                  extras.drops = set.drops;
+                }
+                if (set.restPauses && set.restPauses.length > 0) {
+                  extras.restPauses = set.restPauses;
+                }
+                if (Object.keys(extras).length > 0) {
+                  // Adicionar JSON ao final das notes com separador especial
+                  const existingNotes = notesWithExtras.replace(/\n?\[\[EXTRAS\]\][\s\S]*$/, '');
+                  notesWithExtras = existingNotes + (existingNotes ? '\n' : '') + '[[EXTRAS]]' + JSON.stringify(extras);
+                }
+                
                 await db.createWorkoutLogSet({
                   workoutLogExerciseId: exerciseId,
                   setNumber: set.setNumber,
@@ -5947,16 +6107,16 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
                   weight: toDecimal(set.weight),
                   reps: set.reps,
                   restTime: set.restTime,
-                  isDropSet: set.isDropSet,
-                  dropWeight: toDecimal(set.dropWeight),
-                  dropReps: set.dropReps,
-                  isRestPause: set.isRestPause,
-                  restPauseWeight: toDecimal(set.restPauseWeight),
-                  restPauseReps: set.restPauseReps,
-                  restPausePause: set.restPausePause,
+                  isDropSet: set.isDropSet || (set.drops && set.drops.length > 0),
+                  dropWeight: toDecimal(set.dropWeight || (set.drops?.[0]?.weight)),
+                  dropReps: set.dropReps || set.drops?.[0]?.reps,
+                  isRestPause: set.isRestPause || (set.restPauses && set.restPauses.length > 0),
+                  restPauseWeight: toDecimal(set.restPauseWeight || (set.restPauses?.[0]?.weight)),
+                  restPauseReps: set.restPauseReps || set.restPauses?.[0]?.reps,
+                  restPausePause: set.restPausePause || set.restPauses?.[0]?.pauseTime,
                   rpe: set.rpe,
                   isCompleted: set.isCompleted,
-                  notes: set.notes,
+                  notes: notesWithExtras,
                 });
               }
             }

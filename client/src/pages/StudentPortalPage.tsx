@@ -2347,222 +2347,237 @@ export default function StudentPortalPage() {
                                 <span className="text-xs text-gray-500">s</span>
                               </div>
                             </div>
+                            
+                            {/* Linha 3: Botões Drop Set e Rest-Pause DENTRO da série */}
+                            <div className="flex gap-2 pl-9 mt-2">
+                              <Button
+                                size="sm"
+                                variant={set.hasDropSet ? 'default' : 'outline'}
+                                className={`h-7 text-xs ${set.hasDropSet ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'border-purple-300 text-purple-600 hover:bg-purple-50'}`}
+                                onClick={() => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets[setIndex].hasDropSet = !updated[exIndex].sets[setIndex].hasDropSet;
+                                  if (!updated[exIndex].sets[setIndex].hasDropSet) {
+                                    updated[exIndex].sets[setIndex].drops = [];
+                                  } else if (!updated[exIndex].sets[setIndex].drops || updated[exIndex].sets[setIndex].drops.length === 0) {
+                                    updated[exIndex].sets[setIndex].drops = [{ weight: '', reps: '', restTime: '' }];
+                                  }
+                                  setDiaryExercises(updated);
+                                }}
+                              >
+                                Drop Set
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={set.hasRestPause ? 'default' : 'outline'}
+                                className={`h-7 text-xs ${set.hasRestPause ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'border-orange-300 text-orange-600 hover:bg-orange-50'}`}
+                                onClick={() => {
+                                  const updated = [...diaryExercises];
+                                  updated[exIndex].sets[setIndex].hasRestPause = !updated[exIndex].sets[setIndex].hasRestPause;
+                                  if (!updated[exIndex].sets[setIndex].hasRestPause) {
+                                    updated[exIndex].sets[setIndex].restPauses = [];
+                                  } else if (!updated[exIndex].sets[setIndex].restPauses || updated[exIndex].sets[setIndex].restPauses.length === 0) {
+                                    updated[exIndex].sets[setIndex].restPauses = [{ pauseTime: '', reps: '' }];
+                                  }
+                                  setDiaryExercises(updated);
+                                }}
+                              >
+                                Rest-Pause
+                              </Button>
+                            </div>
+                            
+                            {/* Drop Set expandido DENTRO da série */}
+                            {set.hasDropSet && (
+                              <div className="ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
+                                  <span className="text-xs text-gray-500">Reduza a carga e continue</span>
+                                </div>
+                                <div className="space-y-2">
+                                  {(set.drops || [{ weight: '', reps: '', restTime: '' }]).map((drop: any, dropIndex: number) => (
+                                    <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                      <span className="text-xs font-medium text-purple-600 dark:text-purple-400 w-12">Drop {dropIndex + 1}</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          placeholder="0"
+                                          value={drop.weight || ''}
+                                          onChange={(e) => {
+                                            const updated = [...diaryExercises];
+                                            const drops = updated[exIndex].sets[setIndex].drops || [{ weight: '', reps: '', restTime: '' }];
+                                            drops[dropIndex] = { ...drops[dropIndex], weight: e.target.value };
+                                            updated[exIndex].sets[setIndex].drops = drops;
+                                            // Compatibilidade com campos antigos
+                                            if (dropIndex === 0) {
+                                              updated[exIndex].sets[setIndex].dropWeight = parseFloat(e.target.value) || undefined;
+                                            }
+                                            setDiaryExercises(updated);
+                                          }}
+                                          className="h-7 w-14 text-center text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">kg</span>
+                                      </div>
+                                      <span className="text-gray-400">×</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          placeholder="0"
+                                          value={drop.reps || ''}
+                                          onChange={(e) => {
+                                            const updated = [...diaryExercises];
+                                            const drops = updated[exIndex].sets[setIndex].drops || [{ weight: '', reps: '', restTime: '' }];
+                                            drops[dropIndex] = { ...drops[dropIndex], reps: e.target.value };
+                                            updated[exIndex].sets[setIndex].drops = drops;
+                                            if (dropIndex === 0) {
+                                              updated[exIndex].sets[setIndex].dropReps = parseInt(e.target.value) || undefined;
+                                            }
+                                            setDiaryExercises(updated);
+                                          }}
+                                          className="h-7 w-12 text-center text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">reps</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          placeholder="0"
+                                          value={drop.restTime || ''}
+                                          onChange={(e) => {
+                                            const updated = [...diaryExercises];
+                                            const drops = updated[exIndex].sets[setIndex].drops || [{ weight: '', reps: '', restTime: '' }];
+                                            drops[dropIndex] = { ...drops[dropIndex], restTime: e.target.value };
+                                            updated[exIndex].sets[setIndex].drops = drops;
+                                            setDiaryExercises(updated);
+                                          }}
+                                          className="h-7 w-12 text-center text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">s</span>
+                                      </div>
+                                      {(set.drops?.length || 0) > 1 && (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 text-red-500 hover:text-red-700"
+                                          onClick={() => {
+                                            const updated = [...diaryExercises];
+                                            const drops = [...(updated[exIndex].sets[setIndex].drops || [])];
+                                            drops.splice(dropIndex, 1);
+                                            updated[exIndex].sets[setIndex].drops = drops;
+                                            setDiaryExercises(updated);
+                                          }}
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="mt-2 text-purple-600 hover:text-purple-700 hover:bg-purple-100 dark:text-purple-400 h-7 text-xs"
+                                  onClick={() => {
+                                    const updated = [...diaryExercises];
+                                    const drops = updated[exIndex].sets[setIndex].drops || [{ weight: '', reps: '', restTime: '' }];
+                                    drops.push({ weight: '', reps: '', restTime: '' });
+                                    updated[exIndex].sets[setIndex].drops = drops;
+                                    setDiaryExercises(updated);
+                                  }}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Adicionar Drop
+                                </Button>
+                              </div>
+                            )}
+                            
+                            {/* Rest-Pause expandido DENTRO da série */}
+                            {set.hasRestPause && (
+                              <div className="ml-9 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
+                                  <span className="text-xs text-gray-500">Pausa curta e continue</span>
+                                </div>
+                                <div className="space-y-2">
+                                  {(set.restPauses || [{ pauseTime: '', reps: '' }]).map((rp: any, rpIndex: number) => (
+                                    <div key={rpIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                      <span className="text-xs font-medium text-orange-600 dark:text-orange-400 w-12">Pausa {rpIndex + 1}</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          placeholder="15"
+                                          value={rp.pauseTime || ''}
+                                          onChange={(e) => {
+                                            const updated = [...diaryExercises];
+                                            const restPauses = updated[exIndex].sets[setIndex].restPauses || [{ pauseTime: '', reps: '' }];
+                                            restPauses[rpIndex] = { ...restPauses[rpIndex], pauseTime: e.target.value };
+                                            updated[exIndex].sets[setIndex].restPauses = restPauses;
+                                            if (rpIndex === 0) {
+                                              updated[exIndex].sets[setIndex].restPausePause = parseInt(e.target.value) || undefined;
+                                            }
+                                            setDiaryExercises(updated);
+                                          }}
+                                          className="h-7 w-12 text-center text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">s</span>
+                                      </div>
+                                      <span className="text-gray-400">→</span>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          placeholder="0"
+                                          value={rp.reps || ''}
+                                          onChange={(e) => {
+                                            const updated = [...diaryExercises];
+                                            const restPauses = updated[exIndex].sets[setIndex].restPauses || [{ pauseTime: '', reps: '' }];
+                                            restPauses[rpIndex] = { ...restPauses[rpIndex], reps: e.target.value };
+                                            updated[exIndex].sets[setIndex].restPauses = restPauses;
+                                            if (rpIndex === 0) {
+                                              updated[exIndex].sets[setIndex].restPauseReps = parseInt(e.target.value) || undefined;
+                                            }
+                                            setDiaryExercises(updated);
+                                          }}
+                                          className="h-7 w-12 text-center text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">reps</span>
+                                      </div>
+                                      {(set.restPauses?.length || 0) > 1 && (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 text-red-500 hover:text-red-700"
+                                          onClick={() => {
+                                            const updated = [...diaryExercises];
+                                            const restPauses = [...(updated[exIndex].sets[setIndex].restPauses || [])];
+                                            restPauses.splice(rpIndex, 1);
+                                            updated[exIndex].sets[setIndex].restPauses = restPauses;
+                                            setDiaryExercises(updated);
+                                          }}
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="mt-2 text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:text-orange-400 h-7 text-xs"
+                                  onClick={() => {
+                                    const updated = [...diaryExercises];
+                                    const restPauses = updated[exIndex].sets[setIndex].restPauses || [{ pauseTime: '', reps: '' }];
+                                    restPauses.push({ pauseTime: '', reps: '' });
+                                    updated[exIndex].sets[setIndex].restPauses = restPauses;
+                                    setDiaryExercises(updated);
+                                  }}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Adicionar Pausa
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         ))}
-                        
-                        {/* Botões para adicionar Drop Set ou Rest-Pause como extensão */}
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            size="sm"
-                            variant={exercise.hasDropSet ? 'default' : 'outline'}
-                            className={exercise.hasDropSet ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'border-purple-300 text-purple-600 hover:bg-purple-50'}
-                            onClick={() => {
-                              const updated = [...diaryExercises];
-                              updated[exIndex].hasDropSet = !updated[exIndex].hasDropSet;
-                              if (!updated[exIndex].hasDropSet) {
-                                updated[exIndex].drops = [];
-                              } else if (!updated[exIndex].drops || updated[exIndex].drops.length === 0) {
-                                updated[exIndex].drops = [{ weight: '', reps: '' }];
-                              }
-                              setDiaryExercises(updated);
-                            }}
-                          >
-                            <span className="text-xs">Drop Set</span>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={exercise.hasRestPause ? 'default' : 'outline'}
-                            className={exercise.hasRestPause ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'border-orange-300 text-orange-600 hover:bg-orange-50'}
-                            onClick={() => {
-                              const updated = [...diaryExercises];
-                              updated[exIndex].hasRestPause = !updated[exIndex].hasRestPause;
-                              if (!updated[exIndex].hasRestPause) {
-                                updated[exIndex].restPauses = [];
-                              } else if (!updated[exIndex].restPauses || updated[exIndex].restPauses.length === 0) {
-                                updated[exIndex].restPauses = [{ pause: '', reps: '' }];
-                              }
-                              setDiaryExercises(updated);
-                            }}
-                          >
-                            <span className="text-xs">Rest-Pause</span>
-                          </Button>
-                        </div>
-                        
-                        {/* Drop Set com múltiplos drops */}
-                        {exercise.hasDropSet && (
-                          <div className="p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <Badge className="bg-purple-500 text-white text-xs">Drop Set</Badge>
-                                <span className="text-xs text-gray-500">Reduza a carga e continue</span>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              {(exercise.drops && exercise.drops.length > 0 ? exercise.drops : [{ weight: exercise.dropWeight || '', reps: exercise.dropReps || '' }]).map((drop: any, dropIndex: number) => (
-                                <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
-                                  <span className="text-xs font-medium text-purple-600 dark:text-purple-400 w-14">Drop {dropIndex + 1}</span>
-                                  <Input
-                                    type="number"
-                                    placeholder="Carga"
-                                    value={drop.weight || ''}
-                                    onChange={(e) => {
-                                      const updated = [...diaryExercises];
-                                      const drops = updated[exIndex].drops || [{ weight: exercise.dropWeight || '', reps: exercise.dropReps || '' }];
-                                      drops[dropIndex] = { ...drops[dropIndex], weight: e.target.value };
-                                      updated[exIndex].drops = drops;
-                                      if (dropIndex === 0) {
-                                        updated[exIndex].dropWeight = e.target.value;
-                                      }
-                                      setDiaryExercises(updated);
-                                    }}
-                                    className="h-7 w-16"
-                                  />
-                                  <span className="text-xs text-gray-500">kg ×</span>
-                                  <Input
-                                    type="number"
-                                    placeholder="Reps"
-                                    value={drop.reps || ''}
-                                    onChange={(e) => {
-                                      const updated = [...diaryExercises];
-                                      const drops = updated[exIndex].drops || [{ weight: exercise.dropWeight || '', reps: exercise.dropReps || '' }];
-                                      drops[dropIndex] = { ...drops[dropIndex], reps: e.target.value };
-                                      updated[exIndex].drops = drops;
-                                      if (dropIndex === 0) {
-                                        updated[exIndex].dropReps = e.target.value;
-                                      }
-                                      setDiaryExercises(updated);
-                                    }}
-                                    className="h-7 w-14"
-                                  />
-                                  <span className="text-xs text-gray-500">reps</span>
-                                  {(exercise.drops?.length || 0) > 1 && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
-                                      onClick={() => {
-                                        const updated = [...diaryExercises];
-                                        const drops = [...(updated[exIndex].drops || [])];
-                                        drops.splice(dropIndex, 1);
-                                        updated[exIndex].drops = drops;
-                                        if (drops.length > 0) {
-                                          updated[exIndex].dropWeight = drops[0].weight;
-                                          updated[exIndex].dropReps = drops[0].reps;
-                                        }
-                                        setDiaryExercises(updated);
-                                      }}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-100 dark:text-purple-400"
-                                onClick={() => {
-                                  const updated = [...diaryExercises];
-                                  const drops = updated[exIndex].drops || [{ weight: exercise.dropWeight || '', reps: exercise.dropReps || '' }];
-                                  drops.push({ weight: '', reps: '' });
-                                  updated[exIndex].drops = drops;
-                                  setDiaryExercises(updated);
-                                }}
-                              >
-                                <Plus className="h-3 w-3 mr-1" />
-                                Adicionar Drop
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Rest-Pause com múltiplas pausas */}
-                        {exercise.hasRestPause && (
-                          <div className="p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <Badge className="bg-orange-500 text-white text-xs">Rest-Pause</Badge>
-                                <span className="text-xs text-gray-500">Pausa curta e continue</span>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              {(exercise.restPauses && exercise.restPauses.length > 0 ? exercise.restPauses : [{ pause: exercise.restPausePause || '', reps: exercise.restPauseReps || '' }]).map((rp: any, rpIndex: number) => (
-                                <div key={rpIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
-                                  <span className="text-xs font-medium text-orange-600 dark:text-orange-400 w-14">Pausa {rpIndex + 1}</span>
-                                  <Input
-                                    type="number"
-                                    placeholder="Seg"
-                                    value={rp.pause || ''}
-                                    onChange={(e) => {
-                                      const updated = [...diaryExercises];
-                                      const restPauses = updated[exIndex].restPauses || [{ pause: exercise.restPausePause || '', reps: exercise.restPauseReps || '' }];
-                                      restPauses[rpIndex] = { ...restPauses[rpIndex], pause: e.target.value };
-                                      updated[exIndex].restPauses = restPauses;
-                                      if (rpIndex === 0) {
-                                        updated[exIndex].restPausePause = e.target.value;
-                                      }
-                                      setDiaryExercises(updated);
-                                    }}
-                                    className="h-7 w-14"
-                                  />
-                                  <span className="text-xs text-gray-500">s →</span>
-                                  <Input
-                                    type="number"
-                                    placeholder="Reps"
-                                    value={rp.reps || ''}
-                                    onChange={(e) => {
-                                      const updated = [...diaryExercises];
-                                      const restPauses = updated[exIndex].restPauses || [{ pause: exercise.restPausePause || '', reps: exercise.restPauseReps || '' }];
-                                      restPauses[rpIndex] = { ...restPauses[rpIndex], reps: e.target.value };
-                                      updated[exIndex].restPauses = restPauses;
-                                      if (rpIndex === 0) {
-                                        updated[exIndex].restPauseReps = e.target.value;
-                                      }
-                                      setDiaryExercises(updated);
-                                    }}
-                                    className="h-7 w-14"
-                                  />
-                                  <span className="text-xs text-gray-500">reps</span>
-                                  {(exercise.restPauses?.length || 0) > 1 && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
-                                      onClick={() => {
-                                        const updated = [...diaryExercises];
-                                        const restPauses = [...(updated[exIndex].restPauses || [])];
-                                        restPauses.splice(rpIndex, 1);
-                                        updated[exIndex].restPauses = restPauses;
-                                        if (restPauses.length > 0) {
-                                          updated[exIndex].restPausePause = restPauses[0].pause;
-                                          updated[exIndex].restPauseReps = restPauses[0].reps;
-                                        }
-                                        setDiaryExercises(updated);
-                                      }}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:text-orange-400"
-                                onClick={() => {
-                                  const updated = [...diaryExercises];
-                                  const restPauses = updated[exIndex].restPauses || [{ pause: exercise.restPausePause || '', reps: exercise.restPauseReps || '' }];
-                                  restPauses.push({ pause: '', reps: '' });
-                                  updated[exIndex].restPauses = restPauses;
-                                  setDiaryExercises(updated);
-                                }}
-                              >
-                                <Plus className="h-3 w-3 mr-1" />
-                                Adicionar Pausa
-                              </Button>
-                            </div>
-                          </div>
-                        )}
                         
                         {/* Botão adicionar série */}
                         <Button

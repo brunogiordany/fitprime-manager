@@ -1746,3 +1746,22 @@
 - [x] Mostrar data da foto mais recente em cada pose
 - [x] Mostrar tempo decorrido entre fotos no histórico
 - [x] Mostrar tempo total de evolução na comparação
+
+
+## Correção Drop Set e Rest-Pause (v5.60)
+- [ ] Redesenhar Drop Set como área expandida dentro da série
+- [ ] Redesenhar Rest-Pause como área expandida dentro da série
+- [ ] Cada drop/pausa tem: carga, reps, descanso
+- [ ] Botão "+ Adicionar Drop" para múltiplos drops
+- [ ] Botão "+ Adicionar Pausa" para múltiplas pausas
+- [ ] Remover implementação atual (toggle separado)
+
+
+## Correção Drop Set e Rest-Pause (v4.4)
+- [x] Mover Drop Set e Rest-Pause para nível da série (não exercício)
+- [x] Botões toggle para ativar Drop Set e Rest-Pause em cada série
+- [x] Suporte a múltiplos drops por série
+- [x] Suporte a múltiplas pausas por série (Rest-Pause)
+- [x] Serialização de drops/restPauses extras no campo notes
+- [x] Deserialização ao carregar dados
+- [x] Sincronização bidirecional (personal e aluno veem os mesmos dados)

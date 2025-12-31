@@ -2355,6 +2355,60 @@ export default function TrainingDiaryPage() {
                                   </Button>
                                 </div>
                                 
+                                {/* Botões Toggle para Drop Set e Rest-Pause */}
+                                <div className="flex gap-2 mt-2 ml-9">
+                                  <Button
+                                    size="sm"
+                                    variant={set.isDropSet || set.setType === 'drop' ? 'default' : 'outline'}
+                                    className={`h-7 text-xs ${set.isDropSet || set.setType === 'drop' ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'border-purple-300 text-purple-600 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400 dark:hover:bg-purple-950/30'}`}
+                                    onClick={() => {
+                                      const updated = [...currentExercises];
+                                      const isActive = updated[exIndex].sets[setIndex].isDropSet || updated[exIndex].sets[setIndex].setType === 'drop';
+                                      updated[exIndex].sets[setIndex].isDropSet = !isActive;
+                                      if (!isActive) {
+                                        // Ativando - inicializar drops se necessário
+                                        if (!updated[exIndex].sets[setIndex].drops || updated[exIndex].sets[setIndex].drops.length === 0) {
+                                          updated[exIndex].sets[setIndex].drops = [{ weight: undefined, reps: undefined, restTime: undefined }];
+                                        }
+                                      } else {
+                                        // Desativando - limpar drops
+                                        updated[exIndex].sets[setIndex].drops = [];
+                                        if (updated[exIndex].sets[setIndex].setType === 'drop') {
+                                          updated[exIndex].sets[setIndex].setType = 'working';
+                                        }
+                                      }
+                                      setCurrentExercises(updated);
+                                    }}
+                                  >
+                                    Drop Set
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={set.isRestPause || set.setType === 'rest_pause' ? 'default' : 'outline'}
+                                    className={`h-7 text-xs ${set.isRestPause || set.setType === 'rest_pause' ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/30'}`}
+                                    onClick={() => {
+                                      const updated = [...currentExercises];
+                                      const isActive = updated[exIndex].sets[setIndex].isRestPause || updated[exIndex].sets[setIndex].setType === 'rest_pause';
+                                      updated[exIndex].sets[setIndex].isRestPause = !isActive;
+                                      if (!isActive) {
+                                        // Ativando - inicializar restPauses se necessário
+                                        if (!updated[exIndex].sets[setIndex].restPauses || updated[exIndex].sets[setIndex].restPauses.length === 0) {
+                                          updated[exIndex].sets[setIndex].restPauses = [{ pauseTime: 15, weight: undefined, reps: undefined }];
+                                        }
+                                      } else {
+                                        // Desativando - limpar restPauses
+                                        updated[exIndex].sets[setIndex].restPauses = [];
+                                        if (updated[exIndex].sets[setIndex].setType === 'rest_pause') {
+                                          updated[exIndex].sets[setIndex].setType = 'working';
+                                        }
+                                      }
+                                      setCurrentExercises(updated);
+                                    }}
+                                  >
+                                    Rest-Pause
+                                  </Button>
+                                </div>
+                                
                                 {/* Área expandida para Drop Set */}
                                 {(set.setType === 'drop' || set.isDropSet) && (
                                   <div className="mt-2 ml-9 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
