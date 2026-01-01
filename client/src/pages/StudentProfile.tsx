@@ -109,11 +109,6 @@ export default function StudentProfile() {
   const [batchToDate, setBatchToDate] = useState('');
   const [batchReason, setBatchReason] = useState('');
   const [showAIAnalysisModal, setShowAIAnalysisModal] = useState(false);
-  const [showNewPhotoModal, setShowNewPhotoModal] = useState(false);
-  const [newPhotoFile, setNewPhotoFile] = useState<File | null>(null);
-  const [newPhotoPreview, setNewPhotoPreview] = useState<string | null>(null);
-  const [newPhotoDate, setNewPhotoDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [newPhotoCategory, setNewPhotoCategory] = useState<string>('other');
   const [aiAnalysis, setAIAnalysis] = useState<any>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteLink, setInviteLink] = useState<string>('');
@@ -1317,68 +1312,240 @@ export default function StudentProfile() {
 
           {/* Evolution Tab */}
           <TabsContent value="evolution" className="space-y-6">
+            {/* KPIs de Frequência */}
+            {sessionStats && (
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-emerald-600">{sessionStats.attendanceRate}%</p>
+                      <p className="text-sm text-muted-foreground">Taxa de Presença</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{sessionStats.completed}</p>
+                      <p className="text-sm text-muted-foreground">Sessões Realizadas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-amber-600">{sessionStats.noShow}</p>
+                      <p className="text-sm text-muted-foreground">Faltas</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{sessionStats.thisMonth}</p>
+                      <p className="text-sm text-muted-foreground">Este Mês</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Gráfico de Frequência Mensal */}
+            {sessionStats && sessionStats.monthlyData && sessionStats.monthlyData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Frequência Mensal</CardTitle>
+                  <CardDescription>Últimos 6 meses de presenças e faltas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={sessionStats.monthlyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="presencas" name="Presenças" fill="oklch(0.55 0.18 160)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="faltas" name="Faltas" fill="oklch(0.7 0.15 60)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Evolução de Peso</CardTitle>
+                  <CardDescription>Acompanhamento das medidas ao longo do tempo</CardDescription>
+                </div>
+                <Button onClick={() => setLocation(`/alunos/${studentId}/medidas`)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Medida
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {weightData.length > 0 ? (
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={weightData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis domain={['auto', 'auto']} />
+                        <Tooltip />
+                        <Line 
+                          type="monotone" 
+                          dataKey="weight" 
+                          stroke="oklch(0.55 0.18 160)" 
+                          strokeWidth={2}
+                          dot={{ fill: "oklch(0.55 0.18 160)" }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <TrendingUp className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Nenhuma medida registrada</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Gráfico de Composição Corporal */}
+            {bodyCompositionData.length > 0 && bodyCompositionData.some(d => d.gordura > 0 || d.musculo > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Composição Corporal</CardTitle>
+                  <CardDescription>Evolução de % gordura e massa muscular</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={bodyCompositionData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="gordura" 
+                          name="% Gordura"
+                          stroke="oklch(0.7 0.15 60)" 
+                          strokeWidth={2}
+                          dot={{ fill: "oklch(0.7 0.15 60)" }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="musculo" 
+                          name="Massa Muscular (kg)"
+                          stroke="oklch(0.55 0.18 160)" 
+                          strokeWidth={2}
+                          dot={{ fill: "oklch(0.55 0.18 160)" }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gráfico de Circunferências */}
+            {circumferenceData.length > 0 && circumferenceData.some(d => d.cintura > 0 || d.quadril > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Evolução das Circunferências</CardTitle>
+                  <CardDescription>Medidas em centímetros ao longo do tempo</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={circumferenceData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="cintura" name="Cintura" stroke="#82ca9d" strokeWidth={2} />
+                        <Line type="monotone" dataKey="quadril" name="Quadril" stroke="#ffc658" strokeWidth={2} />
+                        <Line type="monotone" dataKey="peito" name="Peito" stroke="#8884d8" strokeWidth={2} />
+                        <Line type="monotone" dataKey="bracoDireito" name="Braço D" stroke="#ff7300" strokeWidth={2} />
+                        <Line type="monotone" dataKey="coxaDireita" name="Coxa D" stroke="#00C49F" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {measurements && measurements.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Histórico de Medidas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {measurements.slice(0, 5).map((m) => (
+                      <div key={m.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">
+                            {m.measureDate && !isNaN(new Date(m.measureDate).getTime())
+                              ? format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR })
+                              : '--/--/----'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Peso: {m.weight || '-'} kg | IMC: {m.bmi || '-'}
+                          </p>
+                        </div>
+                        <div className="text-right text-sm hidden sm:block">
+                          <p>Cintura: {m.waist || '-'} cm</p>
+                          <p>Quadril: {m.hip || '-'} cm</p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setLocation(`/medidas/${studentId}?edit=${m.id}`)}
+                            title="Editar medida"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              if (confirm('Enviar esta medida para a lixeira?')) {
+                                deleteMeasurementMutation.mutate({ id: m.id });
+                              }
+                            }}
+                            title="Excluir medida"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Photos Tab - Evolução Unificada */}
+          <TabsContent value="photos">
             <UnifiedEvolutionDashboard
               studentId={studentId}
               studentName={student?.name || 'Aluno'}
               photos={photos || []}
               measurements={measurements || []}
               onRefresh={() => refetchPhotos()}
-              showStudentSelector={false}
               embedded={true}
             />
-          </TabsContent>
-
-          {/* Photos Tab */}
-          <TabsContent value="photos" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Fotos de Evolução</CardTitle>
-                  <CardDescription>Acompanhe a evolução visual do aluno</CardDescription>
-                </div>
-                <Button onClick={() => setShowNewPhotoModal(true)}>
-                  <Camera className="h-4 w-4 mr-2" />
-                  Nova Foto
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {photos && photos.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {photos.map((photo: any) => (
-                      <div key={photo.id} className="relative group">
-                        <div className="aspect-[3/4] rounded-lg overflow-hidden border bg-gray-100">
-                          <img 
-                            src={photo.url} 
-                            alt={`Foto de ${format(new Date(photo.photoDate || photo.createdAt), 'dd/MM/yyyy')}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <p className="text-xs text-center text-muted-foreground mt-1">
-                          {format(new Date(photo.photoDate || photo.createdAt), 'dd/MM/yyyy')}
-                        </p>
-                        {photo.notes && photo.notes.startsWith('pose:') && (
-                          <Badge variant="secondary" className="absolute top-2 left-2 text-xs">
-                            {photo.notes.replace('pose:', '').replace(/-/g, ' ')}
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Camera className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhuma foto de evolução</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Adicione fotos para acompanhar a evolução visual do aluno
-                    </p>
-                    <Button onClick={() => setShowNewPhotoModal(true)}>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Adicionar Primeira Foto
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
 
 
@@ -2246,135 +2413,6 @@ export default function StudentProfile() {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Nova Foto */}
-      <Dialog open={showNewPhotoModal} onOpenChange={setShowNewPhotoModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              Nova Foto de Evolução
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Data da Foto</Label>
-              <Input
-                type="date"
-                value={newPhotoDate}
-                onChange={(e) => setNewPhotoDate(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={newPhotoCategory} onValueChange={setNewPhotoCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="front">Frontal</SelectItem>
-                  <SelectItem value="back">Costas</SelectItem>
-                  <SelectItem value="side_left">Lateral Esquerda</SelectItem>
-                  <SelectItem value="side_right">Lateral Direita</SelectItem>
-                  <SelectItem value="other">Outra</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Foto</Label>
-              {newPhotoPreview ? (
-                <div className="relative">
-                  <img 
-                    src={newPhotoPreview} 
-                    alt="Preview" 
-                    className="w-full h-64 object-cover rounded-lg border"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setNewPhotoFile(null);
-                      setNewPhotoPreview(null);
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div 
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.onchange = (e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0];
-                      if (file) {
-                        setNewPhotoFile(file);
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          setNewPhotoPreview(e.target?.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    };
-                    input.click();
-                  }}
-                >
-                  <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Clique para selecionar uma foto</p>
-                </div>
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowNewPhotoModal(false);
-              setNewPhotoFile(null);
-              setNewPhotoPreview(null);
-            }}>
-              Cancelar
-            </Button>
-            <Button 
-              disabled={!newPhotoFile || isUploadingPhoto}
-              onClick={async () => {
-                if (!newPhotoFile) return;
-                setIsUploadingPhoto(true);
-                try {
-                  const reader = new FileReader();
-                  reader.onload = async (e) => {
-                    const base64 = (e.target?.result as string).split(',')[1];
-                    await uploadPhotoMutation.mutateAsync({
-                      studentId,
-                      photoDate: newPhotoDate,
-                      category: newPhotoCategory as any,
-                      fileBase64: base64,
-                      fileName: newPhotoFile.name,
-                      mimeType: newPhotoFile.type,
-                    });
-                    setShowNewPhotoModal(false);
-                    setNewPhotoFile(null);
-                    setNewPhotoPreview(null);
-                    refetchPhotos();
-                  };
-                  reader.readAsDataURL(newPhotoFile);
-                } catch (error) {
-                  setIsUploadingPhoto(false);
-                }
-              }}
-            >
-              {isUploadingPhoto ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
-              ) : (
-                <><Camera className="h-4 w-4 mr-2" /> Salvar Foto</>
-              )}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </DashboardLayout>

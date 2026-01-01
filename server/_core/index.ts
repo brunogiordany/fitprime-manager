@@ -134,8 +134,7 @@ Formato de resposta:
           ]
         });
         
-        const responseContent = response.choices?.[0]?.message?.content;
-        const responseText = typeof responseContent === 'string' ? responseContent : '';
+        const responseText = response.choices?.[0]?.message?.content || '';
         
         // Try to parse JSON from response
         try {

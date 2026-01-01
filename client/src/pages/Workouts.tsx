@@ -1796,12 +1796,12 @@ export default function Workouts() {
                               high: 'bg-red-100 text-red-700',
                               medium: 'bg-orange-100 text-orange-700',
                               low: 'bg-yellow-100 text-yellow-700',
-                            }[studentAnalysis.analysis.adaptationPriority as 'high' | 'medium' | 'low'] || 'bg-gray-100'}`}>
+                            }[studentAnalysis.analysis.adaptationPriority] || 'bg-gray-100'}`}>
                               {{
                                 high: 'Alta',
                                 medium: 'Média',
                                 low: 'Baixa',
-                              }[studentAnalysis.analysis.adaptationPriority as 'high' | 'medium' | 'low']}
+                              }[studentAnalysis.analysis.adaptationPriority]}
                             </Badge>
                           )}
                         </div>

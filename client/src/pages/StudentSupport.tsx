@@ -230,7 +230,7 @@ export default function StudentSupport() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: typeof response.answer === 'string' ? response.answer : '',
+        content: response.answer,
         timestamp: new Date(),
       };
 

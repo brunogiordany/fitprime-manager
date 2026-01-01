@@ -82,10 +82,9 @@ export function PersonalPhotoEvolutionView({
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   // Mutation para análise (usando endpoint do personal)
-  const analyzeMutation = trpc.anamnesis.analyzeEvolution.useMutation({
-    onSuccess: (data) => {
-      const analysisText = typeof data.analysis === 'string' ? data.analysis : '';
-      setAnalysisResult(analysisText);
+  const analyzeMutation = trpc.students.analyzePhotos.useMutation({
+    onSuccess: (data: { analysis: string }) => {
+      setAnalysisResult(data.analysis);
       toast.success("Análise concluída!");
     },
     onError: (error: { message?: string }) => {

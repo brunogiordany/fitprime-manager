@@ -2593,13 +2593,13 @@ Retorne APENAS o JSON.`;
         const metrics1 = {
           totalSessions: logsWorkout1.length,
           averageDuration: logsWorkout1.length > 0 ? 
-            logsWorkout1.reduce((sum, log) => sum + (log.totalDuration || 0), 0) / logsWorkout1.length : 0,
+            logsWorkout1.reduce((sum, log) => sum + (log.duration || 0), 0) / logsWorkout1.length : 0,
         };
         
         const metrics2 = {
           totalSessions: logsWorkout2.length,
           averageDuration: logsWorkout2.length > 0 ? 
-            logsWorkout2.reduce((sum, log) => sum + (log.totalDuration || 0), 0) / logsWorkout2.length : 0,
+            logsWorkout2.reduce((sum, log) => sum + (log.duration || 0), 0) / logsWorkout2.length : 0,
         };
         
         // Montar prompt para análise
@@ -3885,7 +3885,6 @@ Forneça:
         
         // Criar produto e preço temporário
         const { stripe } = await import('./stripe');
-        if (!stripe) throw new Error('Stripe não configurado');
         const product = await stripe.products.create({
           name: charge.description,
           metadata: {
@@ -3961,7 +3960,6 @@ Forneça:
         
         // Criar produto e preço recorrente
         const { stripe } = await import('./stripe');
-        if (!stripe) throw new Error('Stripe não configurado');
         const product = await stripe.products.create({
           name: plan.name,
           description: plan.description || undefined,
@@ -5740,9 +5738,8 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
         
         if (anamnesis) {
           analysisData.anamnesis = {
-            mainGoal: anamnesis.mainGoal,
-            secondaryGoals: anamnesis.secondaryGoals,
-            medicalHistory: anamnesis.medicalHistory,
+            objectives: anamnesis.objectives,
+            healthConditions: anamnesis.healthConditions,
             injuries: anamnesis.injuries,
             medications: anamnesis.medications,
             exerciseExperience: anamnesis.exerciseExperience,

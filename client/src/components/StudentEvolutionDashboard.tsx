@@ -110,7 +110,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
 
   // Buscar fotos do aluno
   const { data: photosData, refetch: refetchPhotos } = trpc.studentPortal.guidedPhotos.useQuery();
-  const photos = photosData && 'allPhotos' in photosData ? photosData.allPhotos : [];
+  const photos = photosData || [];
 
   // Buscar exercícios únicos do aluno
   const { data: uniqueExercises } = trpc.studentPortal.uniqueExercises.useQuery();
@@ -470,7 +470,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <GuidedPhotos studentId={studentId} onPhotosUploaded={() => refetchPhotos()} />
+              <GuidedPhotos studentId={studentId} onPhotoUploaded={() => refetchPhotos()} />
             </CardContent>
           </Card>
 
@@ -1113,7 +1113,6 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
                 createMeasurementMutation.mutate({
-                  measureDate: new Date().toISOString().split('T')[0],
                   weight: newMeasurement.weight || undefined,
                   bodyFat: newMeasurement.bodyFat || undefined,
                   chest: newMeasurement.chest || undefined,

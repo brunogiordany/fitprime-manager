@@ -16,13 +16,13 @@ export default function EvolutionDashboard() {
   const { data: students } = trpc.students.list.useQuery();
   
   // Query para fotos do aluno selecionado
-  const { data: photos, refetch: refetchPhotos } = trpc.photos.list.useQuery(
+  const { data: photos, refetch: refetchPhotos } = trpc.students.getPhotos.useQuery(
     { studentId: parseInt(selectedStudentId) },
     { enabled: !!selectedStudentId && selectedStudentId !== 'all' }
   );
 
   // Query para medidas do aluno selecionado
-  const { data: measurements } = trpc.measurements.list.useQuery(
+  const { data: measurements } = trpc.students.getMeasurements.useQuery(
     { studentId: parseInt(selectedStudentId) },
     { enabled: !!selectedStudentId && selectedStudentId !== 'all' }
   );
