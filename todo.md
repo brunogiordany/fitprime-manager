@@ -1971,3 +1971,7 @@
 - [x] Remover menu "Evolução" do sidebar do portal do personal
 - [x] Aba "Fotos" do perfil do aluno mostra apenas fotos (sem sub-abas redundantes)
 - [x] Corrigidos 30+ erros TypeScript (Stripe, LLM, routers, tipos de medidas)
+
+## Correções Urgentes v4.6
+- [x] RESTAURAR aba "Evolução" no perfil do aluno (foi removida por engano)
+- [x] Manter aba "Fotos" simples (sem sub-abas extras)

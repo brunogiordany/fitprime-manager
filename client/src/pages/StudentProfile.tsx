@@ -800,6 +800,10 @@ export default function StudentProfile() {
                 <FileText className="h-4 w-4 hidden sm:block" />
                 Anamnese
               </TabsTrigger>
+              <TabsTrigger value="evolution" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <TrendingUp className="h-4 w-4 hidden sm:block" />
+                Evolução
+              </TabsTrigger>
               <TabsTrigger value="photos" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
                 <Camera className="h-4 w-4 hidden sm:block" />
                 Fotos
@@ -1309,6 +1313,19 @@ export default function StudentProfile() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Evolution Tab */}
+          <TabsContent value="evolution" className="space-y-6">
+            <UnifiedEvolutionDashboard
+              studentId={studentId}
+              studentName={student?.name || 'Aluno'}
+              photos={photos || []}
+              measurements={measurements || []}
+              onRefresh={() => refetchPhotos()}
+              showStudentSelector={false}
+              embedded={true}
+            />
           </TabsContent>
 
           {/* Photos Tab */}
