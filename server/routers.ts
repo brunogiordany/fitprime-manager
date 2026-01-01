@@ -1293,6 +1293,124 @@ export const appRouter = router({
         
         return { id: anamnesisId, updated };
       }),
+    
+    // Análise de evolução de fotos do aluno (para o personal)
+    analyzeEvolution: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        beforePhotoUrl: z.string(),
+        afterPhotoUrl: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o aluno pertence ao personal
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado.' });
+        }
+        
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar medidas do aluno para enriquecer análise
+        const measurements = await db.getMeasurementsByStudentId(input.studentId);
+        const sortedMeasurements = [...measurements].sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        
+        let measurementsContext = '';
+        if (sortedMeasurements.length >= 2) {
+          const latest = sortedMeasurements[0];
+          const oldest = sortedMeasurements[sortedMeasurements.length - 1];
+          
+          measurementsContext = `\n\n**EVOLUÇÃO DAS MEDIDAS:**\n`;
+          
+          const addMeasure = (label: string, before: number | null, after: number | null, unit: string) => {
+            if (before !== null && after !== null) {
+              const diff = after - before;
+              const diffStr = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+              return `- ${label}: ${before}${unit} → ${after}${unit} (${diffStr}${unit})\n`;
+            }
+            return '';
+          };
+          
+          measurementsContext += addMeasure('Peso', oldest.weight, latest.weight, 'kg');
+          measurementsContext += addMeasure('Gordura corporal', oldest.bodyFat, latest.bodyFat, '%');
+          measurementsContext += addMeasure('Peito', oldest.chest, latest.chest, 'cm');
+          measurementsContext += addMeasure('Cintura', oldest.waist, latest.waist, 'cm');
+          measurementsContext += addMeasure('Quadril', oldest.hips, latest.hips, 'cm');
+          measurementsContext += addMeasure('Braço', oldest.rightArm, latest.rightArm, 'cm');
+          measurementsContext += addMeasure('Coxa', oldest.rightThigh, latest.rightThigh, 'cm');
+        }
+        
+        // Buscar anamnese para contexto
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        let goalContext = '';
+        if (anamnesis?.mainGoal) {
+          goalContext = `\n\n**OBJETIVO DO ALUNO:** ${anamnesis.mainGoal}`;
+        }
+        
+        const prompt = `Você é um personal trainer especialista em análise de evolução física.
+
+Analise a evolução física do aluno ${student.name} com base nas fotos e dados fornecidos.${goalContext}${measurementsContext}
+
+Forneça uma análise completa em português brasileiro:
+
+1. **ANÁLISE VISUAL** (baseada nas fotos)
+   - Mudanças na composição corporal
+   - Desenvolvimento muscular visível
+   - Postura e simetria
+
+2. **ANÁLISE DAS MEDIDAS** (se disponível)
+   - Interpretação dos números
+   - Correlação com as mudanças visuais
+
+3. **PROGRESSO EM RELAÇÃO AO OBJETIVO**
+   - Avaliação do progresso
+   - Está no caminho certo?
+
+4. **PONTOS FORTES**
+   - O que está funcionando bem
+
+5. **ÁREAS DE MELHORIA**
+   - O que pode melhorar
+
+6. **RECOMENDAÇÕES**
+   - Sugestões práticas para o treino
+
+7. **SCORES DE EVOLUÇÃO** (de 1 a 10)
+   - Ganho muscular: X/10
+   - Perda de gordura: X/10
+   - Postura: X/10
+   - Progresso geral: X/10
+
+Seja profissional, detalhado e motivador.`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Você é um personal trainer especialista em análise de evolução física. Responda sempre em português brasileiro de forma profissional, detalhada e motivadora.' },
+              { 
+                role: 'user', 
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: input.beforePhotoUrl, detail: 'high' } },
+                  { type: 'image_url', image_url: { url: input.afterPhotoUrl, detail: 'high' } },
+                ]
+              },
+            ],
+          });
+          
+          const analysisText = response.choices[0]?.message?.content || 'Não foi possível gerar a análise.';
+          
+          return {
+            analysis: analysisText,
+            analyzedAt: new Date().toISOString(),
+            studentName: student.name,
+          };
+        } catch (error) {
+          console.error('Erro na análise de evolução:', error);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao analisar evolução.' });
+        }
+      }),
   }),
 
   // ==================== MEASUREMENTS ====================
@@ -5957,22 +6075,67 @@ Seja profissional, respeitoso e motivador.`
         lastPhotoUrl: z.string(),
         poseName: z.string(),
         daysBetween: z.number(),
+        // Medidas opcionais para enriquecer a análise
+        measurementsBefore: z.object({
+          weight: z.number().optional(),
+          bodyFat: z.number().optional(),
+          chest: z.number().optional(),
+          waist: z.number().optional(),
+          hips: z.number().optional(),
+          arm: z.number().optional(),
+          thigh: z.number().optional(),
+        }).optional(),
+        measurementsAfter: z.object({
+          weight: z.number().optional(),
+          bodyFat: z.number().optional(),
+          chest: z.number().optional(),
+          waist: z.number().optional(),
+          hips: z.number().optional(),
+          arm: z.number().optional(),
+          thigh: z.number().optional(),
+        }).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { invokeLLM } = await import('./_core/llm');
+        
+        // Construir seção de medidas se disponível
+        let measurementsSection = '';
+        if (input.measurementsBefore || input.measurementsAfter) {
+          measurementsSection = '\n\n**MEDIDAS CORPORAIS:**\n';
+          
+          const formatMeasurement = (label: string, before?: number, after?: number, unit: string = '') => {
+            if (before !== undefined && after !== undefined) {
+              const diff = after - before;
+              const diffStr = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+              return `- ${label}: ${before}${unit} → ${after}${unit} (${diffStr}${unit})\n`;
+            } else if (after !== undefined) {
+              return `- ${label} atual: ${after}${unit}\n`;
+            }
+            return '';
+          };
+          
+          measurementsSection += formatMeasurement('Peso', input.measurementsBefore?.weight, input.measurementsAfter?.weight, 'kg');
+          measurementsSection += formatMeasurement('Gordura corporal', input.measurementsBefore?.bodyFat, input.measurementsAfter?.bodyFat, '%');
+          measurementsSection += formatMeasurement('Peito', input.measurementsBefore?.chest, input.measurementsAfter?.chest, 'cm');
+          measurementsSection += formatMeasurement('Cintura', input.measurementsBefore?.waist, input.measurementsAfter?.waist, 'cm');
+          measurementsSection += formatMeasurement('Quadril', input.measurementsBefore?.hips, input.measurementsAfter?.hips, 'cm');
+          measurementsSection += formatMeasurement('Braço', input.measurementsBefore?.arm, input.measurementsAfter?.arm, 'cm');
+          measurementsSection += formatMeasurement('Coxa', input.measurementsBefore?.thigh, input.measurementsAfter?.thigh, 'cm');
+        }
         
         const prompt = `Você é um personal trainer especialista em análise de evolução física.
 
 Analise as duas fotos do aluno na pose "${input.poseName}" com ${input.daysBetween} dias de diferença entre elas.
 
 Primeira foto (antes): ${input.firstPhotoUrl}
-Segunda foto (depois): ${input.lastPhotoUrl}
+Segunda foto (depois): ${input.lastPhotoUrl}${measurementsSection}
 
 Forneça uma análise detalhada em português brasileiro, incluindo:
-1. **Mudanças visíveis**: O que mudou visivelmente entre as fotos (massa muscular, definição, postura, etc.)
-2. **Pontos positivos**: Aspectos que melhoraram
-3. **Pontos de atenção**: Áreas que podem receber mais foco
-4. **Recomendações**: Sugestões para continuar evoluindo
+1. **Mudanças visíveis**: O que mudou visivelmente entre as fotos (massa muscular, definição, postura, etc.)${measurementsSection ? '\n2. **Análise das medidas**: Correlacione as mudanças visuais com os dados numéricos' : ''}
+${measurementsSection ? '3' : '2'}. **Pontos positivos**: Aspectos que melhoraram
+${measurementsSection ? '4' : '3'}. **Pontos de atenção**: Áreas que podem receber mais foco
+${measurementsSection ? '5' : '4'}. **Recomendações**: Sugestões para continuar evoluindo
+${measurementsSection ? '6. **Score de evolução**: Dê uma nota de 1 a 10 para o progresso geral' : ''}
 
 Seja motivador mas realista. Se não conseguir identificar mudanças significativas, seja honesto mas encorajador.`;
 
@@ -5991,14 +6154,197 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
             ],
           });
           
+          const analysisText = response.choices[0]?.message?.content || 'Não foi possível gerar a análise.';
+          
+          // Tentar extrair score se presente na análise
+          let evolutionScore: number | undefined;
+          const scoreMatch = analysisText.match(/(?:score|nota)[^:]*:\s*(\d+(?:\.\d+)?)/i);
+          if (scoreMatch) {
+            evolutionScore = parseFloat(scoreMatch[1]);
+          }
+          
+          // Salvar análise no banco se tiver fotos com IDs
+          // (para histórico de análises)
+          
           return {
-            analysis: response.choices[0]?.message?.content || 'Não foi possível gerar a análise.',
+            analysis: analysisText,
+            evolutionScore,
+            analyzedAt: new Date().toISOString(),
           };
         } catch (error) {
           console.error('Erro na análise de fotos:', error);
           return {
             analysis: 'Desculpe, não foi possível analisar as fotos no momento. Tente novamente mais tarde.',
+            evolutionScore: undefined,
+            analyzedAt: new Date().toISOString(),
           };
+        }
+      }),
+    
+    // Nova rota para análise completa de evolução (fotos + medidas + histórico)
+    analyzeFullEvolution: studentProcedure
+      .input(z.object({
+        beforePhotoId: z.number().optional(),
+        afterPhotoId: z.number().optional(),
+        beforePhotoUrl: z.string().optional(),
+        afterPhotoUrl: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar fotos
+        let beforeUrl = input.beforePhotoUrl;
+        let afterUrl = input.afterPhotoUrl;
+        let beforeDate: Date | null = null;
+        let afterDate: Date | null = null;
+        
+        if (input.beforePhotoId || input.afterPhotoId) {
+          const photos = await db.getPhotosByStudentId(ctx.student.id);
+          if (input.beforePhotoId) {
+            const photo = photos.find(p => p.id === input.beforePhotoId);
+            if (photo) {
+              beforeUrl = photo.url;
+              beforeDate = new Date(photo.photoDate);
+            }
+          }
+          if (input.afterPhotoId) {
+            const photo = photos.find(p => p.id === input.afterPhotoId);
+            if (photo) {
+              afterUrl = photo.url;
+              afterDate = new Date(photo.photoDate);
+            }
+          }
+        }
+        
+        if (!beforeUrl || !afterUrl) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Fotos não encontradas para análise.' });
+        }
+        
+        // Buscar medidas do aluno
+        const measurements = await db.getMeasurementsByStudentId(ctx.student.id);
+        const sortedMeasurements = [...measurements].sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        
+        // Pegar primeira e última medição
+        const latestMeasurement = sortedMeasurements[0];
+        const oldestMeasurement = sortedMeasurements[sortedMeasurements.length - 1];
+        
+        // Construir contexto de medidas
+        let measurementsContext = '';
+        if (latestMeasurement && oldestMeasurement && sortedMeasurements.length > 1) {
+          measurementsContext = `\n\n**EVOLUÇÃO DAS MEDIDAS:**\n`;
+          measurementsContext += `Período: ${new Date(oldestMeasurement.date).toLocaleDateString('pt-BR')} até ${new Date(latestMeasurement.date).toLocaleDateString('pt-BR')}\n\n`;
+          
+          const addMeasure = (label: string, before: number | null, after: number | null, unit: string) => {
+            if (before !== null && after !== null) {
+              const diff = after - before;
+              const diffStr = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+              return `- ${label}: ${before}${unit} → ${after}${unit} (${diffStr}${unit})\n`;
+            }
+            return '';
+          };
+          
+          measurementsContext += addMeasure('Peso', oldestMeasurement.weight, latestMeasurement.weight, 'kg');
+          measurementsContext += addMeasure('Gordura corporal', oldestMeasurement.bodyFat, latestMeasurement.bodyFat, '%');
+          measurementsContext += addMeasure('Peito', oldestMeasurement.chest, latestMeasurement.chest, 'cm');
+          measurementsContext += addMeasure('Cintura', oldestMeasurement.waist, latestMeasurement.waist, 'cm');
+          measurementsContext += addMeasure('Quadril', oldestMeasurement.hips, latestMeasurement.hips, 'cm');
+          measurementsContext += addMeasure('Braço D', oldestMeasurement.rightArm, latestMeasurement.rightArm, 'cm');
+          measurementsContext += addMeasure('Braço E', oldestMeasurement.leftArm, latestMeasurement.leftArm, 'cm');
+          measurementsContext += addMeasure('Coxa D', oldestMeasurement.rightThigh, latestMeasurement.rightThigh, 'cm');
+          measurementsContext += addMeasure('Coxa E', oldestMeasurement.leftThigh, latestMeasurement.leftThigh, 'cm');
+        }
+        
+        // Buscar anamnese para contexto
+        const anamnesis = await db.getAnamnesisByStudentId(ctx.student.id);
+        let goalContext = '';
+        if (anamnesis?.mainGoal) {
+          goalContext = `\n\n**OBJETIVO DO ALUNO:** ${anamnesis.mainGoal}`;
+        }
+        
+        const daysBetween = beforeDate && afterDate 
+          ? Math.abs(Math.floor((afterDate.getTime() - beforeDate.getTime()) / (1000 * 60 * 60 * 24)))
+          : 0;
+        
+        const prompt = `Você é um personal trainer especialista em análise de evolução física.
+
+Analise a evolução física completa deste aluno com base nas fotos e dados fornecidos.${goalContext}${measurementsContext}
+
+${daysBetween > 0 ? `Período entre as fotos: ${daysBetween} dias` : ''}
+
+Forneça uma análise completa em português brasileiro:
+
+1. **ANÁLISE VISUAL** (baseada nas fotos)
+   - Mudanças na composição corporal
+   - Desenvolvimento muscular visível
+   - Postura e simetria
+
+2. **ANÁLISE DAS MEDIDAS** (se disponível)
+   - Interpretação dos números
+   - Correlação com as mudanças visuais
+
+3. **PROGRESSO EM RELAÇÃO AO OBJETIVO**
+   - Avaliação do progresso
+   - Está no caminho certo?
+
+4. **PONTOS FORTES**
+   - O que está funcionando bem
+
+5. **ÁREAS DE MELHORIA**
+   - O que pode melhorar
+
+6. **RECOMENDAÇÕES**
+   - Sugestões práticas
+
+7. **SCORES DE EVOLUÇÃO** (de 1 a 10)
+   - Ganho muscular: X/10
+   - Perda de gordura: X/10
+   - Postura: X/10
+   - Progresso geral: X/10
+
+Seja motivador mas realista e profissional.`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Você é um personal trainer especialista em análise de evolução física. Responda sempre em português brasileiro de forma profissional, detalhada e motivadora.' },
+              { 
+                role: 'user', 
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: beforeUrl, detail: 'high' } },
+                  { type: 'image_url', image_url: { url: afterUrl, detail: 'high' } },
+                ]
+              },
+            ],
+          });
+          
+          const analysisText = response.choices[0]?.message?.content || 'Não foi possível gerar a análise.';
+          
+          // Extrair scores da análise
+          const extractScore = (text: string, pattern: RegExp): number | undefined => {
+            const match = text.match(pattern);
+            return match ? parseFloat(match[1]) : undefined;
+          };
+          
+          const scores = {
+            muscleGain: extractScore(analysisText, /ganho muscular[^:]*:\s*(\d+(?:\.\d+)?)/i),
+            fatLoss: extractScore(analysisText, /perda de gordura[^:]*:\s*(\d+(?:\.\d+)?)/i),
+            posture: extractScore(analysisText, /postura[^:]*:\s*(\d+(?:\.\d+)?)/i),
+            overall: extractScore(analysisText, /progresso geral[^:]*:\s*(\d+(?:\.\d+)?)/i),
+          };
+          
+          return {
+            analysis: analysisText,
+            scores,
+            analyzedAt: new Date().toISOString(),
+            measurementsIncluded: !!measurementsContext,
+            daysBetween,
+          };
+        } catch (error) {
+          console.error('Erro na análise completa:', error);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao analisar evolução.' });
         }
       }),
   }),

@@ -8,6 +8,7 @@ import {
   anamnesisHistory, InsertAnamnesisHistory,
   measurements, InsertMeasurement, Measurement,
   photos, InsertPhoto, Photo,
+  photoAnalyses, InsertPhotoAnalysis, PhotoAnalysis,
   workouts, InsertWorkout, Workout,
   workoutDays, InsertWorkoutDay, WorkoutDay,
   exercises, InsertExercise, Exercise,
@@ -373,6 +374,74 @@ export async function deletePhoto(id: number, personalId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(photos).where(and(eq(photos.id, id), eq(photos.personalId, personalId)));
+}
+
+export async function getPhotoById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(photos).where(eq(photos.id, id));
+  return result[0] || null;
+}
+
+export async function updatePhoto(id: number, data: Partial<InsertPhoto>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(photos).set(data).where(eq(photos.id, id));
+}
+
+export async function getPhotosByPoseId(studentId: number, poseId: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(photos)
+    .where(and(
+      eq(photos.studentId, studentId),
+      eq(photos.poseId, poseId)
+    ))
+    .orderBy(desc(photos.photoDate));
+}
+
+// ==================== PHOTO ANALYSIS FUNCTIONS ====================
+export async function createPhotoAnalysis(data: InsertPhotoAnalysis) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(photoAnalyses).values(data);
+  return result[0].insertId;
+}
+
+export async function getPhotoAnalysesByStudentId(studentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(photoAnalyses)
+    .where(eq(photoAnalyses.studentId, studentId))
+    .orderBy(desc(photoAnalyses.createdAt));
+}
+
+export async function getPhotoAnalysisById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(photoAnalyses).where(eq(photoAnalyses.id, id));
+  return result[0] || null;
+}
+
+export async function getLatestPhotoAnalysis(studentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(photoAnalyses)
+    .where(eq(photoAnalyses.studentId, studentId))
+    .orderBy(desc(photoAnalyses.createdAt))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function getPhotoAnalysesByPhotoIds(beforePhotoId: number, afterPhotoId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(photoAnalyses)
+    .where(and(
+      eq(photoAnalyses.beforePhotoId, beforePhotoId),
+      eq(photoAnalyses.afterPhotoId, afterPhotoId)
+    ))
+    .orderBy(desc(photoAnalyses.createdAt));
 }
 
 // ==================== WORKOUT FUNCTIONS ====================

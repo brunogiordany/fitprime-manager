@@ -22,6 +22,7 @@ import StudentTrainingTips from "@/components/StudentTrainingTips";
 import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
 import StudentHelpCenter from "@/components/StudentHelpCenter";
 import { GuidedPhotos } from "@/components/GuidedPhotos";
+import { PhotoEvolutionSection } from "@/components/PhotoEvolutionSection";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
@@ -49,7 +50,9 @@ import {
   X,
   Flame,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Camera,
+  Sparkles
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
@@ -129,6 +132,7 @@ export default function StudentPortalPage() {
   const [diarySubTab, setDiarySubTab] = useState<'sessions' | 'records' | 'dashboard'>('sessions');
   const [editingWorkoutLog, setEditingWorkoutLog] = useState<any>(null);
   const [showWorkoutLogModal, setShowWorkoutLogModal] = useState(false);
+  const [showPhotoInviteModal, setShowPhotoInviteModal] = useState(false); // Modal de convite para fotos após anamnese
 
   // Restaurar dados do formulário de anamnese do localStorage ao carregar
   useEffect(() => {
@@ -268,6 +272,8 @@ export default function StudentPortalPage() {
       refetchAnamnesis();
       // Limpar dados salvos no localStorage após sucesso
       localStorage.removeItem('anamnesisFormDraft');
+      // Mostrar convite para adicionar fotos de evolução
+      setShowPhotoInviteModal(true);
     },
     onError: (error: any) => {
       toast.error(error.message || "Erro ao atualizar anamnese");
@@ -654,10 +660,17 @@ export default function StudentPortalPage() {
 
           {/* Photos Tab */}
           <TabsContent value="photos" className="space-y-6">
-            <GuidedPhotos
-              studentId={studentData?.id || 0}
-              readOnly={!editPermissions?.canEditPhotos}
-            />
+            {editPermissions?.canEditPhotos ? (
+              <PhotoEvolutionSection
+                studentId={studentData?.id || 0}
+                measurements={measurementsData || []}
+              />
+            ) : (
+              <GuidedPhotos
+                studentId={studentData?.id || 0}
+                readOnly={true}
+              />
+            )}
           </TabsContent>
 
           {/* Sessions Tab */}
@@ -3014,6 +3027,71 @@ export default function StudentPortalPage() {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Convite para Fotos de Evolução */}
+      <Dialog open={showPhotoInviteModal} onOpenChange={setShowPhotoInviteModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5 text-emerald-600" />
+              Completar Perfil com Fotos
+            </DialogTitle>
+            <DialogDescription>
+              Suas informações foram salvas com sucesso!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-emerald-900 mb-1">Acompanhe sua evolução</h4>
+                  <p className="text-sm text-emerald-700">
+                    Adicione fotos de evolução para visualizar seu progresso ao longo do tempo com comparações antes/depois.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">Análise por IA</h4>
+                  <p className="text-sm text-blue-700">
+                    Nossa IA analisa suas fotos junto com suas medidas para dar feedback personalizado sobre seu progresso.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowPhotoInviteModal(false)}
+            >
+              Fazer Depois
+            </Button>
+            <Button
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => {
+                setShowPhotoInviteModal(false);
+                setActiveTab('photos');
+              }}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Adicionar Fotos
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </StudentPortalLayout>

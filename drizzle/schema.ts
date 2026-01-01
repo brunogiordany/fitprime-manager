@@ -221,10 +221,45 @@ export const photos = mysqlTable("photos", {
   url: varchar("url", { length: 500 }).notNull(),
   fileKey: varchar("fileKey", { length: 255 }).notNull(),
   category: mysqlEnum("category", ["front", "back", "side_left", "side_right", "other"]).default("other"),
+  poseId: varchar("poseId", { length: 100 }), // ID da pose guiada (frontal-relaxado, etc)
   photoDate: date("photoDate").notNull(),
   notes: text("notes"),
+  // Análise de IA
+  aiAnalysis: text("aiAnalysis"), // Análise completa da IA em JSON
+  aiAnalyzedAt: timestamp("aiAnalyzedAt"), // Data da última análise
+  // Metadados de evolução
+  bodyFatEstimate: decimal("bodyFatEstimate", { precision: 5, scale: 2 }), // Estimativa de % gordura
+  muscleScore: int("muscleScore"), // Score de desenvolvimento muscular (1-10)
+  postureScore: int("postureScore"), // Score de postura (1-10)
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
+
+// Tabela para análises de evolução (comparações)
+export const photoAnalyses = mysqlTable("photo_analyses", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  beforePhotoId: int("beforePhotoId").notNull().references(() => photos.id),
+  afterPhotoId: int("afterPhotoId").notNull().references(() => photos.id),
+  // Dados da análise
+  analysisType: mysqlEnum("analysisType", ["evolution", "single", "comprehensive"]).default("evolution"),
+  analysis: text("analysis").notNull(), // Análise completa em texto
+  analysisJson: text("analysisJson"), // Análise estruturada em JSON
+  // Scores comparativos
+  overallProgress: int("overallProgress"), // Progresso geral (-100 a 100)
+  muscleGain: int("muscleGain"), // Ganho muscular (-100 a 100)
+  fatLoss: int("fatLoss"), // Perda de gordura (-100 a 100)
+  postureImprovement: int("postureImprovement"), // Melhora de postura (-100 a 100)
+  // Medidas correlacionadas (opcional)
+  measurementId: int("measurementId").references(() => measurements.id),
+  // Metadados
+  daysBetween: int("daysBetween"), // Dias entre as fotos
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  createdBy: mysqlEnum("createdBy", ["student", "personal", "system"]).default("system"),
+});
+
+export type PhotoAnalysis = typeof photoAnalyses.$inferSelect;
+export type InsertPhotoAnalysis = typeof photoAnalyses.$inferInsert;
 
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;

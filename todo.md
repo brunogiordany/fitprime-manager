@@ -1891,3 +1891,14 @@
 - [x] Indicador visual de status offline
 - [x] Funciona para Personal e Aluno
 - [x] Prompt de instalação do app
+
+## Sistema de Evolução de Fotos com IA (v5.9)
+- [x] Migração do banco (tabela photo_analyses + novos campos)
+- [x] Fluxo de UX: Convite para fotos após salvar anamnese (opcional)
+- [x] Timeline de fotos com datas visíveis
+- [x] Comparação lado a lado (antes/depois) com slider
+- [x] Análise por IA do shape baseada em fotos + medidas
+- [x] Scores numéricos (ganho muscular, perda gordura, postura)
+- [x] Histórico de análises salvas
+- [x] Interface para Portal do Aluno
+- [x] Interface para área do Personal (dashboard de evolução)

@@ -86,6 +86,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { PersonalPhotoEvolutionView } from "@/components/PersonalPhotoEvolutionView";
 
 export default function StudentProfile() {
   const [, setLocation] = useLocation();
@@ -1537,198 +1538,15 @@ export default function StudentProfile() {
 
           {/* Photos Tab */}
           <TabsContent value="photos">
-            <div className="space-y-6">
-              {/* Fotos Guiadas por Pose */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-primary" />
-                    Fotos de Evolução por Pose
-                  </CardTitle>
-                  <CardDescription>Fotos organizadas por tipo de pose para acompanhar a evolução</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {(() => {
-                    // Organizar fotos por pose
-                    const photosByPose: Record<string, Array<{ id: number; url: string; date: Date }>> = {};
-                    photos?.forEach(photo => {
-                      const poseMatch = photo.notes?.match(/^pose:(.+)$/);
-                      const poseId = poseMatch ? poseMatch[1] : null;
-                      if (poseId) {
-                        if (!photosByPose[poseId]) photosByPose[poseId] = [];
-                        photosByPose[poseId].push({ id: photo.id, url: photo.url, date: photo.createdAt });
-                      }
-                    });
-                    
-                    // Ordenar por data
-                    Object.keys(photosByPose).forEach(poseId => {
-                      photosByPose[poseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                    });
-                    
-                    const poseNames: Record<string, string> = {
-                      'frontal-relaxado': 'Frontal Relaxado',
-                      'frontal-contraido': 'Frontal Contraído',
-                      'lateral-esquerda': 'Lateral Esquerda',
-                      'lateral-direita': 'Lateral Direita',
-                      'costas-relaxado': 'Costas Relaxado',
-                      'costas-contraido': 'Costas Contraído',
-                      'biceps-direito': 'Bíceps Direito',
-                      'biceps-esquerdo': 'Bíceps Esquerdo',
-                      'perna-direita-relaxada': 'Perna Direita Relaxada',
-                      'perna-direita-contraida': 'Perna Direita Contraída',
-                      'perna-esquerda-relaxada': 'Perna Esquerda Relaxada',
-                      'perna-esquerda-contraida': 'Perna Esquerda Contraída',
-                    };
-                    
-                    const posesWithPhotos = Object.keys(photosByPose);
-                    
-                    if (posesWithPhotos.length === 0) {
-                      return (
-                        <div className="text-center py-8">
-                          <Camera className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                          <p className="text-muted-foreground">Nenhuma foto de evolução enviada pelo aluno</p>
-                          <p className="text-sm text-muted-foreground mt-1">O aluno pode enviar fotos pelo portal</p>
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <div className="space-y-6">
-                        {posesWithPhotos.map(poseId => (
-                          <div key={poseId} className="border rounded-lg p-4">
-                            <h4 className="font-medium mb-3">{poseNames[poseId] || poseId}</h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                              {photosByPose[poseId].map((photo, index) => (
-                                <div key={photo.id} className="relative">
-                                  <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                                    <img
-                                      src={photo.url}
-                                      alt={poseNames[poseId] || poseId}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                  <div className="mt-1 text-center">
-                                    <p className="text-xs text-muted-foreground">
-                                      {format(new Date(photo.date), "dd/MM/yyyy", { locale: ptBR })}
-                                    </p>
-                                    {index === 0 && photosByPose[poseId].length > 1 && (
-                                      <Badge variant="secondary" className="text-xs mt-1">Mais recente</Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            {/* Comparação se tiver mais de 1 foto */}
-                            {photosByPose[poseId].length >= 2 && (
-                              <div className="mt-4 pt-4 border-t">
-                                <p className="text-sm font-medium mb-2 text-center">Comparação: Primeira vs Mais Recente</p>
-                                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                                  <div className="text-center">
-                                    <p className="text-xs text-muted-foreground mb-1">Primeira</p>
-                                    <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                                      <img
-                                        src={photosByPose[poseId][photosByPose[poseId].length - 1].url}
-                                        alt="Primeira"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {format(new Date(photosByPose[poseId][photosByPose[poseId].length - 1].date), "dd/MM/yy")}
-                                    </p>
-                                  </div>
-                                  <div className="text-center">
-                                    <p className="text-xs text-muted-foreground mb-1">Atual</p>
-                                    <div className="aspect-[3/4] border rounded-lg overflow-hidden bg-muted">
-                                      <img
-                                        src={photosByPose[poseId][0].url}
-                                        alt="Atual"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {format(new Date(photosByPose[poseId][0].date), "dd/MM/yy")}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
-              
-              {/* Galeria Geral (fotos sem pose definida) */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle>Galeria Geral</CardTitle>
-                    <CardDescription>Outras fotos do aluno</CardDescription>
-                  </div>
-                  <div>
-                    <input
-                      type="file"
-                      ref={photoInputRef}
-                      onChange={handlePhotoUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <Button 
-                      onClick={() => photoInputRef.current?.click()}
-                      disabled={isUploadingPhoto}
-                      variant="outline"
-                    >
-                      {isUploadingPhoto ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Enviando...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Adicionar Foto
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {(() => {
-                    const generalPhotos = photos?.filter(p => !p.notes?.startsWith('pose:')) || [];
-                    if (generalPhotos.length === 0) {
-                      return (
-                        <div className="text-center py-6">
-                          <p className="text-sm text-muted-foreground">Nenhuma foto geral</p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {generalPhotos.map((photo) => (
-                          <div key={photo.id} className="relative group">
-                            <img
-                              src={photo.url}
-                              alt={photo.category || 'Foto'}
-                              className="w-full h-40 object-cover rounded-lg"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 rounded-b-lg">
-                              <p className="text-xs">
-                                {photo.photoDate && !isNaN(new Date(photo.photoDate).getTime())
-                                  ? format(new Date(photo.photoDate), "dd/MM/yyyy")
-                                  : format(new Date(photo.createdAt), "dd/MM/yyyy")}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
-            </div>
+            <PersonalPhotoEvolutionView
+              studentId={studentId}
+              studentName={student?.name || 'Aluno'}
+              photos={photos || []}
+              measurements={measurements || []}
+              onRefresh={() => refetchPhotos()}
+            />
           </TabsContent>
+
 
           {/* Workouts Tab */}
           <TabsContent value="workouts">
