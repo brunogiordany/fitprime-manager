@@ -1948,3 +1948,10 @@
 - [ ] Botão de adicionar nova FOTO visível e funcional
 - [ ] Histórico de análises da IA sendo gerado e exibido
 - [ ] Aplicar em todas as interfaces (Personal e Aluno)
+
+
+## Análise de Redundância e Correções (v5.12)
+- [ ] Mapear todos os gráficos e visualizações existentes
+- [ ] Identificar redundâncias e sobreposições
+- [ ] Simplificar interface removendo duplicações
+- [ ] Corrigir formato dos botões (texto visível, não só ícone)

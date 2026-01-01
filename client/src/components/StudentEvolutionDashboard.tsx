@@ -495,7 +495,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                       
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
-                          <History className="h-4 w-4 mr-1" />
+                          <History className="h-4 w-4 mr-2" />
                           Histórico
                         </Button>
                         {compareMode ? (
@@ -662,11 +662,11 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
           {/* Botões de ação */}
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="h-4 w-4 mr-2" />
               Nova Medida
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
-              <History className="h-4 w-4 mr-1" />
+              <History className="h-4 w-4 mr-2" />
               Histórico de Análises
             </Button>
           </div>

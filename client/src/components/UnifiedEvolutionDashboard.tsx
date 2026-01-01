@@ -447,16 +447,16 @@ export function UnifiedEvolutionDashboard({
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowNewPhotoModal(true)}>
-              <Camera className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Nova Foto</span>
+              <Camera className="h-4 w-4 mr-2" />
+              Nova Foto
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Nova Medida</span>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Medida
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
-              <History className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Histórico</span>
+              <History className="h-4 w-4 mr-2" />
+              Histórico
             </Button>
           </div>
         </div>
