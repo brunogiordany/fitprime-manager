@@ -413,7 +413,7 @@ export default function Support() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response.answer,
+        content: typeof response.answer === 'string' ? response.answer : String(response.answer),
         timestamp: new Date(),
       };
 

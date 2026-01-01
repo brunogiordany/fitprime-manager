@@ -274,7 +274,7 @@ export default function StudentHelpCenter() {
         context: "student",
       });
 
-      const assistantMessage: Message = { role: "assistant", content: response.answer };
+      const assistantMessage: Message = { role: "assistant", content: typeof response.answer === 'string' ? response.answer : String(response.answer) };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       const errorMessage: Message = { 

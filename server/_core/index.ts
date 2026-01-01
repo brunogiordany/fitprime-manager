@@ -138,7 +138,8 @@ Formato de resposta:
         
         // Try to parse JSON from response
         try {
-          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          const textContent = typeof responseText === 'string' ? responseText : '';
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
             extractedData = parsed.extractedData || null;

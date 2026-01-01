@@ -157,9 +157,10 @@ export function UnifiedEvolutionDashboard({
   );
 
   // Mutation para análise de fotos
-  const analyzeMutation = trpc.students.analyzePhotos.useMutation({
-    onSuccess: (data: { analysis: string }) => {
-      setAnalysisResult(data.analysis);
+  const analyzeMutation = trpc.anamnesis.analyzeEvolution.useMutation({
+    onSuccess: (data) => {
+      const analysisText = typeof data.analysis === 'string' ? data.analysis : String(data.analysis);
+      setAnalysisResult(analysisText);
       toast.success("Análise concluída!");
       onRefresh?.();
     },
@@ -169,7 +170,7 @@ export function UnifiedEvolutionDashboard({
   });
 
   // Mutation para criar nova medida
-  const createMeasurementMutation = trpc.students.addMeasurement.useMutation({
+  const createMeasurementMutation = trpc.measurements.create.useMutation({
     onSuccess: () => {
       toast.success("Medida registrada com sucesso!");
       setShowNewMeasurementModal(false);
@@ -1443,6 +1444,7 @@ export function UnifiedEvolutionDashboard({
               onClick={() => {
                 createMeasurementMutation.mutate({
                   studentId,
+                  measureDate: new Date().toISOString().split('T')[0],
                   weight: newMeasurement.weight || undefined,
                   bodyFat: newMeasurement.bodyFat || undefined,
                   chest: newMeasurement.chest || undefined,

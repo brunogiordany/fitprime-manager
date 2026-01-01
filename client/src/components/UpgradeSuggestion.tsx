@@ -72,7 +72,7 @@ export default function UpgradeSuggestion({ onUpgrade }: UpgradeSuggestionProps)
   // Card de uso atual
   const UsageCard = () => (
     <Card className={`border-l-4 ${
-      usageSummary.statusType === 'error' ? 'border-l-red-500' :
+      (usageSummary.statusType as string) === 'error' ? 'border-l-red-500' :
       usageSummary.statusType === 'warning' ? 'border-l-yellow-500' :
       'border-l-emerald-500'
     }`}>
@@ -83,7 +83,7 @@ export default function UpgradeSuggestion({ onUpgrade }: UpgradeSuggestionProps)
             Uso do Plano
           </CardTitle>
           <Badge variant={
-            usageSummary.statusType === 'error' ? 'destructive' :
+            (usageSummary.statusType as string) === 'error' ? 'destructive' :
             usageSummary.statusType === 'warning' ? 'secondary' :
             'default'
           }>
@@ -261,7 +261,7 @@ export function UpgradeBanner() {
 
   return (
     <div className={`px-4 py-2 text-sm flex items-center justify-between ${
-      usageSummary.statusType === 'error' 
+      (usageSummary.statusType as string) === 'error' 
         ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
         : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
     }`}>

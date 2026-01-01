@@ -113,24 +113,30 @@ export function PhotoEvolutionSection({ studentId, measurements = [] }: PhotoEvo
     const first = sorted[0];
     const last = sorted[sorted.length - 1];
     
+    const toNumber = (val: string | number | null | undefined): number | undefined => {
+      if (val === null || val === undefined) return undefined;
+      const num = typeof val === 'string' ? parseFloat(val) : val;
+      return isNaN(num) ? undefined : num;
+    };
+    
     return {
       before: {
-        weight: first.weight ?? undefined,
-        bodyFat: first.bodyFat ?? undefined,
-        chest: first.chest ?? undefined,
-        waist: first.waist ?? undefined,
-        hips: first.hips ?? undefined,
-        arm: first.rightArm ?? undefined,
-        thigh: first.rightThigh ?? undefined,
+        weight: toNumber(first.weight),
+        bodyFat: toNumber(first.bodyFat),
+        chest: toNumber(first.chest),
+        waist: toNumber(first.waist),
+        hips: toNumber(first.hips),
+        arm: toNumber(first.rightArm),
+        thigh: toNumber(first.rightThigh),
       },
       after: {
-        weight: last.weight ?? undefined,
-        bodyFat: last.bodyFat ?? undefined,
-        chest: last.chest ?? undefined,
-        waist: last.waist ?? undefined,
-        hips: last.hips ?? undefined,
-        arm: last.rightArm ?? undefined,
-        thigh: last.rightThigh ?? undefined,
+        weight: toNumber(last.weight),
+        bodyFat: toNumber(last.bodyFat),
+        chest: toNumber(last.chest),
+        waist: toNumber(last.waist),
+        hips: toNumber(last.hips),
+        arm: toNumber(last.rightArm),
+        thigh: toNumber(last.rightThigh),
       }
     };
   }, [measurements]);
