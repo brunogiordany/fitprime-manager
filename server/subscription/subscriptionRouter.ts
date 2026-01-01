@@ -35,6 +35,64 @@ async function getPersonal(userId: number) {
 
 export const subscriptionRouter = router({
   /**
+   * Verifica se o pagamento está em dia (com 1 dia de tolerância)
+   */
+  paymentStatus: protectedProcedure.query(async ({ ctx }) => {
+    const personal = await getPersonal(ctx.user.id);
+    
+    // Trial sempre é válido
+    if (personal.subscriptionStatus === 'trial') {
+      return {
+        isValid: true,
+        status: 'trial' as const,
+        daysOverdue: 0,
+        expiresAt: null,
+        message: 'Período de teste ativo',
+      };
+    }
+    
+    // Cancelado ou expirado
+    if (personal.subscriptionStatus === 'cancelled' || personal.subscriptionStatus === 'expired') {
+      return {
+        isValid: false,
+        status: personal.subscriptionStatus as 'cancelled' | 'expired',
+        daysOverdue: 999,
+        expiresAt: personal.subscriptionExpiresAt,
+        message: personal.subscriptionStatus === 'cancelled' 
+          ? 'Assinatura cancelada. Renove para continuar usando.' 
+          : 'Assinatura expirada. Renove para continuar usando.',
+      };
+    }
+    
+    // Verificar data de expiração com 1 dia de tolerância
+    if (personal.subscriptionExpiresAt) {
+      const now = new Date();
+      const expiresAt = new Date(personal.subscriptionExpiresAt);
+      const gracePeriodEnd = new Date(expiresAt);
+      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1); // 1 dia de tolerância
+      
+      if (now > gracePeriodEnd) {
+        const daysOverdue = Math.floor((now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          isValid: false,
+          status: 'overdue' as const,
+          daysOverdue,
+          expiresAt: personal.subscriptionExpiresAt,
+          message: `Pagamento em atraso há ${daysOverdue} dia(s). Renove para continuar usando.`,
+        };
+      }
+    }
+    
+    return {
+      isValid: true,
+      status: 'active' as const,
+      daysOverdue: 0,
+      expiresAt: personal.subscriptionExpiresAt,
+      message: 'Assinatura ativa',
+    };
+  }),
+
+  /**
    * Obtém o status atual do limite de alunos
    */
   status: protectedProcedure.query(async ({ ctx }) => {

@@ -37,9 +37,53 @@ async function getOrCreatePersonal(userId: number) {
   return personal;
 }
 
+// Helper to check if subscription is valid (with 1 day grace period)
+function isSubscriptionValid(personal: { subscriptionStatus: string; subscriptionExpiresAt: Date | null }): { valid: boolean; daysOverdue: number } {
+  // Trial and active statuses are always valid if not expired
+  if (personal.subscriptionStatus === 'trial') {
+    return { valid: true, daysOverdue: 0 };
+  }
+  
+  if (personal.subscriptionStatus === 'cancelled' || personal.subscriptionStatus === 'expired') {
+    return { valid: false, daysOverdue: 999 };
+  }
+  
+  // Check expiration date with 1 day grace period
+  if (personal.subscriptionExpiresAt) {
+    const now = new Date();
+    const expiresAt = new Date(personal.subscriptionExpiresAt);
+    const gracePeriodEnd = new Date(expiresAt);
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1); // 1 day grace period
+    
+    if (now > gracePeriodEnd) {
+      const daysOverdue = Math.floor((now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60 * 24));
+      return { valid: false, daysOverdue };
+    }
+  }
+  
+  return { valid: true, daysOverdue: 0 };
+}
+
 // Personal-only procedure
 const personalProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   const personal = await getOrCreatePersonal(ctx.user.id);
+  return next({ ctx: { ...ctx, personal: personal! } });
+});
+
+// Personal procedure that requires active subscription
+const paidPersonalProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const personal = await getOrCreatePersonal(ctx.user.id);
+  
+  const { valid, daysOverdue } = isSubscriptionValid(personal as any);
+  
+  if (!valid) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: `Sua assinatura está vencida há ${daysOverdue} dia(s). Por favor, renove para continuar usando o sistema.`,
+      cause: { type: 'SUBSCRIPTION_EXPIRED', daysOverdue }
+    });
+  }
+  
   return next({ ctx: { ...ctx, personal: personal! } });
 });
 

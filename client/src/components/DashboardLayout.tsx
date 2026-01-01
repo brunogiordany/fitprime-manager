@@ -51,6 +51,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { trpc } from "@/lib/trpc";
 import { OfflineIndicator } from "./OfflineIndicator";
+import SubscriptionBlocked from "@/pages/SubscriptionBlocked";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -154,6 +155,27 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  
+  // Verificação de status de pagamento da assinatura
+  const { data: paymentStatus, isLoading: paymentLoading } = trpc.subscription.paymentStatus.useQuery(
+    undefined,
+    { 
+      refetchInterval: 60000, // Verifica a cada 1 minuto
+      staleTime: 30000 // Cache por 30 segundos
+    }
+  );
+  
+  // Se assinatura não está válida, mostrar tela de bloqueio
+  if (!paymentLoading && paymentStatus && !paymentStatus.isValid) {
+    return (
+      <SubscriptionBlocked
+        status={paymentStatus.status as 'overdue' | 'cancelled' | 'expired'}
+        daysOverdue={paymentStatus.daysOverdue}
+        expiresAt={paymentStatus.expiresAt}
+        message={paymentStatus.message}
+      />
+    );
+  }
   
   // Query para mensagens não lidas do chat
   const { data: totalUnread } = trpc.chat.totalUnread.useQuery(

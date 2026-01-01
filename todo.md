@@ -1967,3 +1967,12 @@
 - [x] Processar evento subscription_renewed (renovar assinatura)
 - [x] Webhook criado na Cakto (ID: 33740, Secret: 29163253-1d82-4fb3-b0e8-ae42ff4f07ae)
 - [ ] Testar integração completa com compra real
+
+
+## Bloqueio de Acesso - Pagamento em Atraso (v4.8)
+- [x] Criar middleware de verificação de assinatura no backend
+- [x] Verificar se assinatura está vencida há mais de 1 dia (1 dia de tolerância)
+- [x] Criar página de bloqueio/renovação para personais inadimplentes
+- [x] Redirecionar para página de bloqueio quando assinatura vencida
+- [x] Botão de renovação aponta para checkout da Cakto
+- [x] Testes unitários passando (7 testes)
