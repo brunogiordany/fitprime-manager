@@ -6,6 +6,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { storagePut } from "./storage";
+import { invokeLLM } from "./_core/llm";
 import { nanoid } from "nanoid";
 import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription, getSubscription, createPaymentLink } from "./stripe";
 import { subscriptionRouter } from "./subscription/subscriptionRouter";
@@ -61,6 +62,31 @@ const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  
+  // ==================== SUPORTE COM IA ====================
+  support: router({
+    askAI: publicProcedure
+      .input(z.object({
+        question: z.string(),
+        context: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: input.context },
+              { role: "user", content: input.question },
+            ],
+          });
+          
+          const answer = response.choices?.[0]?.message?.content || "Desculpe, não consegui processar sua pergunta. Tente novamente.";
+          return { answer };
+        } catch (error) {
+          console.error("Erro ao chamar LLM:", error);
+          return { answer: "Desculpe, ocorreu um erro ao processar sua pergunta. Por favor, tente novamente mais tarde." };
+        }
+      }),
+  }),
   
   // ==================== SUBSCRIPTION (Planos SaaS) ====================
   subscription: subscriptionRouter,

@@ -1799,3 +1799,36 @@
 - [x] Garantir que todos os detalhes sejam visíveis sem scroll horizontal
 - [x] Ajustar tamanho de fontes e badges para mobile
 - [x] Ajustar botões do rodapé para mobile
+
+
+## Análise Comparativa (v4.9)
+- [x] Criar tabela comparativa detalhada FitPrime vs Concorrência
+- [x] Incluir todas as funcionalidades de cada plataforma
+- [x] Destacar diferenciais do FitPrime
+
+
+## Sistema de Suporte com IA (v5.0)
+- [ ] Criar página de Suporte/Ajuda para o Personal
+  - [ ] Jornada do Personal (primeiro contato até análises mensais)
+  - [ ] Guia passo a passo de todas as funcionalidades
+  - [ ] FAQ com perguntas frequentes
+- [ ] Criar página de Suporte/Ajuda para o Aluno
+  - [ ] Jornada do Aluno (como usar o portal)
+  - [ ] Guia de funcionalidades do portal
+- [ ] Implementar Chat com IA "Pergunte à FitPrime IA"
+  - [ ] Respostas baseadas nas funcionalidades reais do app
+  - [ ] Sugestões de perguntas rápidas
+  - [ ] Histórico de conversas
+- [ ] Adicionar link "Suporte" na barra lateral do Personal
+- [ ] Adicionar link "Ajuda" na barra lateral do Aluno
+
+
+## Sistema de Suporte com IA (v5.0)
+- [x] Criar página de Suporte para o Personal com jornada completa
+- [x] Criar página de Suporte para o Aluno com jornada
+- [x] Implementar Chat com IA ("Pergunte à FitPrime IA")
+- [x] Adicionar links na barra lateral (Personal e Aluno)
+- [x] Base de conhecimento com todas as funcionalidades do app
+- [x] Jornada do Personal em 10 passos
+- [x] Ciclo de acompanhamento mensal
+- [x] Guia de funcionalidades com dicas

@@ -41,7 +41,8 @@ import {
   Eye,
   Shield,
   BookOpen,
-  TrendingUp
+  TrendingUp,
+  HelpCircle
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -68,6 +69,7 @@ const menuItems = [
   { icon: Shield, label: "Acessos do Aluno", path: "/acessos-aluno" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
   { icon: Trash2, label: "Lixeira", path: "/lixeira" },
+  { icon: HelpCircle, label: "Suporte", path: "/suporte" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

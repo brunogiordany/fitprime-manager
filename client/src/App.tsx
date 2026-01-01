@@ -35,6 +35,8 @@ import Sessions from "./pages/Sessions";
 import StudentAccess from "./pages/StudentAccess";
 import TrainingDiaryPage from "./pages/TrainingDiaryPage";
 import EvolutionDashboard from "./pages/EvolutionDashboard";
+import Support from "./pages/Support";
+import StudentSupport from "./pages/StudentSupport";
 
 function Router() {
   return (
@@ -48,6 +50,7 @@ function Router() {
       <Route path="/meu-portal" component={StudentPortalPage} />
       <Route path="/portal/treino/:workoutId" component={StudentWorkoutLog} />
       <Route path="/meu-portal/treino/:workoutId" component={StudentWorkoutView} />
+      <Route path="/meu-portal/ajuda" component={StudentSupport} />
       
       {/* Personal Trainer routes */}
       <Route path="/dashboard" component={Dashboard} />
@@ -73,6 +76,7 @@ function Router() {
       <Route path="/acessos-aluno" component={StudentAccess} />
       <Route path="/diario-treino" component={TrainingDiaryPage} />
       <Route path="/evolucao" component={EvolutionDashboard} />
+      <Route path="/suporte" component={Support} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

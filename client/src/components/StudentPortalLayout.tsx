@@ -33,7 +33,8 @@ import {
   User,
   Home,
   ClipboardList,
-  Camera
+  Camera,
+  HelpCircle
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -61,6 +62,7 @@ const menuItems = [
   { icon: CreditCard, label: "Pagamentos", tab: "payments" },
   { icon: MessageCircle, label: "Chat", tab: "chat" },
   { icon: Trophy, label: "Conquistas", tab: "badges" },
+  { icon: HelpCircle, label: "Ajuda", tab: "help" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "student-sidebar-width";
