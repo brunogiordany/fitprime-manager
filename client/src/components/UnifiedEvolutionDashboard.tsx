@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { 
   Camera, 
   TrendingUp, 
@@ -24,7 +24,10 @@ import {
   Minus,
   Scale,
   Ruler,
-  ZoomIn
+  ZoomIn,
+  Plus,
+  History,
+  FileText
 } from "lucide-react";
 import {
   LineChart,
@@ -120,6 +123,22 @@ export function UnifiedEvolutionDashboard({
   const [sliderPosition, setSliderPosition] = useState(50);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  
+  // Estados para modais de adição
+  const [showNewMeasurementModal, setShowNewMeasurementModal] = useState(false);
+  const [showNewPhotoModal, setShowNewPhotoModal] = useState(false);
+  const [showAnalysisHistoryModal, setShowAnalysisHistoryModal] = useState(false);
+  const [newMeasurement, setNewMeasurement] = useState({
+    weight: '',
+    bodyFat: '',
+    chest: '',
+    waist: '',
+    hip: '',
+    rightArm: '',
+    leftArm: '',
+    rightThigh: '',
+    leftThigh: '',
+  });
 
   // Queries para treinos
   const { data: uniqueExercises } = trpc.trainingDiary.uniqueExercises.useQuery(
@@ -142,11 +161,34 @@ export function UnifiedEvolutionDashboard({
     onSuccess: (data: { analysis: string }) => {
       setAnalysisResult(data.analysis);
       toast.success("Análise concluída!");
+      onRefresh?.();
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message || "Erro ao analisar evolução");
     }
   });
+
+  // Mutation para criar nova medida
+  const createMeasurementMutation = trpc.students.addMeasurement.useMutation({
+    onSuccess: () => {
+      toast.success("Medida registrada com sucesso!");
+      setShowNewMeasurementModal(false);
+      setNewMeasurement({
+        weight: '', bodyFat: '', chest: '', waist: '', hip: '',
+        rightArm: '', leftArm: '', rightThigh: '', leftThigh: '',
+      });
+      onRefresh?.();
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || "Erro ao registrar medida");
+    }
+  });
+
+  // Query para histórico de análises
+  const { data: analysisHistory } = trpc.photos.getAnalyses.useQuery(
+    { studentId },
+    { enabled: !!studentId }
+  );
 
   // Exercícios filtrados
   const filteredExercises = useMemo(() => {
@@ -403,6 +445,16 @@ export function UnifiedEvolutionDashboard({
               Acompanhamento completo: fotos, medidas e treinos
             </p>
           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Nova Medida</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
+              <History className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Histórico</span>
+            </Button>
+          </div>
         </div>
       )}
 
@@ -610,6 +662,10 @@ export function UnifiedEvolutionDashboard({
                       </div>
                       
                       <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
+                          <History className="h-4 w-4 mr-1" />
+                          Histórico
+                        </Button>
                         {compareMode ? (
                           <>
                             <Button variant="outline" size="sm" onClick={cancelComparison}>
@@ -771,14 +827,30 @@ export function UnifiedEvolutionDashboard({
 
         {/* Medidas */}
         <TabsContent value="measurements" className="space-y-4">
+          {/* Botões de ação */}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nova Medida
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
+              <History className="h-4 w-4 mr-1" />
+              Histórico de Análises
+            </Button>
+          </div>
+          
           {measurements.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <Scale className="h-16 w-16 mx-auto text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhuma medição registrada</h3>
-                <p className="text-gray-500 text-sm">
-                  Registre medidas na aba Evolução do perfil do aluno.
+                <p className="text-gray-500 text-sm mb-4">
+                  Registre as medidas corporais do aluno para acompanhar a evolução.
                 </p>
+                <Button onClick={() => setShowNewMeasurementModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Registrar Primeira Medida
+                </Button>
               </CardContent>
             </Card>
           ) : (
@@ -1227,6 +1299,220 @@ export function UnifiedEvolutionDashboard({
                   </div>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Nova Medida */}
+      <Dialog open={showNewMeasurementModal} onOpenChange={setShowNewMeasurementModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Scale className="h-5 w-5 text-blue-600" />
+              Nova Medição
+            </DialogTitle>
+            <DialogDescription>
+              Registre as medidas corporais de {studentName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="weight">Peso (kg)</Label>
+              <Input
+                id="weight"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 75.5"
+                value={newMeasurement.weight}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, weight: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="bodyFat">Gordura (%)</Label>
+              <Input
+                id="bodyFat"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 15.0"
+                value={newMeasurement.bodyFat}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, bodyFat: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="chest">Peito (cm)</Label>
+              <Input
+                id="chest"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 100"
+                value={newMeasurement.chest}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, chest: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="waist">Cintura (cm)</Label>
+              <Input
+                id="waist"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 80"
+                value={newMeasurement.waist}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, waist: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="hip">Quadril (cm)</Label>
+              <Input
+                id="hip"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 95"
+                value={newMeasurement.hip}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, hip: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="rightArm">Braço D (cm)</Label>
+              <Input
+                id="rightArm"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 35"
+                value={newMeasurement.rightArm}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, rightArm: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="leftArm">Braço E (cm)</Label>
+              <Input
+                id="leftArm"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 34"
+                value={newMeasurement.leftArm}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, leftArm: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="rightThigh">Coxa D (cm)</Label>
+              <Input
+                id="rightThigh"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 55"
+                value={newMeasurement.rightThigh}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, rightThigh: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="leftThigh">Coxa E (cm)</Label>
+              <Input
+                id="leftThigh"
+                type="number"
+                step="0.1"
+                placeholder="Ex: 54"
+                value={newMeasurement.leftThigh}
+                onChange={(e) => setNewMeasurement(prev => ({ ...prev, leftThigh: e.target.value }))}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewMeasurementModal(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                createMeasurementMutation.mutate({
+                  studentId,
+                  weight: newMeasurement.weight || undefined,
+                  bodyFat: newMeasurement.bodyFat || undefined,
+                  chest: newMeasurement.chest || undefined,
+                  waist: newMeasurement.waist || undefined,
+                  hip: newMeasurement.hip || undefined,
+                  rightArm: newMeasurement.rightArm || undefined,
+                  leftArm: newMeasurement.leftArm || undefined,
+                  rightThigh: newMeasurement.rightThigh || undefined,
+                  leftThigh: newMeasurement.leftThigh || undefined,
+                });
+              }}
+              disabled={createMeasurementMutation.isPending}
+            >
+              {createMeasurementMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Salvando...</>
+              ) : (
+                <><Plus className="h-4 w-4 mr-2" />Salvar Medida</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Histórico de Análises */}
+      <Dialog open={showAnalysisHistoryModal} onOpenChange={setShowAnalysisHistoryModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-purple-600" />
+              Histórico de Análises
+            </DialogTitle>
+            <DialogDescription>
+              Todas as análises de evolução realizadas para {studentName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!analysisHistory || analysisHistory.length === 0 ? (
+            <div className="py-8 text-center text-gray-500">
+              <FileText className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+              <p>Nenhuma análise realizada ainda.</p>
+              <p className="text-sm">Compare fotos para gerar uma análise.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {analysisHistory.map((analysis: any) => (
+                <Card key={analysis.id} className="border-l-4 border-l-purple-500">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className="text-purple-600">
+                        {format(new Date(analysis.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </Badge>
+                      {analysis.overallScore && (
+                        <Badge className="bg-emerald-100 text-emerald-700">
+                          Score: {analysis.overallScore}/10
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {analysis.analysisText}
+                    </div>
+                    {(analysis.muscleGainScore || analysis.fatLossScore || analysis.postureScore) && (
+                      <div className="flex gap-4 mt-3 pt-3 border-t">
+                        {analysis.muscleGainScore && (
+                          <div className="text-center">
+                            <p className="text-xs text-gray-500">Músculo</p>
+                            <p className="font-semibold text-emerald-600">{analysis.muscleGainScore}/10</p>
+                          </div>
+                        )}
+                        {analysis.fatLossScore && (
+                          <div className="text-center">
+                            <p className="text-xs text-gray-500">Gordura</p>
+                            <p className="font-semibold text-blue-600">{analysis.fatLossScore}/10</p>
+                          </div>
+                        )}
+                        {analysis.postureScore && (
+                          <div className="text-center">
+                            <p className="text-xs text-gray-500">Postura</p>
+                            <p className="font-semibold text-purple-600">{analysis.postureScore}/10</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </DialogContent>

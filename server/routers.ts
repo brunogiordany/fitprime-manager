@@ -1710,6 +1710,13 @@ Seja profissional, detalhado e motivador.`;
         await db.deletePhoto(input.id, ctx.personal.id);
         return { success: true };
       }),
+
+    // Histórico de análises de fotos
+    getAnalyses: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getPhotoAnalysesByStudentId(input.studentId);
+      }),
   }),
 
   // ==================== WORKOUTS ====================

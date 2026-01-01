@@ -1928,3 +1928,16 @@
   - [x] Gráficos de evolução de peso e circunferências
   - [x] Evolução de carga nos treinos por exercício
   - [x] Upload de novas fotos guiado por poses
+
+
+## Correções Área de Evolução (v5.11)
+- [ ] Botão de atualizar/adicionar medidas corporais
+- [ ] Botão de atualizar/adicionar fotos
+- [ ] Histórico de análises da IA (mostrar análises anteriores)
+
+## Correções Área de Evolução (v5.11)
+- [x] Botão de atualizar/adicionar medidas corporais
+- [x] Botão de histórico de análises da IA
+- [x] Modal de nova medida no Personal e Aluno
+- [x] Modal de histórico de análises no Personal e Aluno
+
