@@ -32,16 +32,17 @@ interface Photo {
 
 interface Measurement {
   id: number;
-  date: string | Date;
-  weight?: number | null;
-  bodyFat?: number | null;
-  chest?: number | null;
-  waist?: number | null;
-  hips?: number | null;
-  rightArm?: number | null;
-  leftArm?: number | null;
-  rightThigh?: number | null;
-  leftThigh?: number | null;
+  measureDate: Date | string;
+  weight?: string | null;
+  bodyFat?: string | null;
+  chest?: string | null;
+  waist?: string | null;
+  hip?: string | null;
+  rightArm?: string | null;
+  leftArm?: string | null;
+  rightThigh?: string | null;
+  leftThigh?: string | null;
+  [key: string]: any; // Allow additional fields from DB
 }
 
 interface PersonalPhotoEvolutionViewProps {
@@ -81,12 +82,12 @@ export function PersonalPhotoEvolutionView({
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   // Mutation para análise (usando endpoint do personal)
-  const analyzeMutation = trpc.students.analyzeEvolution.useMutation({
-    onSuccess: (data) => {
+  const analyzeMutation = trpc.students.analyzePhotos.useMutation({
+    onSuccess: (data: { analysis: string }) => {
       setAnalysisResult(data.analysis);
       toast.success("Análise concluída!");
     },
-    onError: (error) => {
+    onError: (error: { message?: string }) => {
       toast.error(error.message || "Erro ao analisar evolução");
     }
   });
@@ -145,11 +146,13 @@ export function PersonalPhotoEvolutionView({
     if (measurements.length < 2) return null;
     
     const sorted = [...measurements].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      new Date(a.measureDate).getTime() - new Date(b.measureDate).getTime()
     );
     
     const first = sorted[0];
     const last = sorted[sorted.length - 1];
+    
+    const toNum = (v: string | null | undefined) => v ? parseFloat(v) : null;
     
     const diff = (before: number | null | undefined, after: number | null | undefined) => {
       if (before == null || after == null) return null;
@@ -162,12 +165,12 @@ export function PersonalPhotoEvolutionView({
     };
     
     return {
-      weight: diff(first.weight, last.weight),
-      bodyFat: diff(first.bodyFat, last.bodyFat),
-      chest: diff(first.chest, last.chest),
-      waist: diff(first.waist, last.waist),
-      arm: diff(first.rightArm, last.rightArm),
-      thigh: diff(first.rightThigh, last.rightThigh),
+      weight: diff(toNum(first.weight), toNum(last.weight)),
+      bodyFat: diff(toNum(first.bodyFat), toNum(last.bodyFat)),
+      chest: diff(toNum(first.chest), toNum(last.chest)),
+      waist: diff(toNum(first.waist), toNum(last.waist)),
+      arm: diff(toNum(first.rightArm), toNum(last.rightArm)),
+      thigh: diff(toNum(first.rightThigh), toNum(last.rightThigh)),
     };
   }, [measurements]);
 

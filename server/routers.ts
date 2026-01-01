@@ -1313,7 +1313,7 @@ export const appRouter = router({
         // Buscar medidas do aluno para enriquecer análise
         const measurements = await db.getMeasurementsByStudentId(input.studentId);
         const sortedMeasurements = [...measurements].sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+          new Date(b.measureDate).getTime() - new Date(a.measureDate).getTime()
         );
         
         let measurementsContext = '';
@@ -1332,13 +1332,14 @@ export const appRouter = router({
             return '';
           };
           
-          measurementsContext += addMeasure('Peso', oldest.weight, latest.weight, 'kg');
-          measurementsContext += addMeasure('Gordura corporal', oldest.bodyFat, latest.bodyFat, '%');
-          measurementsContext += addMeasure('Peito', oldest.chest, latest.chest, 'cm');
-          measurementsContext += addMeasure('Cintura', oldest.waist, latest.waist, 'cm');
-          measurementsContext += addMeasure('Quadril', oldest.hips, latest.hips, 'cm');
-          measurementsContext += addMeasure('Braço', oldest.rightArm, latest.rightArm, 'cm');
-          measurementsContext += addMeasure('Coxa', oldest.rightThigh, latest.rightThigh, 'cm');
+          const toNum = (v: string | null) => v ? parseFloat(v) : null;
+          measurementsContext += addMeasure('Peso', toNum(oldest.weight), toNum(latest.weight), 'kg');
+          measurementsContext += addMeasure('Gordura corporal', toNum(oldest.bodyFat), toNum(latest.bodyFat), '%');
+          measurementsContext += addMeasure('Peito', toNum(oldest.chest), toNum(latest.chest), 'cm');
+          measurementsContext += addMeasure('Cintura', toNum(oldest.waist), toNum(latest.waist), 'cm');
+          measurementsContext += addMeasure('Quadril', toNum(oldest.hip), toNum(latest.hip), 'cm');
+          measurementsContext += addMeasure('Braço', toNum(oldest.rightArm), toNum(latest.rightArm), 'cm');
+          measurementsContext += addMeasure('Coxa', toNum(oldest.rightThigh), toNum(latest.rightThigh), 'cm');
         }
         
         // Buscar anamnese para contexto
@@ -6154,7 +6155,8 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
             ],
           });
           
-          const analysisText = response.choices[0]?.message?.content || 'Não foi possível gerar a análise.';
+          const rawContent = response.choices[0]?.message?.content;
+          const analysisText = typeof rawContent === 'string' ? rawContent : 'Não foi possível gerar a análise.';
           
           // Tentar extrair score se presente na análise
           let evolutionScore: number | undefined;
@@ -6223,7 +6225,7 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
         // Buscar medidas do aluno
         const measurements = await db.getMeasurementsByStudentId(ctx.student.id);
         const sortedMeasurements = [...measurements].sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+          new Date(b.measureDate).getTime() - new Date(a.measureDate).getTime()
         );
         
         // Pegar primeira e última medição
@@ -6234,7 +6236,7 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
         let measurementsContext = '';
         if (latestMeasurement && oldestMeasurement && sortedMeasurements.length > 1) {
           measurementsContext = `\n\n**EVOLUÇÃO DAS MEDIDAS:**\n`;
-          measurementsContext += `Período: ${new Date(oldestMeasurement.date).toLocaleDateString('pt-BR')} até ${new Date(latestMeasurement.date).toLocaleDateString('pt-BR')}\n\n`;
+          measurementsContext += `Período: ${new Date(oldestMeasurement.measureDate).toLocaleDateString('pt-BR')} até ${new Date(latestMeasurement.measureDate).toLocaleDateString('pt-BR')}\n\n`;
           
           const addMeasure = (label: string, before: number | null, after: number | null, unit: string) => {
             if (before !== null && after !== null) {
@@ -6245,15 +6247,16 @@ Seja motivador mas realista. Se não conseguir identificar mudanças significati
             return '';
           };
           
-          measurementsContext += addMeasure('Peso', oldestMeasurement.weight, latestMeasurement.weight, 'kg');
-          measurementsContext += addMeasure('Gordura corporal', oldestMeasurement.bodyFat, latestMeasurement.bodyFat, '%');
-          measurementsContext += addMeasure('Peito', oldestMeasurement.chest, latestMeasurement.chest, 'cm');
-          measurementsContext += addMeasure('Cintura', oldestMeasurement.waist, latestMeasurement.waist, 'cm');
-          measurementsContext += addMeasure('Quadril', oldestMeasurement.hips, latestMeasurement.hips, 'cm');
-          measurementsContext += addMeasure('Braço D', oldestMeasurement.rightArm, latestMeasurement.rightArm, 'cm');
-          measurementsContext += addMeasure('Braço E', oldestMeasurement.leftArm, latestMeasurement.leftArm, 'cm');
-          measurementsContext += addMeasure('Coxa D', oldestMeasurement.rightThigh, latestMeasurement.rightThigh, 'cm');
-          measurementsContext += addMeasure('Coxa E', oldestMeasurement.leftThigh, latestMeasurement.leftThigh, 'cm');
+          const toNum = (v: string | null) => v ? parseFloat(v) : null;
+          measurementsContext += addMeasure('Peso', toNum(oldestMeasurement.weight), toNum(latestMeasurement.weight), 'kg');
+          measurementsContext += addMeasure('Gordura corporal', toNum(oldestMeasurement.bodyFat), toNum(latestMeasurement.bodyFat), '%');
+          measurementsContext += addMeasure('Peito', toNum(oldestMeasurement.chest), toNum(latestMeasurement.chest), 'cm');
+          measurementsContext += addMeasure('Cintura', toNum(oldestMeasurement.waist), toNum(latestMeasurement.waist), 'cm');
+          measurementsContext += addMeasure('Quadril', toNum(oldestMeasurement.hip), toNum(latestMeasurement.hip), 'cm');
+          measurementsContext += addMeasure('Braço D', toNum(oldestMeasurement.rightArm), toNum(latestMeasurement.rightArm), 'cm');
+          measurementsContext += addMeasure('Braço E', toNum(oldestMeasurement.leftArm), toNum(latestMeasurement.leftArm), 'cm');
+          measurementsContext += addMeasure('Coxa D', toNum(oldestMeasurement.rightThigh), toNum(latestMeasurement.rightThigh), 'cm');
+          measurementsContext += addMeasure('Coxa E', toNum(oldestMeasurement.leftThigh), toNum(latestMeasurement.leftThigh), 'cm');
         }
         
         // Buscar anamnese para contexto
@@ -6320,7 +6323,8 @@ Seja motivador mas realista e profissional.`;
             ],
           });
           
-          const analysisText = response.choices[0]?.message?.content || 'Não foi possível gerar a análise.';
+          const rawContent = response.choices[0]?.message?.content;
+          const analysisText = typeof rawContent === 'string' ? rawContent : 'Não foi possível gerar a análise.';
           
           // Extrair scores da análise
           const extractScore = (text: string, pattern: RegExp): number | undefined => {
@@ -6990,8 +6994,9 @@ Seja motivador mas realista e profissional.`;
         // Buscar fotos de evolução
         const photos = await db.getPhotosByStudentId(input.studentId);
         const photosByCategory = photos.reduce((acc, photo) => {
-          if (!acc[photo.category]) acc[photo.category] = [];
-          acc[photo.category].push(photo);
+          const category = photo.category || 'other';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(photo);
           return acc;
         }, {} as Record<string, typeof photos>);
         
@@ -7174,9 +7179,7 @@ Retorne APENAS o JSON no formato especificado.`;
           const analysis = JSON.parse(content);
           
           // Atualizar lastAnalyzedAt do aluno
-          await database.update(students)
-            .set({ lastAnalyzedAt: new Date() })
-            .where(eq(students.id, input.studentId));
+          await db.updateStudentLastAnalyzedAt(input.studentId);
           
           return {
             success: true,

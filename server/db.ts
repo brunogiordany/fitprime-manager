@@ -3461,3 +3461,11 @@ export async function getSetLogsByExerciseLogId(exerciseLogId: number) {
     .where(eq(workoutLogSets.workoutLogExerciseId, exerciseLogId))
     .orderBy(asc(workoutLogSets.setNumber));
 }
+
+// Atualizar lastAnalyzedAt do aluno
+export async function updateStudentLastAnalyzedAt(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(students).set({ lastAnalyzedAt: new Date() }).where(eq(students.id, studentId));
+}

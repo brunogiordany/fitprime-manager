@@ -26,16 +26,17 @@ interface PhotoEvolutionSectionProps {
   studentId: number;
   measurements?: Array<{
     id: number;
-    date: string | Date;
-    weight?: number | null;
-    bodyFat?: number | null;
-    chest?: number | null;
-    waist?: number | null;
-    hips?: number | null;
-    rightArm?: number | null;
-    leftArm?: number | null;
-    rightThigh?: number | null;
-    leftThigh?: number | null;
+    measureDate: Date | string;
+    weight?: string | null;
+    bodyFat?: string | null;
+    chest?: string | null;
+    waist?: string | null;
+    hip?: string | null;
+    rightArm?: string | null;
+    leftArm?: string | null;
+    rightThigh?: string | null;
+    leftThigh?: string | null;
+    [key: string]: any;
   }>;
 }
 

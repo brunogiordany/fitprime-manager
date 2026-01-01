@@ -132,7 +132,7 @@ export default function StudentProfile() {
     { enabled: studentId > 0 }
   );
 
-  const { data: photos } = trpc.photos.list.useQuery(
+  const { data: photos, refetch: refetchPhotos } = trpc.photos.list.useQuery(
     { studentId },
     { enabled: studentId > 0 }
   );

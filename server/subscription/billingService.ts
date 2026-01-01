@@ -6,7 +6,7 @@
 
 import { getDb } from "../db";
 import { eq, and, sql, gte, lte } from "drizzle-orm";
-import { personalSubscriptions, subscriptionUsageLogs, personals } from "../../drizzle/schema";
+import { personalSubscriptions, subscriptionUsageLogs, personals, users } from "../../drizzle/schema";
 import { EXTRA_STUDENT_BR, formatPrice } from "../../shared/pricing";
 import Stripe from "stripe";
 import { ENV } from "../_core/env";
@@ -92,11 +92,11 @@ export async function processExtraStudentCharge(personalId: number): Promise<Ext
 
   const extraAmount = extraStudents * EXTRA_STUDENT_BR.pricePerStudent;
 
-  // Registrar log de cobrança
+  // Registrar log de cobrança - usando 'extra_charged' que é o valor correto do enum
   await db.insert(subscriptionUsageLogs).values({
     personalId,
     subscriptionId: subscription.id,
-    eventType: 'extra_charge',
+    eventType: 'extra_charged',
     previousValue: subscription.currentStudents - extraStudents,
     newValue: subscription.currentStudents,
     chargeAmount: extraAmount.toString(),
@@ -108,10 +108,10 @@ export async function processExtraStudentCharge(personalId: number): Promise<Ext
     })
   });
 
-  // Atualizar lastBilledAt
+  // Atualizar lastExtraChargeAt (campo correto da tabela)
   await db
     .update(personalSubscriptions)
-    .set({ lastBilledAt: new Date() })
+    .set({ lastExtraChargeAt: new Date() })
     .where(eq(personalSubscriptions.id, subscription.id));
 
   // Se Stripe estiver configurado e o personal tiver stripeCustomerId, processar cobrança
@@ -196,9 +196,9 @@ export async function getBillingPeriodSummary(personalId: number): Promise<Billi
       )
     );
 
-  // Calcular totais
+  // Calcular totais - usando 'extra_charged' que é o valor correto do enum
   const extraCharges = eventsResult
-    .filter(e => e.eventType === 'extra_charge')
+    .filter(e => e.eventType === 'extra_charged')
     .reduce((sum, e) => sum + Number(e.chargeAmount || 0), 0);
 
   const events = eventsResult.map(e => ({
@@ -280,12 +280,18 @@ function getEventDescription(eventType: string, detailsJson: string | null): str
       return `Aluno removido (${details.previousCount} → ${details.newCount})`;
     case 'limit_exceeded':
       return `Limite excedido: ${details.exceeded} aluno(s) extra(s)`;
-    case 'extra_charge':
+    case 'extra_charged':
       return `Cobrança de ${details.extraStudents} aluno(s) extra(s)`;
     case 'plan_upgraded':
       return `Upgrade de plano: ${details.previousPlan} → ${details.newPlan}`;
     case 'plan_downgraded':
       return `Downgrade de plano: ${details.previousPlan} → ${details.newPlan}`;
+    case 'upgrade_suggested':
+      return `Sugestão de upgrade enviada`;
+    case 'payment_failed':
+      return `Falha no pagamento`;
+    case 'subscription_renewed':
+      return `Assinatura renovada`;
     default:
       return eventType;
   }
@@ -308,15 +314,25 @@ export async function createUpgradeCheckoutSession(
   const db = await getDb();
   if (!db) return null;
 
-  // Buscar personal e subscription
+  // Buscar personal com email do user
   const personalResult = await db
-    .select()
+    .select({
+      personal: personals,
+      user: users
+    })
     .from(personals)
+    .innerJoin(users, eq(personals.userId, users.id))
     .where(eq(personals.id, personalId))
     .limit(1);
 
-  const personal = personalResult[0];
-  if (!personal) {
+  const result = personalResult[0];
+  if (!result) {
+    return null;
+  }
+
+  const userEmail = result.user.email;
+  if (!userEmail) {
+    console.warn('[Billing] Personal sem email cadastrado');
     return null;
   }
 
@@ -324,7 +340,7 @@ export async function createUpgradeCheckoutSession(
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer_email: personal.email,
+      customer_email: userEmail,
       line_items: [
         {
           price: newPlanId, // Usar o priceId do Stripe

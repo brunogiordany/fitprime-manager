@@ -52,7 +52,8 @@ import {
   TrendingUp,
   BarChart3,
   Camera,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
@@ -663,7 +664,7 @@ export default function StudentPortalPage() {
             {editPermissions?.canEditPhotos ? (
               <PhotoEvolutionSection
                 studentId={studentData?.id || 0}
-                measurements={measurementsData || []}
+                measurements={measurements || []}
               />
             ) : (
               <GuidedPhotos
