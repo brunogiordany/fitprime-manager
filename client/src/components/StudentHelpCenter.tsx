@@ -18,7 +18,14 @@ import {
   Trophy,
   HelpCircle,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  Route,
+  UserPlus,
+  ClipboardList,
+  Target,
+  CheckCircle2,
+  RefreshCw,
+  Star
 } from "lucide-react";
 
 interface Message {
@@ -104,6 +111,139 @@ const studentFeatures = [
   },
 ];
 
+// Jornada do Aluno
+const studentJourney = [
+  {
+    step: 1,
+    title: "Primeiro Acesso",
+    icon: UserPlus,
+    description: "Bem-vindo ao FitPrime! Seu personal te cadastrou no sistema.",
+    actions: [
+      "Acesse o link enviado pelo seu personal",
+      "Faça login com sua conta",
+      "Explore o portal e conheça as funcionalidades",
+    ],
+    tip: "Dica: Salve o link nos favoritos do seu celular para acesso rápido!",
+  },
+  {
+    step: 2,
+    title: "Preencha sua Anamnese",
+    icon: ClipboardList,
+    description: "Conte sobre você para seu personal criar o treino ideal.",
+    actions: [
+      "Clique no aviso 'Complete seu perfil'",
+      "Preencha informações de saúde e objetivos",
+      "Informe lesões, restrições e histórico",
+      "Quanto mais detalhes, melhor o treino!",
+    ],
+    tip: "Dica: Seja honesto sobre lesões e limitações - isso protege sua saúde!",
+  },
+  {
+    step: 3,
+    title: "Receba seu Treino",
+    icon: Dumbbell,
+    description: "Seu personal criará um treino personalizado para você.",
+    actions: [
+      "Aguarde a notificação de novo treino",
+      "Acesse 'Treinos' para ver o plano",
+      "Veja os exercícios, séries e repetições",
+      "Tire dúvidas pelo chat com seu personal",
+    ],
+    tip: "Dica: Leia as observações de cada exercício - há dicas importantes!",
+  },
+  {
+    step: 4,
+    title: "Confirme suas Sessões",
+    icon: Calendar,
+    description: "Organize sua agenda de treinos com seu personal.",
+    actions: [
+      "Acesse 'Agenda' para ver sessões marcadas",
+      "Confirme presença com antecedência",
+      "Remarque se precisar (com aviso prévio)",
+      "Mantenha consistência nos horários",
+    ],
+    tip: "Dica: Confirmar presença ajuda seu personal a se organizar!",
+  },
+  {
+    step: 5,
+    title: "Registre seus Treinos",
+    icon: Target,
+    description: "Use o Diário do Maromba para anotar cada treino.",
+    actions: [
+      "Após cada treino, clique em 'Registrar Treino'",
+      "Informe a carga usada em cada série",
+      "Marque as repetições realizadas",
+      "Indique como se sentiu (fácil/moderado/difícil)",
+    ],
+    tip: "Dica: Registrar cargas ajuda a acompanhar sua evolução de força!",
+  },
+  {
+    step: 6,
+    title: "Acompanhe sua Evolução",
+    icon: TrendingUp,
+    description: "Veja seu progresso ao longo do tempo.",
+    actions: [
+      "Acesse 'Evolução' para ver gráficos",
+      "Acompanhe peso, medidas e % de gordura",
+      "Compare fotos de antes e depois",
+      "Celebre cada conquista!",
+    ],
+    tip: "Dica: Tire fotos de progresso mensalmente - a mudança visual motiva!",
+  },
+  {
+    step: 7,
+    title: "Mantenha os Pagamentos em Dia",
+    icon: CreditCard,
+    description: "Gerencie suas cobranças pelo portal.",
+    actions: [
+      "Acesse 'Pagamentos' para ver cobranças",
+      "Pague online com cartão de crédito",
+      "Veja histórico de pagamentos",
+      "Configure lembretes automáticos",
+    ],
+    tip: "Dica: Pagamentos em dia garantem continuidade do acompanhamento!",
+  },
+  {
+    step: 8,
+    title: "Análise Mensal",
+    icon: RefreshCw,
+    description: "A cada 30 dias, seu personal fará uma análise completa.",
+    actions: [
+      "Seu personal analisa seus registros de treino",
+      "Avalia evolução de medidas e fotos",
+      "Identifica pontos fortes e a melhorar",
+      "Ajusta o treino conforme necessário",
+    ],
+    tip: "Dica: Quanto mais você registrar, melhor será a análise!",
+  },
+  {
+    step: 9,
+    title: "Conquiste Badges",
+    icon: Trophy,
+    description: "Desbloqueie conquistas por consistência e metas.",
+    actions: [
+      "Treine consistentemente para ganhar badges",
+      "7 dias seguidos = Primeira Semana",
+      "30 dias = Maromba Dedicado",
+      "90 dias = Lenda da Academia",
+    ],
+    tip: "Dica: Compartilhe suas conquistas nas redes sociais!",
+  },
+  {
+    step: 10,
+    title: "Continue Evoluindo",
+    icon: Star,
+    description: "O ciclo continua - cada mês é uma nova oportunidade!",
+    actions: [
+      "Mantenha a consistência nos treinos",
+      "Comunique-se com seu personal",
+      "Ajuste objetivos conforme evolui",
+      "Celebre cada vitória, grande ou pequena!",
+    ],
+    tip: "Dica: Resultados vêm com tempo e consistência. Confie no processo!",
+  },
+];
+
 export default function StudentHelpCenter() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -131,7 +271,7 @@ export default function StudentHelpCenter() {
     try {
       const response = await askAIMutation.mutateAsync({
         question: messageToSend,
-        context: "student", // Contexto de aluno
+        context: "student",
       });
 
       const assistantMessage: Message = { role: "assistant", content: response.answer };
@@ -150,17 +290,107 @@ export default function StudentHelpCenter() {
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-auto">
-          <TabsTrigger value="chat" className="text-xs sm:text-sm py-2">
-            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Pergunte à IA
+      <Tabs defaultValue="journey" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="journey" className="text-[10px] sm:text-sm py-2">
+            <Route className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">Jornada</span>
+            <span className="sm:hidden">Jornada</span>
           </TabsTrigger>
-          <TabsTrigger value="guide" className="text-xs sm:text-sm py-2">
-            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Guia do Portal
+          <TabsTrigger value="chat" className="text-[10px] sm:text-sm py-2">
+            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">Pergunte à IA</span>
+            <span className="sm:hidden">IA</span>
+          </TabsTrigger>
+          <TabsTrigger value="guide" className="text-[10px] sm:text-sm py-2">
+            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">Guia</span>
+            <span className="sm:hidden">Guia</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Jornada do Aluno */}
+        <TabsContent value="journey" className="mt-4 space-y-3">
+          <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Route className="h-5 w-5 text-emerald-600" />
+                <h3 className="font-semibold text-emerald-800">Sua Jornada no FitPrime</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-emerald-700">
+                Siga estes passos para aproveitar ao máximo seu acompanhamento com personal trainer!
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Timeline da Jornada */}
+          <div className="relative">
+            {/* Linha vertical conectando os passos */}
+            <div className="absolute left-[19px] sm:left-[23px] top-8 bottom-8 w-0.5 bg-emerald-200" />
+            
+            <div className="space-y-3">
+              {studentJourney.map((item, index) => (
+                <Card key={index} className="relative overflow-hidden">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex gap-3">
+                      {/* Número do passo */}
+                      <div className="relative z-10 flex-shrink-0">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center">
+                          <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                        </div>
+                        <Badge 
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-emerald-600"
+                        >
+                          {item.step}
+                        </Badge>
+                      </div>
+                      
+                      {/* Conteúdo */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base mb-1">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {item.description}
+                        </p>
+                        
+                        {/* Ações */}
+                        <ul className="space-y-1 mb-2">
+                          {item.actions.map((action, actionIndex) => (
+                            <li key={actionIndex} className="flex items-start gap-1.5 text-xs">
+                              <CheckCircle2 className="h-3 w-3 mt-0.5 text-emerald-500 flex-shrink-0" />
+                              <span className="text-muted-foreground">{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        
+                        {/* Dica */}
+                        <div className="bg-amber-50 rounded-md p-2 border border-amber-200">
+                          <p className="text-[10px] sm:text-xs text-amber-800">
+                            💡 {item.tip}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Card final */}
+          <Card className="border-emerald-300 bg-emerald-50">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Star className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+              <p className="text-sm font-medium text-emerald-800">
+                Você está no caminho certo!
+              </p>
+              <p className="text-xs text-emerald-700">
+                Siga a jornada e alcance seus objetivos com o FitPrime.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Chat com IA */}
         <TabsContent value="chat" className="mt-4">

@@ -1845,3 +1845,11 @@
 - [x] Incluir chat com IA e guias diretamente na tela
 - [x] Criar componente StudentHelpCenter com chat IA e guia do portal
 - [x] Perguntas rápidas para facilitar uso
+
+
+## Jornada do Aluno na Central de Ajuda (v5.3)
+- [x] Adicionar aba "Jornada" no StudentHelpCenter
+- [x] Mostrar passo a passo desde o primeiro acesso até acompanhamento contínuo
+- [x] 10 passos da jornada com ícones, ações e dicas
+- [x] Timeline visual conectando os passos
+- [x] Análise mensal destacada (30 dias)
