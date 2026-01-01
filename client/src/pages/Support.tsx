@@ -27,6 +27,7 @@ import {
   User
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 
 // Base de conhecimento do FitPrime para a IA
 const FITPRIME_KNOWLEDGE = `
@@ -146,70 +147,70 @@ const journeySteps = [
     title: "Configure seu Perfil",
     description: "Preencha seus dados profissionais: CREF, especialidades, horários de atendimento e foto.",
     icon: Settings,
-    path: "/settings",
+    path: "/configuracoes",
   },
   {
     step: 2,
     title: "Crie seus Planos",
     description: "Defina os planos que você oferece: mensal, trimestral, frequência semanal e valores.",
     icon: CreditCard,
-    path: "/plans",
+    path: "/planos",
   },
   {
     step: 3,
     title: "Cadastre seu Primeiro Aluno",
     description: "Adicione um aluno com dados básicos. Você pode convidá-lo para o portal depois.",
     icon: Users,
-    path: "/students",
+    path: "/alunos",
   },
   {
     step: 4,
     title: "Preencha a Anamnese",
     description: "Registre o histórico de saúde, objetivos, restrições e estilo de vida do aluno.",
     icon: BookOpen,
-    path: "/students",
+    path: "/alunos",
   },
   {
     step: 5,
     title: "Crie ou Gere um Treino",
     description: "Monte um treino do zero, use templates ou deixe a IA criar baseado na anamnese.",
     icon: Dumbbell,
-    path: "/workouts",
+    path: "/treinos",
   },
   {
     step: 6,
     title: "Vincule o Plano ao Aluno",
     description: "Associe um plano ao aluno. Os agendamentos serão criados automaticamente.",
     icon: Calendar,
-    path: "/students",
+    path: "/alunos",
   },
   {
     step: 7,
     title: "Acompanhe na Agenda",
     description: "Visualize todas as sessões, marque presença, faltas ou cancele quando necessário.",
     icon: Calendar,
-    path: "/schedule",
+    path: "/agenda",
   },
   {
     step: 8,
     title: "Registre Medidas Mensais",
     description: "A cada mês, registre peso, medidas e fotos para acompanhar a evolução.",
     icon: BarChart3,
-    path: "/measurements",
+    path: "/evolucao",
   },
   {
     step: 9,
     title: "Faça Análise Mensal",
     description: "Use a IA para analisar o progresso do aluno e gerar o Treino 2.0 adaptado.",
     icon: Sparkles,
-    path: "/workouts",
+    path: "/treinos",
   },
   {
     step: 10,
     title: "Configure Automações",
     description: "Ative lembretes automáticos de treino e pagamento via WhatsApp.",
     icon: MessageSquare,
-    path: "/automations",
+    path: "/automacoes",
   },
 ];
 
@@ -219,21 +220,38 @@ const features = [
     icon: Users,
     description: "Cadastre alunos, preencha anamnese, registre medidas e acompanhe a evolução.",
     tips: [
-      "Use o botão 'Novo Aluno' para cadastrar",
-      "Preencha a anamnese completa para treinos mais precisos",
-      "Registre medidas mensalmente para ver gráficos de evolução",
-      "Convide o aluno para o portal para ele acompanhar tudo",
+      "Use o botão 'Novo Aluno' para cadastrar com dados completos",
+      "Preencha a anamnese completa para treinos mais precisos com IA",
+      "Registre medidas a cada 30 dias para ver gráficos de evolução",
+      "Convide o aluno para o portal via email ou WhatsApp",
+      "Configure permissões granulares (o que cada aluno pode ver)",
+      "Adicione fotos de evolução (antes/depois) para motivar",
     ],
   },
   {
     title: "Treinos com IA",
     icon: Sparkles,
-    description: "Crie treinos do zero ou deixe a IA gerar baseado na anamnese do aluno.",
+    description: "Crie treinos do zero, use templates ou deixe a IA gerar baseado na anamnese.",
     tips: [
-      "Clique em 'Gerar com IA' para treino automático",
+      "Clique em 'Gerar com IA' para treino automático personalizado",
       "Use 'Análise do Aluno' para ver déficits e gerar Treino 2.0",
       "Templates economizam tempo para treinos similares",
-      "O Diário do Maromba registra cada sessão em detalhes",
+      "Organize por dias: Treino A, B, C, D...",
+      "Defina séries, repetições, carga e tempo de descanso",
+      "Use técnicas avançadas: Drop Set, Rest-Pause, Bi-Set, Tri-Set",
+    ],
+  },
+  {
+    title: "Diário do Maromba",
+    icon: Dumbbell,
+    description: "Registro detalhado de cada treino executado pelo aluno.",
+    tips: [
+      "O aluno registra carga, reps e sensação de cada série",
+      "Suporte a Drop Set com múltiplos drops por série",
+      "Suporte a Rest-Pause com múltiplas pausas por série",
+      "Anotações livres por exercício",
+      "Histórico completo visível para personal e aluno",
+      "Dados usados pela IA para gerar Treino 2.0",
     ],
   },
   {
@@ -242,9 +260,11 @@ const features = [
     description: "Visualize sessões, marque presença e gerencie horários automaticamente.",
     tips: [
       "Ao vincular plano, agendamentos são criados automaticamente",
-      "Clique na sessão para editar status ou reagendar",
-      "Use filtros para ver apenas sessões de um status",
-      "A visualização mensal mostra o calendário completo",
+      "Visualização diária, semanal e mensal",
+      "Status: Agendada, Confirmada, Realizada, Falta, Cancelada",
+      "Clique na sessão para editar ou reagendar",
+      "Filtros por status para organizar melhor",
+      "Recorrência automática de sessões",
     ],
   },
   {
@@ -252,32 +272,103 @@ const features = [
     icon: CreditCard,
     description: "Crie planos, gere cobranças automáticas e receba pagamentos online.",
     tips: [
-      "Crie planos com diferentes frequências e valores",
-      "Cobranças recorrentes são geradas automaticamente",
+      "Crie planos: mensal, trimestral, semestral, anual",
+      "Defina frequência semanal (1x, 2x, 3x, 4x, 5x)",
+      "Cobranças recorrentes geradas automaticamente",
       "Aceite cartão de crédito via Stripe",
-      "Gerencie contratos (pausar, cancelar, reativar)",
+      "Gerencie contratos: Ativo, Pausado, Cancelado, Inadimplente",
+      "Relatórios financeiros com receita por período",
     ],
   },
   {
     title: "Automações WhatsApp",
     icon: MessageSquare,
-    description: "Envie lembretes automáticos de treino, pagamento e aniversário.",
+    description: "Envie lembretes automáticos de treino, pagamento e aniversário via Stevo.",
     tips: [
       "Conecte seu WhatsApp via Stevo nas Configurações",
-      "6 automações prontas: lembretes, boas-vindas, aniversário",
-      "Personalize as mensagens com nome do aluno",
-      "Defina horários permitidos para envio",
+      "Lembrete 24h antes do treino",
+      "Lembrete 2h antes do treino",
+      "Lembrete de pagamento (3 dias antes)",
+      "Aviso de pagamento em atraso",
+      "Mensagem de boas-vindas e aniversário",
     ],
   },
   {
-    title: "Relatórios",
-    icon: BarChart3,
-    description: "Acompanhe métricas de desempenho, frequência e receita.",
+    title: "Portal do Aluno",
+    icon: User,
+    description: "Seu aluno acessa treinos, agenda, pagamentos e evolução pelo celular.",
     tips: [
-      "Veja evolução de medidas em gráficos",
-      "Acompanhe frequência mensal dos alunos",
-      "Analise receita por período",
-      "Exporte relatórios em PDF",
+      "Convite via email ou WhatsApp",
+      "Ver treinos e registrar execução no Diário",
+      "Ver agenda de sessões",
+      "Ver histórico de pagamentos",
+      "Ver evolução (medidas e fotos)",
+      "Calculadoras fitness: 1RM, TDEE, IMC, BF%, Zona FC",
+    ],
+  },
+  {
+    title: "Evolução e Medidas",
+    icon: BarChart3,
+    description: "Acompanhe a evolução do aluno com gráficos e fotos.",
+    tips: [
+      "Registre peso, gordura corporal e medidas",
+      "Gráficos de evolução ao longo do tempo",
+      "Fotos de antes/depois para motivar",
+      "Exportar relatório de evolução em PDF",
+      "Histórico completo de todas as medições",
+      "Dados usados pela IA para análise",
+    ],
+  },
+  {
+    title: "Anamnese Inteligente",
+    icon: BookOpen,
+    description: "Ficha completa de saúde, objetivos e restrições do aluno.",
+    tips: [
+      "Histórico de saúde e lesões",
+      "Objetivos e expectativas",
+      "Restrições alimentares e de exercícios",
+      "Estilo de vida e rotina",
+      "Histórico versionado (nunca perde dados)",
+      "Dados usados pela IA para gerar treinos",
+    ],
+  },
+  {
+    title: "Chat Interno",
+    icon: MessageCircle,
+    description: "Comunique-se com seus alunos diretamente pelo app.",
+    tips: [
+      "Mensagens em tempo real",
+      "Histórico de conversas",
+      "Notificações de novas mensagens",
+      "Envie orientações e feedbacks",
+      "Tire dúvidas dos alunos rapidamente",
+      "Tudo centralizado em um lugar",
+    ],
+  },
+  {
+    title: "Gamificação",
+    icon: Sparkles,
+    description: "Sistema de conquistas e badges para motivar seus alunos.",
+    tips: [
+      "Conquistas por consistência (7, 30, 90 dias)",
+      "Badges por metas atingidas",
+      "Ranking entre alunos (opcional)",
+      "Celebração de marcos importantes",
+      "Aumenta engajamento e retenção",
+      "Visível no portal do aluno",
+    ],
+  },
+  {
+    title: "Calculadoras Fitness",
+    icon: HelpCircle,
+    description: "Ferramentas para cálculos de treino e nutrição.",
+    tips: [
+      "1RM - Carga máxima estimada",
+      "TDEE - Gasto calórico diário",
+      "IMC - Índice de massa corporal",
+      "BF% - Percentual de gordura",
+      "Zona FC - Zonas de frequência cardíaca",
+      "Disponível para personal e aluno",
     ],
   },
 ];
@@ -288,6 +379,7 @@ export default function Support() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [, setLocation] = useLocation();
 
   const askAIMutation = trpc.support.askAI.useMutation();
 
@@ -547,7 +639,7 @@ export default function Support() {
                               variant="ghost" 
                               size="sm"
                               className="text-xs h-7 sm:h-8 px-2"
-                              onClick={() => window.location.href = step.path}
+                              onClick={() => setLocation(step.path)}
                             >
                               Ir <ChevronRight className="h-3 w-3 ml-1" />
                             </Button>
@@ -565,10 +657,10 @@ export default function Support() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                   <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  Ciclo de Acompanhamento Mensal
+                  Ciclo de Acompanhamento (30 dias)
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Recomendamos análises mensais para manter o aluno engajado
+                  Recomendamos análises a cada 30 dias para manter o aluno engajado e motivado
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -578,10 +670,10 @@ export default function Support() {
                       <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-blue-100 flex items-center justify-center">
                         <span className="text-blue-600 font-bold text-xs sm:text-sm">1</span>
                       </div>
-                      <h4 className="font-semibold text-sm sm:text-base">Semana 1</h4>
+                      <h4 className="font-semibold text-sm sm:text-base">Dia 1-7</h4>
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Registrar novas medidas e fotos do aluno
+                      Registrar novas medidas e fotos do aluno para acompanhar evolução
                     </p>
                   </div>
                   
@@ -590,10 +682,10 @@ export default function Support() {
                       <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-green-100 flex items-center justify-center">
                         <span className="text-green-600 font-bold text-xs sm:text-sm">2</span>
                       </div>
-                      <h4 className="font-semibold text-sm sm:text-base">Semana 2</h4>
+                      <h4 className="font-semibold text-sm sm:text-base">Dia 8-15</h4>
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Usar "Análise do Aluno" para ver evolução e déficits
+                      Usar "Análise do Aluno" para ver evolução, déficits e pontos fortes
                     </p>
                   </div>
                   
@@ -602,10 +694,10 @@ export default function Support() {
                       <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-purple-100 flex items-center justify-center">
                         <span className="text-purple-600 font-bold text-xs sm:text-sm">3</span>
                       </div>
-                      <h4 className="font-semibold text-sm sm:text-base">Semana 3</h4>
+                      <h4 className="font-semibold text-sm sm:text-base">Dia 16-23</h4>
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Gerar Treino 2.0 adaptado baseado na análise
+                      Gerar Treino 2.0 adaptado baseado na análise da IA
                     </p>
                   </div>
                   
@@ -614,17 +706,17 @@ export default function Support() {
                       <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-orange-100 flex items-center justify-center">
                         <span className="text-orange-600 font-bold text-xs sm:text-sm">4</span>
                       </div>
-                      <h4 className="font-semibold text-sm sm:text-base">Semana 4</h4>
+                      <h4 className="font-semibold text-sm sm:text-base">Dia 24-30</h4>
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Apresentar resultados e novo treino ao aluno
+                      Apresentar resultados, novo treino e renovar motivação do aluno
                     </p>
                   </div>
                 </div>
                 
                 <div className="mt-4 p-3 bg-primary/10 rounded-lg">
                   <p className="text-xs sm:text-sm text-primary font-medium">
-                    💡 Dica: Análises mensais aumentam a retenção do aluno em até 40%!
+                    💡 Dica: Análises a cada 30 dias aumentam a retenção do aluno em até 40% e mostram que você se importa com o progresso dele!
                   </p>
                 </div>
               </CardContent>

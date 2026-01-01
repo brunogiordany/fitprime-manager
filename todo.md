@@ -1832,3 +1832,9 @@
 - [x] Jornada do Personal em 10 passos
 - [x] Ciclo de acompanhamento mensal
 - [x] Guia de funcionalidades com dicas
+
+
+## Correções Suporte v5.1
+- [x] Corrigir botões "Ir" da jornada que dão erro 404 (paths corrigidos para rotas válidas)
+- [x] Ajustar ciclo de acompanhamento de 3 semanas para 30 dias
+- [x] Expandir guia com TODAS as funcionalidades da ferramenta (12 categorias)
