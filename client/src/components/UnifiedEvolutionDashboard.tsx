@@ -446,6 +446,10 @@ export function UnifiedEvolutionDashboard({
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowNewPhotoModal(true)}>
+              <Camera className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Nova Foto</span>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
               <Plus className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Nova Medida</span>
@@ -637,9 +641,16 @@ export function UnifiedEvolutionDashboard({
               <CardContent className="py-12 text-center">
                 <Camera className="h-16 w-16 mx-auto text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhuma foto de evolução</h3>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-sm mb-4">
                   {studentName} ainda não enviou fotos de evolução.
                 </p>
+                <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => setShowNewPhotoModal(true)}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Adicionar Primeira Foto
+                </Button>
               </CardContent>
             </Card>
           ) : (
@@ -662,6 +673,10 @@ export function UnifiedEvolutionDashboard({
                       </div>
                       
                       <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setShowNewPhotoModal(true)}>
+                          <Camera className="h-4 w-4 mr-1" />
+                          Nova Foto
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
                           <History className="h-4 w-4 mr-1" />
                           Histórico
@@ -1515,6 +1530,60 @@ export function UnifiedEvolutionDashboard({
               ))}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Nova Foto */}
+      <Dialog open={showNewPhotoModal} onOpenChange={setShowNewPhotoModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5 text-emerald-600" />
+              Nova Foto de Evolução
+            </DialogTitle>
+            <DialogDescription>
+              Adicione uma nova foto para acompanhar a evolução de {studentName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <Camera className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+              <p className="text-sm text-gray-600 mb-3">
+                Para adicionar fotos, acesse o <strong>Perfil do Aluno</strong> &gt; aba <strong>Fotos</strong>
+              </p>
+              <p className="text-xs text-gray-500">
+                Lá você poderá tirar fotos guiadas seguindo as poses de referência
+              </p>
+            </div>
+            
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <h4 className="font-medium text-emerald-800 mb-2">Dicas para fotos de evolução:</h4>
+              <ul className="text-sm text-emerald-700 space-y-1">
+                <li>• Use sempre a mesma iluminação e fundo</li>
+                <li>• Mantenha a mesma distância da câmera</li>
+                <li>• Siga as poses de referência (frontal, lateral, costas)</li>
+                <li>• Tire fotos no mesmo horário do dia</li>
+              </ul>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewPhotoModal(false)}>
+              Fechar
+            </Button>
+            <Button 
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => {
+                setShowNewPhotoModal(false);
+                // Redirecionar para o perfil do aluno na aba de fotos
+                window.location.href = `/alunos/${studentId}?tab=photos`;
+              }}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Ir para Fotos do Aluno
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -1941,3 +1941,10 @@
 - [x] Modal de nova medida no Personal e Aluno
 - [x] Modal de histórico de análises no Personal e Aluno
 
+
+
+## Correções Urgentes Área de Evolução (v5.12)
+- [ ] Botão de adicionar nova MEDIDA visível e funcional
+- [ ] Botão de adicionar nova FOTO visível e funcional
+- [ ] Histórico de análises da IA sendo gerado e exibido
+- [ ] Aplicar em todas as interfaces (Personal e Aluno)

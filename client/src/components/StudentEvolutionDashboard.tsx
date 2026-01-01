@@ -494,6 +494,10 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                       </div>
                       
                       <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
+                          <History className="h-4 w-4 mr-1" />
+                          Histórico
+                        </Button>
                         {compareMode ? (
                           <>
                             <Button variant="outline" size="sm" onClick={cancelComparison}>
