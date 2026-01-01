@@ -1838,3 +1838,10 @@
 - [x] Corrigir botões "Ir" da jornada que dão erro 404 (paths corrigidos para rotas válidas)
 - [x] Ajustar ciclo de acompanhamento de 3 semanas para 30 dias
 - [x] Expandir guia com TODAS as funcionalidades da ferramenta (12 categorias)
+
+
+## Ajuste Aba Ajuda Portal do Aluno (v5.2)
+- [x] Remover botão "Acessar Central de Ajuda" e mostrar conteúdo direto na aba
+- [x] Incluir chat com IA e guias diretamente na tela
+- [x] Criar componente StudentHelpCenter com chat IA e guia do portal
+- [x] Perguntas rápidas para facilitar uso

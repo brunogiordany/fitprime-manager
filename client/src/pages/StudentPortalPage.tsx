@@ -20,6 +20,7 @@ import StudentBadges from "@/components/StudentBadges";
 import StudentFeedback from "@/components/StudentFeedback";
 import StudentTrainingTips from "@/components/StudentTrainingTips";
 import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
+import StudentHelpCenter from "@/components/StudentHelpCenter";
 import { GuidedPhotos } from "@/components/GuidedPhotos";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
@@ -2160,27 +2161,9 @@ export default function StudentPortalPage() {
             <StudentBadges />
           </TabsContent>
 
-          {/* Help Tab - Redireciona para página de ajuda */}
-          <TabsContent value="help" className="space-y-6">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="space-y-4">
-                  <div className="h-16 w-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-                    <MessageCircle className="h-8 w-8 text-emerald-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold">Central de Ajuda</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Tire suas dúvidas com a FitPrime IA ou explore os guias do portal.
-                  </p>
-                  <Button 
-                    onClick={() => window.location.href = '/meu-portal/ajuda'}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    Acessar Central de Ajuda
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Help Tab - Central de Ajuda Inline */}
+          <TabsContent value="help" className="space-y-4">
+            <StudentHelpCenter />
           </TabsContent>
         </Tabs>
       </div>
