@@ -1955,3 +1955,19 @@
 - [ ] Identificar redundâncias e sobreposições
 - [ ] Simplificar interface removendo duplicações
 - [ ] Corrigir formato dos botões (texto visível, não só ícone)
+
+
+## Bugs Identificados - Área de Evolução (v5.85)
+
+- [ ] Fotos do aluno não aparecem na aba Fotos do menu Evolução (não está interligado com fotos existentes)
+- [ ] Separar botões por aba: Nova Foto só na aba Fotos, Nova Medida só na aba Medidas
+
+- [ ] Modal "Nova Foto de Evolução" deve permitir upload direto sem redirecionar (no perfil do aluno)
+- [x] Remover menu "Evolução" do sidebar do portal do personal
+- [x] Remover aba "Evolução" do perfil do aluno (redundante com Fotos, Medidas, Treinos)
+
+
+## Correções v4.5
+- [x] Remover menu "Evolução" do sidebar do portal do personal
+- [x] Aba "Fotos" do perfil do aluno mostra apenas fotos (sem sub-abas redundantes)
+- [x] Corrigidos 30+ erros TypeScript (Stripe, LLM, routers, tipos de medidas)

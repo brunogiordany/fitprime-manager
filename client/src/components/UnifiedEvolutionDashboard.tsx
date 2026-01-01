@@ -157,7 +157,7 @@ export function UnifiedEvolutionDashboard({
   );
 
   // Mutation para análise de fotos
-  const analyzeMutation = trpc.students.analyzePhotos.useMutation({
+  const analyzeMutation = trpc.studentPortal.analyzePhotos.useMutation({
     onSuccess: (data: { analysis: string }) => {
       setAnalysisResult(data.analysis);
       toast.success("Análise concluída!");
@@ -169,7 +169,7 @@ export function UnifiedEvolutionDashboard({
   });
 
   // Mutation para criar nova medida
-  const createMeasurementMutation = trpc.students.addMeasurement.useMutation({
+  const createMeasurementMutation = trpc.measurements.create.useMutation({
     onSuccess: () => {
       toast.success("Medida registrada com sucesso!");
       setShowNewMeasurementModal(false);
@@ -363,10 +363,18 @@ export function UnifiedEvolutionDashboard({
 
   const handleAnalyze = () => {
     if (!comparePhotos.before || !comparePhotos.after) return;
+    
+    // Calcular dias entre as fotos
+    const beforeDate = new Date(comparePhotos.before.createdAt);
+    const afterDate = new Date(comparePhotos.after.createdAt);
+    const daysBetween = Math.floor((afterDate.getTime() - beforeDate.getTime()) / (1000 * 60 * 60 * 24));
+    
     analyzeMutation.mutate({
-      studentId,
-      beforePhotoUrl: comparePhotos.before.url,
-      afterPhotoUrl: comparePhotos.after.url,
+      poseId: comparePhotos.before.notes || 'frontal',
+      firstPhotoUrl: comparePhotos.before.url,
+      lastPhotoUrl: comparePhotos.after.url,
+      poseName: comparePhotos.before.notes || 'Frontal',
+      daysBetween: Math.abs(daysBetween),
     });
   };
 
@@ -1443,6 +1451,7 @@ export function UnifiedEvolutionDashboard({
               onClick={() => {
                 createMeasurementMutation.mutate({
                   studentId,
+                  measureDate: new Date().toISOString().split('T')[0],
                   weight: newMeasurement.weight || undefined,
                   bodyFat: newMeasurement.bodyFat || undefined,
                   chest: newMeasurement.chest || undefined,
