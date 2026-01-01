@@ -11,6 +11,7 @@ import { storagePut } from "../storage";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import { handleStripeWebhook } from "../stripe/webhook";
+import { handleCaktoWebhook } from "../cakto/webhook";
 import { getHealthStatus } from "./healthCheck";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -38,6 +39,9 @@ async function startServer() {
   
   // Stripe webhook - MUST be before body parser to preserve raw body for signature verification
   app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+  
+  // Cakto webhook - receives payment events from Cakto platform
+  app.post('/api/cakto/webhook', express.json(), handleCaktoWebhook);
   
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));

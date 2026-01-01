@@ -3469,3 +3469,72 @@ export async function updateStudentLastAnalyzedAt(studentId: number) {
   
   await db.update(students).set({ lastAnalyzedAt: new Date() }).where(eq(students.id, studentId));
 }
+
+
+// ==================== CAKTO INTEGRATION FUNCTIONS ====================
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result[0] || null;
+}
+
+export async function updateUserSubscription(userId: number, data: {
+  status?: "active" | "canceled" | "expired";
+  caktoOrderId?: string;
+  caktoSubscriptionId?: string;
+  paidAt?: Date;
+  canceledAt?: Date;
+  renewedAt?: Date;
+  amount?: number;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  
+  // Get the personal associated with this user
+  const personal = await getPersonalByUserId(userId);
+  if (!personal) {
+    console.log("[Cakto] No personal found for user:", userId);
+    return;
+  }
+  
+  // Update the personal's subscription status
+  const updateData: Record<string, unknown> = {};
+  
+  if (data.status === "active") {
+    updateData.subscriptionStatus = "active";
+    // Set expiration to 30 days from now (or renewal date)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    updateData.subscriptionExpiresAt = expiresAt;
+  } else if (data.status === "canceled") {
+    updateData.subscriptionStatus = "cancelled";
+  } else if (data.status === "expired") {
+    updateData.subscriptionStatus = "expired";
+  }
+  
+  await db.update(personals).set(updateData).where(eq(personals.id, personal.id));
+  console.log("[Cakto] Updated subscription for personal:", personal.id, updateData);
+}
+
+export async function createPendingActivation(data: {
+  email: string;
+  phone: string;
+  caktoOrderId: string;
+  caktoSubscriptionId?: string;
+  productId: string;
+  amount: number;
+}) {
+  // For now, just log the pending activation
+  // In the future, we can create a table to store these
+  console.log("[Cakto] Pending activation stored:", data);
+  
+  // TODO: Create cakto_pending_activations table and store this data
+  // When user registers with this email, automatically activate their subscription
+}
+
+export async function getPendingActivationByEmail(email: string) {
+  // TODO: Implement when we have the pending activations table
+  return null;
+}

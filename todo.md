@@ -1955,3 +1955,15 @@
 - [ ] Identificar redundâncias e sobreposições
 - [ ] Simplificar interface removendo duplicações
 - [ ] Corrigir formato dos botões (texto visível, não só ícone)
+
+
+## Integração Cakto - Pagamentos (v4.7)
+- [x] Configurar credenciais Cakto como secrets
+- [x] Criar endpoint de webhook para receber eventos da Cakto
+- [x] Processar evento purchase_approved (ativar acesso)
+- [x] Processar evento refund (desativar acesso)
+- [x] Processar evento subscription_created (ativar assinatura)
+- [x] Processar evento subscription_canceled (cancelar assinatura)
+- [x] Processar evento subscription_renewed (renovar assinatura)
+- [x] Webhook criado na Cakto (ID: 33740, Secret: 29163253-1d82-4fb3-b0e8-ae42ff4f07ae)
+- [ ] Testar integração completa com compra real
