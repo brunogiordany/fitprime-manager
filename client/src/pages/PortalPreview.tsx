@@ -245,7 +245,7 @@ export default function PortalPreview() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-emerald-600">
-                          R$ {(Number(charge.amount) / 100).toFixed(2)}
+                          R$ {Number(charge.amount).toFixed(2)}
                         </p>
                         <span className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700">
                           Pendente

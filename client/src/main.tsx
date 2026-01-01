@@ -6,9 +6,26 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
+import { OfflineProvider } from "./contexts/OfflineContext";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Configurações para melhor suporte offline
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      gcTime: 30 * 60 * 1000, // 30 minutos (antigo cacheTime)
+      retry: (failureCount, error) => {
+        // Não tentar novamente se estiver offline
+        if (!navigator.onLine) return false;
+        // Máximo 3 tentativas
+        return failureCount < 3;
+      },
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
@@ -81,7 +98,9 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <OfflineProvider>
+        <App />
+      </OfflineProvider>
     </QueryClientProvider>
   </trpc.Provider>
 );

@@ -50,6 +50,7 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { trpc } from "@/lib/trpc";
+import { OfflineIndicator } from "./OfflineIndicator";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -333,6 +334,7 @@ function DashboardLayoutContent({
                 </span>
               </div>
             </div>
+            <OfflineIndicator variant="badge" />
           </div>
         )}
         <main className="flex-1 p-4 md:p-6">{children}</main>

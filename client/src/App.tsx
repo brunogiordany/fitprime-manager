@@ -37,6 +37,7 @@ import TrainingDiaryPage from "./pages/TrainingDiaryPage";
 import EvolutionDashboard from "./pages/EvolutionDashboard";
 import Support from "./pages/Support";
 import StudentSupport from "./pages/StudentSupport";
+import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 
 function Router() {
   return (
@@ -99,6 +100,8 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <InstallPrompt />
+          <IOSInstallInstructions />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

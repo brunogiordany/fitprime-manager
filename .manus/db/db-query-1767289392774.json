@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, description, CAST(amount AS CHAR) as amount_str, status FROM charges ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, description, CAST(amount AS CHAR) as amount_str, status FROM charges ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "150012",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150011",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150010",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150009",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150008",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150007",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150006",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150005",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150004",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    },
+    {
+      "id": "150003",
+      "description": "Mensal 2x semana - AgenteIA",
+      "amount_str": "1000.00",
+      "status": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdescription\tamount_str\tstatus\n150012\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150011\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150010\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150009\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150008\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150007\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150006\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150005\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150004\tMensal 2x semana - AgenteIA\t1000.00\tpending\n150003\tMensal 2x semana - AgenteIA\t1000.00\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 499
+}

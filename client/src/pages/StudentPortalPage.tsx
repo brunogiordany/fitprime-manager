@@ -626,7 +626,7 @@ export default function StudentPortalPage() {
                             </p>
                           </div>
                           <span className="font-bold text-amber-600">
-                            R$ {(Number(charge.amount) / 100).toFixed(2)}
+                            R$ {Number(charge.amount).toFixed(2)}
                           </span>
                         </div>
                       ))}
@@ -2135,7 +2135,7 @@ export default function StudentPortalPage() {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold">R$ {(Number(charge.amount) / 100).toFixed(2)}</p>
+                            <p className="font-bold">R$ {Number(charge.amount).toFixed(2)}</p>
                             <Badge variant={charge.status === 'paid' ? 'default' : charge.status === 'pending' ? 'secondary' : 'destructive'}>
                               {charge.status === 'paid' ? 'Pago' : charge.status === 'pending' ? 'Pendente' : 'Cancelado'}
                             </Badge>

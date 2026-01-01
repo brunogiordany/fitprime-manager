@@ -1853,3 +1853,41 @@
 - [x] 10 passos da jornada com ícones, ações e dicas
 - [x] Timeline visual conectando os passos
 - [x] Análise mensal destacada (30 dias)
+
+
+## Bug Valores de Cobrança (v5.4)
+- [x] Personal vê R$ 1.000,00 mas aluno vê R$ 10,00 - investigar diferença
+  - Problema: Código dividia valor por 100 (assumindo centavos)
+  - Solução: Removida divisão em PortalPreview.tsx e StudentPortalPage.tsx
+- [x] Alinhar formatação de valores entre Personal e Aluno
+
+## Integração Plataforma de Vendas (v5.5)
+- [ ] Preparar para liberar apenas para personais pagantes
+- [ ] Integrar com plataforma de vendas (Hotmart, Kiwify, etc.)
+- [ ] Aluno não precisa pagar - é convite do personal
+
+## Preparação Serviço Online (v5.6)
+- [ ] Identificar funcionalidades necessárias para personal atender clientes remotos
+- [ ] Analisar gaps para consultoria online
+
+## Modo Offline PWA (v5.7)
+- [ ] Implementar Service Worker para cache de dados
+- [ ] Permitir uso sem internet para Personal e Aluno
+- [ ] Sincronizar dados quando voltar online
+
+
+## Correções Urgentes (Janeiro 2026)
+- [x] Bug: Valores de cobrança exibidos incorretamente no portal do aluno (divisão por 100) - VERIFICADO: Não há bug, valores estão corretos (R$ 1000.00)
+
+
+## Modo Offline PWA Completo (v5.8)
+- [x] Configurar manifest.json para PWA
+- [x] Implementar Service Worker com cache avançado
+- [x] Cache de recursos estáticos (HTML, CSS, JS, imagens)
+- [x] Cache de dados da API (treinos, alunos, sessões)
+- [x] Detectar status de conexão (online/offline)
+- [x] Fila de operações offline (criar, editar, excluir)
+- [x] Sincronização automática ao voltar online
+- [x] Indicador visual de status offline
+- [x] Funciona para Personal e Aluno
+- [x] Prompt de instalação do app

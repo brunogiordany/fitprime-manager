@@ -42,6 +42,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "./ui/skeleton";
+import { OfflineIndicator } from "./OfflineIndicator";
 
 interface StudentData {
   id: number;
@@ -322,6 +323,7 @@ function StudentPortalLayoutContent({
               <p className="text-xs text-muted-foreground">Portal do Aluno</p>
             </div>
             <div className="flex items-center gap-2">
+              <OfflineIndicator variant="badge" />
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {studentData.name}
               </span>
