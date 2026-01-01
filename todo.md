@@ -1902,3 +1902,29 @@
 - [x] Histórico de análises salvas
 - [x] Interface para Portal do Aluno
 - [x] Interface para área do Personal (dashboard de evolução)
+
+
+## Unificação das Áreas de Evolução (v5.10)
+- [ ] Analisar funcionalidades da página Evolução (menu lateral)
+- [ ] Analisar funcionalidades da aba Fotos no perfil do aluno
+- [ ] Mapear diferenças entre as duas áreas
+- [ ] Unificar funcionalidades - adicionar o que falta em cada área
+- [ ] Garantir mesma experiência para o aluno no portal
+- [ ] Testar integração completa
+
+
+## Unificação das Áreas de Evolução (v5.10)
+- [x] Mapear funcionalidades do menu lateral "Evolução"
+- [x] Mapear funcionalidades da aba "Fotos" no perfil do aluno
+- [x] Criar componente unificado com todas as funções (UnifiedEvolutionDashboard)
+- [x] Aplicar no menu lateral "Evolução" (EvolutionDashboard.tsx)
+- [x] Aplicar na aba "Fotos" do perfil do aluno (StudentProfile.tsx)
+- [x] Criar componente para portal do aluno (StudentEvolutionDashboard)
+- [x] Funcionalidades unificadas:
+  - [x] Visão geral com KPIs (fotos, medições, exercícios, dias)
+  - [x] Timeline de fotos por pose com datas
+  - [x] Comparação antes/depois com slider interativo
+  - [x] Análise por IA com fotos e medidas
+  - [x] Gráficos de evolução de peso e circunferências
+  - [x] Evolução de carga nos treinos por exercício
+  - [x] Upload de novas fotos guiado por poses

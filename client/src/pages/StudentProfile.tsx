@@ -86,7 +86,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { PersonalPhotoEvolutionView } from "@/components/PersonalPhotoEvolutionView";
+import { UnifiedEvolutionDashboard } from "@/components/UnifiedEvolutionDashboard";
 
 export default function StudentProfile() {
   const [, setLocation] = useLocation();
@@ -1536,14 +1536,15 @@ export default function StudentProfile() {
             )}
           </TabsContent>
 
-          {/* Photos Tab */}
+          {/* Photos Tab - Evolução Unificada */}
           <TabsContent value="photos">
-            <PersonalPhotoEvolutionView
+            <UnifiedEvolutionDashboard
               studentId={studentId}
               studentName={student?.name || 'Aluno'}
               photos={photos || []}
               measurements={measurements || []}
               onRefresh={() => refetchPhotos()}
+              embedded={true}
             />
           </TabsContent>
 

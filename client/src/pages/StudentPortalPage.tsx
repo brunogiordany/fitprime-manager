@@ -22,7 +22,7 @@ import StudentTrainingTips from "@/components/StudentTrainingTips";
 import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
 import StudentHelpCenter from "@/components/StudentHelpCenter";
 import { GuidedPhotos } from "@/components/GuidedPhotos";
-import { PhotoEvolutionSection } from "@/components/PhotoEvolutionSection";
+import { StudentEvolutionDashboard } from "@/components/StudentEvolutionDashboard";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
@@ -659,19 +659,12 @@ export default function StudentPortalPage() {
             />
           </TabsContent>
 
-          {/* Photos Tab */}
+          {/* Photos Tab - Evolução Unificada */}
           <TabsContent value="photos" className="space-y-6">
-            {editPermissions?.canEditPhotos ? (
-              <PhotoEvolutionSection
-                studentId={studentData?.id || 0}
-                measurements={measurements || []}
-              />
-            ) : (
-              <GuidedPhotos
-                studentId={studentData?.id || 0}
-                readOnly={true}
-              />
-            )}
+            <StudentEvolutionDashboard
+              studentId={studentData?.id || 0}
+              measurements={measurements || []}
+            />
           </TabsContent>
 
           {/* Sessions Tab */}
