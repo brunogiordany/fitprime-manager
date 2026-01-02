@@ -13,6 +13,7 @@ import { subscriptionRouter } from "./subscription/subscriptionRouter";
 import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
 import { supportChatRouter } from "./routers/supportChatRouter";
 import { extraChargesRouter } from "./routers/extraChargesRouter";
+import { adminExtraChargesRouter } from "./routers/adminExtraChargesRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -453,6 +454,7 @@ export const appRouter = router({
           message: 'Notificação enviada (simulado)',
         };
       }),
+    extraCharges: adminExtraChargesRouter,
   }),
   
   // ==================== SUPORTE COM IA ====================

@@ -2260,3 +2260,14 @@
 - [ ] Adicionar notificações por email
 - [x] Criar testes unitários
 - [ ] Testar fluxo completo
+
+
+## Painel de Admin - Cobranças Extras (v8.1)
+- [x] Criar endpoints tRPC de admin para listar cobranças extras
+- [x] Criar componente AdminExtraChargesPanel
+- [x] Implementar tabela com histórico de cobranças
+- [x] Adicionar filtros por período, personal, status
+- [x] Criar gráficos de cobranças por mês
+- [x] Adicionar estatísticas (total cobrado, média, top personals)
+- [x] Integrar no AdminPanel
+- [x] Testar painel completo

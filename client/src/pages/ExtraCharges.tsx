@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { ExtraChargesPanel } from "@/components/ExtraChargesPanel";
 
 export default function ExtraChargesPage() {

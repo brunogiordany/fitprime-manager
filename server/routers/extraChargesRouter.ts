@@ -118,7 +118,8 @@ export const extraChargesRouter = router({
 
       // Determinar se deve recomendar upgrade
       const percentageOverLimit = (extraStudents / planConfig.limit) * 100;
-      const accumulatedPercentageOfPlan = (accumulatedCharge / subscription.planPrice) * 100;
+      const planPrice = Number(subscription.planPrice);
+      const accumulatedPercentageOfPlan = (totalAccumulated / planPrice) * 100;
       const shouldRecommendUpgrade = percentageOverLimit > 10 || accumulatedPercentageOfPlan > 50;
 
       // Sugerir próximo plano
@@ -208,7 +209,7 @@ export const extraChargesRouter = router({
 
         // Atualizar acúmulo
         await db.updatePersonalSubscriptionExtra(personal.id, {
-          accumulatedExtraCharge: input.extraCharge,
+          accumulatedExtraCharge: input.extraCharge.toString(),
           accumulatedExtraStudents: input.extraStudents,
         });
 
@@ -256,7 +257,7 @@ export const extraChargesRouter = router({
 
       // Resetar acúmulo
       await db.updatePersonalSubscriptionExtra(personal.id, {
-        accumulatedExtraCharge: 0,
+        accumulatedExtraCharge: "0",
         accumulatedExtraStudents: 0,
         lastAccumulationReset: new Date(),
       });

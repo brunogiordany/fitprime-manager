@@ -3712,7 +3712,7 @@ export async function createPersonalSubscription(data: InsertPersonalSubscriptio
 export async function updatePersonalSubscriptionExtra(
   personalId: number,
   data: {
-    accumulatedExtraCharge?: number | string;
+    accumulatedExtraCharge?: string;
     accumulatedExtraStudents?: number;
     lastAccumulationReset?: Date;
   }
