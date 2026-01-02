@@ -32,7 +32,9 @@ import {
   Brain,
   Lightbulb,
   Lock,
-  Smartphone as PhoneIcon
+  Smartphone as PhoneIcon,
+  X,
+  Minus
 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
@@ -266,19 +268,90 @@ export default function LandingPagePro() {
         </div>
       </header>
 
-      {/* Hero Section - Calculadora Interativa */}
+      {/* Hero Section - Conexão Emocional */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-emerald-50 via-white to-white">
         <div className="container max-w-7xl mx-auto">
           {/* Headline Principal */}
           <div className="text-center mb-12">
-            <Badge className="mb-6 bg-amber-100 text-amber-700 hover:bg-amber-100">
+            <Badge className="mb-6 bg-red-100 text-red-700 hover:bg-red-100">
               <AlertCircle className="h-4 w-4 mr-2" />
-              Calculadora do Personal
+              Isso te parece familiar?
             </Badge>
             
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-              Descubra quanto você está <span className="text-amber-600">deixando de ganhar</span>
+              Você é <span className="text-emerald-600">Personal Trainer</span>,<br/>
+              não secretário.
             </h1>
+            
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Enquanto você deveria estar treinando alunos e ganhando dinheiro,<br/>
+              está preso respondendo WhatsApp, cobrando pagamentos e remarcando horários.
+            </p>
+
+            {/* Frases do dia a dia - HERO */}
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              <div className="bg-white rounded-full px-6 py-3 border-2 border-red-200 shadow-sm">
+                <p className="text-gray-700">"Oi, posso remarcar pra quinta?" 😩</p>
+              </div>
+              <div className="bg-white rounded-full px-6 py-3 border-2 border-red-200 shadow-sm">
+                <p className="text-gray-700">"Esqueci de pagar, manda o pix de novo?" 💸</p>
+              </div>
+              <div className="bg-white rounded-full px-6 py-3 border-2 border-red-200 shadow-sm">
+                <p className="text-gray-700">"Qual era meu treino mesmo?" 📝</p>
+              </div>
+            </div>
+
+            {/* Dores em destaque */}
+            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+              <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                <Clock className="h-8 w-8 text-red-500 mx-auto mb-3" />
+                <h3 className="font-bold text-gray-900 mb-2">Tempo Perdido</h3>
+                <p className="text-gray-600 text-sm">10+ horas por semana respondendo mensagens, cobrando e organizando planilhas</p>
+              </div>
+              <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                <DollarSign className="h-8 w-8 text-red-500 mx-auto mb-3" />
+                <h3 className="font-bold text-gray-900 mb-2">Dinheiro na Mesa</h3>
+                <p className="text-gray-600 text-sm">Alunos que não pagam em dia, cobranças que você esquece de fazer</p>
+              </div>
+              <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                <Users className="h-8 w-8 text-red-500 mx-auto mb-3" />
+                <h3 className="font-bold text-gray-900 mb-2">Alunos Perdidos</h3>
+                <p className="text-gray-600 text-sm">Sem acompanhamento de evolução, alunos perdem motivação e cancelam</p>
+              </div>
+            </div>
+
+            {/* CTA Principal */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                size="lg" 
+                onClick={() => {
+                  const quizSection = document.getElementById('quiz');
+                  if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
+              >
+                Descubra Se o FitPrime É Pra Você
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <p className="text-sm text-gray-500">Responda 3 perguntas rápidas e descubra</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção Calculadora - Mais abaixo */}
+      <section className="py-20 px-4 bg-gradient-to-b from-white to-amber-50" id="calculadora">
+        <div className="container max-w-7xl mx-auto">
+          {/* Headline da Calculadora */}
+          <div className="text-center mb-12">
+            <Badge className="mb-6 bg-amber-100 text-amber-700 hover:bg-amber-100">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Calculadora do Personal
+            </Badge>
+            
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+              Descubra quanto você está <span className="text-amber-600">deixando de ganhar</span>
+            </h2>
             
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Coloque seus números reais e veja o impacto da burocracia no seu bolso
@@ -440,31 +513,19 @@ export default function LandingPagePro() {
 
               <Button 
                 size="lg" 
-                onClick={handleStartTrial}
+                onClick={() => {
+                  const quizSection = document.getElementById('quiz');
+                  if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
               >
-                Quero Recuperar Meu Tempo
+                Qual Plano Combina Comigo?
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-center text-sm text-gray-500 mt-3">Teste grátis por 7 dias. Sem cartão.</p>
+              <p className="text-center text-sm text-gray-500 mt-3">Descubra em menos de 2 minutos</p>
             </div>
           </div>
 
-          {/* Frases do dia a dia */}
-          <div className="mt-16 text-center">
-            <p className="text-gray-500 mb-6">Isso te parece familiar?</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
-                <p className="text-gray-700">"Oi, posso remarcar pra quinta?" 😩</p>
-              </div>
-              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
-                <p className="text-gray-700">"Esqueci de pagar, manda o pix de novo?" 💸</p>
-              </div>
-              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
-                <p className="text-gray-700">"Qual era meu treino mesmo?" 📝</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -484,100 +545,242 @@ export default function LandingPagePro() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 mb-20">
-            {/* Passo 1 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">1</span>
+          {/* Jornada do Personal */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              <span className="text-emerald-600">Sua</span> Jornada como Personal
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Passo 1 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">1</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Cadastre seus alunos</h4>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Cadastre seus alunos</h3>
+                <div className="h-16 w-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-emerald-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Importe do Excel ou cadastre manualmente. Perfil completo com foto, objetivos e histórico.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Import do Excel/CSV
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Foto e dados completos
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Anamnese detalhada
+                  </li>
+                </ul>
               </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Importe seus alunos do Excel ou cadastre manualmente. Cada aluno tem seu perfil completo com foto, objetivos, histórico de medidas e evolução.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Lista de alunos com filtros]
+
+              {/* Passo 2 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">2</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Gere treinos com IA</h4>
+                </div>
+                <div className="h-16 w-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Brain className="h-8 w-8 text-blue-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  A IA gera treinos personalizados em segundos baseado no objetivo e restrições do aluno.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Baseado na anamnese
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Progressão automática
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Adaptação por feedback
+                  </li>
+                </ul>
+              </div>
+
+              {/* Passo 3 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">3</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Agende automaticamente</h4>
+                </div>
+                <div className="h-16 w-16 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-purple-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Selecione os dias e a IA cria 4 semanas de agendamento. Alunos recebem no WhatsApp.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    4 semanas automáticas
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Notificação WhatsApp
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Aluno remarca sozinho
+                  </li>
+                </ul>
+              </div>
+
+              {/* Passo 4 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">4</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Cobranças automáticas</h4>
+                </div>
+                <div className="h-16 w-16 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="h-8 w-8 text-green-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Configure uma vez e esqueça. Cobranças automáticas via WhatsApp e Pix.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Pix automático
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Lembrete de vencimento
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Bloqueio por inadimplência
+                  </li>
+                </ul>
+              </div>
+
+              {/* Passo 5 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">5</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Acompanhe evolução</h4>
+                </div>
+                <div className="h-16 w-16 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-8 w-8 text-orange-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Gráficos de peso, medidas e composição corporal. Fotos de antes/depois.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Gráficos de evolução
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Fotos comparativas
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Cálculo de BF automático
+                  </li>
+                </ul>
+              </div>
+
+              {/* Passo 6 */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 font-bold">6</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Relatórios e insights</h4>
+                </div>
+                <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-indigo-600" />
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  MRR, taxa de retenção, alunos engajados. Dados para crescer seu negócio.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Dashboard completo
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Métricas de receita
+                  </li>
+                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Previsão de churn
+                  </li>
+                </ul>
               </div>
             </div>
+          </div>
 
-            {/* Passo 2 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">2</span>
+          {/* Jornada do Aluno */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              <span className="text-blue-600">Experiência do</span> Seu Aluno
+            </h3>
+            <div className="grid md:grid-cols-4 gap-6">
+              {/* Aluno 1 */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Smartphone className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Gere treinos com IA</h3>
+                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">App no Celular</h4>
+                <p className="text-gray-600 text-sm text-center">
+                  Treino sempre disponível. Sem papel, sem dúvida.
+                </p>
               </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Preencha a anamnese do aluno uma vez. A IA gera treinos personalizados em segundos baseado no objetivo, experiência e restrições.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Gerador de treinos com IA]
-              </div>
-            </div>
 
-            {/* Passo 3 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">3</span>
+              {/* Aluno 2 */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Agende automaticamente</h3>
+                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">Lembretes WhatsApp</h4>
+                <p className="text-gray-600 text-sm text-center">
+                  Notificações automáticas de treino e pagamento.
+                </p>
               </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Selecione os dias de treino e a IA cria 4 semanas de agendamento automaticamente. Seus alunos recebem notificações no WhatsApp.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Calendário com agendamentos]
-              </div>
-            </div>
 
-            {/* Passo 4 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">4</span>
+              {/* Aluno 3 */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Cobranças automáticas</h3>
+                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">Remarca Sozinho</h4>
+                <p className="text-gray-600 text-sm text-center">
+                  Aluno reagenda pelo app. Sem te incomodar.
+                </p>
               </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Configure uma vez e esqueça. O FitPrime envia cobranças automáticas, rastreia pagamentos e bloqueia acesso para inadimplentes.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Dashboard de cobranças]
-              </div>
-            </div>
 
-            {/* Passo 5 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">5</span>
+              {/* Aluno 4 */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <LineChart className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Acompanhe evolução</h3>
-              </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Visualize gráficos de evolução de peso, medidas e composição corporal. Identifique quem está progredindo e quem precisa de ajustes.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Gráficos de evolução]
-              </div>
-            </div>
-
-            {/* Passo 6 */}
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-emerald-300 transition">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="text-emerald-600 font-bold text-xl">6</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">Relatórios e insights</h3>
-              </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Veja MRR, taxa de conversão, alunos mais engajados e muito mais. Dados em tempo real para tomar decisões melhores.
-              </p>
-              <div className="bg-gray-100 rounded-xl h-48 flex items-center justify-center text-gray-400">
-                [Screenshot: Dashboard de relatórios]
+                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">Vê Sua Evolução</h4>
+                <p className="text-gray-600 text-sm text-center">
+                  Gráficos e fotos de progresso. Motivação garantida.
+                </p>
               </div>
             </div>
           </div>
@@ -590,10 +793,13 @@ export default function LandingPagePro() {
             </p>
             <Button 
               size="lg" 
-              onClick={handleStartTrial}
+              onClick={() => {
+                const quizSection = document.getElementById('quiz');
+                if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+              }}
               className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
             >
-              Começar Teste Grátis
+              Veja Se o FitPrime É Pra Você
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -601,7 +807,7 @@ export default function LandingPagePro() {
       </section>
 
       {/* Seção de Benefícios com Quiz */}
-      <section className="py-20 px-4 bg-white" id="pricing">
+      <section className="py-20 px-4 bg-white" id="quiz">
         <div className="container max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-emerald-100 text-emerald-700">
@@ -694,10 +900,10 @@ export default function LandingPagePro() {
           {/* CTA Principal - Quiz */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-10 text-center text-white">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Descubra o plano perfeito para você em 2 minutos
+              Será que o FitPrime é pra você?
             </h3>
             <p className="text-emerald-100 mb-8 text-lg max-w-2xl mx-auto">
-              Nosso quiz inteligente analisa seu perfil e recomenda os 3 melhores planos para seu momento.
+              Responda 3 perguntas simples e descubra qual plano combina com seu momento como personal.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -706,7 +912,7 @@ export default function LandingPagePro() {
                 className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
               >
                 <Target className="mr-2 h-5 w-5" />
-                Fazer Quiz Gratuito
+                Descobrir Meu Plano Ideal
               </Button>
               <Button 
                 size="lg" 
@@ -714,12 +920,12 @@ export default function LandingPagePro() {
                 onClick={() => window.location.href = '/pricing-complete'}
                 className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
               >
-                Ver Todos os Planos
+                Já Sei o Que Quero
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
             <p className="text-emerald-200 text-sm mt-6">
-              Sem compromisso • Resultado instantâneo • Plano personalizado
+              Menos de 2 minutos • Resultado personalizado • Sem compromisso
             </p>
           </div>
         </div>
@@ -804,10 +1010,10 @@ export default function LandingPagePro() {
               </p>
 
               <Button 
-                onClick={handleStartTrial}
+                onClick={() => window.location.href = '/quiz'}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg py-6"
               >
-                Começar Teste Grátis
+                Descubra Se É Pra Você
               </Button>
             </div>
           </div>
@@ -837,6 +1043,115 @@ export default function LandingPagePro() {
         </div>
       </section>
 
+      {/* Tabela Comparativa */}
+      <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
+              <Trophy className="h-3 w-3 mr-1" />
+              Comparação de Mercado
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Por que o FitPrime é <span className="text-emerald-600">diferente</span>?
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Veja como nos comparamos com outras soluções do mercado
+            </p>
+          </div>
+
+          {/* Tabela Comparativa */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-4 px-4 font-semibold text-gray-700">Funcionalidade</th>
+                  <th className="py-4 px-4 text-center">
+                    <div className="bg-emerald-600 text-white rounded-lg py-2 px-4 font-bold">
+                      FitPrime
+                    </div>
+                  </th>
+                  <th className="py-4 px-4 text-center text-gray-500 font-medium">App A</th>
+                  <th className="py-4 px-4 text-center text-gray-500 font-medium">App B</th>
+                  <th className="py-4 px-4 text-center text-gray-500 font-medium">App C</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { feature: "IA para gerar treinos personalizados", fitprime: true, a: false, b: false, c: "partial" },
+                  { feature: "Agendamento automático com IA", fitprime: true, a: false, b: false, c: false },
+                  { feature: "Cobranças automáticas (PIX/Cartão)", fitprime: true, a: "partial", b: true, c: false },
+                  { feature: "Bloqueio automático para inadimplentes", fitprime: true, a: false, b: false, c: false },
+                  { feature: "WhatsApp integrado", fitprime: true, a: false, b: "partial", c: false },
+                  { feature: "Dashboard financeiro (MRR, Churn)", fitprime: true, a: false, b: false, c: "partial" },
+                  { feature: "Biblioteca de exercícios em vídeo", fitprime: true, a: true, b: true, c: true },
+                  { feature: "Anamnese e avaliação física", fitprime: true, a: true, b: true, c: true },
+                  { feature: "App do aluno (iOS/Android)", fitprime: true, a: true, b: true, c: true },
+                  { feature: "Gráficos de evolução do aluno", fitprime: true, a: false, b: false, c: true },
+                  { feature: "Diário de treino detalhado", fitprime: true, a: false, b: false, c: false },
+                  { feature: "Relatórios de negócio", fitprime: true, a: false, b: false, c: "partial" },
+                  { feature: "Integração com wearables", fitprime: "soon", a: false, b: false, c: true },
+                  { feature: "Suporte em português", fitprime: true, a: true, b: true, c: "partial" },
+                  { feature: "Preço acessível (a partir de R$ 97)", fitprime: true, a: true, b: true, c: false },
+                ].map((row, i) => (
+                  <tr key={i} className={`border-b border-gray-100 ${i % 2 === 0 ? 'bg-gray-50/50' : ''}`}>
+                    <td className="py-4 px-4 text-gray-700 font-medium">{row.feature}</td>
+                    <td className="py-4 px-4 text-center bg-emerald-50/50">
+                      {row.fitprime === true && <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto" />}
+                      {row.fitprime === false && <X className="h-6 w-6 text-gray-300 mx-auto" />}
+                      {row.fitprime === "partial" && <Minus className="h-6 w-6 text-amber-500 mx-auto" />}
+                      {row.fitprime === "soon" && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Em breve</span>}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {row.a === true && <CheckCircle2 className="h-5 w-5 text-gray-400 mx-auto" />}
+                      {row.a === false && <X className="h-5 w-5 text-gray-300 mx-auto" />}
+                      {row.a === "partial" && <Minus className="h-5 w-5 text-amber-500 mx-auto" />}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {row.b === true && <CheckCircle2 className="h-5 w-5 text-gray-400 mx-auto" />}
+                      {row.b === false && <X className="h-5 w-5 text-gray-300 mx-auto" />}
+                      {row.b === "partial" && <Minus className="h-5 w-5 text-amber-500 mx-auto" />}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {row.c === true && <CheckCircle2 className="h-5 w-5 text-gray-400 mx-auto" />}
+                      {row.c === false && <X className="h-5 w-5 text-gray-300 mx-auto" />}
+                      {row.c === "partial" && <Minus className="h-5 w-5 text-amber-500 mx-auto" />}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Legenda */}
+          <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <span>Incluso</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Minus className="h-4 w-4 text-amber-500" />
+              <span>Parcial</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <X className="h-4 w-4 text-gray-300" />
+              <span>Não incluso</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              onClick={() => window.location.href = '/quiz'}
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
+            >
+              Descubra Se o FitPrime É Pra Você
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="container max-w-4xl mx-auto">
@@ -849,8 +1164,8 @@ export default function LandingPagePro() {
           <div className="space-y-6">
             {[
               {
-                q: "Preciso de cartão de crédito para o teste grátis?",
-                a: "Não! Teste completamente grátis por 1 dia. Sem cartão, sem compromisso. Se gostar, escolha um plano."
+                q: "Como funciona para começar?",
+                a: "Você faz o quiz para descobrir o plano ideal, escolhe o que combina com seu momento e já pode começar a usar. Simples assim!"
               },
               {
                 q: "Posso cancelar a qualquer momento?",
@@ -886,27 +1201,27 @@ export default function LandingPagePro() {
       <section className="py-20 px-4 bg-gradient-to-r from-emerald-600 to-teal-600">
         <div className="container max-w-4xl mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Pronto para organizar sua vida?
+            Será que o FitPrime é pra você?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Comece com 1 dia grátis. Sem cartão, sem compromisso. Cancele quando quiser.
+            Responda 3 perguntas rápidas e descubra qual plano combina com seu momento.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={handleStartTrial}
+              onClick={() => window.location.href = '/quiz'}
               className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
             >
-              Começar Teste Grátis
+              Descobrir Meu Plano Ideal
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button 
               size="lg" 
-              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/pricing-complete'}
               variant="outline"
               className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
             >
-              Ver Planos
+              Já Sei o Que Quero
             </Button>
           </div>
 

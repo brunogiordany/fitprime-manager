@@ -2503,3 +2503,25 @@
 - [ ] Calcular automaticamente quanto está perdendo por mês
 - [ ] Mostrar dados personalizados em toda a página baseado no input
 - [ ] Animação dos números ao calcular
+
+
+## Reorganização da Landing Page (v6.2)
+- [x] Criar hero com conexão emocional primeiro (dores, frases do dia a dia)
+- [x] Mover calculadora para seção separada mais abaixo
+- [x] Manter fluxo: Conexão → Dores → Calculadora → Solução → CTA
+- [x] Remover placeholders de screenshot (usar ícones)
+- [x] Criar jornada completa do personal e cliente com todos os benefícios
+
+## Estratégia de CTAs - Curiosidade e Descoberta (v6.3)
+- [x] Criar CTAs focados em "descobrir se o FitPrime é pra mim"
+- [x] Criar CTAs focados em "qual plano combina com meu momento"
+- [x] Usar linguagem de curiosidade (Descubra, Responda, Veja se...)
+- [x] Gerar desejo de seguir para os próximos passos
+- [x] Remover menções a "teste grátis" (fica só no backredirect)
+- [x] CTAs levam para quiz/descoberta, não para cadastro direto
+
+## Tabela Comparativa - FitPrime vs Concorrentes (v6.4)
+- [x] Pesquisar funcionalidades dos principais concorrentes (MFIT, Wiki4Fit, Hexfit, Mobitrainer)
+- [x] Criar tabela comparativa sem expor nomes (App A, B, C)
+- [x] Mostrar todas as funcionalidades do FitPrime vs concorrentes
+- [x] Destacar diferenciais do FitPrime
