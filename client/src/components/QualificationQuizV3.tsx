@@ -33,6 +33,76 @@ interface QuizResult {
 
 const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
+    id: "students_count",
+    title: "Quantos alunos você atende atualmente?",
+    description: "Selecione a faixa que melhor representa",
+    type: "multiple",
+    options: [
+      {
+        value: "none",
+        label: "Ainda não tenho alunos",
+        pain: "Sem alunos",
+        score: -100,
+      },
+      {
+        value: "1_5",
+        label: "1 a 5 alunos",
+        pain: "Iniciante",
+        score: 1,
+      },
+      {
+        value: "6_15",
+        label: "6 a 15 alunos",
+        pain: "Crescendo",
+        score: 1,
+      },
+      {
+        value: "16_30",
+        label: "16 a 30 alunos",
+        pain: "Consolidado",
+        score: 1,
+      },
+      {
+        value: "over_30",
+        label: "Mais de 30 alunos",
+        pain: "Escalado",
+        score: 1,
+      },
+    ],
+  },
+  {
+    id: "has_revenue",
+    title: "Você já gera renda com personal training?",
+    description: "Selecione sua situação atual",
+    type: "multiple",
+    options: [
+      {
+        value: "no_revenue",
+        label: "Ainda não gero renda com personal",
+        pain: "Sem renda",
+        score: -100,
+      },
+      {
+        value: "starting",
+        label: "Estou começando a gerar renda",
+        pain: "Iniciante",
+        score: 1,
+      },
+      {
+        value: "stable",
+        label: "Tenho renda estável com alunos",
+        pain: "Estável",
+        score: 1,
+      },
+      {
+        value: "growing",
+        label: "Minha renda está crescendo",
+        pain: "Crescendo",
+        score: 1,
+      },
+    ],
+  },
+  {
     id: "management",
     title: "Como você gerencia seus alunos atualmente?",
     description: "Selecione todas as opções que se aplicam",
@@ -297,9 +367,27 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [selectedPains, setSelectedPains] = useState<string[]>([]);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [disqualified, setDisqualified] = useState<{ reason: string; message: string } | null>(null);
 
   const currentQuestion = QUIZ_QUESTIONS[currentStep];
   const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
+
+  // Função para verificar desqualificação
+  const checkDisqualification = (questionId: string, selectedValues: string[]): { reason: string; message: string } | null => {
+    if (questionId === "students_count" && selectedValues.includes("none")) {
+      return {
+        reason: "Sem alunos",
+        message: "O FitPrime é ideal para personals que já têm alunos. Quando você conquistar seus primeiros alunos, volte aqui que teremos a solução perfeita para você! 💪"
+      };
+    }
+    if (questionId === "has_revenue" && selectedValues.includes("no_revenue")) {
+      return {
+        reason: "Sem renda",
+        message: "O FitPrime é feito para personals que já geram renda com seus alunos. Quando você começar a faturar, volte aqui que vamos te ajudar a escalar! 🚀"
+      };
+    }
+    return null;
+  };
 
   const handleSingleAnswer = (value: string) => {
     const option = currentQuestion.options.find((opt) => opt.value === value);
@@ -351,6 +439,15 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
   };
 
   const handleNext = () => {
+    // Verificar desqualificação antes de avançar
+    const currentAnswers = (answers[currentQuestion.id] as string[]) || [];
+    const disqualificationResult = checkDisqualification(currentQuestion.id, currentAnswers);
+    
+    if (disqualificationResult) {
+      setDisqualified(disqualificationResult);
+      return;
+    }
+
     if (currentStep < QUIZ_QUESTIONS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -379,6 +476,50 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
     currentQuestion.type === "single"
       ? answers[currentQuestion.id]
       : (answers[currentQuestion.id] as string[])?.length > 0;
+
+  // Tela de desqualificação
+  if (disqualified) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto border-2 border-gray-300">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="text-4xl">😔</span>
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-gray-700">Ops! Ainda não é o momento certo</CardTitle>
+          <CardDescription className="text-lg mt-4 text-gray-600">
+            {disqualified.message}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+            <p className="text-gray-600 mb-4">
+              Enquanto isso, que tal seguir nossas dicas gratuitas para conquistar seus primeiros alunos?
+            </p>
+            <Button
+              onClick={() => window.location.href = "/"}
+              variant="outline"
+              className="mr-2"
+            >
+              Voltar ao Início
+            </Button>
+            <Button
+              onClick={() => window.open("https://instagram.com/fitprimemanager", "_blank")}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Seguir no Instagram
+            </Button>
+          </div>
+
+          <p className="text-center text-sm text-gray-500">
+            Quando estiver pronto, volte aqui! Estaremos te esperando. 💚
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (result) {
     return (

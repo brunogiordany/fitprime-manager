@@ -2308,3 +2308,12 @@
 - [x] Tornar opção "Já uso um sistema" mais persuasiva (ex: "mas é incompleto")
 - [x] Converter TODAS as perguntas para multi-seleção (checkbox)
 - [ ] Testar fluxo completo
+
+
+## Desqualificação de Leads (v10.2)
+- [x] Adicionar pergunta sobre quantidade de alunos
+- [x] Quem não tem aluno → Desqualifica e encerra funil
+- [x] Adicionar pergunta sobre renda/receita
+- [x] Quem não tem renda → Desqualifica e encerra funil
+- [x] Criar tela de desqualificação com mensagem apropriada
+- [ ] Testar fluxo de desqualificação
