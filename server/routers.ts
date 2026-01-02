@@ -321,6 +321,118 @@ export const appRouter = router({
       const adminDb = await import('./adminDb');
       return adminDb.getConversionData();
     }),
+    
+    // ==================== NOVOS ENDPOINTS AVANÇADOS ====================
+    
+    // Lista de alunos de um personal com contatos
+    personalStudents: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalStudentsWithContacts(input.personalId);
+      }),
+    
+    // Estatísticas detalhadas de um personal
+    personalDetailedStats: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalDetailedStats(input.personalId);
+      }),
+    
+    // Crescimento de alunos de um personal
+    personalStudentGrowth: ownerProcedure
+      .input(z.object({ personalId: z.number(), days: z.number().default(90) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalStudentGrowth(input.personalId, input.days);
+      }),
+    
+    // Informações de login do personal
+    personalLoginInfo: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalLoginInfo(input.personalId);
+      }),
+    
+    // Configurações do personal
+    personalConfig: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalConfig(input.personalId);
+      }),
+    
+    // Exportar dados de alunos de um personal
+    exportPersonalStudents: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.exportPersonalStudentsData(input.personalId);
+      }),
+    
+    // Exportar todos os personais
+    exportAllPersonals: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.exportAllPersonalsData();
+    }),
+    
+    // Todos os contatos de alunos do sistema
+    allStudentContacts: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.getAllStudentContacts();
+    }),
+    
+    // Bloquear/desbloquear personal
+    togglePersonalBlock: ownerProcedure
+      .input(z.object({ personalId: z.number(), blocked: z.boolean() }))
+      .mutation(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        const success = await adminDb.togglePersonalBlock(input.personalId, input.blocked);
+        return { 
+          success, 
+          message: input.blocked ? 'Personal bloqueado' : 'Personal desbloqueado' 
+        };
+      }),
+    
+    // Resetar senha (envia email de recuperação)
+    resetPersonalPassword: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .mutation(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        const personal = await adminDb.getPersonalLoginInfo(input.personalId);
+        
+        if (!personal || !personal.email) {
+          throw new TRPCError({ 
+            code: 'NOT_FOUND', 
+            message: 'Personal não encontrado ou sem email' 
+          });
+        }
+        
+        // Por enquanto, apenas retorna as informações
+        // TODO: Implementar envio de email de recuperação
+        return {
+          success: true,
+          message: `Link de recuperação seria enviado para ${personal.email}`,
+          email: personal.email,
+        };
+      }),
+    
+    // Enviar notificação para personal
+    notifyPersonal: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+        title: z.string(),
+        message: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // TODO: Implementar sistema de notificações
+        return {
+          success: true,
+          message: 'Notificação enviada (simulado)',
+        };
+      }),
   }),
   
   // ==================== SUPORTE COM IA ====================

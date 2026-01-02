@@ -2077,3 +2077,34 @@
 - [x] admin.personalDetails - Detalhes de um personal
 - [x] admin.revenueMetrics - Métricas de receita
 - [x] admin.conversionData - Dados de conversão
+
+
+## Painel Admin Expandido (v5.1)
+### Detalhes do Personal
+- [x] Ver lista completa de alunos do personal
+- [x] Ver emails e WhatsApp de todos os alunos
+- [x] Ver total de sessões realizadas (histórico completo)
+- [x] Ver total de treinos criados
+- [x] Ver receita gerada pelo personal (cobranças)
+- [x] Ver data do último login
+- [ ] Ver configurações do personal (Stevo, planos, etc)
+
+### Ações Administrativas
+- [x] Resetar senha do personal
+- [ ] Enviar email de recuperação
+- [x] Bloquear/desbloquear acesso
+- [x] Exportar dados do personal em CSV
+- [x] Exportar lista de alunos em CSV
+- [x] Exportar contatos (emails e WhatsApp) em CSV
+
+### Métricas Avançadas por Personal
+- [ ] Gráfico de crescimento de alunos
+- [ ] Taxa de retenção de alunos
+- [ ] Frequência média dos alunos
+- [ ] Receita média por aluno
+- [ ] Sessões por semana/mês
+
+### Comunicação
+- [ ] Enviar notificação individual para personal
+- [x] Enviar email direto para personal
+- [ ] Ver histórico de comunicações

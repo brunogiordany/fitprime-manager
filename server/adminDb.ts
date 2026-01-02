@@ -489,3 +489,458 @@ export async function getConversionData() {
     conversionRate: Math.round(conversionRate * 100) / 100,
   };
 }
+
+
+/**
+ * Obtém lista completa de alunos de um personal com contatos
+ */
+export async function getPersonalStudentsWithContacts(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    id: students.id,
+    name: students.name,
+    email: students.email,
+    phone: students.phone,
+    status: students.status,
+    whatsappOptIn: students.whatsappOptIn,
+    createdAt: students.createdAt,
+  })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      isNull(students.deletedAt)
+    ))
+    .orderBy(desc(students.createdAt));
+  
+  return result;
+}
+
+/**
+ * Obtém estatísticas detalhadas de um personal
+ */
+export async function getPersonalDetailedStats(personalId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  
+  // Total de alunos
+  const totalStudentsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(students)
+    .where(and(eq(students.personalId, personalId), isNull(students.deletedAt)));
+  const totalStudents = totalStudentsResult[0]?.count || 0;
+  
+  // Alunos ativos
+  const activeStudentsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      eq(students.status, 'active'),
+      isNull(students.deletedAt)
+    ));
+  const activeStudents = activeStudentsResult[0]?.count || 0;
+  
+  // Alunos novos (últimos 30 dias)
+  const newStudentsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      gte(students.createdAt, thirtyDaysAgo),
+      isNull(students.deletedAt)
+    ));
+  const newStudents30Days = newStudentsResult[0]?.count || 0;
+  
+  // Total de sessões
+  const totalSessionsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(sessions)
+    .where(eq(sessions.personalId, personalId));
+  const totalSessions = totalSessionsResult[0]?.count || 0;
+  
+  // Sessões realizadas
+  const completedSessionsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      eq(sessions.status, 'completed')
+    ));
+  const completedSessions = completedSessionsResult[0]?.count || 0;
+  
+  // Sessões nos últimos 30 dias
+  const sessions30DaysResult = await db.select({ count: sql<number>`count(*)` })
+    .from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      gte(sessions.scheduledAt, thirtyDaysAgo)
+    ));
+  const sessions30Days = sessions30DaysResult[0]?.count || 0;
+  
+  // Total de treinos
+  const totalWorkoutsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(workouts)
+    .where(eq(workouts.personalId, personalId));
+  const totalWorkouts = totalWorkoutsResult[0]?.count || 0;
+  
+  // Total de cobranças
+  const totalChargesResult = await db.select({ count: sql<number>`count(*)` })
+    .from(charges)
+    .where(eq(charges.personalId, personalId));
+  const totalCharges = totalChargesResult[0]?.count || 0;
+  
+  // Cobranças pagas
+  const paidChargesResult = await db.select({ 
+    count: sql<number>`count(*)`,
+    total: sql<number>`COALESCE(SUM(amount), 0)`,
+  })
+    .from(charges)
+    .where(and(
+      eq(charges.personalId, personalId),
+      eq(charges.status, 'paid')
+    ));
+  const paidCharges = paidChargesResult[0]?.count || 0;
+  const totalRevenue = paidChargesResult[0]?.total || 0;
+  
+  // Cobranças pendentes
+  const pendingChargesResult = await db.select({ 
+    count: sql<number>`count(*)`,
+    total: sql<number>`COALESCE(SUM(amount), 0)`,
+  })
+    .from(charges)
+    .where(and(
+      eq(charges.personalId, personalId),
+      eq(charges.status, 'pending')
+    ));
+  const pendingCharges = pendingChargesResult[0]?.count || 0;
+  const pendingAmount = pendingChargesResult[0]?.total || 0;
+  
+  // Taxa de presença (sessões realizadas / sessões agendadas nos últimos 90 dias)
+  const scheduledSessionsResult = await db.select({ count: sql<number>`count(*)` })
+    .from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      gte(sessions.scheduledAt, ninetyDaysAgo),
+      lte(sessions.scheduledAt, now)
+    ));
+  const scheduledSessions = scheduledSessionsResult[0]?.count || 0;
+  
+  const completedInPeriodResult = await db.select({ count: sql<number>`count(*)` })
+    .from(sessions)
+    .where(and(
+      eq(sessions.personalId, personalId),
+      eq(sessions.status, 'completed'),
+      gte(sessions.scheduledAt, ninetyDaysAgo),
+      lte(sessions.scheduledAt, now)
+    ));
+  const completedInPeriod = completedInPeriodResult[0]?.count || 0;
+  
+  const attendanceRate = scheduledSessions > 0 
+    ? Math.round((completedInPeriod / scheduledSessions) * 100) 
+    : 0;
+  
+  return {
+    students: {
+      total: totalStudents,
+      active: activeStudents,
+      new30Days: newStudents30Days,
+      inactive: totalStudents - activeStudents,
+    },
+    sessions: {
+      total: totalSessions,
+      completed: completedSessions,
+      last30Days: sessions30Days,
+      attendanceRate,
+    },
+    workouts: {
+      total: totalWorkouts,
+    },
+    revenue: {
+      totalCharges,
+      paidCharges,
+      pendingCharges,
+      totalRevenue: Number(totalRevenue) / 100, // Converter de centavos para reais
+      pendingAmount: Number(pendingAmount) / 100,
+    },
+  };
+}
+
+/**
+ * Obtém histórico de crescimento de alunos de um personal
+ */
+export async function getPersonalStudentGrowth(personalId: number, days: number = 90) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  
+  const result = await db.select({
+    date: sql<string>`DATE(${students.createdAt})`,
+    count: sql<number>`count(*)`,
+  })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      gte(students.createdAt, startDate),
+      isNull(students.deletedAt)
+    ))
+    .groupBy(sql`DATE(${students.createdAt})`)
+    .orderBy(sql`DATE(${students.createdAt})`);
+  
+  return result;
+}
+
+/**
+ * Obtém informações de login do personal
+ */
+export async function getPersonalLoginInfo(personalId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Buscar personal
+  const personalResult = await db.select({
+    id: personals.id,
+    userId: personals.userId,
+    createdAt: personals.createdAt,
+  }).from(personals).where(eq(personals.id, personalId));
+  
+  const personal = personalResult[0];
+  if (!personal || !personal.userId) return null;
+  
+  // Buscar usuário
+  const userResult = await db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    phone: users.phone,
+    lastSignedIn: users.lastSignedIn,
+    createdAt: users.createdAt,
+    loginMethod: users.loginMethod,
+  }).from(users).where(eq(users.id, personal.userId));
+  
+  const user = userResult[0];
+  if (!user) return null;
+  
+  return {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    lastSignedIn: user.lastSignedIn,
+    accountCreatedAt: user.createdAt,
+    personalCreatedAt: personal.createdAt,
+    loginMethod: user.loginMethod,
+  };
+}
+
+/**
+ * Obtém configurações do personal
+ */
+export async function getPersonalConfig(personalId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select({
+    id: personals.id,
+    businessName: personals.businessName,
+    cref: personals.cref,
+    bio: personals.bio,
+    specialties: personals.specialties,
+    workingHours: personals.workingHours,
+    whatsappNumber: personals.whatsappNumber,
+    evolutionApiKey: personals.evolutionApiKey,
+    evolutionInstance: personals.evolutionInstance,
+    logoUrl: personals.logoUrl,
+    subscriptionStatus: personals.subscriptionStatus,
+    subscriptionPeriod: personals.subscriptionPeriod,
+    subscriptionExpiresAt: personals.subscriptionExpiresAt,
+    trialEndsAt: personals.trialEndsAt,
+    testAccessEndsAt: personals.testAccessEndsAt,
+    testAccessGrantedBy: personals.testAccessGrantedBy,
+    testAccessGrantedAt: personals.testAccessGrantedAt,
+    createdAt: personals.createdAt,
+    updatedAt: personals.updatedAt,
+  }).from(personals).where(eq(personals.id, personalId));
+  
+  return result[0] || null;
+}
+
+/**
+ * Exporta dados de alunos de um personal para CSV
+ */
+export async function exportPersonalStudentsData(personalId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    id: students.id,
+    name: students.name,
+    email: students.email,
+    phone: students.phone,
+    status: students.status,
+    birthDate: students.birthDate,
+    gender: students.gender,
+    cpf: students.cpf,
+    address: students.address,
+    emergencyContact: students.emergencyContact,
+    emergencyPhone: students.emergencyPhone,
+    whatsappOptIn: students.whatsappOptIn,
+    createdAt: students.createdAt,
+  })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      isNull(students.deletedAt)
+    ))
+    .orderBy(students.name);
+  
+  return result;
+}
+
+/**
+ * Exporta todos os personais com seus dados
+ */
+export async function exportAllPersonalsData() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    id: personals.id,
+    businessName: personals.businessName,
+    cref: personals.cref,
+    whatsappNumber: personals.whatsappNumber,
+    subscriptionStatus: personals.subscriptionStatus,
+    subscriptionExpiresAt: personals.subscriptionExpiresAt,
+    createdAt: personals.createdAt,
+    userId: personals.userId,
+  }).from(personals).orderBy(personals.createdAt);
+  
+  // Buscar dados dos usuários
+  const userIds = result.map(p => p.userId).filter(Boolean) as number[];
+  const userDetails = userIds.length > 0 
+    ? await db.select({ 
+        id: users.id, 
+        name: users.name, 
+        email: users.email,
+        phone: users.phone,
+        lastSignedIn: users.lastSignedIn,
+      })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  
+  // Contar alunos por personal
+  const studentCounts = await db.select({
+    personalId: students.personalId,
+    count: sql<number>`count(*)`,
+  })
+    .from(students)
+    .where(isNull(students.deletedAt))
+    .groupBy(students.personalId);
+  
+  return result.map(p => {
+    const user = p.userId ? userDetails.find(u => u.id === p.userId) : null;
+    const studentCount = studentCounts.find(s => s.personalId === p.id)?.count || 0;
+    return {
+      id: p.id,
+      name: user?.name || 'Sem nome',
+      email: user?.email || '',
+      phone: user?.phone || p.whatsappNumber || '',
+      businessName: p.businessName || '',
+      cref: p.cref || '',
+      subscriptionStatus: p.subscriptionStatus,
+      subscriptionExpiresAt: p.subscriptionExpiresAt,
+      lastSignedIn: user?.lastSignedIn,
+      studentCount,
+      createdAt: p.createdAt,
+    };
+  });
+}
+
+/**
+ * Resetar senha do personal (gera token de recuperação)
+ */
+export async function generatePasswordResetToken(userId: number) {
+  // Por enquanto, apenas retorna informações do usuário
+  // A implementação real dependeria do sistema de autenticação
+  const db = await getDb();
+  if (!db) return null;
+  
+  const userResult = await db.select({
+    id: users.id,
+    email: users.email,
+    name: users.name,
+  }).from(users).where(eq(users.id, userId));
+  
+  return userResult[0] || null;
+}
+
+/**
+ * Bloquear/desbloquear personal
+ */
+export async function togglePersonalBlock(personalId: number, blocked: boolean) {
+  const db = await getDb();
+  if (!db) return false;
+  
+  // Atualiza o status da assinatura para 'cancelled' se bloqueado
+  // ou restaura para 'trial' se desbloqueado
+  await db.update(personals)
+    .set({ 
+      subscriptionStatus: blocked ? 'cancelled' : 'trial',
+      updatedAt: new Date(),
+    })
+    .where(eq(personals.id, personalId));
+  
+  return true;
+}
+
+/**
+ * Obtém todos os contatos (emails e WhatsApp) de todos os alunos do sistema
+ */
+export async function getAllStudentContacts() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    studentId: students.id,
+    studentName: students.name,
+    studentEmail: students.email,
+    studentPhone: students.phone,
+    personalId: students.personalId,
+    whatsappOptIn: students.whatsappOptIn,
+    status: students.status,
+  })
+    .from(students)
+    .where(isNull(students.deletedAt))
+    .orderBy(students.name);
+  
+  // Buscar nomes dos personais
+  const personalIds = Array.from(new Set(result.map(s => s.personalId)));
+  const personalDetails = personalIds.length > 0
+    ? await db.select({
+        id: personals.id,
+        businessName: personals.businessName,
+        userId: personals.userId,
+      })
+        .from(personals)
+        .where(inArray(personals.id, personalIds))
+    : [];
+  
+  const userIds = personalDetails.map(p => p.userId).filter(Boolean) as number[];
+  const userDetails = userIds.length > 0
+    ? await db.select({ id: users.id, name: users.name })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  
+  return result.map(s => {
+    const personal = personalDetails.find(p => p.id === s.personalId);
+    const user = personal?.userId ? userDetails.find(u => u.id === personal.userId) : null;
+    return {
+      ...s,
+      personalName: user?.name || personal?.businessName || 'Desconhecido',
+    };
+  });
+}
