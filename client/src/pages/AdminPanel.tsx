@@ -1041,7 +1041,7 @@ export default function AdminPanel() {
             </div>
             
             {/* Links Rápidos */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Link href="/admin/quiz">
                 <Card className="cursor-pointer hover:border-emerald-500 transition-colors">
                   <CardContent className="pt-6">
@@ -1097,6 +1097,55 @@ export default function AdminPanel() {
                       <div>
                         <p className="font-medium">Cobranças Extras</p>
                         <p className="text-xs text-muted-foreground">Alunos excedentes</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+            
+            {/* Links Rápidos - Segunda Linha */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link href="/admin/analytics">
+                <Card className="cursor-pointer hover:border-indigo-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                        <PieChart className="h-5 w-5 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Analytics</p>
+                        <p className="text-xs text-muted-foreground">Métricas do funil</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/admin/pages">
+                <Card className="cursor-pointer hover:border-teal-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-teal-100 dark:bg-teal-900 rounded-lg">
+                        <Settings className="h-5 w-5 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Gerenciar Páginas</p>
+                        <p className="text-xs text-muted-foreground">Editor visual</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/admin/pixels">
+                <Card className="cursor-pointer hover:border-pink-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-pink-100 dark:bg-pink-900 rounded-lg">
+                        <Eye className="h-5 w-5 text-pink-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Pixels de Tracking</p>
+                        <p className="text-xs text-muted-foreground">GA4, Facebook, TikTok</p>
                       </div>
                     </div>
                   </CardContent>

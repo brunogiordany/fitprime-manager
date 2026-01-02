@@ -2406,3 +2406,49 @@
 - [x] Solicitar CREF na primeira tentativa de gerar treino com IA
 - [x] Criar página de cadastro trial (/cadastro-trial)
 - [ ] Implementar tracking de conversão (quiz iniciado, quiz completo, trial criado)
+
+
+## Painel Admin Avançado - v4
+
+### Dashboard de Analytics
+- [ ] Criar página AdminAnalyticsDashboard no painel admin
+- [ ] Implementar métricas do funil (visitas, conversões, abandono)
+- [ ] Gráficos de conversão por etapa do funil
+- [ ] Filtros por período (hoje, 7 dias, 30 dias, custom)
+
+### Integração Tracking Multiplataforma
+- [ ] Integrar Google Analytics 4 (GA4)
+- [ ] Integrar Facebook Pixel para remarketing
+- [ ] Integrar TikTok Ads pixel
+- [ ] Criar configuração no admin para IDs dos pixels
+
+### Sistema de A/B Testing
+- [ ] Criar tabela de variantes no banco de dados
+- [ ] Implementar lógica de distribuição de tráfego
+- [ ] Dashboard de resultados dos testes
+- [ ] Declarar vencedor e aplicar variante
+
+### Painel de Gerenciamento de Páginas
+- [ ] Criar página AdminPagesManager no admin
+- [ ] Listar todas as páginas/rotas do site
+- [ ] Botão de atualizar para detectar novas páginas
+- [ ] KPIs por página (visitas, conversões, bounce rate)
+- [ ] Ações: editar, duplicar, gerar nova slug, publicar/despublicar
+
+### Editor Visual de Páginas (Estilo Canva)
+- [x] Interface intuitiva estilo Canva com drag-and-drop
+- [x] Criar sistema de blocos editáveis (hero, features, pricing, FAQ, CTA, etc)
+- [x] Edição inline de textos (clique para editar)
+- [x] Seletor de cores com paletas pré-definidas
+- [ ] Upload e manipulação de imagens (crop, resize, filtros)
+- [ ] Biblioteca de ícones e elementos visuais
+- [ ] Templates prontos para começar
+- [ ] Reorganizar seções com drag-and-drop
+- [x] Preview em tempo real (desktop/mobile)
+- [ ] Desfazer/Refazer (Ctrl+Z / Ctrl+Y)
+- [x] Salvar rascunho e publicar
+- [ ] Histórico de versões com rollback
+- [x] Duplicar páginas existentes
+- [x] Gerar novas slugs/URLs
+- [ ] Opções de SEO (título, descrição, og:image)
+- [ ] Criar novas páginas do zero

@@ -51,6 +51,10 @@ import AdminExtraCharges from "@/pages/AdminExtraCharges";
 import CheckoutPage from "@/pages/CheckoutPage";
 import QuizResultPage from "@/pages/QuizResultPage";
 import TrialSignupPage from "@/pages/TrialSignupPage";
+import AdminAnalyticsDashboard from "@/pages/AdminAnalyticsDashboard";
+import AdminPagesManager from "@/pages/AdminPagesManager";
+import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
+import AdminPageEditor from "@/pages/AdminPageEditor";
 
 function Router() {
   return (
@@ -103,6 +107,11 @@ function Router() {
       <Route path="/admin/quiz" component={AdminQuizDashboard} />
       <Route path="/admin/suporte" component={AdminSupportChat} />
       <Route path="/admin/extra-charges" component={AdminExtraCharges} />
+      <Route path="/admin/analytics" component={AdminAnalyticsDashboard} />
+      <Route path="/admin/pages" component={AdminPagesManager} />
+      <Route path="/admin/pixels" component={AdminPixelsConfig} />
+      <Route path="/admin/editor/:pageId" component={AdminPageEditor} />
+      <Route path="/admin/editor/new" component={AdminPageEditor} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
