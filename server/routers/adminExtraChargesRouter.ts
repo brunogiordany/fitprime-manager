@@ -21,7 +21,7 @@ export const adminExtraChargesRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        const logs = await db.getSubscriptionUsageLogs(1000); // Pegar muitos para filtrar
+        const logs = await db.getAllSubscriptionUsageLogs(1000); // Pegar muitos para filtrar
 
         // Filtrar por tipo de evento
         let filtered = logs.filter((log) => log.eventType === "extra_charged");
@@ -105,7 +105,7 @@ export const adminExtraChargesRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        const logs = await db.getSubscriptionUsageLogs(10000);
+        const logs = await db.getAllSubscriptionUsageLogs(10000);
 
         // Filtrar por tipo e período
         let filtered = logs.filter((log) => log.eventType === "extra_charged");
@@ -200,7 +200,7 @@ export const adminExtraChargesRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        const logs = await db.getSubscriptionUsageLogs(input.limit);
+        const logs = await db.getAllSubscriptionUsageLogs(input.limit);
 
         const filtered = logs
           .filter((log) => log.personalId === input.personalId && log.eventType === "extra_charged")
@@ -250,7 +250,7 @@ export const adminExtraChargesRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        const logs = await db.getSubscriptionUsageLogs(10000);
+        const logs = await db.getAllSubscriptionUsageLogs(10000);
 
         let filtered = logs.filter((log) => log.eventType === "extra_charged");
 

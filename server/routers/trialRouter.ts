@@ -10,6 +10,7 @@ const createTrialSchema = z.object({
   email: z.string().email("Email inválido"),
   phone: z.string().min(10, "Telefone inválido"),
   cpf: z.string().min(11, "CPF inválido"),
+  birthDate: z.string().min(10, "Data de nascimento inválida"),
   cref: z.string().optional(),
 });
 
@@ -50,8 +51,8 @@ export const trialRouter = router({
       trialEndsAt.setDate(trialEndsAt.getDate() + 1); // 1 dia de trial
 
       await db.execute(sql`
-        INSERT INTO users (name, email, cpf, phone, role, createdAt, updatedAt)
-        VALUES (${input.name}, ${input.email}, ${input.cpf}, ${input.phone}, 'user', NOW(), NOW())
+        INSERT INTO users (name, email, cpf, phone, birthDate, role, createdAt, updatedAt)
+        VALUES (${input.name}, ${input.email}, ${input.cpf}, ${input.phone}, ${input.birthDate}, 'user', NOW(), NOW())
       `);
 
       // Obter o ID do usuário criado

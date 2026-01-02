@@ -454,9 +454,9 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
               <div className="space-y-3">
                 <Button 
                   className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700"
-                  onClick={() => window.location.href = `/checkout?plan=${result.recommendedPlan}`}
+                  onClick={() => window.location.href = "/quiz-resultado"}
                 >
-                  Ver Plano Recomendado
+                  Ver Meus Planos Recomendados
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
                 <Button 

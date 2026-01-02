@@ -1087,7 +1087,7 @@ export default function AdminPanel() {
                   </CardContent>
                 </Card>
               </Link>
-              <Link href="/cobranças-extras">
+              <Link href="/admin/extra-charges">
                 <Card className="cursor-pointer hover:border-amber-500 transition-colors">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-3">

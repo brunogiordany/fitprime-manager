@@ -38,6 +38,7 @@ import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo } from "react";
 import ChatWidget from "@/components/ChatWidget";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 // Links de checkout dos planos
 const PLANS_CHECKOUT = {
@@ -222,6 +223,7 @@ export default function LandingPagePro() {
   return (
     <div className="min-h-screen bg-white">
       <ChatWidget />
+      <ExitIntentPopup enabled={true} delay={5000} />
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -235,8 +237,8 @@ export default function LandingPagePro() {
             <Button variant="ghost" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
               Como Funciona
             </Button>
-            <Button variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
-              Planos
+            <Button variant="ghost" onClick={() => window.location.href = '/quiz'}>
+              Descubra Seu Plano
             </Button>
             <Button onClick={handleStartTrial} className="bg-emerald-600 hover:bg-emerald-700">
               Testar Grátis
@@ -505,134 +507,127 @@ export default function LandingPagePro() {
         </div>
       </section>
 
-      {/* Tabela Comparativa de Planos */}
+      {/* Seção de Benefícios com Quiz */}
       <section className="py-20 px-4 bg-white" id="pricing">
         <div className="container max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-emerald-100 text-emerald-700">
-              <DollarSign className="h-3 w-3 mr-1" />
-              Planos Transparentes
+              <Target className="h-3 w-3 mr-1" />
+              Descubra Seu Plano Ideal
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Escolha o plano perfeito para seu <span className="text-emerald-600">estágio de crescimento</span>
+              Não sabe qual plano é o <span className="text-emerald-600">melhor para você</span>?
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Sem contratos, sem taxas escondidas. Cancele quando quiser. Todos os planos incluem 1 dia de trial grátis.
+              Responda algumas perguntas rápidas e descubra o plano perfeito para seu momento profissional.
             </p>
           </div>
 
-          {/* Cards de Planos */}
-          <div className="grid md:grid-cols-5 gap-4 mb-12">
-            {PLANS_DATA.map((plan) => (
-              <div 
-                key={plan.id}
-                className={`rounded-2xl p-6 border-2 transition transform hover:scale-105 ${
-                  plan.highlight 
-                    ? 'border-emerald-600 bg-gradient-to-b from-emerald-50 to-white shadow-lg' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                {plan.highlight && (
-                  <Badge className="mb-4 bg-emerald-600 text-white hover:bg-emerald-700 w-full justify-center">
-                    <Star className="h-3 w-3 mr-1" />
-                    Mais Popular
-                  </Badge>
-                )}
-                
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
-                
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-gray-900">R$ {plan.price}</span>
-                  <span className="text-gray-600">/mês</span>
-                </div>
-
-                <p className="text-sm text-gray-600 mb-6">
-                  Até <strong>{plan.studentLimit}</strong> alunos<br/>
-                  R$ {plan.extraStudentPrice.toFixed(2)}/aluno extra
-                </p>
-
-                <Button 
-                  onClick={() => handleCheckout(plan.id)}
-                  className={`w-full mb-6 ${
-                    plan.highlight 
-                      ? 'bg-emerald-600 hover:bg-emerald-700' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                  }`}
-                >
-                  Começar Agora
-                </Button>
-
-                <div className="space-y-3">
-                  {plan.features.map((feature, i) => (
-                    <div key={i} className="flex gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+          {/* Cards de Benefícios */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-200">
+              <div className="h-14 w-14 bg-emerald-100 rounded-xl flex items-center justify-center mb-6">
+                <Clock className="h-7 w-7 text-emerald-600" />
               </div>
-            ))}
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Economize 10+ horas/semana</h3>
+              <p className="text-gray-600 mb-4">
+                Automatize cobranças, agenda e comunicação. Foque no que importa: treinar seus alunos.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Cobranças 100% automáticas
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Agenda inteligente
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Lembretes automáticos
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200">
+              <div className="h-14 w-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                <Sparkles className="h-7 w-7 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Treinos com IA em segundos</h3>
+              <p className="text-gray-600 mb-4">
+                Crie treinos personalizados instantâneamente com nossa IA treinada por especialistas.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  Baseado na anamnese
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  Adaptação automática
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  Progressão inteligente
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
+              <div className="h-14 w-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+                <TrendingUp className="h-7 w-7 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Cresça seu negócio</h3>
+              <p className="text-gray-600 mb-4">
+                Relatórios, métricas e insights para escalar sua carreira como personal trainer.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                  Dashboard completo
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                  Análise de retenção
+                </li>
+                <li className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                  Previsão de receita
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Tabela Detalhada */}
-          <div className="bg-gray-50 rounded-2xl p-8 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-4 px-4 font-semibold text-gray-900">Funcionalidade</th>
-                  {PLANS_DATA.map((plan) => (
-                    <th key={plan.id} className="text-center py-4 px-4 font-semibold text-gray-900">
-                      {plan.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { name: "Alunos ilimitados", features: [true, true, true, true, true] },
-                  { name: "Agenda completa", features: [true, true, true, true, true] },
-                  { name: "Treinos com IA", features: [true, true, true, true, true] },
-                  { name: "Portal do aluno", features: [true, true, true, true, true] },
-                  { name: "Cobranças automáticas", features: [false, true, true, true, true] },
-                  { name: "Análise de evolução", features: [false, true, true, true, true] },
-                  { name: "Múltiplos personais", features: [false, false, true, true, true] },
-                  { name: "Integração com APIs", features: [false, false, true, true, true] },
-                  { name: "Suporte 24/7", features: [false, false, true, true, true] },
-                  { name: "Onboarding dedicado", features: [false, false, false, true, true] },
-                  { name: "Consultoria estratégica", features: [false, false, false, false, true] },
-                  { name: "SLA garantido", features: [false, false, false, false, true] },
-                ].map((row, i) => (
-                  <tr key={i} className="border-b border-gray-200 hover:bg-white transition">
-                    <td className="py-4 px-4 text-gray-900 font-medium">{row.name}</td>
-                    {row.features.map((included, j) => (
-                      <td key={j} className="text-center py-4 px-4">
-                        {included ? (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600 mx-auto" />
-                        ) : (
-                          <div className="h-5 w-5 rounded-full border-2 border-gray-300 mx-auto"></div>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* CTA Final */}
-          <div className="mt-16 text-center">
-            <p className="text-gray-600 mb-6 text-lg">
-              Não tem certeza qual plano escolher? <strong>Comece com o teste grátis!</strong>
+          {/* CTA Principal - Quiz */}
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-10 text-center text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Descubra o plano perfeito para você em 2 minutos
+            </h3>
+            <p className="text-emerald-100 mb-8 text-lg max-w-2xl mx-auto">
+              Nosso quiz inteligente analisa seu perfil e recomenda os 3 melhores planos para seu momento.
             </p>
-            <Button 
-              size="lg" 
-              onClick={handleStartTrial}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
-            >
-              Testar Grátis por 1 Dia
-              <Play className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                onClick={() => window.location.href = '/quiz'}
+                className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
+              >
+                <Target className="mr-2 h-5 w-5" />
+                Fazer Quiz Gratuito
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => window.location.href = '/pricing-complete'}
+                className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
+              >
+                Ver Todos os Planos
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            <p className="text-emerald-200 text-sm mt-6">
+              Sem compromisso • Resultado instantâneo • Plano personalizado
+            </p>
           </div>
         </div>
       </section>

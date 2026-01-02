@@ -3746,6 +3746,19 @@ export async function getSubscriptionUsageLogs(
     .limit(limit);
 }
 
+// Função para admin - busca todos os logs sem filtrar por personalId
+export async function getAllSubscriptionUsageLogs(
+  limit: number = 1000
+): Promise<SubscriptionUsageLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(subscriptionUsageLogs)
+    .orderBy(desc(subscriptionUsageLogs.createdAt))
+    .limit(limit);
+}
+
 export async function getActiveStudentsCount(personalId: number): Promise<number> {
   const db = await getDb();
   if (!db) return 0;

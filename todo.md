@@ -2375,13 +2375,13 @@
 - [x] Perguntas de soluções (arrancar "sim" com base no PWA)
 - [x] Perguntas financeiras (alunos, renda atual)
 - [x] Perguntas de objetivos (renda desejada, benefícios)
-- [ ] Página personalizada com 3 planos baseados nas respostas
+- [x] Página personalizada com 3 planos baseados nas respostas
 
 ### Popup Exit Intent
-- [ ] Detectar quando usuário vai sair/voltar
-- [ ] Popup oferecendo teste grátis de 1 dia
-- [ ] Redirecionar para página de cadastro
-- [ ] Capturar: nome, data nascimento, CPF, email, telefone
+- [x] Detectar quando usuário vai sair/voltar
+- [x] Popup oferecendo teste grátis de 1 dia
+- [x] Redirecionar para página de cadastro
+- [x] Capturar: nome, data nascimento, CPF, email, telefone
 
 ### Geração de Treino com IA
 - [ ] Bloquear função sem CREF preenchido
@@ -2391,3 +2391,11 @@
 
 ### Pendente do Usuário
 - [x] Criar produto FitPrime Beginner na Cakto (R$ 39,90 - 5 alunos) - Link: https://pay.cakto.com.br/75u9x53
+
+## Próximas Etapas - Funil de Vendas v2 (v10.7)
+- [x] Corrigir bug da página Cobranças Extras no admin (não está funcionando)
+- [x] Integrar popup de exit intent na landing page e pricing
+- [x] Criar página de resultado personalizado após o quiz com 3 planos recomendados
+- [x] Reformular Landing Page - remover seção de planos, adicionar CTAs focados em benefícios
+- [x] Implementar fluxo de trial de 1 dia com coleta de dados (nome, data nascimento, CPF, email, telefone)
+- [x] Adicionar validação de unicidade do CPF (um cadastro por CPF)

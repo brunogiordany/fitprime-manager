@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Zap, ExternalLink } from "lucide-react";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 import { FITPRIME_PLANS, getCheckoutUrl } from "../../../shared/caktoPlans";
 
 interface PricingPlan {
@@ -278,6 +279,7 @@ export default function DynamicPricingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-12 px-4">
+      <ExitIntentPopup enabled={true} delay={5000} />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

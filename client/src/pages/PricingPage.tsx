@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Zap } from "lucide-react";
@@ -12,6 +13,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <ExitIntentPopup enabled={true} delay={5000} />
       {/* Header */}
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl font-bold text-slate-900 mb-4">

@@ -21,6 +21,7 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
     email: "",
     phone: "",
     cpf: "",
+    birthDate: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -70,6 +71,17 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
       window.removeEventListener("popstate", handlePopState);
     };
   }, [handleMouseLeave, handlePopState, delay]);
+
+  // Formatação de data de nascimento
+  const formatBirthDate = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 8) {
+      return numbers
+        .replace(/(\d{2})(\d)/, "$1/$2")
+        .replace(/(\d{2})(\d)/, "$1/$2");
+    }
+    return value;
+  };
 
   // Formatação de CPF
   const formatCPF = (value: string) => {
@@ -144,6 +156,12 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
       newErrors.cpf = "CPF inválido";
     }
     
+    if (!formData.birthDate.trim()) {
+      newErrors.birthDate = "Data de nascimento é obrigatória";
+    } else if (formData.birthDate.replace(/\D/g, "").length !== 8) {
+      newErrors.birthDate = "Data inválida";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -154,11 +172,16 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
     setIsSubmitting(true);
     
     try {
+      // Converter data DD/MM/YYYY para YYYY-MM-DD
+      const dateParts = formData.birthDate.split("/");
+      const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+      
       await createTrialMutation.mutateAsync({
         name: formData.name,
         email: formData.email,
         phone: formData.phone.replace(/\D/g, ""),
         cpf: formData.cpf.replace(/\D/g, ""),
+        birthDate: formattedDate,
       });
       
       setIsSuccess(true);
@@ -262,16 +285,30 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
                   {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
                 </div>
 
-                <div>
-                  <Label htmlFor="cpf">CPF</Label>
-                  <Input
-                    id="cpf"
-                    placeholder="000.000.000-00"
-                    value={formData.cpf}
-                    onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
-                    className={errors.cpf ? "border-red-500" : ""}
-                  />
-                  {errors.cpf && <p className="text-xs text-red-500 mt-1">{errors.cpf}</p>}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="cpf">CPF</Label>
+                    <Input
+                      id="cpf"
+                      placeholder="000.000.000-00"
+                      value={formData.cpf}
+                      onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
+                      className={errors.cpf ? "border-red-500" : ""}
+                    />
+                    {errors.cpf && <p className="text-xs text-red-500 mt-1">{errors.cpf}</p>}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="birthDate">Data de Nascimento</Label>
+                    <Input
+                      id="birthDate"
+                      placeholder="DD/MM/AAAA"
+                      value={formData.birthDate}
+                      onChange={(e) => setFormData({ ...formData, birthDate: formatBirthDate(e.target.value) })}
+                      className={errors.birthDate ? "border-red-500" : ""}
+                    />
+                    {errors.birthDate && <p className="text-xs text-red-500 mt-1">{errors.birthDate}</p>}
+                  </div>
                 </div>
 
                 {errors.submit && (
