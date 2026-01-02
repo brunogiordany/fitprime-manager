@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, X, Smartphone } from 'lucide-react';
+import { useAuth } from '@/_core/hooks/useAuth';
+import { useLocation } from 'wouter';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -12,6 +14,28 @@ export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const { user, loading: isLoading } = useAuth();
+  const [location] = useLocation();
+  
+  // Lista de rotas públicas onde NÃO deve mostrar o popup
+  const publicRoutes = [
+    '/',
+    '/quiz',
+    '/quiz-resultado',
+    '/pricing',
+    '/planos',
+    '/cadastro-trial',
+    '/checkout',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+  ];
+  
+  // Verificar se está em rota pública
+  const isPublicRoute = publicRoutes.some(route => 
+    location === route || location.startsWith('/checkout/') || location.startsWith('/p/')
+  );
 
   useEffect(() => {
     // Verificar se já está instalado
@@ -72,7 +96,8 @@ export function InstallPrompt() {
     localStorage.setItem('pwa-install-dismissed', new Date().toISOString());
   };
 
-  if (isInstalled || !showPrompt || !deferredPrompt) {
+  // Não mostrar se: já instalado, não tem prompt, está em rota pública, ou usuário não está logado
+  if (isInstalled || !showPrompt || !deferredPrompt || isPublicRoute || isLoading || !user) {
     return null;
   }
 
@@ -129,6 +154,28 @@ export function IOSInstallInstructions() {
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const { user, loading: isLoading } = useAuth();
+  const [location] = useLocation();
+  
+  // Lista de rotas públicas onde NÃO deve mostrar o popup
+  const publicRoutes = [
+    '/',
+    '/quiz',
+    '/quiz-resultado',
+    '/pricing',
+    '/planos',
+    '/cadastro-trial',
+    '/checkout',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+  ];
+  
+  // Verificar se está em rota pública
+  const isPublicRoute = publicRoutes.some(route => 
+    location === route || location.startsWith('/checkout/') || location.startsWith('/p/')
+  );
 
   useEffect(() => {
     // Detectar iOS
@@ -159,7 +206,8 @@ export function IOSInstallInstructions() {
     localStorage.setItem('ios-install-dismissed', new Date().toISOString());
   };
 
-  if (!isIOS || isStandalone || !show) {
+  // Não mostrar se: não é iOS, já standalone, está em rota pública, ou usuário não está logado
+  if (!isIOS || isStandalone || !show || isPublicRoute || isLoading || !user) {
     return null;
   }
 

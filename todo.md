@@ -2452,3 +2452,7 @@
 - [x] Gerar novas slugs/URLs
 - [ ] Opções de SEO (título, descrição, og:image)
 - [ ] Criar novas páginas do zero
+
+## Correções - PWA
+- [x] Restringir popup de instalação PWA apenas para áreas internas (dashboard personal/aluno)
+- [x] Remover popup das páginas públicas (landing, quiz, pricing, etc)
