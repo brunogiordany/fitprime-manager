@@ -32,10 +32,11 @@ interface QuizResult {
 }
 
 const QUIZ_QUESTIONS: QuizQuestion[] = [
+  // PERGUNTA 1: Quantidade de alunos (base para plano)
   {
     id: "students_count",
-    title: "Quantos alunos você atende atualmente?",
-    description: "Selecione a faixa que melhor representa",
+    title: "Quantos alunos você atende hoje?",
+    description: "Isso nos ajuda a encontrar o plano perfeito para você",
     type: "multiple",
     options: [
       {
@@ -70,10 +71,11 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
       },
     ],
   },
+  // PERGUNTA 2: Renda (desqualificação + ajuste de plano)
   {
-    id: "has_revenue",
-    title: "Você já gera renda com personal training?",
-    description: "Selecione sua situação atual",
+    id: "revenue",
+    title: "Qual sua renda mensal com personal training?",
+    description: "Seja honesto, isso ajuda a recomendar o melhor investimento",
     type: "multiple",
     options: [
       {
@@ -83,205 +85,204 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
         score: -100,
       },
       {
-        value: "starting",
-        label: "Estou começando a gerar renda",
-        pain: "Iniciante",
-        score: 1,
-      },
-      {
-        value: "stable",
-        label: "Tenho renda estável com alunos",
-        pain: "Estável",
-        score: 1,
-      },
-      {
-        value: "growing",
-        label: "Minha renda está crescendo",
-        pain: "Crescendo",
-        score: 1,
-      },
-    ],
-  },
-  {
-    id: "management",
-    title: "Como você gerencia seus alunos atualmente?",
-    description: "Selecione todas as opções que se aplicam",
-    type: "multiple",
-    options: [
-      {
-        value: "spreadsheet",
-        label: "Planilhas Excel + WhatsApp",
-        pain: "Desorganização",
-        score: 1,
-      },
-      {
-        value: "notebook",
-        label: "Caderno e anotações",
-        pain: "Falta de controle",
-        score: 1,
-      },
-      {
-        value: "head",
-        label: "Tudo na minha cabeça",
-        pain: "Risco de perder informações",
-        score: 1,
-      },
-      {
-        value: "system",
-        label: "Já uso um sistema, mas é incompleto ou complicado",
-        pain: "Sistema inadequado",
-        score: 1,
-      },
-    ],
-  },
-  {
-    id: "pains",
-    title: "Quais são seus maiores desafios? (Selecione todos que se aplicam)",
-    description: "Escolha todos os que você enfrenta",
-    type: "multiple",
-    options: [
-      {
-        value: "organization",
-        label: "Desorganização com alunos e treinos",
-        pain: "Desorganização",
-        score: 1,
-      },
-      {
-        value: "dropout",
-        label: "Alunos desistem sem avisar",
-        pain: "Churn",
-        score: 1,
-      },
-      {
-        value: "time",
-        label: "Falta de tempo para admin",
-        pain: "Falta de tempo",
-        score: 1,
-      },
-      {
-        value: "billing",
-        label: "Problemas com cobranças e inadimplência",
-        pain: "Problemas financeiros",
-        score: 1,
-      },
-      {
-        value: "progress",
-        label: "Alunos não veem progresso",
-        pain: "Falta de dados",
-        score: 1,
-      },
-      {
-        value: "growth",
-        label: "Dificuldade em crescer/novos alunos",
-        pain: "Falta de crescimento",
-        score: 1,
-      },
-      {
-        value: "communication",
-        label: "Comunicação ruim com alunos",
-        pain: "Falta de comunicação",
-        score: 1,
-      },
-      {
-        value: "retention",
-        label: "Dificuldade em reter alunos",
-        pain: "Retenção",
-        score: 1,
-      },
-    ],
-  },
-  {
-    id: "admin_time",
-    title: "Quanto tempo você gasta por semana com admin?",
-    description: "Selecione todas as atividades que consomem seu tempo",
-    type: "multiple",
-    options: [
-      {
-        value: "over_10",
-        label: "Mais de 10 horas",
-        pain: "Tempo perdido",
-        score: 1,
-      },
-      {
-        value: "5_10",
-        label: "5-10 horas",
-        pain: "Falta de tempo",
-        score: 1,
-      },
-      {
-        value: "2_5",
-        label: "2-5 horas",
-        pain: "Ainda é muito",
-        score: 1,
-      },
-      {
-        value: "under_2",
-        label: "Menos de 2 horas",
-        pain: "Nenhuma",
-        score: 0,
-      },
-    ],
-  },
-  {
-    id: "revenue",
-    title: "Qual é sua receita mensal com alunos?",
-    description: "Selecione a faixa que melhor representa seu negócio",
-    type: "multiple",
-    options: [
-      {
         value: "under_2k",
-        label: "Menos de R$ 2.000",
-        pain: "Negócio pequeno",
+        label: "Menos de R$ 2.000/mês",
+        pain: "Renda baixa",
         score: 1,
       },
       {
         value: "2k_5k",
-        label: "R$ 2.000 - R$ 5.000",
-        pain: "Negócio em crescimento",
+        label: "R$ 2.000 a R$ 5.000/mês",
+        pain: "Renda média",
         score: 1,
       },
       {
         value: "5k_10k",
-        label: "R$ 5.000 - R$ 10.000",
-        pain: "Negócio consolidado",
-        score: 0,
+        label: "R$ 5.000 a R$ 10.000/mês",
+        pain: "Renda boa",
+        score: 1,
       },
       {
         value: "over_10k",
-        label: "Mais de R$ 10.000",
-        pain: "Negócio escalado",
+        label: "Mais de R$ 10.000/mês",
+        pain: "Renda alta",
+        score: 1,
+      },
+    ],
+  },
+  // PERGUNTA 3: Dor principal - Gestão
+  {
+    id: "management_pain",
+    title: "Você já perdeu informação importante de algum aluno?",
+    description: "Treino, evolução, pagamento, horário...",
+    type: "multiple",
+    options: [
+      {
+        value: "always",
+        label: "Sim, acontece sempre e me dá dor de cabeça",
+        pain: "Perda de informações crítica",
+        score: 2,
+      },
+      {
+        value: "sometimes",
+        label: "Já aconteceu algumas vezes",
+        pain: "Perda de informações ocasional",
+        score: 1,
+      },
+      {
+        value: "rarely",
+        label: "Raramente, mas tenho medo de acontecer",
+        pain: "Medo de perder informações",
+        score: 1,
+      },
+      {
+        value: "never",
+        label: "Nunca, tenho tudo organizado",
+        pain: "Organizado",
         score: 0,
       },
     ],
   },
+  // PERGUNTA 4: Dor principal - Tempo
   {
-    id: "priority",
-    title: "Quais problemas você mais quer resolver?",
-    description: "Selecione todos os que são urgentes para você",
+    id: "time_pain",
+    title: "Quanto tempo por semana você gasta com tarefas administrativas?",
+    description: "Cobranças, WhatsApp, planilhas, agendamentos...",
     type: "multiple",
     options: [
       {
+        value: "over_10h",
+        label: "Mais de 10 horas - é exaustivo",
+        pain: "Tempo excessivo com admin",
+        score: 2,
+      },
+      {
+        value: "5_10h",
+        label: "5 a 10 horas - toma muito do meu tempo",
+        pain: "Muito tempo com admin",
+        score: 2,
+      },
+      {
+        value: "2_5h",
+        label: "2 a 5 horas - ainda é muito",
+        pain: "Tempo moderado com admin",
+        score: 1,
+      },
+      {
+        value: "under_2h",
+        label: "Menos de 2 horas - tranquilo",
+        pain: "Pouco tempo com admin",
+        score: 0,
+      },
+    ],
+  },
+  // PERGUNTA 5: Dor principal - Retenção
+  {
+    id: "retention_pain",
+    title: "Nos últimos 6 meses, quantos alunos você perdeu?",
+    description: "Desistências, cancelamentos, sumiram...",
+    type: "multiple",
+    options: [
+      {
+        value: "many",
+        label: "Mais de 5 - é frustrante",
+        pain: "Alta evasão de alunos",
+        score: 2,
+      },
+      {
+        value: "some",
+        label: "3 a 5 alunos",
+        pain: "Evasão moderada",
+        score: 1,
+      },
+      {
+        value: "few",
+        label: "1 a 2 alunos",
+        pain: "Baixa evasão",
+        score: 1,
+      },
+      {
+        value: "none",
+        label: "Nenhum - todos continuam comigo",
+        pain: "Excelente retenção",
+        score: 0,
+      },
+    ],
+  },
+  // PERGUNTA 6: Dor principal - Cobranças
+  {
+    id: "billing_pain",
+    title: "Você já teve problemas com cobranças ou inadimplência?",
+    description: "Aluno que não paga, esquece, atrasa...",
+    type: "multiple",
+    options: [
+      {
+        value: "always",
+        label: "Sim, é um problema constante",
+        pain: "Inadimplência crítica",
+        score: 2,
+      },
+      {
+        value: "sometimes",
+        label: "Às vezes, tenho que ficar cobrando",
+        pain: "Inadimplência ocasional",
+        score: 1,
+      },
+      {
+        value: "rarely",
+        label: "Raramente, mas é constrangedor cobrar",
+        pain: "Desconforto com cobranças",
+        score: 1,
+      },
+      {
+        value: "never",
+        label: "Nunca, todos pagam em dia",
+        pain: "Sem problemas de cobrança",
+        score: 0,
+      },
+    ],
+  },
+  // PERGUNTA 7: O que mais quer resolver (prioridade)
+  {
+    id: "priority",
+    title: "Se você pudesse resolver UM problema agora, qual seria?",
+    description: "Escolha o mais urgente para você",
+    type: "multiple",
+    options: [
+      {
+        value: "organization",
+        label: "Organizar tudo em um só lugar",
+        pain: "Desorganização",
+        score: 1,
+      },
+      {
         value: "time",
-        label: "Ter mais tempo para crescer",
+        label: "Ter mais tempo para treinar e viver",
         pain: "Falta de tempo",
         score: 1,
       },
       {
         value: "retention",
         label: "Parar de perder alunos",
-        pain: "Churn",
-        score: 1,
-      },
-      {
-        value: "data",
-        label: "Ter dados para tomar decisões",
-        pain: "Falta de inteligência",
+        pain: "Evasão de alunos",
         score: 1,
       },
       {
         value: "billing",
         label: "Automatizar cobranças",
-        pain: "Problemas financeiros",
+        pain: "Problemas com cobranças",
+        score: 1,
+      },
+      {
+        value: "growth",
+        label: "Crescer e ganhar mais",
+        pain: "Falta de crescimento",
+        score: 1,
+      },
+      {
+        value: "professionalism",
+        label: "Parecer mais profissional para os alunos",
+        pain: "Falta de profissionalismo",
         score: 1,
       },
     ],
@@ -380,7 +381,7 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
         message: "O FitPrime é ideal para personals que já têm alunos. Quando você conquistar seus primeiros alunos, volte aqui que teremos a solução perfeita para você! 💪"
       };
     }
-    if (questionId === "has_revenue" && selectedValues.includes("no_revenue")) {
+    if (questionId === "revenue" && selectedValues.includes("no_revenue")) {
       return {
         reason: "Sem renda",
         message: "O FitPrime é feito para personals que já geram renda com seus alunos. Quando você começar a faturar, volte aqui que vamos te ajudar a escalar! 🚀"

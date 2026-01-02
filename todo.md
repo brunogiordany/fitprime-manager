@@ -2328,3 +2328,13 @@
 - [x] Quem tem 16-30 alunos → Pro
 - [x] Quem tem 30+ alunos → Business
 - [ ] Testar fluxo completo de direcionamento
+
+
+## Próximos Passos - Quiz Completo (v10.4)
+- [x] Melhorar perguntas do quiz com estratégia de dores
+- [x] Criar LP completa pós-quiz (benefícios, testimoniais, FAQ)
+- [x] Criar schema no banco para salvar respostas do quiz
+- [x] Criar endpoints tRPC para salvar e consultar respostas
+- [x] Integrar dashboard admin com dados do quiz
+- [x] Adicionar gráficos de análise das respostas
+- [ ] Testar fluxo completo

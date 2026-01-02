@@ -981,3 +981,106 @@ export const chatSupportMessages = mysqlTable("chat_support_messages", {
 
 export type ChatSupportMessage = typeof chatSupportMessages.$inferSelect;
 export type InsertChatSupportMessage = typeof chatSupportMessages.$inferInsert;
+
+
+// ==================== QUIZ RESPONSES (Respostas do Quiz de Qualificação) ====================
+export const quizResponses = mysqlTable("quiz_responses", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Identificação do visitante
+  visitorId: varchar("visitorId", { length: 255 }).notNull(), // ID único do visitante (fingerprint ou UUID)
+  sessionId: varchar("sessionId", { length: 255 }), // ID da sessão
+  
+  // Dados de qualificação
+  studentsCount: varchar("studentsCount", { length: 50 }), // none, 1_5, 6_15, 16_30, over_30
+  revenue: varchar("revenue", { length: 50 }), // no_revenue, under_2k, 2k_5k, 5k_10k, over_10k
+  
+  // Dores identificadas (JSON array)
+  managementPain: varchar("managementPain", { length: 50 }), // always, sometimes, rarely, never
+  timePain: varchar("timePain", { length: 50 }), // over_10h, 5_10h, 2_5h, under_2h
+  retentionPain: varchar("retentionPain", { length: 50 }), // many, some, few, none
+  billingPain: varchar("billingPain", { length: 50 }), // always, sometimes, rarely, never
+  priority: varchar("priority", { length: 50 }), // organization, time, retention, billing, growth, professionalism
+  
+  // Todas as respostas em JSON
+  allAnswers: text("allAnswers"), // JSON com todas as respostas
+  
+  // Resultado
+  recommendedProfile: varchar("recommendedProfile", { length: 50 }), // beginner, starter, pro, business
+  recommendedPlan: varchar("recommendedPlan", { length: 100 }),
+  totalScore: int("totalScore"),
+  identifiedPains: text("identifiedPains"), // JSON array de dores identificadas
+  
+  // Status do funil
+  isQualified: boolean("isQualified").default(true), // Se passou na qualificação
+  disqualificationReason: varchar("disqualificationReason", { length: 255 }), // Motivo da desqualificação
+  
+  // Conversão
+  viewedPricing: boolean("viewedPricing").default(false), // Se viu a página de preços
+  clickedCta: boolean("clickedCta").default(false), // Se clicou em algum CTA
+  selectedPlan: varchar("selectedPlan", { length: 100 }), // Plano que selecionou
+  convertedToTrial: boolean("convertedToTrial").default(false), // Se converteu para trial
+  convertedToPaid: boolean("convertedToPaid").default(false), // Se converteu para pago
+  
+  // Rastreamento
+  utmSource: varchar("utmSource", { length: 255 }),
+  utmMedium: varchar("utmMedium", { length: 255 }),
+  utmCampaign: varchar("utmCampaign", { length: 255 }),
+  utmContent: varchar("utmContent", { length: 255 }),
+  utmTerm: varchar("utmTerm", { length: 255 }),
+  referrer: varchar("referrer", { length: 500 }),
+  landingPage: varchar("landingPage", { length: 500 }),
+  
+  // Dispositivo
+  userAgent: text("userAgent"),
+  deviceType: varchar("deviceType", { length: 50 }), // mobile, tablet, desktop
+  browser: varchar("browser", { length: 100 }),
+  os: varchar("os", { length: 100 }),
+  
+  // Timestamps
+  startedAt: timestamp("startedAt").defaultNow().notNull(), // Quando começou o quiz
+  completedAt: timestamp("completedAt"), // Quando completou o quiz
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type QuizResponse = typeof quizResponses.$inferSelect;
+export type InsertQuizResponse = typeof quizResponses.$inferInsert;
+
+// ==================== QUIZ ANALYTICS (Métricas agregadas do Quiz) ====================
+export const quizAnalytics = mysqlTable("quiz_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Período
+  date: timestamp("date").notNull(), // Data do registro
+  
+  // Métricas de funil
+  totalStarts: int("totalStarts").default(0), // Total de inícios do quiz
+  totalCompletions: int("totalCompletions").default(0), // Total de conclusões
+  totalQualified: int("totalQualified").default(0), // Total de qualificados
+  totalDisqualified: int("totalDisqualified").default(0), // Total de desqualificados
+  
+  // Conversões
+  viewedPricing: int("viewedPricing").default(0), // Viram página de preços
+  clickedCta: int("clickedCta").default(0), // Clicaram em CTA
+  convertedTrial: int("convertedTrial").default(0), // Converteram para trial
+  convertedPaid: int("convertedPaid").default(0), // Converteram para pago
+  
+  // Distribuição de perfis
+  profileBeginner: int("profileBeginner").default(0),
+  profileStarter: int("profileStarter").default(0),
+  profilePro: int("profilePro").default(0),
+  profileBusiness: int("profileBusiness").default(0),
+  
+  // Dores mais comuns (JSON com contagem)
+  painDistribution: text("painDistribution"), // JSON com distribuição de dores
+  
+  // Origem do tráfego (JSON)
+  sourceDistribution: text("sourceDistribution"), // JSON com distribuição de fontes
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type QuizAnalytics = typeof quizAnalytics.$inferSelect;
+export type InsertQuizAnalytics = typeof quizAnalytics.$inferInsert;

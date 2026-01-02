@@ -14,6 +14,7 @@ import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
 import { supportChatRouter } from "./routers/supportChatRouter";
 import { extraChargesRouter } from "./routers/extraChargesRouter";
 import { adminExtraChargesRouter } from "./routers/adminExtraChargesRouter";
+import { quizRouter } from "./routers/quizRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -153,6 +154,7 @@ export const appRouter = router({
   system: systemRouter,
   supportChat: supportChatRouter,
   extraCharges: extraChargesRouter,
+  quiz: quizRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,16 @@ import {
   MessageSquare,
   Shield,
   Star,
+  ChevronDown,
+  ChevronUp,
+  X,
+  AlertTriangle,
+  Target,
+  Sparkles,
+  Brain,
+  CreditCard,
+  Calendar,
+  Bell,
 } from "lucide-react";
 
 interface PricingPlan {
@@ -28,6 +38,7 @@ interface PricingPlan {
   cta: string;
 }
 
+// Planos por perfil
 const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
   beginner: [
     {
@@ -38,10 +49,11 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
       studentLimit: 5,
       extraStudentPrice: 7.98,
       features: [
-        "Até 5 alunos",
+        "Até 5 alunos inclusos",
+        "Gestão completa de alunos",
         "Treinos personalizados",
-        "Acompanhamento básico",
         "Cobranças automáticas",
+        "Relatórios básicos",
         "Suporte por email",
       ],
       cta: "Começar Agora",
@@ -49,369 +61,437 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
     {
       id: "starter",
       name: "Starter",
-      description: "Próximo passo do seu crescimento",
+      description: "Mais popular",
       price: 97,
       studentLimit: 15,
       extraStudentPrice: 6.47,
       features: [
-        "Até 15 alunos",
-        "Treinos avançados com IA",
-        "Acompanhamento completo",
-        "Cobranças automáticas",
-        "Relatórios detalhados",
+        "Até 15 alunos inclusos",
+        "Tudo do Beginner +",
+        "Treinos com IA",
+        "Análise de evolução",
+        "Relatórios avançados",
         "Suporte prioritário",
       ],
       highlighted: true,
-      cta: "Testar 7 Dias",
+      cta: "Testar 7 Dias Grátis",
     },
     {
       id: "pro",
       name: "Pro",
-      description: "Para profissionais em crescimento",
+      description: "Para crescer mais",
       price: 147,
       studentLimit: 25,
       extraStudentPrice: 5.88,
       features: [
-        "Até 25 alunos",
-        "Treinos com IA avançada",
-        "Acompanhamento 24/7",
-        "Cobranças automáticas",
-        "Relatórios avançados",
-        "Integração com apps",
+        "Até 25 alunos inclusos",
+        "Tudo do Starter +",
+        "IA avançada",
+        "Automações completas",
+        "Integrações",
         "Suporte dedicado",
       ],
-      cta: "Agendar Demo",
+      cta: "Falar com Consultor",
     },
   ],
   starter: [
     {
       id: "starter",
       name: "Starter",
-      description: "Seu plano atual recomendado",
+      description: "Ideal para você",
       price: 97,
       studentLimit: 15,
       extraStudentPrice: 6.47,
       features: [
-        "Até 15 alunos",
-        "Treinos avançados com IA",
-        "Acompanhamento completo",
+        "Até 15 alunos inclusos",
+        "Gestão completa de alunos",
+        "Treinos com IA",
         "Cobranças automáticas",
-        "Relatórios detalhados",
+        "Análise de evolução",
+        "Relatórios avançados",
         "Suporte prioritário",
       ],
       highlighted: true,
-      cta: "Começar Agora",
+      cta: "Testar 7 Dias Grátis",
     },
     {
       id: "pro",
       name: "Pro",
-      description: "Próximo passo para crescer",
+      description: "Para crescer mais",
       price: 147,
       studentLimit: 25,
       extraStudentPrice: 5.88,
       features: [
-        "Até 25 alunos",
-        "Treinos com IA avançada",
-        "Acompanhamento 24/7",
-        "Cobranças automáticas",
-        "Relatórios avançados",
-        "Integração com apps",
+        "Até 25 alunos inclusos",
+        "Tudo do Starter +",
+        "IA avançada",
+        "Automações completas",
+        "Integrações",
         "Suporte dedicado",
       ],
-      cta: "Testar 7 Dias",
+      cta: "Falar com Consultor",
     },
     {
       id: "business",
       name: "Business",
-      description: "Para negócios em escala",
+      description: "Para escalar",
       price: 197,
       studentLimit: 40,
       extraStudentPrice: 4.93,
       features: [
-        "Até 40 alunos",
-        "Treinos com IA premium",
-        "Acompanhamento VIP",
-        "Cobranças automáticas",
-        "Relatórios executivos",
-        "Integrações ilimitadas",
-        "Suporte 24/7",
-        "Consultor dedicado",
+        "Até 40 alunos inclusos",
+        "Tudo do Pro +",
+        "Multi-personal",
+        "API completa",
+        "Onboarding VIP",
+        "Gerente de conta",
       ],
-      cta: "Falar com Especialista",
+      cta: "Agendar Demo",
     },
   ],
   pro: [
     {
       id: "pro",
       name: "Pro",
-      description: "Seu plano atual recomendado",
+      description: "Ideal para você",
       price: 147,
       studentLimit: 25,
       extraStudentPrice: 5.88,
       features: [
-        "Até 25 alunos",
+        "Até 25 alunos inclusos",
+        "Gestão completa de alunos",
         "Treinos com IA avançada",
-        "Acompanhamento 24/7",
         "Cobranças automáticas",
-        "Relatórios avançados",
-        "Integração com apps",
+        "Automações completas",
+        "Integrações",
         "Suporte dedicado",
       ],
       highlighted: true,
-      cta: "Começar Agora",
+      cta: "Testar 7 Dias Grátis",
     },
     {
       id: "business",
       name: "Business",
-      description: "Próximo passo para escalar",
+      description: "Para escalar",
       price: 197,
       studentLimit: 40,
       extraStudentPrice: 4.93,
       features: [
-        "Até 40 alunos",
-        "Treinos com IA premium",
-        "Acompanhamento VIP",
-        "Cobranças automáticas",
-        "Relatórios executivos",
-        "Integrações ilimitadas",
-        "Suporte 24/7",
-        "Consultor dedicado",
+        "Até 40 alunos inclusos",
+        "Tudo do Pro +",
+        "Multi-personal",
+        "API completa",
+        "Onboarding VIP",
+        "Gerente de conta",
       ],
-      cta: "Testar 7 Dias",
+      cta: "Falar com Consultor",
     },
     {
       id: "premium",
       name: "Premium",
-      description: "Solução completa",
+      description: "Máximo poder",
       price: 297,
       studentLimit: 70,
       extraStudentPrice: 4.24,
       features: [
-        "Até 70 alunos",
-        "Treinos com IA ultra premium",
-        "Acompanhamento VIP 24/7",
-        "Cobranças automáticas",
-        "Relatórios em tempo real",
-        "Integrações ilimitadas",
-        "Suporte VIP 24/7",
-        "Consultor dedicado",
-        "Treinamento personalizado",
+        "Até 70 alunos inclusos",
+        "Tudo do Business +",
+        "White-label",
+        "Suporte 24/7",
+        "Consultoria mensal",
+        "Recursos exclusivos",
       ],
-      cta: "Falar com Especialista",
+      cta: "Agendar Demo",
     },
   ],
   business: [
     {
       id: "business",
       name: "Business",
-      description: "Seu plano atual recomendado",
+      description: "Ideal para você",
       price: 197,
       studentLimit: 40,
       extraStudentPrice: 4.93,
       features: [
-        "Até 40 alunos",
-        "Treinos com IA premium",
-        "Acompanhamento VIP",
+        "Até 40 alunos inclusos",
+        "Gestão completa de alunos",
+        "Treinos com IA avançada",
         "Cobranças automáticas",
-        "Relatórios executivos",
-        "Integrações ilimitadas",
-        "Suporte 24/7",
-        "Consultor dedicado",
+        "Multi-personal",
+        "API completa",
+        "Gerente de conta",
       ],
       highlighted: true,
-      cta: "Começar Agora",
+      cta: "Testar 7 Dias Grátis",
     },
     {
       id: "premium",
       name: "Premium",
-      description: "Próximo nível de crescimento",
+      description: "Máximo poder",
       price: 297,
       studentLimit: 70,
       extraStudentPrice: 4.24,
       features: [
-        "Até 70 alunos",
-        "Treinos com IA ultra premium",
-        "Acompanhamento VIP 24/7",
-        "Cobranças automáticas",
-        "Relatórios em tempo real",
-        "Integrações ilimitadas",
-        "Suporte VIP 24/7",
-        "Consultor dedicado",
-        "Treinamento personalizado",
+        "Até 70 alunos inclusos",
+        "Tudo do Business +",
+        "White-label",
+        "Suporte 24/7",
+        "Consultoria mensal",
+        "Recursos exclusivos",
       ],
-      cta: "Testar 7 Dias",
+      cta: "Falar com Consultor",
     },
     {
       id: "enterprise",
       name: "Enterprise",
-      description: "Solução customizada",
+      description: "Ilimitado",
       price: 497,
       studentLimit: 150,
       extraStudentPrice: 3.31,
       features: [
-        "Até 150 alunos",
-        "Treinos com IA enterprise",
-        "Acompanhamento VIP ilimitado",
-        "Cobranças automáticas",
-        "Relatórios customizados",
-        "Integrações ilimitadas",
-        "Suporte VIP 24/7",
-        "Consultor dedicado",
-        "Treinamento completo",
-        "API customizada",
+        "Até 150 alunos inclusos",
+        "Tudo do Premium +",
+        "Infraestrutura dedicada",
+        "SLA garantido",
+        "Desenvolvimento custom",
+        "Suporte VIP",
       ],
-      cta: "Falar com Especialista",
+      cta: "Agendar Demo",
     },
   ],
 };
 
+// Dores que FitPrime resolve
+const PAIN_SOLUTIONS = [
+  {
+    pain: "Perda de informações",
+    icon: AlertTriangle,
+    problem: "Você perde dados de alunos em planilhas, WhatsApp e cadernos",
+    solution: "Tudo centralizado em um só lugar, acessível de qualquer dispositivo",
+  },
+  {
+    pain: "Tempo com admin",
+    icon: Clock,
+    problem: "Gasta horas por semana com cobranças, agendamentos e mensagens",
+    solution: "Automações que fazem o trabalho chato por você",
+  },
+  {
+    pain: "Alunos desistindo",
+    icon: Users,
+    problem: "Alunos somem sem avisar e você não sabe o motivo",
+    solution: "Alertas de risco e análise de engajamento para agir antes",
+  },
+  {
+    pain: "Inadimplência",
+    icon: CreditCard,
+    problem: "Tem que ficar cobrando aluno e é constrangedor",
+    solution: "Cobranças automáticas por PIX, cartão ou boleto",
+  },
+  {
+    pain: "Falta de profissionalismo",
+    icon: Target,
+    problem: "Seus alunos não veem você como um profissional sério",
+    solution: "App próprio com sua marca para impressionar seus alunos",
+  },
+  {
+    pain: "Sem dados para crescer",
+    icon: BarChart3,
+    problem: "Não sabe quais alunos estão evoluindo ou quem vai cancelar",
+    solution: "Dashboards e relatórios que mostram tudo em tempo real",
+  },
+];
+
+// Benefícios principais
+const BENEFITS = [
+  {
+    icon: Brain,
+    title: "IA que cria treinos",
+    description: "Treinos personalizados gerados em segundos pela nossa IA",
+  },
+  {
+    icon: CreditCard,
+    title: "Cobranças automáticas",
+    description: "PIX, cartão ou boleto. Você não precisa cobrar ninguém",
+  },
+  {
+    icon: Calendar,
+    title: "Agenda inteligente",
+    description: "Seus alunos marcam horários direto no app, sem WhatsApp",
+  },
+  {
+    icon: TrendingUp,
+    title: "Análise de evolução",
+    description: "Mostre aos alunos o progresso deles com gráficos bonitos",
+  },
+  {
+    icon: Bell,
+    title: "Alertas de risco",
+    description: "Saiba quem vai cancelar antes que aconteça",
+  },
+  {
+    icon: Shield,
+    title: "Dados seguros",
+    description: "Seus dados e dos seus alunos protegidos com criptografia",
+  },
+];
+
+// Testimoniais
+const TESTIMONIALS = [
+  {
+    name: "Carlos Silva",
+    role: "Personal Trainer há 5 anos",
+    avatar: "CS",
+    text: "Antes eu gastava 10 horas por semana com admin. Agora gasto menos de 1 hora. Consegui pegar mais 8 alunos porque tenho tempo.",
+    students: "De 12 para 20 alunos",
+    revenue: "+67% de receita",
+  },
+  {
+    name: "Ana Paula",
+    role: "Personal Trainer há 3 anos",
+    avatar: "AP",
+    text: "Meus alunos adoram ver a evolução deles no app. A retenção melhorou muito, quase não perco mais alunos.",
+    students: "De 8 para 15 alunos",
+    revenue: "+88% de receita",
+  },
+  {
+    name: "Roberto Santos",
+    role: "Personal Trainer há 8 anos",
+    avatar: "RS",
+    text: "A cobrança automática mudou minha vida. Não preciso mais ficar constrangido cobrando aluno. O dinheiro cai sozinho.",
+    students: "25 alunos",
+    revenue: "Zero inadimplência",
+  },
+];
+
+// FAQ
+const FAQ_ITEMS = [
+  {
+    question: "Posso testar antes de pagar?",
+    answer: "Sim! Você tem 7 dias grátis para testar todas as funcionalidades. Se não gostar, cancela sem pagar nada.",
+  },
+  {
+    question: "E se eu tiver mais alunos que o limite do plano?",
+    answer: "Sem problemas! Você paga um valor extra por aluno adicional. É mais barato que fazer upgrade de plano se você só precisa de alguns alunos a mais.",
+  },
+  {
+    question: "Meus alunos precisam baixar algum app?",
+    answer: "Não obrigatoriamente. Eles podem acessar pelo navegador. Mas se quiserem, podem baixar o app para uma experiência melhor.",
+  },
+  {
+    question: "Consigo migrar meus dados de outro sistema?",
+    answer: "Sim! Nossa equipe ajuda você a migrar todos os dados de alunos, treinos e histórico gratuitamente.",
+  },
+  {
+    question: "E se eu quiser cancelar?",
+    answer: "Você pode cancelar a qualquer momento, sem multa. Seus dados ficam disponíveis por 30 dias para você exportar.",
+  },
+  {
+    question: "Funciona para personal online também?",
+    answer: "Sim! FitPrime funciona perfeitamente para personal presencial, online ou híbrido.",
+  },
+];
+
 export default function CompletePricingPage() {
   const search = useSearch();
-  const [profile, setProfile] = useState<string>("beginner");
-  const [quizResult, setQuizResult] = useState<any>(null);
+  const params = new URLSearchParams(search);
+  const profile = params.get("profile") || "starter";
+  const painsParam = params.get("pains") || "";
+  const userPains = painsParam ? painsParam.split(",") : [];
+  
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    const params = new URLSearchParams(search);
-    const urlProfile = params.get("profile") || "beginner";
-    setProfile(urlProfile);
+  const plans = PLANS_BY_PROFILE[profile] || PLANS_BY_PROFILE.starter;
 
-    const stored = localStorage.getItem("quizResult");
-    if (stored) {
-      setQuizResult(JSON.parse(stored));
-    }
-  }, [search]);
-
-  const plans = PLANS_BY_PROFILE[profile] || PLANS_BY_PROFILE.beginner;
+  // Scroll suave para seção de planos
+  const scrollToPlans = () => {
+    document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-4">Transforme Seu Negócio de Personal</h1>
-          <p className="text-2xl text-gray-600 mb-2">Organize, cresça e ganhe mais com FitPrime</p>
-          {quizResult && (
-            <p className="text-lg text-emerald-600 font-semibold">
-              ✨ {quizResult.message}
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* Benefícios Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Por Que FitPrime?</h2>
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50" />
+        <div className="relative max-w-6xl mx-auto text-center">
+          <Badge className="mb-4 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+            Baseado nas suas respostas
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Chega de perder tempo com{" "}
+            <span className="text-emerald-600">planilhas e WhatsApp</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            FitPrime é o sistema completo que vai organizar seus alunos, automatizar suas cobranças 
+            e te dar tempo para fazer o que você ama: treinar pessoas.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-emerald-600 hover:bg-emerald-700 text-lg px-8"
+              onClick={scrollToPlans}
+            >
+              Ver Planos <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8"
+              onClick={() => window.open("https://wa.me/5511999999999", "_blank")}
+            >
+              Falar com Consultor
+            </Button>
+          </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Clock,
-                title: "Recupere 10+ Horas por Semana",
-                description:
-                  "Automatize admin, treinos e cobranças. Tenha tempo para crescer e treinar seus alunos.",
-              },
-              {
-                icon: TrendingUp,
-                title: "Cresça 3x em 6 Meses",
-                description:
-                  "Nossos clientes crescem em média 3x. Você pode ser o próximo.",
-              },
-              {
-                icon: Users,
-                title: "Retenha Seus Alunos",
-                description:
-                  "Acompanhamento automático reduz churn. Alunos veem progresso e ficam.",
-              },
-              {
-                icon: BarChart3,
-                title: "Dados que Vendem",
-                description:
-                  "Relatórios que mostram progresso. Alunos veem resultados e renovam.",
-              },
-              {
-                icon: MessageSquare,
-                title: "Comunicação Automática",
-                description:
-                  "Mensagens, lembretes e atualizações automáticas. Sem esquecer ninguém.",
-              },
-              {
-                icon: Shield,
-                title: "Segurança e Confiança",
-                description:
-                  "Seus dados protegidos. Cobranças seguras. Compliance garantido.",
-              },
-            ].map((benefit, idx) => {
-              const Icon = benefit.icon;
-              return (
-                <Card key={idx} className="border border-gray-200">
-                  <CardHeader>
-                    <Icon className="w-12 h-12 text-emerald-600 mb-4" />
-                    <CardTitle>{benefit.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          {/* Social Proof */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8 text-gray-600">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-emerald-600" />
+              <span><strong>2.500+</strong> personals usam</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              <span><strong>4.9/5</strong> de avaliação</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              <span><strong>+67%</strong> de receita média</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Dores que Resolvemos */}
-      <section className="py-20 px-4 bg-red-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Seus Problemas, Nossa Solução</h2>
-          <p className="text-center text-gray-600 mb-16 text-lg">
-            Identificamos {quizResult?.pains?.length || 0} dores no seu negócio. FitPrime resolve todas elas.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                pain: "Desorganização",
-                problem: "Alunos em planilhas, WhatsApp, caderno... Você não sabe quem é quem.",
-                solution: "Tudo centralizado. Um lugar para tudo. Organização automática.",
-              },
-              {
-                pain: "Churn (Perda de Alunos)",
-                problem: "Alunos desistem sem avisar. Você não sabe por quê.",
-                solution: "Acompanhamento automático. Alunos se sentem cuidados. Ficam.",
-              },
-              {
-                pain: "Falta de Tempo",
-                problem: "10+ horas por semana com admin. Sem tempo para crescer.",
-                solution: "Automação completa. Recupere seu tempo. Foque em treinar.",
-              },
-              {
-                pain: "Problemas Financeiros",
-                problem: "Cobranças manuais, inadimplência, alunos que esquecem de pagar.",
-                solution: "Cobranças automáticas. Receba no dia. Zero inadimplência.",
-              },
-              {
-                pain: "Falta de Dados",
-                problem: "Não sabe qual treino funciona. Decisões baseadas em achismo.",
-                solution: "Relatórios inteligentes. Dados que vendem. Decisões baseadas em fatos.",
-              },
-              {
-                pain: "Falta de Crescimento",
-                problem: "Está preso no mesmo lugar. Não consegue escalar.",
-                solution: "Sistema que cresce com você. De 5 para 150 alunos sem caos.",
-              },
-            ].map((item, idx) => (
-              <Card key={idx} className="border-l-4 border-l-red-500">
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Identificamos seus desafios
+            </h2>
+            <p className="text-xl text-gray-600">
+              E temos a solução para cada um deles
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PAIN_SOLUTIONS.map((item, index) => (
+              <Card key={index} className="border-2 hover:border-emerald-200 transition-colors">
                 <CardHeader>
-                  <CardTitle className="text-red-600">{item.pain}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-600 font-semibold mb-1">O Problema:</p>
-                    <p className="text-gray-700">{item.problem}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <item.icon className="h-6 w-6 text-red-600" />
+                    </div>
+                    <CardTitle className="text-lg">{item.pain}</CardTitle>
                   </div>
-                  <div>
-                    <p className="text-sm text-emerald-600 font-semibold mb-1">Nossa Solução:</p>
-                    <p className="text-gray-700">{item.solution}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start gap-2">
+                    <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-gray-600 text-sm">{item.problem}</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-gray-900 text-sm font-medium">{item.solution}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -420,126 +500,148 @@ export default function CompletePricingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Planos Personalizados para Você</h2>
-          <p className="text-center text-gray-600 mb-16 text-lg">
-            Baseado nas suas respostas, aqui estão os 3 melhores planos para seu negócio
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {plans.map((plan) => (
-              <Card
-                key={plan.id}
-                className={`relative transition-all ${
-                  plan.highlighted
-                    ? "md:scale-105 border-2 border-emerald-500 shadow-2xl"
-                    : "border border-gray-200"
-                }`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-emerald-600 text-white px-4 py-1">
-                      <Zap className="w-3 h-3 mr-1" />
-                      Mais Popular
-                    </Badge>
-                  </div>
-                )}
-
-                <CardHeader className={plan.highlighted ? "pt-8" : ""}>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="text-4xl font-bold mb-1">R$ {plan.price.toFixed(2)}</div>
-                    <p className="text-gray-600">/mês</p>
-                  </div>
-
-                  <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Alunos Inclusos:</span>
-                      <span className="font-semibold">{plan.studentLimit}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Aluno Extra:</span>
-                      <span className="font-semibold">+ R$ {plan.extraStudentPrice.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    onClick={() => {
-                      window.location.href = `/checkout?plan=${plan.id}`;
-                    }}
-                    className={`w-full h-12 text-base ${
-                      plan.highlighted
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-                    }`}
-                  >
-                    {plan.cta} <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-
-                  <p className="text-center text-sm text-gray-500">
-                    ✓ 30 dias de teste gratuito  
-                    ✓ Sem cartão de crédito
-                  </p>
-                </CardContent>
-              </Card>
+      {/* Benefícios */}
+      <section className="py-20 px-4 bg-gradient-to-b from-emerald-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Tudo que você precisa em um só lugar
+            </h2>
+            <p className="text-xl text-gray-600">
+              Funcionalidades que vão transformar seu negócio
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {BENEFITS.map((benefit, index) => (
+              <div key={index} className="flex gap-4">
+                <div className="p-3 bg-emerald-100 rounded-lg h-fit">
+                  <benefit.icon className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
+                  <p className="text-gray-600 text-sm">{benefit.description}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-4 bg-emerald-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">O Que Nossos Clientes Dizem</h2>
-
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Personals que transformaram seus negócios
+            </h2>
+            <p className="text-xl text-gray-600">
+              Veja o que eles têm a dizer
+            </p>
+          </div>
+          
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Bruno Giordany",
-                role: "Personal Trainer",
-                text: "Triplicamos nossos alunos em 6 meses. FitPrime fez toda a diferença.",
-                rating: 5,
-              },
-              {
-                name: "Ana Silva",
-                role: "Proprietária de Academia",
-                text: "Recuperei 15 horas por semana. Agora tenho tempo para crescer.",
-                rating: 5,
-              },
-              {
-                name: "Carlos Santos",
-                role: "Personal Trainer",
-                text: "Cobranças automáticas resolveram meu problema de inadimplência.",
-                rating: 5,
-              },
-            ].map((testimonial, idx) => (
-              <Card key={idx} className="border border-emerald-200">
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
+            {TESTIMONIALS.map((testimonial, index) => (
+              <Card key={index} className="border-2">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                      <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg">{testimonial.name}</CardTitle>
-                  <CardDescription>{testimonial.role}</CardDescription>
+                  <p className="text-gray-600 mb-4 italic">"{testimonial.text}"</p>
+                  <div className="flex gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Alunos</p>
+                      <p className="font-semibold text-emerald-600">{testimonial.students}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Resultado</p>
+                      <p className="font-semibold text-emerald-600">{testimonial.revenue}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Planos */}
+      <section id="plans-section" className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+              Plano recomendado para você
+            </Badge>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Escolha o plano ideal
+            </h2>
+            <p className="text-xl text-gray-600">
+              Todos os planos incluem 7 dias grátis para testar
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {plans.map((plan, index) => (
+              <Card 
+                key={plan.id} 
+                className={`relative ${plan.highlighted ? "border-2 border-emerald-500 shadow-lg scale-105" : "border"}`}
+              >
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-emerald-500 text-white">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Mais Popular
+                    </Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 italic">"{testimonial.text}"</p>
+                <CardContent className="space-y-6">
+                  <div className="text-center">
+                    <span className="text-4xl font-bold text-gray-900">
+                      R$ {plan.price.toFixed(2).replace(".", ",")}
+                    </span>
+                    <span className="text-gray-500">/mês</span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Alunos Inclusos:</span>
+                      <span className="font-semibold">{plan.studentLimit}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">Aluno Extra:</span>
+                      <span className="font-semibold">+ R$ {plan.extraStudentPrice.toFixed(2).replace(".", ",")}</span>
+                    </div>
+                  </div>
+                  
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                        <span className="text-sm text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button 
+                    className={`w-full ${plan.highlighted ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+                    variant={plan.highlighted ? "default" : "outline"}
+                  >
+                    {plan.cta} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <p className="text-center text-xs text-gray-500">
+                    ✓ 7 dias grátis ✓ Sem cartão de crédito
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -549,38 +651,32 @@ export default function CompletePricingPage() {
 
       {/* FAQ */}
       <section className="py-20 px-4 bg-white">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Dúvidas Frequentes</h2>
-
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Dúvidas Frequentes
+            </h2>
+          </div>
+          
           <div className="space-y-4">
-            {[
-              {
-                q: "Posso mudar de plano depois?",
-                a: "Sim! Você pode fazer upgrade ou downgrade a qualquer momento. A mudança entra em vigor no próximo ciclo de cobrança.",
-              },
-              {
-                q: "E se eu ultrapassar o limite de alunos?",
-                a: "Sem problema! Você paga apenas pelos alunos extras. Por exemplo, no Starter com 20 alunos: R$ 97 + (5 × R$ 6,47) = R$ 129,35.",
-              },
-              {
-                q: "Posso cancelar quando quiser?",
-                a: "Claro! Sem multa, sem burocracia. Você pode cancelar a qualquer momento pelo painel.",
-              },
-              {
-                q: "Quanto tempo leva para começar?",
-                a: "Menos de 5 minutos! Você cria a conta, importa seus alunos e pronto. Está rodando.",
-              },
-              {
-                q: "Meus dados estão seguros?",
-                a: "100% seguro. Usamos criptografia de ponta a ponta. Seus dados nunca são compartilhados.",
-              },
-            ].map((faq, idx) => (
-              <Card key={idx}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{faq.q}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{faq.a}</p>
+            {FAQ_ITEMS.map((item, index) => (
+              <Card 
+                key={index} 
+                className="cursor-pointer hover:border-emerald-200 transition-colors"
+                onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+              >
+                <CardContent className="py-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-900">{item.question}</h3>
+                    {expandedFaq === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
+                  </div>
+                  {expandedFaq === index && (
+                    <p className="mt-3 text-gray-600">{item.answer}</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -588,23 +684,34 @@ export default function CompletePricingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* CTA Final */}
       <section className="py-20 px-4 bg-gradient-to-r from-emerald-600 to-teal-600">
-        <div className="max-w-2xl mx-auto text-center text-white">
-          <h2 className="text-4xl font-bold mb-4">Pronto para Transformar Seu Negócio?</h2>
-          <p className="text-xl mb-8">
-            Escolha seu plano e comece agora. 30 dias de teste gratuito, sem cartão de crédito.
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Pronto para transformar seu negócio?
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Junte-se a mais de 2.500 personals que já estão crescendo com FitPrime
           </p>
-          <Button
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className="bg-white text-emerald-600 hover:bg-gray-100 text-lg h-12 px-8"
-          >
-            Ver Planos <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8"
+              onClick={scrollToPlans}
+            >
+              Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+          <p className="mt-6 text-sm opacity-75">
+            7 dias grátis • Sem cartão de crédito • Cancele quando quiser
+          </p>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 bg-gray-900 text-gray-400 text-center text-sm">
+        <p>© 2024 FitPrime Manager. Todos os direitos reservados.</p>
+      </footer>
     </div>
   );
 }
