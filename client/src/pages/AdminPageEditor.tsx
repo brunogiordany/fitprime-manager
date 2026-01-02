@@ -83,7 +83,12 @@ import {
   Lock,
   Sparkles,
   Wand2,
-  Loader2
+  Loader2,
+  HelpCircle,
+  FormInput,
+  Timer,
+  ListOrdered,
+  Images
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -120,7 +125,12 @@ type BlockType =
   | "spacer"
   | "columns"
   | "stats"
-  | "logos";
+  | "logos"
+  | "quiz"
+  | "form"
+  | "countdown"
+  | "steps"
+  | "gallery";
 
 interface Block {
   id: string;
@@ -300,6 +310,81 @@ const BLOCK_TEMPLATES: Record<BlockType, { name: string; icon: any; defaultConte
     defaultContent: {
       title: "Empresas que confiam em nós",
       logos: []
+    }
+  },
+  quiz: {
+    name: "Quiz",
+    icon: HelpCircle,
+    defaultContent: {
+      title: "Descubra seu perfil",
+      description: "Responda as perguntas para descobrir qual plano é ideal para você",
+      questions: [
+        {
+          id: "q1",
+          question: "Qual é seu objetivo principal?",
+          type: "single",
+          options: [
+            { id: "a", text: "Perder peso", value: 1 },
+            { id: "b", text: "Ganhar massa muscular", value: 2 },
+            { id: "c", text: "Melhorar condicionamento", value: 3 }
+          ]
+        }
+      ],
+      results: [
+        { minScore: 0, maxScore: 5, title: "Plano Básico", description: "Ideal para iniciantes" }
+      ],
+      buttonText: "Ver Resultado",
+      redirectUrl: "/resultado"
+    }
+  },
+  form: {
+    name: "Formulário",
+    icon: FormInput,
+    defaultContent: {
+      title: "Entre em contato",
+      description: "Preencha o formulário e entraremos em contato",
+      fields: [
+        { name: "name", label: "Nome", type: "text", required: true },
+        { name: "email", label: "Email", type: "email", required: true },
+        { name: "phone", label: "Telefone", type: "tel", required: false },
+        { name: "message", label: "Mensagem", type: "textarea", required: false }
+      ],
+      buttonText: "Enviar",
+      successMessage: "Mensagem enviada com sucesso!"
+    }
+  },
+  countdown: {
+    name: "Contador",
+    icon: Timer,
+    defaultContent: {
+      title: "Oferta por tempo limitado!",
+      targetDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      showDays: true,
+      showHours: true,
+      showMinutes: true,
+      showSeconds: true,
+      expiredMessage: "Oferta encerrada!"
+    }
+  },
+  steps: {
+    name: "Passos",
+    icon: ListOrdered,
+    defaultContent: {
+      title: "Como funciona",
+      items: [
+        { step: 1, title: "Cadastre-se", description: "Crie sua conta em segundos" },
+        { step: 2, title: "Escolha seu plano", description: "Selecione o melhor para você" },
+        { step: 3, title: "Comece a treinar", description: "Acesse seus treinos imediatamente" }
+      ]
+    }
+  },
+  gallery: {
+    name: "Galeria",
+    icon: Images,
+    defaultContent: {
+      title: "Galeria de Fotos",
+      images: [],
+      columns: 3
     }
   }
 };
@@ -642,103 +727,31 @@ export default function AdminPageEditor() {
   };
 
   // Gerar página com IA
-  const handleGenerateWithAI = async () => {
-    setIsGenerating(true);
-    try {
-      // Simular geração com IA (em produção, chamar API do LLM)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Gerar blocos baseados no prompt
-      const generatedBlocks: Block[] = [
-        {
-          id: `block_${Date.now()}_1`,
-          type: "hero",
-          content: {
-            title: "Transforme Seu Corpo em 90 Dias",
-            subtitle: "Treinos personalizados com acompanhamento profissional. Resultados garantidos ou seu dinheiro de volta.",
-            buttonText: "Começar Agora",
-            buttonLink: "/quiz",
-            alignment: "center"
-          },
-          styles: {}
-        },
-        {
-          id: `block_${Date.now()}_2`,
-          type: "features",
-          content: {
-            title: "Por que escolher nosso método?",
-            items: [
-              { icon: "🎯", title: "Treinos Personalizados", description: "Planos adaptados ao seu objetivo e rotina" },
-              { icon: "📱", title: "App Exclusivo", description: "Acesse seus treinos de qualquer lugar" },
-              { icon: "💬", title: "Suporte 24/7", description: "Tire dúvidas a qualquer momento" },
-              { icon: "📈", title: "Acompanhamento", description: "Métricas e evolução em tempo real" }
-            ]
-          },
-          styles: {}
-        },
-        {
-          id: `block_${Date.now()}_3`,
-          type: "testimonials",
-          content: {
-            title: "O que nossos alunos dizem",
-            items: [
-              { name: "Maria Silva", role: "Perdeu 15kg", text: "Em 3 meses consegui resultados que nunca imaginei!", avatar: "" },
-              { name: "João Santos", role: "Ganhou massa", text: "Os treinos são incríveis e o suporte é excepcional.", avatar: "" },
-              { name: "Ana Costa", role: "Mais disposição", text: "Minha qualidade de vida melhorou 100%!", avatar: "" }
-            ]
-          },
-          styles: {}
-        },
-        {
-          id: `block_${Date.now()}_4`,
-          type: "pricing",
-          content: {
-            title: "Escolha seu plano",
-            plans: [
-              { name: "Básico", price: "97", period: "mês", features: ["Treinos personalizados", "App exclusivo", "Suporte por email"], highlighted: false },
-              { name: "Premium", price: "197", period: "mês", features: ["Tudo do Básico", "Consultas semanais", "Plano alimentar", "Suporte prioritário"], highlighted: true },
-              { name: "VIP", price: "397", period: "mês", features: ["Tudo do Premium", "Consultas diárias", "Acompanhamento 1:1", "Acesso vitalício"], highlighted: false }
-            ]
-          },
-          styles: {}
-        },
-        {
-          id: `block_${Date.now()}_5`,
-          type: "faq",
-          content: {
-            title: "Perguntas Frequentes",
-            items: [
-              { question: "Como funciona o programa?", answer: "Após a inscrição, você recebe acesso ao app com seus treinos personalizados e acompanhamento do seu personal." },
-              { question: "Preciso de equipamentos?", answer: "Não! Temos opções de treino para academia, casa ou ao ar livre." },
-              { question: "Posso cancelar quando quiser?", answer: "Sim, sem multas ou burocracia. Cancele a qualquer momento." }
-            ]
-          },
-          styles: {}
-        },
-        {
-          id: `block_${Date.now()}_6`,
-          type: "cta",
-          content: {
-            title: "Pronto para começar sua transformação?",
-            subtitle: "Junte-se a mais de 10.000 alunos satisfeitos",
-            buttonText: "Quero Começar Agora",
-            buttonLink: "/quiz",
-            backgroundColor: "#10b981"
-          },
-          styles: {}
-        }
-      ];
-      
+  // Mutation para gerar com IA
+  const generateWithAIMutation = trpc.sitePages.generateWithAI.useMutation({
+    onSuccess: (data) => {
       setPageData(prev => ({
         ...prev,
-        blocks: generatedBlocks
+        blocks: data.blocks as Block[]
       }));
-      
       setShowAIGenerator(false);
       setAIPrompt("");
       toast.success("Página gerada com sucesso! Edite os blocos conforme necessário.");
-    } catch (error) {
-      toast.error("Erro ao gerar página");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao gerar página com IA");
+    }
+  });
+
+  const handleGenerateWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error("Digite uma descrição para a página");
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      await generateWithAIMutation.mutateAsync({ prompt: aiPrompt });
     } finally {
       setIsGenerating(false);
     }

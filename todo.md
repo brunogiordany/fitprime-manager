@@ -2475,3 +2475,7 @@
 - [ ] Botão "Gerar Página com IA" - prompt para criar páginas automaticamente
 - [x] Corrigir edição de blocos existentes (não estão funcionando)
 - [x] Corrigir cadastro trial no exit popup (mesmo erro da página cadastro-trial)
+
+- [x] Corrigir geração de páginas com IA para seguir prompt do usuário
+- [x] Adicionar tipo de bloco Quiz ao editor de páginas
+- [x] IA deve interpretar pedidos específicos (ex: quiz com X perguntas)

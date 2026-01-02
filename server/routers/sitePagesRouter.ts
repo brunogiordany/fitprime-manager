@@ -345,6 +345,132 @@ export const sitePagesRouter = router({
       
       return { success: true };
     }),
+
+  // Gerar página com IA
+  generateWithAI: adminProcedure
+    .input(z.object({ prompt: z.string().min(10) }))
+    .mutation(async ({ input }) => {
+      const { invokeLLM } = await import('../_core/llm');
+      
+      const systemPrompt = `Você é um especialista em criar páginas web de alta conversão.
+Baseado no prompt do usuário, gere uma estrutura de blocos para a página.
+
+TIPOS DE BLOCOS DISPONÍVEIS:
+- "hero": Seção principal com título, subtítulo e botão CTA
+- "features": Lista de benefícios/características com ícones
+- "testimonials": Depoimentos de clientes
+- "pricing": Tabela de preços/planos
+- "faq": Perguntas frequentes
+- "cta": Chamada para ação
+- "text": Bloco de texto livre
+- "image": Bloco de imagem
+- "video": Bloco de vídeo (YouTube/Vimeo)
+- "form": Formulário de contato/captura
+- "gallery": Galeria de imagens
+- "countdown": Contador regressivo
+- "quiz": Quiz interativo com perguntas e respostas
+- "steps": Passos/etapas de um processo
+
+PARA QUIZ:
+Quando o usuário pedir um quiz, crie um bloco do tipo "quiz" com a estrutura:
+{
+  "type": "quiz",
+  "content": {
+    "title": "Título do Quiz",
+    "description": "Descrição",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Pergunta 1?",
+        "type": "single", // ou "multiple" para múltipla escolha
+        "options": [
+          { "id": "a", "text": "Opção A", "value": 1 },
+          { "id": "b", "text": "Opção B", "value": 2 }
+        ]
+      }
+    ],
+    "results": [
+      { "minScore": 0, "maxScore": 5, "title": "Resultado 1", "description": "Descrição do resultado" }
+    ],
+    "buttonText": "Ver Resultado",
+    "redirectUrl": "/resultado"
+  }
+}
+
+IMPORTANTE:
+1. SIGA EXATAMENTE o que o usuário pediu no prompt
+2. Se o usuário pedir X perguntas, crie EXATAMENTE X perguntas
+3. Se o usuário especificar o conteúdo das perguntas, use EXATAMENTE esse conteúdo
+4. Não adicione blocos extras que não foram pedidos
+5. Mantenha o tom e estilo que o usuário solicitou
+
+Retorne APENAS um JSON válido com a estrutura:
+{
+  "blocks": [
+    {
+      "type": "tipo_do_bloco",
+      "content": { ... conteúdo específico do bloco ... }
+    }
+  ]
+}`;
+
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Crie a página conforme o seguinte pedido:\n\n${input.prompt}` }
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "page_blocks",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  blocks: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        type: { type: "string" },
+                        content: { type: "object", additionalProperties: true }
+                      },
+                      required: ["type", "content"],
+                      additionalProperties: false
+                    }
+                  }
+                },
+                required: ["blocks"],
+                additionalProperties: false
+              }
+            }
+          }
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+          throw new Error("Resposta vazia da IA");
+        }
+        
+        // Garantir que content é string
+        const contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+        const parsed = JSON.parse(contentStr);
+        
+        // Adicionar IDs únicos aos blocos
+        const blocksWithIds = parsed.blocks.map((block: any, index: number) => ({
+          id: `block_${Date.now()}_${index}`,
+          type: block.type,
+          content: block.content,
+          styles: {}
+        }));
+        
+        return { blocks: blocksWithIds };
+      } catch (error: any) {
+        console.error("Erro ao gerar com IA:", error);
+        throw new Error(error.message || "Erro ao gerar página com IA");
+      }
+    }),
 });
 
 // Router para pixels de tracking
