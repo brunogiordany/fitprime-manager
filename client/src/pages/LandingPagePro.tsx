@@ -521,7 +521,7 @@ export default function LandingPagePro() {
               <div className="space-y-3 mb-6">
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                  <p className="text-gray-700">Agenda 4 semanas automaticamente</p>
+                  <p className="text-gray-700">Agenda de 1 a 12 meses automaticamente</p>
                 </div>
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
@@ -597,20 +597,20 @@ export default function LandingPagePro() {
                   <Users className="h-8 w-8 text-emerald-600" />
                 </div>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Importe do Excel ou cadastre manualmente. Perfil completo com foto, objetivos e histórico.
+                  Cadastro simples: só nome, email, telefone e gênero. Seu aluno recebe o convite e finaliza o cadastro com seus dados e anamnese.
                 </p>
                 <ul className="mt-4 space-y-2">
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Import do Excel/CSV
+                    Cadastro em 30 segundos
                   </li>
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Foto e dados completos
+                    Aluno completa o perfil
                   </li>
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Anamnese detalhada
+                    Anamnese pronta no sistema
                   </li>
                 </ul>
               </div>
@@ -657,20 +657,20 @@ export default function LandingPagePro() {
                   <Calendar className="h-8 w-8 text-purple-600" />
                 </div>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Selecione os dias e a IA cria 4 semanas de agendamento. Alunos recebem no WhatsApp.
+                  Você define os horários (seg 12h, ter 15h, sex 17h) e a IA agenda de 1 a 12 meses automaticamente.
                 </p>
                 <ul className="mt-4 space-y-2">
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    4 semanas automáticas
+                    Agenda de 1 a 12 meses
                   </li>
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Notificação WhatsApp
+                    Horários flexíveis
                   </li>
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Notificações automáticas
+                    Lembrete no WhatsApp
                   </li>
                 </ul>
               </div>
@@ -1158,7 +1158,7 @@ export default function LandingPagePro() {
               <div className="bg-emerald-50 rounded-xl p-4 relative">
                 <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
                 <p className="text-gray-700 italic">
-                  "O agendamento automático de 4 semanas mudou minha vida. <strong>Meus alunos recebem lembrete no WhatsApp e eu não preciso fazer nada.</strong>"
+                  "O agendamento automático mudou minha vida. Configuro uma vez e a IA agenda até 12 meses. <strong>Meus alunos recebem lembrete no WhatsApp e eu não preciso fazer nada.</strong>"
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1">
@@ -1272,7 +1272,7 @@ export default function LandingPagePro() {
               <tbody>
                 {([
                   { feature: "IA para gerar treinos personalizados", a: false, b: false, c: "partial" },
-                  { feature: "Agendamento automático com IA (4 semanas)", a: false, b: false, c: false },
+                  { feature: "Agendamento automático com IA (1-12 meses)", a: false, b: false, c: false },
                   { feature: "Cobranças automáticas (PIX/Cartão)", a: "partial", b: true, c: false },
                   { feature: "Bloqueio automático para inadimplentes", a: false, b: false, c: false },
                   { feature: "WhatsApp integrado (notificações)", a: false, b: "partial", c: false },
@@ -1369,8 +1369,8 @@ export default function LandingPagePro() {
                 a: "Nossa IA analisa a anamnese completa do aluno (objetivos, restrições, experiência, equipamentos disponíveis) e gera um treino 100% personalizado em menos de 30 segundos. Você pode ajustar qualquer exercício depois. É como ter um assistente que nunca dorme."
               },
               {
-                q: "Como funciona o agendamento automático de 4 semanas?",
-                a: "Você define os dias e horários de cada aluno uma vez. A IA cria automaticamente 4 semanas de agenda, envia notificações pelo WhatsApp e gerencia remarcações. Você nunca mais vai precisar ficar trocando mensagem pra confirmar horário."
+                q: "Como funciona o agendamento automático?",
+                a: "Você define os dias e horários de cada aluno (seg 12h, ter 15h, sex 17h). A IA agenda automaticamente de 1 a 12 meses, conforme o contrato que você fechou com o aluno. Lembretes são enviados pelo WhatsApp. Você nunca mais vai precisar ficar trocando mensagem pra confirmar horário."
               },
               {
                 q: "Como as cobranças automáticas acabam com a inadimplência?",
@@ -1382,7 +1382,7 @@ export default function LandingPagePro() {
               },
               {
                 q: "Quanto tempo leva pra começar a usar?",
-                a: "Menos de 10 minutos. Você faz o quiz, escolhe o plano, cadastra seus alunos (pode importar do Excel) e já começa a usar. Sem treinamento complicado, sem curva de aprendizado. Se você sabe usar WhatsApp, sabe usar o FitPrime."
+                a: "Menos de 10 minutos. Você escolhe o plano, cadastra seus alunos (só nome, email e telefone - eles completam o resto) e já começa a usar. A anamnese já está pronta no sistema. Sem treinamento complicado, sem curva de aprendizado. Se você sabe usar WhatsApp, sabe usar o FitPrime."
               },
               {
                 q: "E se eu precisar de ajuda?",

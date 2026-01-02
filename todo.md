@@ -2564,3 +2564,27 @@
 - [x] Gerar imagens de pessoas estilo rede social (bolinha + balão)
 - [x] Animação nos números da calculadora (efeito contador)
 - [x] Scroll suave entre seções ao clicar nos CTAs
+
+
+## Correções Landing Page v6.7 - Informações Incorretas
+
+### Seção "Cadastre seus alunos"
+- [x] Remover "Import do Excel/CSV" (não existe)
+- [x] Simplificar descrição: só nome, email, telefone, gênero
+- [x] Adicionar: aluno recebe convite e finaliza cadastro + anamnese
+- [x] Remover "Foto e dados completos" (aluno que preenche)
+
+### Seção "Agende automaticamente"
+- [x] Remover "4 semanas automáticas" (é flexível 1-12 meses)
+- [x] Corrigir: IA agenda de 1 mês a 12 meses (personal escolhe)
+- [x] Adicionar: horários quebrados (seg 12h, ter 15h, sex 17h)
+- [x] Remover "Aluno remarca sozinho" (não existe)
+- [x] Remover "Aluno reagenda pelo app" (não existe)
+- [x] Mover "Bloqueio por inadimplência" para área correta (é de alunos)
+
+### FAQ
+- [x] Corrigir "Quanto tempo leva pra começar a usar?"
+- [x] Remover menção a quiz (não tem)
+- [x] Remover menção a import Excel (não tem)
+- [x] Anamnese já está pronta no sistema
+
