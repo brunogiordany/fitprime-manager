@@ -35,6 +35,8 @@ export default function Settings() {
     bio: "",
     address: "",
     workingHours: "",
+    cref: "",
+    cpf: "",
   });
 
   const [whatsappConfig, setWhatsappConfig] = useState({
@@ -94,6 +96,8 @@ export default function Settings() {
         bio: personalData.bio || "",
         address: "",
         workingHours: personalData.workingHours || "",
+        cref: personalData.cref || "",
+        cpf: (personalData as any).cpf || "",
       });
       setWhatsappConfig({
         evolutionApiUrl: "",
@@ -111,6 +115,7 @@ export default function Settings() {
       whatsappNumber: profile.phone || undefined,
       bio: profile.bio || undefined,
       workingHours: profile.workingHours || undefined,
+      cref: profile.cref || undefined,
     });
   };
 
@@ -202,6 +207,38 @@ export default function Settings() {
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                 rows={3}
               />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label>CPF</Label>
+                <Input
+                  placeholder="000.000.000-00"
+                  value={profile.cpf}
+                  onChange={(e) => {
+                    // Formatação automática do CPF
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 11) value = value.slice(0, 11);
+                    if (value.length > 9) {
+                      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+                    } else if (value.length > 6) {
+                      value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+                    } else if (value.length > 3) {
+                      value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+                    }
+                    setProfile({ ...profile, cpf: value });
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">Usado para identificação única</p>
+              </div>
+              <div className="grid gap-2">
+                <Label>CREF <span className="text-muted-foreground">(opcional)</span></Label>
+                <Input
+                  placeholder="Ex: 000000-G/SP"
+                  value={profile.cref}
+                  onChange={(e) => setProfile({ ...profile, cref: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">Necessário para gerar treinos com IA</p>
+              </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">

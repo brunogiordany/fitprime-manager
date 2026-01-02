@@ -7,6 +7,9 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 20 }),
+  cpf: varchar("cpf", { length: 14 }).unique(), // CPF único para evitar duplicatas
+  birthDate: date("birthDate"), // Data de nascimento
+  cref: varchar("cref", { length: 50 }), // Registro profissional CREF
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin", "personal", "student"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

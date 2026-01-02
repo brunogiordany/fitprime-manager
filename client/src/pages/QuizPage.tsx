@@ -1,48 +1,27 @@
-import { useState } from "react";
-import { QualificationQuizV3 } from "@/components/QualificationQuizV3";
+import QualificationQuizV4 from "@/components/QualificationQuizV4";
 import { useLocation } from "wouter";
 
 interface QuizResult {
-  profile: "beginner" | "starter" | "pro" | "business";
-  planName: string;
-  price: number;
-  studentLimit: number;
-  extraStudentPrice: number;
-  message: string;
+  painScore: number;
+  solutionScore: number;
+  currentStudents: number;
+  currentRevenue: number;
+  goalRevenue: number;
+  desiredBenefits: string[];
+  recommendedPlan: string;
+  answers: Record<string, string | string[]>;
 }
 
 export default function QuizPage() {
   const [, setLocation] = useLocation();
 
   const handleQuizComplete = (result: QuizResult) => {
-    // Armazenar resultado no localStorage para usar na LP
+    // Armazenar resultado no localStorage para usar na página de pricing
     localStorage.setItem("quizResult", JSON.stringify(result));
     
-    // Redirecionar para LP dinâmica
-    setTimeout(() => {
-      setLocation(`/pricing?profile=${result.profile}`);
-    }, 2000);
+    // O componente já redireciona internamente, mas podemos usar isso para tracking
+    console.log("Quiz completed:", result);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
-      <div className="w-full">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">Encontre o Plano Perfeito</h1>
-          <p className="text-xl text-gray-600">
-            Responda algumas perguntas rápidas e descobriremos qual plano vai turbinar seu negócio
-          </p>
-        </div>
-
-        {/* Quiz */}
-        <QualificationQuizV3 onComplete={handleQuizComplete} />
-
-        {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Leva menos de 1 minuto ⏱️</p>
-        </div>
-      </div>
-    </div>
-  );
+  return <QualificationQuizV4 onComplete={handleQuizComplete} />;
 }

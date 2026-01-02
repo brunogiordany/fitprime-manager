@@ -2352,3 +2352,42 @@
 - [x] Testar fluxo completo do quiz
 - [x] Corrigir quizRouter para usar campos corretos da tabela existente
 - [x] Corrigir AdminQuizDashboard para usar campos corretos do quizRouter
+
+
+## Funil de Vendas Completo (v10.6)
+
+### Correções Urgentes
+- [x] Corrigir página de Cobranças Extras (não funciona)
+
+### Checkout Stripe Real
+- [x] Implementar checkout real com Cakto nos botões dos planos
+- [x] Cada plano com seu link de checkout correto (Cakto)
+- [x] Cada preço vinculado ao produto Cakto correspondente
+
+### Cadast### Cadastro com CPF e CREF
+- [x] Adicionar campo CPF no cadastro (obrigatório, validação matemática)
+- [x] Adicionar campo CREF no cadastro (opcional)
+- [x] Limitar 1 cadastro por CPF
+- [x] CREF necessário apenas para gerar treino com IAreino com IA
+
+### Quiz Reformulado (Funil de Dores)
+- [x] Perguntas de dores (mostrar que está "fodido")
+- [x] Perguntas de soluções (arrancar "sim" com base no PWA)
+- [x] Perguntas financeiras (alunos, renda atual)
+- [x] Perguntas de objetivos (renda desejada, benefícios)
+- [ ] Página personalizada com 3 planos baseados nas respostas
+
+### Popup Exit Intent
+- [ ] Detectar quando usuário vai sair/voltar
+- [ ] Popup oferecendo teste grátis de 1 dia
+- [ ] Redirecionar para página de cadastro
+- [ ] Capturar: nome, data nascimento, CPF, email, telefone
+
+### Geração de Treino com IA
+- [ ] Bloquear função sem CREF preenchido
+- [ ] Solicitar CREF na primeira tentativa de gerar treino
+- [ ] Liberar função após CREF ser informado
+
+
+### Pendente do Usuário
+- [x] Criar produto FitPrime Beginner na Cakto (R$ 39,90 - 5 alunos) - Link: https://pay.cakto.com.br/75u9x53

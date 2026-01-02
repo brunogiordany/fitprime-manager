@@ -218,6 +218,20 @@
       "when": 1767371231741,
       "tag": "0030_handy_flatman",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1767373946982,
+      "tag": "0031_tan_thor_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1767375684244,
+      "tag": "0032_sour_frightful_four",
+      "breakpoints": true
     }
   ]
 }

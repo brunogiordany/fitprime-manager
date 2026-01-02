@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowRight, Zap } from "lucide-react";
+import { Check, ArrowRight, Zap, ExternalLink } from "lucide-react";
+import { FITPRIME_PLANS, getCheckoutUrl } from "../../../shared/caktoPlans";
 
 interface PricingPlan {
   id: string;
@@ -350,8 +351,13 @@ export default function DynamicPricingPage() {
                 {/* CTA */}
                 <Button
                   onClick={() => {
-                    // Redirecionar para checkout com plano pré-selecionado
-                    window.location.href = `/checkout?plan=${plan.id}`;
+                    // Usar link direto da Cakto se disponível
+                    const checkoutUrl = getCheckoutUrl(plan.id);
+                    if (checkoutUrl) {
+                      window.location.href = checkoutUrl;
+                    } else {
+                      window.location.href = `/checkout?plan=${plan.id}`;
+                    }
                   }}
                   className={`w-full h-12 text-base ${
                     plan.highlighted
@@ -359,7 +365,7 @@ export default function DynamicPricingPage() {
                       : "bg-gray-200 hover:bg-gray-300 text-gray-800"
                   }`}
                 >
-                  {plan.cta} <ArrowRight className="ml-2 w-4 h-4" />
+                  {plan.cta} <ExternalLink className="ml-2 w-4 h-4" />
                 </Button>
 
                 {/* Garantia */}

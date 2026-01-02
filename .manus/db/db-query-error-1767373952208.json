@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE users \nADD COLUMN cpf VARCHAR(14) UNIQUE,\nADD COLUMN birthDate DATE;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE users \nADD COLUMN cpf VARCHAR(14) UNIQUE,\nADD COLUMN birthDate DATE;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 8200 (HY000) at line 1: unsupported add column 'cpf' constraint UNIQUE KEY when altering 'SFH8sqABSCK5KntMvXXcPM.users'"
+  ]
+}

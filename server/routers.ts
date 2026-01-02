@@ -15,6 +15,7 @@ import { supportChatRouter } from "./routers/supportChatRouter";
 import { extraChargesRouter } from "./routers/extraChargesRouter";
 import { adminExtraChargesRouter } from "./routers/adminExtraChargesRouter";
 import { quizRouter } from "./routers/quizRouter";
+import { trialRouter } from "./routers/trialRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -155,6 +156,7 @@ export const appRouter = router({
   supportChat: supportChatRouter,
   extraCharges: extraChargesRouter,
   quiz: quizRouter,
+  trial: trialRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({
@@ -2294,6 +2296,15 @@ Seja profissional, detalhado e motivador.`;
         customPrompt: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Verificar se o personal tem CREF cadastrado
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.cref) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Para gerar treinos com IA, é necessário cadastrar seu CREF nas configurações. Acesse Configurações > Perfil para adicionar.' 
+          });
+        }
+        
         const { invokeLLM } = await import('./_core/llm');
         
         // Buscar dados do aluno
@@ -2520,6 +2531,15 @@ Retorne APENAS o JSON, sem texto adicional.`;
         studentId: z.number(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Verificar se o personal tem CREF cadastrado
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.cref) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Para usar análise com IA, é necessário cadastrar seu CREF nas configurações. Acesse Configurações > Perfil para adicionar.' 
+          });
+        }
+        
         const { invokeLLM } = await import('./_core/llm');
         
         // Buscar dados do aluno
@@ -2719,6 +2739,15 @@ Retorne APENAS o JSON com a análise.`;
         customPrompt: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Verificar se o personal tem CREF cadastrado
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.cref) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Para gerar treinos com IA, é necessário cadastrar seu CREF nas configurações. Acesse Configurações > Perfil para adicionar.' 
+          });
+        }
+        
         const { invokeLLM } = await import('./_core/llm');
         
         // Buscar dados do aluno
@@ -4435,6 +4464,75 @@ Forneça:
         return { success: true };
       }),
     
+    // Criar sessão de checkout para assinatura de plano FitPrime
+    createPlanCheckout: publicProcedure
+      .input(z.object({
+        planId: z.string(),
+        email: z.string().email(),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { FITPRIME_PLANS, getPlanById } = await import('./stripe/plans');
+        const plan = getPlanById(input.planId);
+        
+        if (!plan) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Plano não encontrado' });
+        }
+        
+        const { stripe } = await import('./stripe');
+        if (!stripe) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Stripe não configurado' });
+        }
+        
+        // Criar ou recuperar cliente Stripe
+        const stripeCustomer = await getOrCreateStripeCustomer(
+          input.email,
+          input.name || input.email,
+          { plan_id: input.planId }
+        );
+        
+        const origin = ctx.req.headers.origin || 'https://fitprime-manager.manus.space';
+        const amount = Math.round(plan.price * 100); // Converter para centavos
+        
+        // Criar produto para o plano
+        const product = await stripe.products.create({
+          name: `FitPrime ${plan.name}`,
+          description: plan.description,
+          metadata: {
+            plan_id: plan.id,
+            student_limit: plan.studentLimit.toString(),
+          },
+        });
+        
+        // Criar preço recorrente mensal
+        const price = await stripe.prices.create({
+          product: product.id,
+          unit_amount: amount,
+          currency: 'brl',
+          recurring: {
+            interval: 'month',
+            interval_count: 1,
+          },
+        });
+        
+        // Criar sessão de checkout
+        const session = await createCheckoutSession({
+          customerId: stripeCustomer.id,
+          priceId: price.id,
+          mode: 'subscription',
+          successUrl: `${origin}/dashboard?success=true&plan=${plan.id}`,
+          cancelUrl: `${origin}/pricing?cancelled=true`,
+          metadata: {
+            plan_id: plan.id,
+            customer_email: input.email,
+            customer_name: input.name || '',
+          },
+          allowPromotionCodes: true,
+        });
+        
+        return { url: session.url, sessionId: session.id };
+      }),
+
     // Verificar status da assinatura
     getSubscriptionStatus: personalProcedure
       .input(z.object({

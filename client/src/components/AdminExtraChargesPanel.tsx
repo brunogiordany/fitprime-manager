@@ -167,7 +167,8 @@ export function AdminExtraChargesPanel() {
                 <LineChart data={stats.chargesByMonth}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
                   <Tooltip formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />
                   <Legend />
                   <Line
@@ -176,6 +177,7 @@ export function AdminExtraChargesPanel() {
                     stroke="#10b981"
                     name="Valor Total"
                     strokeWidth={2}
+                    yAxisId="left"
                   />
                   <Line
                     type="monotone"
