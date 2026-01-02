@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { trackPageView, trackQuizStarted } from "@/lib/analytics";
 import ChatWidget from "@/components/ChatWidget";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
@@ -150,6 +150,29 @@ export default function LandingPagePro() {
   // Contador de urgência
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [spotsLeft, setSpotsLeft] = useState(7);
+  
+  // Calculadora interativa
+  const [valorAula, setValorAula] = useState(100);
+  const [horasBurocracia, setHorasBurocracia] = useState(10);
+  
+  // Cálculos baseados nos inputs
+  const calculosPersonalizados = useMemo(() => {
+    const aulasPerdidas = Math.floor(horasBurocracia / 2.5); // ~2.5h por aula considerando preparo
+    const perdaMensal = aulasPerdidas * valorAula * 4; // 4 semanas
+    const perdaAnual = perdaMensal * 12;
+    const tempoRecuperado = horasBurocracia * 4; // horas por mês
+    const aulasExtras = Math.floor(tempoRecuperado / 1); // 1h por aula
+    const ganhoExtra = aulasExtras * valorAula;
+    
+    return {
+      aulasPerdidas,
+      perdaMensal,
+      perdaAnual,
+      tempoRecuperado,
+      aulasExtras,
+      ganhoExtra
+    };
+  }, [valorAula, horasBurocracia]);
   const offerEndDate = useMemo(() => getNextSundayMidnight(), []);
   
   useEffect(() => {
@@ -243,113 +266,176 @@ export default function LandingPagePro() {
         </div>
       </header>
 
-      {/* Hero Section - Conexão com ICP */}
+      {/* Hero Section - Calculadora Interativa */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-emerald-50 via-white to-white">
         <div className="container max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Lado Esquerdo - Problema Real */}
-            <div>
-              <Badge className="mb-6 bg-amber-100 text-amber-700 hover:bg-amber-100">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Isso te parece familiar?
-              </Badge>
+          {/* Headline Principal */}
+          <div className="text-center mb-12">
+            <Badge className="mb-6 bg-amber-100 text-amber-700 hover:bg-amber-100">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Calculadora do Personal
+            </Badge>
+            
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              Descubra quanto você está <span className="text-amber-600">deixando de ganhar</span>
+            </h1>
+            
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Coloque seus números reais e veja o impacto da burocracia no seu bolso
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-start">
+            {/* Lado Esquerdo - Calculadora */}
+            <div className="bg-white rounded-2xl p-8 border-2 border-amber-200 shadow-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <DollarSign className="h-6 w-6 text-amber-600" />
+                Seus números
+              </h3>
               
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                Você é personal, não <span className="text-amber-600">secretário</span>
-              </h2>
-              
-              <p className="text-lg text-gray-600 mb-8">
-                Mas passa mais tempo no WhatsApp cobrando aluno, remarcando horário e montando planilha do que treinando gente.
-              </p>
-              
-              <div className="space-y-4 mb-8">
-                <div className="flex gap-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="h-4 w-4 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-gray-700"><strong>"Oi, posso remarcar pra quinta?"</strong></p>
-                    <p className="text-gray-500 text-sm">E lá vai você reorganizar a semana inteira...</p>
-                  </div>
+              {/* Input Valor da Aula */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quanto você cobra por aula?
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">R$</span>
+                  <input
+                    type="number"
+                    value={valorAula}
+                    onChange={(e) => setValorAula(Math.max(0, Number(e.target.value)))}
+                    className="w-full pl-12 pr-4 py-4 text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-amber-500 transition-colors"
+                    min="0"
+                    step="10"
+                  />
                 </div>
-                
-                <div className="flex gap-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="h-4 w-4 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-gray-700"><strong>"Esqueci de pagar, manda o pix de novo?"</strong></p>
-                    <p className="text-gray-500 text-sm">Terceira vez esse mês que você manda...</p>
-                  </div>
+                <div className="flex gap-2 mt-2">
+                  {[80, 100, 120, 150, 200].map((valor) => (
+                    <button
+                      key={valor}
+                      onClick={() => setValorAula(valor)}
+                      className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                        valorAula === valor 
+                          ? 'bg-amber-500 text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      R$ {valor}
+                    </button>
+                  ))}
                 </div>
-                
-                <div className="flex gap-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <Dumbbell className="h-4 w-4 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-gray-700"><strong>"Qual era meu treino mesmo?"</strong></p>
-                    <p className="text-gray-500 text-sm">Aluno perdeu a ficha, de novo...</p>
-                  </div>
+              </div>
+              
+              {/* Input Horas com Burocracia */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quantas horas por semana você gasta com burocracia?
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  (WhatsApp, cobranças, remarcar horários, planilhas, etc.)
+                </p>
+                <input
+                  type="range"
+                  value={horasBurocracia}
+                  onChange={(e) => setHorasBurocracia(Number(e.target.value))}
+                  className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  min="2"
+                  max="20"
+                  step="1"
+                />
+                <div className="flex justify-between text-sm text-gray-500 mt-1">
+                  <span>2h</span>
+                  <span className="text-xl font-bold text-amber-600">{horasBurocracia}h/semana</span>
+                  <span>20h</span>
                 </div>
               </div>
 
-              <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                <p className="text-amber-800">
-                  <strong>Fazendo as contas:</strong> Se você cobra <strong>R$ 100/aula</strong> e gasta <strong>10h/semana</strong> com burocracia, são <strong>4 aulas perdidas</strong> = <strong className="text-amber-600">R$ 1.600/mês</strong> que você deixa de ganhar.
-                </p>
+              {/* Resultado - O que você perde */}
+              <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                <h4 className="text-sm font-medium text-red-700 mb-4 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  O que você está perdendo
+                </h4>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Aulas que poderia dar por semana:</span>
+                    <span className="text-xl font-bold text-red-600">{calculosPersonalizados.aulasPerdidas} aulas</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Perda mensal:</span>
+                    <span className="text-2xl font-bold text-red-600">
+                      R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-red-200">
+                    <span className="text-gray-600">Perda anual:</span>
+                    <span className="text-3xl font-bold text-red-600">
+                      R$ {calculosPersonalizados.perdaAnual.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Lado Direito - Solução */}
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-200">
-              <Badge className="mb-6 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-                <Sparkles className="h-4 w-4 mr-2" />
-                A solução simples
-              </Badge>
+            {/* Lado Direito - Solução com dados personalizados */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border-2 border-emerald-200 shadow-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-emerald-600" />
+                Com o FitPrime
+              </h3>
               
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                Deixa a <span className="text-emerald-600">burocracia</span> com a gente
-              </h2>
+              {/* Resultado - O que você ganha */}
+              <div className="bg-white rounded-xl p-6 border border-emerald-200 mb-6">
+                <h4 className="text-sm font-medium text-emerald-700 mb-4 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  O que você ganha
+                </h4>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Tempo recuperado por mês:</span>
+                    <span className="text-xl font-bold text-emerald-600">{calculosPersonalizados.tempoRecuperado}h</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Aulas extras que pode dar:</span>
+                    <span className="text-xl font-bold text-emerald-600">{calculosPersonalizados.aulasExtras} aulas</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-emerald-200">
+                    <span className="text-gray-600">Potencial de ganho extra:</span>
+                    <span className="text-3xl font-bold text-emerald-600">
+                      +R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês
+                    </span>
+                  </div>
+                </div>
+              </div>
               
-              <p className="text-gray-600 mb-6">
-                O FitPrime cuida da agenda, cobranças e treinos. Você foca em treinar seus alunos.
-              </p>
-              
-              <div className="space-y-3 mb-8">
+              {/* Benefícios */}
+              <div className="space-y-3 mb-6">
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                   <p className="text-gray-700">Aluno remarca sozinho pelo app</p>
                 </div>
-                
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                   <p className="text-gray-700">Cobrança automática no WhatsApp</p>
                 </div>
-                
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                   <p className="text-gray-700">Treino sempre no celular do aluno</p>
                 </div>
-                
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                   <p className="text-gray-700">Evolução com fotos e medidas</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-5 border border-emerald-200 mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Tempo economizado</p>
-                    <p className="text-2xl font-bold text-emerald-600">+10h/semana</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Potencial de ganho extra</p>
-                    <p className="text-2xl font-bold text-emerald-600">+R$ 1.600/mês</p>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">*Baseado em 10h/semana × R$ 100/aula × 4 semanas</p>
+              {/* Comparação */}
+              <div className="bg-emerald-100 rounded-xl p-4 mb-6">
+                <p className="text-emerald-800 text-center">
+                  <strong>Investimento:</strong> A partir de R$ 97/mês<br/>
+                  <span className="text-sm">Retorno potencial: <strong>R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês</strong></span>
+                </p>
               </div>
 
               <Button 
@@ -357,10 +443,26 @@ export default function LandingPagePro() {
                 onClick={handleStartTrial}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
               >
-                Testar Grátis por 7 Dias
+                Quero Recuperar Meu Tempo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-center text-sm text-gray-500 mt-3">Sem cartão de crédito. Cancele quando quiser.</p>
+              <p className="text-center text-sm text-gray-500 mt-3">Teste grátis por 7 dias. Sem cartão.</p>
+            </div>
+          </div>
+
+          {/* Frases do dia a dia */}
+          <div className="mt-16 text-center">
+            <p className="text-gray-500 mb-6">Isso te parece familiar?</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
+                <p className="text-gray-700">"Oi, posso remarcar pra quinta?" 😩</p>
+              </div>
+              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
+                <p className="text-gray-700">"Esqueci de pagar, manda o pix de novo?" 💸</p>
+              </div>
+              <div className="bg-white rounded-full px-6 py-3 border border-gray-200 shadow-sm">
+                <p className="text-gray-700">"Qual era meu treino mesmo?" 📝</p>
+              </div>
             </div>
           </div>
         </div>

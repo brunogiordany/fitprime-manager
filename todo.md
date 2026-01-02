@@ -2497,3 +2497,9 @@
 - [x] Reformular cálculo de perda financeira com valores realistas de mercado
 - [ ] Ajustar copy para conectar melhor com ICP de personal trainers
 - [ ] Remover TODOS os botões do header (incluindo Planos e Começar Agora)
+
+## Calculadora Interativa na Landing Page (v6.1)
+- [ ] Criar calculadora onde personal informa valor da aula
+- [ ] Calcular automaticamente quanto está perdendo por mês
+- [ ] Mostrar dados personalizados em toda a página baseado no input
+- [ ] Animação dos números ao calcular
