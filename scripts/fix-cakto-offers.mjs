@@ -1,58 +1,42 @@
+#!/usr/bin/env node
+
 /**
- * Script para corrigir os preços das ofertas na Cakto
+ * Script para deletar ofertas antigas e recriar com preços corretos
+ * 
+ * Ofertas antigas com preços errados (multiplicados por 1000):
+ * - Starter: et3mdsp (R$ 49.700,00 em vez de R$ 97,00)
+ * - Pro: z23hmm5 (R$ 49.700,00 em vez de R$ 147,00)
+ * - Business: 3ce3ep8 (R$ 49.700,00 em vez de R$ 197,00)
+ * - Premium: j9ousdy (R$ 49.700,00 em vez de R$ 297,00)
+ * - Enterprise: ptzzce2 (R$ 49.700,00 em vez de R$ 497,00)
  */
 
 const CAKTO_API_URL = "https://api.cakto.com.br";
+const PRODUCT_ID = "8965eb5a-5433-43a0-a60e-5c34f2bdc84c";
 
-// IDs das ofertas criadas anteriormente
-const OFFER_IDS = [
-  "et3mdsp", // Starter
-  "z23hmm5", // Pro
-  "3ce3ep8", // Business
-  "j9ousdy", // Premium
-  "ptzzce2"  // Enterprise
-];
+// Ofertas antigas com preços errados
+const OLD_OFFERS = {
+  starter: "et3mdsp",
+  pro: "z23hmm5",
+  business: "3ce3ep8",
+  premium: "j9ousdy",
+  enterprise: "ptzzce2",
+};
 
-// Planos com preços CORRETOS em reais
-const PLANS = [
-  {
-    name: "Starter",
-    price: 97,
-    studentLimit: 15,
-    extraStudentPrice: 6.47,
-    offerId: "et3mdsp"
-  },
-  {
-    name: "Pro",
-    price: 147,
-    studentLimit: 25,
-    extraStudentPrice: 5.88,
-    offerId: "z23hmm5"
-  },
-  {
-    name: "Business",
-    price: 197,
-    studentLimit: 40,
-    extraStudentPrice: 4.03,
-    offerId: "3ce3ep8"
-  },
-  {
-    name: "Premium",
-    price: 297,
-    studentLimit: 70,
-    extraStudentPrice: 4.24,
-    offerId: "j9ousdy"
-  },
-  {
-    name: "Enterprise",
-    price: 497,
-    studentLimit: 150,
-    extraStudentPrice: 3.31,
-    offerId: "ptzzce2"
-  }
-];
+// Novos preços (em centavos)
+const NEW_PLANS = {
+  starter: { name: "Starter", price: 9700, studentLimit: 15 },
+  pro: { name: "Pro", price: 14700, studentLimit: 25 },
+  business: { name: "Business", price: 19700, studentLimit: 40 },
+  premium: { name: "Premium", price: 29700, studentLimit: 70 },
+  enterprise: { name: "Enterprise", price: 49700, studentLimit: 150 },
+};
 
-async function getToken() {
+let cachedToken = null;
+
+async function getCaktoToken() {
+  if (cachedToken) return cachedToken;
+
   const clientId = process.env.CAKTO_CLIENT_ID;
   const clientSecret = process.env.CAKTO_CLIENT_SECRET;
 
@@ -71,78 +55,119 @@ async function getToken() {
     }),
   });
 
-  const data = await response.json();
-  return data.access_token;
-}
-
-async function deleteOffer(token, offerId) {
-  console.log(`🗑️  Deletando oferta: ${offerId}`);
-
-  const response = await fetch(`${CAKTO_API_URL}/public_api/offers/${offerId}/`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (response.ok) {
-    console.log(`✅ Oferta deletada com sucesso!`);
-  } else {
-    console.log(`⚠️  Oferta não encontrada ou já deletada`);
+  if (!response.ok) {
+    throw new Error(`Cakto authentication failed: ${response.status}`);
   }
+
+  const data = await response.json();
+  cachedToken = data.access_token;
+  return cachedToken;
 }
 
-async function updateOffer(token, plan) {
-  console.log(`\n✏️  Atualizando oferta: ${plan.name} (R$ ${plan.price}/mês)`);
+async function caktoRequest(endpoint, options = {}) {
+  const token = await getCaktoToken();
 
-  // Preço em centavos (correto)
-  const priceInCents = Math.round(plan.price * 100);
-
-  const updateData = {
-    price: priceInCents,
-  };
-
-  const response = await fetch(`${CAKTO_API_URL}/public_api/offers/${plan.offerId}/`, {
-    method: "PATCH",
+  return fetch(`${CAKTO_API_URL}${endpoint}`, {
+    ...options,
     headers: {
+      ...options.headers,
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(updateData),
+  });
+}
+
+async function deleteOffer(offerId) {
+  console.log(`🗑️  Deletando oferta ${offerId}...`);
+  
+  const response = await caktoRequest(`/public_api/offer/${offerId}/`, {
+    method: "DELETE",
+  });
+
+  if (response.ok) {
+    console.log(`✅ Oferta ${offerId} deletada com sucesso`);
+    return true;
+  } else {
+    const error = await response.text();
+    console.log(`⚠️  Não foi possível deletar ${offerId}: ${error}`);
+    return false;
+  }
+}
+
+async function createOffer(planKey, planData) {
+  console.log(`📝 Criando oferta ${planData.name} (R$ ${(planData.price / 100).toFixed(2)})...`);
+  
+  const body = {
+    product: PRODUCT_ID,
+    name: planData.name,
+    price: planData.price,
+    type: "subscription",
+    billing_cycle: "monthly",
+  };
+
+  const response = await caktoRequest("/public_api/offer/", {
+    method: "POST",
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    console.error(`❌ Erro ao atualizar oferta ${plan.name}:`, error);
+    console.error(`❌ Erro ao criar oferta ${planData.name}: ${error}`);
     return null;
   }
 
-  const offer = await response.json();
-  console.log(`✅ Oferta atualizada com sucesso!`);
-  console.log(`   ID: ${offer.id}`);
-  console.log(`   Preço: R$ ${(offer.price / 100).toFixed(2)}/mês`);
-  console.log(`   Link: https://pay.cakto.com.br/${offer.id}`);
-
-  return offer;
+  const data = await response.json();
+  console.log(`✅ Oferta ${planData.name} criada com ID: ${data.id}`);
+  console.log(`   Link: https://pay.cakto.com.br/${data.id}`);
+  
+  return data.id;
 }
 
 async function main() {
   try {
     console.log("🔐 Autenticando na Cakto...");
-    const token = await getToken();
+    await getCaktoToken();
     console.log("✅ Autenticação bem sucedida!\n");
 
-    console.log("=" .repeat(60));
-    console.log("CORRIGINDO PREÇOS DAS OFERTAS");
-    console.log("=" .repeat(60));
+    console.log("=" .repeat(70));
+    console.log("DELETANDO OFERTAS ANTIGAS E CRIANDO NOVAS COM PREÇOS CORRETOS");
+    console.log("=" .repeat(70) + "\n");
 
-    for (const plan of PLANS) {
-      await updateOffer(token, plan);
+    // Deletar ofertas antigas
+    console.log("📋 Deletando ofertas antigas com preços errados...\n");
+    for (const [planKey, offerId] of Object.entries(OLD_OFFERS)) {
+      await deleteOffer(offerId);
     }
 
-    console.log("\n" + "=" .repeat(60));
-    console.log("✅ TODAS AS OFERTAS FORAM CORRIGIDAS!");
-    console.log("=" .repeat(60));
+    console.log("\n✅ Todas as ofertas antigas foram processadas!\n");
+
+    // Criar novas ofertas com preços corretos
+    console.log("📋 Criando novas ofertas com preços corretos...\n");
+    const newOfferIds = {};
+    
+    for (const [planKey, planData] of Object.entries(NEW_PLANS)) {
+      const offerId = await createOffer(planKey, planData);
+      if (offerId) {
+        newOfferIds[planKey] = offerId;
+      }
+    }
+
+    console.log("\n" + "=" .repeat(70));
+    console.log("✅ PROCESSO CONCLUÍDO COM SUCESSO!");
+    console.log("=" .repeat(70) + "\n");
+
+    // Exibir resumo
+    console.log("📊 RESUMO DAS OFERTAS CRIADAS:");
+    console.log("-".repeat(70));
+    for (const [planKey, planData] of Object.entries(NEW_PLANS)) {
+      const offerId = newOfferIds[planKey];
+      if (offerId) {
+        console.log(`${planData.name.padEnd(15)} | R$ ${(planData.price / 100).toFixed(2).padEnd(8)} | ${offerId}`);
+        console.log(`  → https://pay.cakto.com.br/${offerId}`);
+      }
+    }
+
+    console.log("\n💾 Atualize o arquivo shared/plans.ts com os novos IDs!");
 
   } catch (error) {
     console.error("❌ Erro:", error.message);

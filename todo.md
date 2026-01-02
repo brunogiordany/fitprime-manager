@@ -2158,3 +2158,14 @@
 - [ ] Adicionar dashboard de upgrade de plano
 - [ ] Implementar notificações de limite de alunos atingido
 - [ ] Adicionar histórico de cobranças extras
+
+
+## Landing Page de Vendas Profissional (v6.0)
+
+- [x] Capturar screenshots das funcionalidades principais
+- [x] Corrigir preços na Cakto (deletar ofertas erradas e recriar com valores corretos)
+- [x] Criar landing page com copywriting persuasivo (gatilhos mentais, PNL, técnicas avançadas)
+- [x] Adicionar jornada visual do Personal Trainer com prints passo a passo
+- [x] Adicionar jornada visual do Aluno com prints passo a passo
+- [x] Criar tabela comparativa de planos com todos os preços e funcionalidades
+- [x] Testar landing page e salvar checkpoint
