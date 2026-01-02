@@ -182,6 +182,11 @@ function PersonalDetailsSheet({
     { enabled: !!personalId && open }
   );
   
+  const { data: growthData, isLoading: loadingGrowth } = trpc.admin.personalGrowthChart.useQuery(
+    { personalId: personalId!, months: 6 },
+    { enabled: !!personalId && open }
+  );
+  
   const resetPasswordMutation = trpc.admin.resetPersonalPassword.useMutation({
     onSuccess: (data) => {
       toast.success(`Link de recuperação enviado para ${data.email}`);
@@ -232,7 +237,7 @@ function PersonalDetailsSheet({
     toast.success("CSV exportado com sucesso!");
   };
   
-  const isLoading = loadingStudents || loadingStats || loadingLogin || loadingConfig;
+  const isLoading = loadingStudents || loadingStats || loadingLogin || loadingConfig || loadingGrowth;
   
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -382,6 +387,93 @@ function PersonalDetailsSheet({
                     </p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Gráfico de Crescimento de Alunos */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Crescimento de Alunos
+                </CardTitle>
+                <CardDescription>
+                  Evolução nos últimos 6 meses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {growthData && growthData.length > 0 ? (
+                  <div className="space-y-4">
+                    {/* Gráfico de barras */}
+                    <div className="h-40">
+                      <div className="flex items-end justify-between gap-2 h-32">
+                        {growthData.map((item, i) => {
+                          const maxCount = Math.max(...growthData.map(d => d.count), 1);
+                          const height = (item.count / maxCount) * 100;
+                          return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                              <div 
+                                className="w-full bg-emerald-500 rounded-t transition-all hover:bg-emerald-600 relative group"
+                                style={{ height: `${height}%`, minHeight: item.count > 0 ? '8px' : '4px' }}
+                              >
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                  {item.count} alunos
+                                </div>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{item.month}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    
+                    {/* Indicadores de crescimento */}
+                    <div className="grid grid-cols-3 gap-4 pt-2 border-t">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Primeiro Mês</p>
+                        <p className="text-lg font-bold">{growthData[0]?.count || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Atual</p>
+                        <p className="text-lg font-bold">{growthData[growthData.length - 1]?.count || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Crescimento</p>
+                        {(() => {
+                          const first = growthData[0]?.count || 0;
+                          const last = growthData[growthData.length - 1]?.count || 0;
+                          const growth = last - first;
+                          const percent = first > 0 ? ((growth / first) * 100).toFixed(0) : '0';
+                          return (
+                            <p className={`text-lg font-bold flex items-center justify-center gap-1 ${growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {growth >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                              {growth >= 0 ? '+' : ''}{growth} ({percent}%)
+                            </p>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    
+                    {/* Novos alunos por mês */}
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground mb-2">Novos alunos por mês</p>
+                      <div className="flex items-center gap-2">
+                        {growthData.map((item, i) => (
+                          <div key={i} className="flex-1 text-center">
+                            <div className={`text-sm font-medium ${item.newStudents > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              {item.newStudents > 0 ? `+${item.newStudents}` : '0'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">{item.month}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-32 text-muted-foreground">
+                    Sem dados de crescimento disponíveis
+                  </div>
+                )}
               </CardContent>
             </Card>
             

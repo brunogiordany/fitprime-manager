@@ -419,6 +419,22 @@ export const appRouter = router({
         };
       }),
     
+    // Dados de crescimento de alunos de um personal (para gráfico)
+    personalGrowthChart: ownerProcedure
+      .input(z.object({ personalId: z.number(), months: z.number().default(6) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalStudentGrowthByMonth(input.personalId, input.months);
+      }),
+    
+    // Comparação de crescimento de todos os personais
+    allPersonalsGrowth: ownerProcedure
+      .input(z.object({ months: z.number().default(6) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getAllPersonalsGrowthComparison(input.months);
+      }),
+    
     // Enviar notificação para personal
     notifyPersonal: ownerProcedure
       .input(z.object({

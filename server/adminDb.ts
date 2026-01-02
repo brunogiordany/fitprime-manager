@@ -944,3 +944,101 @@ export async function getAllStudentContacts() {
     };
   });
 }
+
+
+/**
+ * Obtém dados de crescimento de alunos de um personal ao longo do tempo (por mês)
+ */
+export async function getPersonalStudentGrowthByMonth(personalId: number, months: number = 6) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results: { month: string; count: number; newStudents: number }[] = [];
+  const now = new Date();
+  
+  // Gerar dados para cada mês
+  for (let i = months - 1; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+    
+    // Contar alunos ativos até o final do mês
+    const totalAtMonth = await db.select({ count: sql<number>`count(*)` })
+      .from(students)
+      .where(and(
+        eq(students.personalId, personalId),
+        lte(students.createdAt, monthEnd),
+        or(
+          isNull(students.deletedAt),
+          gte(students.deletedAt, monthEnd)
+        )
+      ));
+    
+    // Contar novos alunos no mês
+    const newInMonth = await db.select({ count: sql<number>`count(*)` })
+      .from(students)
+      .where(and(
+        eq(students.personalId, personalId),
+        gte(students.createdAt, monthStart),
+        lte(students.createdAt, monthEnd)
+      ));
+    
+    const monthName = monthStart.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+    
+    results.push({
+      month: monthName,
+      count: totalAtMonth[0]?.count || 0,
+      newStudents: newInMonth[0]?.count || 0,
+    });
+  }
+  
+  return results;
+}
+
+/**
+ * Obtém dados de crescimento de todos os personais para comparação
+ */
+export async function getAllPersonalsGrowthComparison(months: number = 6) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar todos os personais
+  const allPersonals = await db.select({
+    id: personals.id,
+    businessName: personals.businessName,
+    userId: personals.userId,
+  }).from(personals);
+  
+  // Buscar nomes dos usuários
+  const userIds = allPersonals.map(p => p.userId).filter(Boolean) as number[];
+  const userDetails = userIds.length > 0 
+    ? await db.select({ id: users.id, name: users.name })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  
+  const results = [];
+  
+  for (const personal of allPersonals) {
+    const user = personal.userId ? userDetails.find(u => u.id === personal.userId) : null;
+    const growthData = await getPersonalStudentGrowthByMonth(personal.id, months);
+    
+    // Calcular crescimento total
+    const firstMonth = growthData[0]?.count || 0;
+    const lastMonth = growthData[growthData.length - 1]?.count || 0;
+    const growth = lastMonth - firstMonth;
+    const growthPercent = firstMonth > 0 ? ((growth / firstMonth) * 100).toFixed(1) : '0';
+    
+    results.push({
+      personalId: personal.id,
+      name: user?.name || 'Desconhecido',
+      businessName: personal.businessName || '',
+      currentStudents: lastMonth,
+      growth,
+      growthPercent: parseFloat(growthPercent),
+      monthlyData: growthData,
+    });
+  }
+  
+  // Ordenar por crescimento
+  return results.sort((a, b) => b.growth - a.growth);
+}

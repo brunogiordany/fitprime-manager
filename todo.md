@@ -2108,3 +2108,10 @@
 - [ ] Enviar notificação individual para personal
 - [x] Enviar email direto para personal
 - [ ] Ver histórico de comunicações
+
+
+## Gráficos de Crescimento por Personal (v5.2)
+- [ ] Criar endpoint admin.personalGrowthData para dados de crescimento de alunos
+- [ ] Adicionar gráfico de linha no modal de detalhes do personal
+- [ ] Mostrar evolução de alunos nos últimos 6 meses
+- [ ] Incluir indicadores de crescimento (%, absoluto)
