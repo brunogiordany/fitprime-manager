@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `tracking_pixels` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `type` enum('google_analytics','facebook_pixel','tiktok_pixel','google_ads','custom') NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `pixelId` varchar(255),\n  `apiKey` varchar(500),\n  `apiSecret` varchar(500),\n  `isActive` boolean DEFAULT true,\n  `settings` text,\n  `enabledEvents` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `tracking_pixels_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS `tracking_pixels` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `type` enum('google_analytics','facebook_pixel','tiktok_pixel','google_ads','custom') NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `pixelId` varchar(255),\n  `apiKey` varchar(500),\n  `apiSecret` varchar(500),\n  `isActive` boolean DEFAULT true,\n  `settings` text,\n  `enabledEvents` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `tracking_pixels_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 183
+}

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Redirect, Link, useParams } from "wouter";
+import { trpc } from "@/lib/trpc";
 import { 
   ChevronLeft, 
   RefreshCw, 
@@ -79,7 +80,10 @@ import {
   Minimize2,
   Play,
   Globe,
-  Lock
+  Lock,
+  Sparkles,
+  Wand2,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -105,6 +109,10 @@ interface Block {
   type: BlockType;
   content: Record<string, any>;
   styles: Record<string, any>;
+  customScript?: string; // Script personalizado para o bloco
+  delay?: number; // Delay em ms para animação/exibição
+  syncWithVideo?: boolean; // Sincronizar com vídeo
+  videoTimestamp?: number; // Timestamp do vídeo para sincronização
 }
 
 interface PageData {
@@ -123,6 +131,11 @@ interface PageData {
     secondaryColor: string;
     backgroundColor: string;
     fontFamily: string;
+  };
+  scripts: {
+    headScript: string; // Scripts no <head>
+    bodyStartScript: string; // Scripts no início do <body>
+    bodyEndScript: string; // Scripts no final do <body>
   };
 }
 
@@ -289,6 +302,28 @@ export default function AdminPageEditor() {
   const params = useParams<{ pageId: string }>();
   const pageId = params.pageId;
   
+  // Buscar dados da página do banco
+  const { data: dbPage, isLoading: pageLoading } = trpc.sitePages.getById.useQuery(
+    { id: Number(pageId) },
+    { enabled: !!pageId && pageId !== "new" }
+  );
+  
+  // Mutations
+  const updatePageMutation = trpc.sitePages.update.useMutation({
+    onSuccess: () => {
+      toast.success("Página salva com sucesso!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao salvar página");
+    }
+  });
+  
+  const publishMutation = trpc.sitePages.publish.useMutation({
+    onSuccess: () => {
+      toast.success("Página publicada!");
+    }
+  });
+  
   // Estado da página
   const [pageData, setPageData] = useState<PageData>({
     id: pageId || "new",
@@ -306,8 +341,36 @@ export default function AdminPageEditor() {
       secondaryColor: "#059669",
       backgroundColor: "#ffffff",
       fontFamily: "Inter"
+    },
+    scripts: {
+      headScript: "",
+      bodyStartScript: "",
+      bodyEndScript: ""
     }
   });
+  
+  // Carregar dados da página do banco quando disponível
+  useEffect(() => {
+    if (dbPage) {
+      const blocks = dbPage.blocks ? JSON.parse(dbPage.blocks as string) : [];
+      const seo = dbPage.metaTitle || dbPage.metaDescription ? {
+        title: dbPage.metaTitle || "",
+        description: dbPage.metaDescription || "",
+        ogImage: dbPage.ogImage || ""
+      } : pageData.seo;
+      
+      setPageData({
+        id: String(dbPage.id),
+        name: dbPage.name,
+        slug: dbPage.slug,
+        status: dbPage.status as "draft" | "published",
+        blocks,
+        seo,
+        styles: pageData.styles,
+        scripts: pageData.scripts
+      });
+    }
+  }, [dbPage]);
   
   // Estados do editor
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
@@ -319,6 +382,9 @@ export default function AdminPageEditor() {
   const [showBlockPicker, setShowBlockPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [aiPrompt, setAIPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Ref para o container de preview
   const previewRef = useRef<HTMLDivElement>(null);
@@ -448,15 +514,23 @@ export default function AdminPageEditor() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Salvar no localStorage por enquanto
-      const savedPages = JSON.parse(localStorage.getItem('editor_pages') || '{}');
-      savedPages[pageData.id] = pageData;
-      localStorage.setItem('editor_pages', JSON.stringify(savedPages));
-      
-      toast.success("Página salva com sucesso!");
+      if (pageId && pageId !== "new") {
+        await updatePageMutation.mutateAsync({
+          id: Number(pageId),
+          name: pageData.name,
+          slug: pageData.slug,
+          blocks: JSON.stringify(pageData.blocks),
+          metaTitle: pageData.seo.title,
+          metaDescription: pageData.seo.description,
+          ogImage: pageData.seo.ogImage
+        });
+      } else {
+        // Salvar no localStorage para páginas novas (temporário)
+        const savedPages = JSON.parse(localStorage.getItem('editor_pages') || '{}');
+        savedPages[pageData.id] = pageData;
+        localStorage.setItem('editor_pages', JSON.stringify(savedPages));
+        toast.success("Página salva localmente!");
+      }
     } catch (e) {
       toast.error("Erro ao salvar página");
     } finally {
@@ -469,7 +543,112 @@ export default function AdminPageEditor() {
     const newData = { ...pageData, status: "published" as const };
     setPageData(newData);
     await handleSave();
-    toast.success("Página publicada!");
+    if (pageId && pageId !== "new") {
+      await publishMutation.mutateAsync({ id: Number(pageId) });
+    }
+  };
+
+  // Gerar página com IA
+  const handleGenerateWithAI = async () => {
+    setIsGenerating(true);
+    try {
+      // Simular geração com IA (em produção, chamar API do LLM)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Gerar blocos baseados no prompt
+      const generatedBlocks: Block[] = [
+        {
+          id: `block_${Date.now()}_1`,
+          type: "hero",
+          content: {
+            title: "Transforme Seu Corpo em 90 Dias",
+            subtitle: "Treinos personalizados com acompanhamento profissional. Resultados garantidos ou seu dinheiro de volta.",
+            buttonText: "Começar Agora",
+            buttonLink: "/quiz",
+            alignment: "center"
+          },
+          styles: {}
+        },
+        {
+          id: `block_${Date.now()}_2`,
+          type: "features",
+          content: {
+            title: "Por que escolher nosso método?",
+            items: [
+              { icon: "🎯", title: "Treinos Personalizados", description: "Planos adaptados ao seu objetivo e rotina" },
+              { icon: "📱", title: "App Exclusivo", description: "Acesse seus treinos de qualquer lugar" },
+              { icon: "💬", title: "Suporte 24/7", description: "Tire dúvidas a qualquer momento" },
+              { icon: "📈", title: "Acompanhamento", description: "Métricas e evolução em tempo real" }
+            ]
+          },
+          styles: {}
+        },
+        {
+          id: `block_${Date.now()}_3`,
+          type: "testimonials",
+          content: {
+            title: "O que nossos alunos dizem",
+            items: [
+              { name: "Maria Silva", role: "Perdeu 15kg", text: "Em 3 meses consegui resultados que nunca imaginei!", avatar: "" },
+              { name: "João Santos", role: "Ganhou massa", text: "Os treinos são incríveis e o suporte é excepcional.", avatar: "" },
+              { name: "Ana Costa", role: "Mais disposição", text: "Minha qualidade de vida melhorou 100%!", avatar: "" }
+            ]
+          },
+          styles: {}
+        },
+        {
+          id: `block_${Date.now()}_4`,
+          type: "pricing",
+          content: {
+            title: "Escolha seu plano",
+            plans: [
+              { name: "Básico", price: "97", period: "mês", features: ["Treinos personalizados", "App exclusivo", "Suporte por email"], highlighted: false },
+              { name: "Premium", price: "197", period: "mês", features: ["Tudo do Básico", "Consultas semanais", "Plano alimentar", "Suporte prioritário"], highlighted: true },
+              { name: "VIP", price: "397", period: "mês", features: ["Tudo do Premium", "Consultas diárias", "Acompanhamento 1:1", "Acesso vitalício"], highlighted: false }
+            ]
+          },
+          styles: {}
+        },
+        {
+          id: `block_${Date.now()}_5`,
+          type: "faq",
+          content: {
+            title: "Perguntas Frequentes",
+            items: [
+              { question: "Como funciona o programa?", answer: "Após a inscrição, você recebe acesso ao app com seus treinos personalizados e acompanhamento do seu personal." },
+              { question: "Preciso de equipamentos?", answer: "Não! Temos opções de treino para academia, casa ou ao ar livre." },
+              { question: "Posso cancelar quando quiser?", answer: "Sim, sem multas ou burocracia. Cancele a qualquer momento." }
+            ]
+          },
+          styles: {}
+        },
+        {
+          id: `block_${Date.now()}_6`,
+          type: "cta",
+          content: {
+            title: "Pronto para começar sua transformação?",
+            subtitle: "Junte-se a mais de 10.000 alunos satisfeitos",
+            buttonText: "Quero Começar Agora",
+            buttonLink: "/quiz",
+            backgroundColor: "#10b981"
+          },
+          styles: {}
+        }
+      ];
+      
+      setPageData(prev => ({
+        ...prev,
+        blocks: generatedBlocks
+      }));
+      
+      setShowAIGenerator(false);
+      setAIPrompt("");
+      toast.success("Página gerada com sucesso! Edite os blocos conforme necessário.");
+    } catch (error) {
+      toast.error("Erro ao gerar página");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Obter bloco selecionado
@@ -564,6 +743,17 @@ export default function AdminPageEditor() {
           >
             {showPreview ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
             {showPreview ? "Editar" : "Preview"}
+          </Button>
+          
+          {/* Gerar com IA */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowAIGenerator(true)}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none hover:from-purple-600 hover:to-pink-600"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Gerar com IA
           </Button>
           
           {/* Settings */}
@@ -800,10 +990,11 @@ export default function AdminPageEditor() {
           </DialogHeader>
           
           <Tabs defaultValue="general">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="general">Geral</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="styles">Estilos</TabsTrigger>
+              <TabsTrigger value="scripts">Scripts</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-4 mt-4">
@@ -919,10 +1110,134 @@ export default function AdminPageEditor() {
                 </div>
               </div>
             </TabsContent>
+            
+            <TabsContent value="scripts" className="space-y-4 mt-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+                <strong>Atenção:</strong> Scripts personalizados são executados na página. Use com cuidado.
+              </div>
+              <div>
+                <Label>Scripts no &lt;head&gt;</Label>
+                <Textarea 
+                  value={pageData.scripts.headScript}
+                  onChange={(e) => setPageData({ 
+                    ...pageData, 
+                    scripts: { ...pageData.scripts, headScript: e.target.value }
+                  })}
+                  placeholder="<!-- Google Analytics, Facebook Pixel, etc -->"
+                  rows={4}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div>
+                <Label>Scripts no início do &lt;body&gt;</Label>
+                <Textarea 
+                  value={pageData.scripts.bodyStartScript}
+                  onChange={(e) => setPageData({ 
+                    ...pageData, 
+                    scripts: { ...pageData.scripts, bodyStartScript: e.target.value }
+                  })}
+                  placeholder="<!-- GTM noscript, etc -->"
+                  rows={3}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div>
+                <Label>Scripts no final do &lt;body&gt;</Label>
+                <Textarea 
+                  value={pageData.scripts.bodyEndScript}
+                  onChange={(e) => setPageData({ 
+                    ...pageData, 
+                    scripts: { ...pageData.scripts, bodyEndScript: e.target.value }
+                  })}
+                  placeholder="<!-- Chat widgets, scripts de conversão, etc -->"
+                  rows={4}
+                  className="font-mono text-sm"
+                />
+              </div>
+            </TabsContent>
           </Tabs>
           
           <DialogFooter>
             <Button onClick={() => setShowSettings(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog do Gerador com IA */}
+      <Dialog open={showAIGenerator} onOpenChange={setShowAIGenerator}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              Gerar Página com IA
+            </DialogTitle>
+            <DialogDescription>
+              Descreva a página que você quer criar e a IA vai gerar os blocos automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Descreva sua página</Label>
+              <Textarea 
+                value={aiPrompt}
+                onChange={(e) => setAIPrompt(e.target.value)}
+                placeholder="Ex: Crie uma landing page para um personal trainer que oferece treinos online. Inclua seção hero com chamada impactante, benefícios do serviço, depoimentos de clientes, preços dos planos e FAQ."
+                rows={5}
+                className="mt-2"
+              />
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm font-medium mb-2">Dicas para melhores resultados:</p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Descreva o objetivo da página</li>
+                <li>• Mencione as seções que deseja (hero, benefícios, preços, FAQ, etc)</li>
+                <li>• Inclua informações sobre seu negócio/produto</li>
+                <li>• Especifique o tom de voz (profissional, casual, urgente)</li>
+              </ul>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setAIPrompt("Crie uma landing page de vendas para um curso online de fitness. Inclua hero com oferta, benefícios, depoimentos, módulos do curso, garantia e CTA de compra.")}
+              >
+                Curso Online
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setAIPrompt("Crie uma página de captura de leads para personal trainer. Inclua hero com promessa, benefícios do treino personalizado, formulário de contato e depoimentos.")}
+              >
+                Captura de Leads
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setAIPrompt("Crie uma página de obrigado após cadastro. Inclua mensagem de confirmação, próximos passos, links para redes sociais e CTA para agendar consulta.")}
+              >
+                Página Obrigado
+              </Button>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAIGenerator(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleGenerateWithAI}
+              disabled={isGenerating || !aiPrompt.trim()}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+              {isGenerating ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Gerando...</>
+              ) : (
+                <><Wand2 className="h-4 w-4 mr-2" /> Gerar Página</>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1224,10 +1539,406 @@ function BlockPropertiesEditor({
         </div>
       );
       
+    case "features":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Recursos ({block.content.items?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.items?.map((item: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <Input 
+                    placeholder="Título"
+                    value={item.title}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, title: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Textarea 
+                    placeholder="Descrição"
+                    value={item.description}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, description: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                    rows={2}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600"
+                    onClick={() => {
+                      const newItems = block.content.items.filter((_: any, i: number) => i !== index);
+                      onUpdate("items", newItems);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" /> Remover
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newItems = [...(block.content.items || []), { icon: "star", title: "Novo Recurso", description: "Descrição" }];
+                  onUpdate("items", newItems);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Recurso
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case "pricing":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Planos ({block.content.plans?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.plans?.map((plan: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <Input 
+                    placeholder="Nome do Plano"
+                    value={plan.name}
+                    onChange={(e) => {
+                      const newPlans = [...block.content.plans];
+                      newPlans[index] = { ...plan, name: e.target.value };
+                      onUpdate("plans", newPlans);
+                    }}
+                  />
+                  <Input 
+                    placeholder="Preço (ex: R$ 97)"
+                    value={plan.price}
+                    onChange={(e) => {
+                      const newPlans = [...block.content.plans];
+                      newPlans[index] = { ...plan, price: e.target.value };
+                      onUpdate("plans", newPlans);
+                    }}
+                  />
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="checkbox"
+                      checked={plan.highlighted}
+                      onChange={(e) => {
+                        const newPlans = [...block.content.plans];
+                        newPlans[index] = { ...plan, highlighted: e.target.checked };
+                        onUpdate("plans", newPlans);
+                      }}
+                    />
+                    <Label className="text-sm">Destacar este plano</Label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      
+    case "testimonials":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Depoimentos ({block.content.items?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.items?.map((item: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <Input 
+                    placeholder="Nome"
+                    value={item.name}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, name: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Input 
+                    placeholder="Cargo/Profissão"
+                    value={item.role}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, role: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Textarea 
+                    placeholder="Depoimento"
+                    value={item.text}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, text: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                    rows={3}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600"
+                    onClick={() => {
+                      const newItems = block.content.items.filter((_: any, i: number) => i !== index);
+                      onUpdate("items", newItems);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" /> Remover
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newItems = [...(block.content.items || []), { name: "Nome", role: "Profissão", text: "Depoimento...", avatar: "" }];
+                  onUpdate("items", newItems);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Depoimento
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case "faq":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Perguntas ({block.content.items?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.items?.map((item: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <Input 
+                    placeholder="Pergunta"
+                    value={item.question}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, question: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Textarea 
+                    placeholder="Resposta"
+                    value={item.answer}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, answer: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                    rows={3}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600"
+                    onClick={() => {
+                      const newItems = block.content.items.filter((_: any, i: number) => i !== index);
+                      onUpdate("items", newItems);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" /> Remover
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newItems = [...(block.content.items || []), { question: "Nova pergunta?", answer: "Resposta..." }];
+                  onUpdate("items", newItems);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Pergunta
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case "image":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>URL da Imagem</Label>
+            <Input 
+              value={block.content.src}
+              onChange={(e) => onUpdate("src", e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <Label>Texto Alternativo (Alt)</Label>
+            <Input 
+              value={block.content.alt}
+              onChange={(e) => onUpdate("alt", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Legenda</Label>
+            <Input 
+              value={block.content.caption}
+              onChange={(e) => onUpdate("caption", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Largura</Label>
+            <Input 
+              value={block.content.width}
+              onChange={(e) => onUpdate("width", e.target.value)}
+              placeholder="100% ou 500px"
+            />
+          </div>
+        </div>
+      );
+      
+    case "video":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>URL do Vídeo (YouTube, Vimeo ou MP4)</Label>
+            <Input 
+              value={block.content.url}
+              onChange={(e) => onUpdate("url", e.target.value)}
+              placeholder="https://youtube.com/watch?v=..."
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox"
+              checked={block.content.autoplay}
+              onChange={(e) => onUpdate("autoplay", e.target.checked)}
+            />
+            <Label className="text-sm">Autoplay</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox"
+              checked={block.content.controls}
+              onChange={(e) => onUpdate("controls", e.target.checked)}
+            />
+            <Label className="text-sm">Mostrar controles</Label>
+          </div>
+        </div>
+      );
+      
+    case "stats":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Estatísticas ({block.content.items?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.items?.map((item: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <Input 
+                    placeholder="Valor (ex: 1000+)"
+                    value={item.value}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, value: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Input 
+                    placeholder="Label (ex: Clientes)"
+                    value={item.label}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, label: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600"
+                    onClick={() => {
+                      const newItems = block.content.items.filter((_: any, i: number) => i !== index);
+                      onUpdate("items", newItems);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" /> Remover
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newItems = [...(block.content.items || []), { value: "100+", label: "Novo" }];
+                  onUpdate("items", newItems);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Estatística
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case "divider":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Cor da Linha</Label>
+            <div className="flex gap-2 mt-1">
+              <Input 
+                type="color"
+                value={block.content.color}
+                onChange={(e) => onUpdate("color", e.target.value)}
+                className="w-12 h-10 p-1"
+              />
+              <Input 
+                value={block.content.color}
+                onChange={(e) => onUpdate("color", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      );
+      
     default:
       return (
         <div className="text-center text-muted-foreground py-4">
-          <p className="text-sm">Editor de propriedades em desenvolvimento</p>
+          <p className="text-sm">Selecione um bloco para editar suas propriedades</p>
         </div>
       );
   }

@@ -49,10 +49,20 @@ export const trialRouter = router({
       // Criar usuário com trial de 1 dia
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 1); // 1 dia de trial
+      
+      // Gerar openId único para usuários de trial (baseado no CPF + timestamp)
+      const openId = `trial_${input.cpf.replace(/\D/g, '')}_${Date.now()}`;
+      
+      // Converter data de DD/MM/YYYY para YYYY-MM-DD
+      let birthDateFormatted = input.birthDate;
+      if (input.birthDate.includes('/')) {
+        const [day, month, year] = input.birthDate.split('/');
+        birthDateFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
 
       await db.execute(sql`
-        INSERT INTO users (name, email, cpf, phone, birthDate, role, createdAt, updatedAt)
-        VALUES (${input.name}, ${input.email}, ${input.cpf}, ${input.phone}, ${input.birthDate}, 'user', NOW(), NOW())
+        INSERT INTO users (openId, name, email, cpf, phone, birthDate, role, createdAt, updatedAt)
+        VALUES (${openId}, ${input.name}, ${input.email}, ${input.cpf.replace(/\D/g, '')}, ${input.phone.replace(/\D/g, '')}, ${birthDateFormatted}, 'user', NOW(), NOW())
       `);
 
       // Obter o ID do usuário criado

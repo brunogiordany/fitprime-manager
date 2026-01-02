@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `site_pages` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `slug` varchar(255) NOT NULL,\n  `status` enum('draft','published') NOT NULL DEFAULT 'draft',\n  `blocks` text,\n  `metaTitle` varchar(255),\n  `metaDescription` text,\n  `ogImage` varchar(500),\n  `template` varchar(50),\n  `settings` text,\n  `totalViews` int DEFAULT 0,\n  `totalConversions` int DEFAULT 0,\n  `bounceRate` decimal(5,2) DEFAULT 0,\n  `avgTimeOnPage` int DEFAULT 0,\n  `publishedAt` timestamp,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `site_pages_id` PRIMARY KEY(`id`),\n  CONSTRAINT `site_pages_slug_unique` UNIQUE(`slug`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS `site_pages` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `slug` varchar(255) NOT NULL,\n  `status` enum('draft','published') NOT NULL DEFAULT 'draft',\n  `blocks` text,\n  `metaTitle` varchar(255),\n  `metaDescription` text,\n  `ogImage` varchar(500),\n  `template` varchar(50),\n  `settings` text,\n  `totalViews` int DEFAULT 0,\n  `totalConversions` int DEFAULT 0,\n  `bounceRate` decimal(5,2) DEFAULT 0,\n  `avgTimeOnPage` int DEFAULT 0,\n  `publishedAt` timestamp,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `site_pages_id` PRIMARY KEY(`id`),\n  CONSTRAINT `site_pages_slug_unique` UNIQUE(`slug`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 185
+}

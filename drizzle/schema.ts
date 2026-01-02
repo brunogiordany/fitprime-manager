@@ -1087,3 +1087,115 @@ export const quizAnalytics = mysqlTable("quiz_analytics", {
 
 export type QuizAnalytics = typeof quizAnalytics.$inferSelect;
 export type InsertQuizAnalytics = typeof quizAnalytics.$inferInsert;
+
+
+// ==================== SITE PAGES (Páginas do Site - Editor Visual) ====================
+export const sitePages = mysqlTable("site_pages", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Identificação
+  name: varchar("name", { length: 255 }).notNull(), // Nome da página
+  slug: varchar("slug", { length: 255 }).notNull().unique(), // URL da página (ex: /quiz, /pricing)
+  
+  // Status
+  status: mysqlEnum("status", ["draft", "published"]).default("draft").notNull(),
+  
+  // Conteúdo
+  blocks: text("blocks"), // JSON com os blocos da página
+  
+  // SEO
+  metaTitle: varchar("metaTitle", { length: 255 }),
+  metaDescription: text("metaDescription"),
+  ogImage: varchar("ogImage", { length: 500 }),
+  
+  // Configurações
+  template: varchar("template", { length: 50 }), // Template base usado (blank, landing, promo)
+  settings: text("settings"), // JSON com configurações da página
+  
+  // Analytics (dados reais agregados)
+  totalViews: int("totalViews").default(0),
+  totalConversions: int("totalConversions").default(0),
+  bounceRate: decimal("bounceRate", { precision: 5, scale: 2 }).default("0"),
+  avgTimeOnPage: int("avgTimeOnPage").default(0), // Em segundos
+  
+  // Timestamps
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SitePage = typeof sitePages.$inferSelect;
+export type InsertSitePage = typeof sitePages.$inferInsert;
+
+// ==================== PAGE ANALYTICS (Analytics por página) ====================
+export const pageAnalytics = mysqlTable("page_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").notNull().references(() => sitePages.id),
+  
+  // Período
+  date: timestamp("date").notNull(),
+  
+  // Métricas
+  views: int("views").default(0),
+  uniqueVisitors: int("uniqueVisitors").default(0),
+  conversions: int("conversions").default(0),
+  bounces: int("bounces").default(0),
+  totalTimeOnPage: int("totalTimeOnPage").default(0), // Total de segundos
+  
+  // Origem do tráfego
+  sourceDistribution: text("sourceDistribution"), // JSON com distribuição de fontes
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageAnalytic = typeof pageAnalytics.$inferSelect;
+export type InsertPageAnalytic = typeof pageAnalytics.$inferInsert;
+
+// ==================== PAGE VERSIONS (Histórico de versões) ====================
+export const pageVersions = mysqlTable("page_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").notNull().references(() => sitePages.id),
+  
+  // Conteúdo da versão
+  blocks: text("blocks"), // JSON com os blocos
+  settings: text("settings"), // JSON com configurações
+  
+  // Metadados
+  versionNumber: int("versionNumber").notNull(),
+  createdBy: varchar("createdBy", { length: 255 }), // Quem criou esta versão
+  changeDescription: varchar("changeDescription", { length: 500 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageVersion = typeof pageVersions.$inferSelect;
+export type InsertPageVersion = typeof pageVersions.$inferInsert;
+
+// ==================== TRACKING PIXELS (Configuração de Pixels) ====================
+export const trackingPixels = mysqlTable("tracking_pixels", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Tipo de pixel
+  type: mysqlEnum("type", ["google_analytics", "facebook_pixel", "tiktok_pixel", "google_ads", "custom"]).notNull(),
+  
+  // Configuração
+  name: varchar("name", { length: 255 }).notNull(),
+  pixelId: varchar("pixelId", { length: 255 }), // ID do pixel
+  apiKey: varchar("apiKey", { length: 500 }), // API Key para conversões server-side
+  apiSecret: varchar("apiSecret", { length: 500 }), // API Secret
+  
+  // Status
+  isActive: boolean("isActive").default(true),
+  
+  // Configurações avançadas
+  settings: text("settings"), // JSON com configurações específicas do pixel
+  
+  // Eventos habilitados
+  enabledEvents: text("enabledEvents"), // JSON com lista de eventos habilitados
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TrackingPixel = typeof trackingPixels.$inferSelect;
+export type InsertTrackingPixel = typeof trackingPixels.$inferInsert;

@@ -2456,3 +2456,22 @@
 ## Correções - PWA
 - [x] Restringir popup de instalação PWA apenas para áreas internas (dashboard personal/aluno)
 - [x] Remover popup das páginas públicas (landing, quiz, pricing, etc)
+
+## Correções Editor de Páginas (v4.3)
+- [ ] Criar schema de banco para páginas e blocos
+- [ ] Implementar routers tRPC para CRUD de páginas
+- [ ] Gerenciador de Páginas com dados reais do banco
+- [ ] Editor carregar conteúdo real das páginas existentes
+- [ ] Corrigir bug de páginas sumindo após publicar
+- [ ] Adicionar opção de API na página de Pixels
+- [ ] Adicionar mais templates (página de vendas, captura, obrigado)
+
+## Correções e Melhorias - Editor e Trial
+- [x] Corrigir erro do cadastro trial (campo birthDate não existe na tabela)
+- [x] Melhorar editor de blocos com ferramentas funcionais de edição
+- [x] Adicionar campo de scripts personalizados nos blocos
+- [ ] Implementar delay de seções no editor
+- [ ] Sincronização de elementos com vídeo
+- [ ] Botão "Gerar Página com IA" - prompt para criar páginas automaticamente
+- [x] Corrigir edição de blocos existentes (não estão funcionando)
+- [x] Corrigir cadastro trial no exit popup (mesmo erro da página cadastro-trial)

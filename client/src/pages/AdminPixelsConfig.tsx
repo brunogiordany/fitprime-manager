@@ -361,6 +361,95 @@ export default function AdminPixelsConfig() {
           </CardContent>
         </Card>
 
+        {/* API de Conversões */}
+        <Card className="border-purple-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <Settings className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    API de Conversões (Server-Side)
+                    <Badge variant="outline" className="text-purple-600 border-purple-600">
+                      Avançado
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Envie eventos diretamente do servidor para maior precisão
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <p className="text-sm text-purple-800 mb-3">
+                A API de Conversões permite enviar eventos diretamente do servidor, 
+                contornando bloqueadores de anúncios e garantindo dados mais precisos.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-purple-700">Facebook Conversions API Token</Label>
+                  <Input 
+                    placeholder="EAAxxxxxxx..."
+                    className="mt-1"
+                    type="password"
+                  />
+                  <p className="text-xs text-purple-600 mt-1">
+                    Gere em: Facebook Events Manager → Configurações → API de Conversões
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-purple-700">TikTok Events API Access Token</Label>
+                  <Input 
+                    placeholder="Seu token de acesso..."
+                    className="mt-1"
+                    type="password"
+                  />
+                  <p className="text-xs text-purple-600 mt-1">
+                    Gere em: TikTok Events Manager → Web Events → Settings → Generate Access Token
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-purple-700">Google Measurement Protocol API Secret</Label>
+                  <Input 
+                    placeholder="Seu API secret..."
+                    className="mt-1"
+                    type="password"
+                  />
+                  <p className="text-xs text-purple-600 mt-1">
+                    Gere em: GA4 → Admin → Data Streams → Measurement Protocol API secrets
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div>
+              <h4 className="font-medium mb-2">Eventos enviados via API:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• <strong>Lead</strong> - Quando um usuário completa o quiz</li>
+                <li>• <strong>CompleteRegistration</strong> - Quando um trial é criado</li>
+                <li>• <strong>InitiateCheckout</strong> - Quando inicia o checkout</li>
+                <li>• <strong>Purchase</strong> - Quando uma compra é concluída</li>
+                <li>• <strong>Subscribe</strong> - Quando uma assinatura é ativada</li>
+              </ul>
+            </div>
+            
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-xs text-muted-foreground">
+                Os eventos server-side são enviados automaticamente quando configurados.
+              </p>
+              <Button variant="outline" size="sm">
+                Testar Conexão
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Teste de Eventos */}
         <Card>
           <CardHeader>
