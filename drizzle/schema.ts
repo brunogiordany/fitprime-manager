@@ -900,6 +900,11 @@ export const personalSubscriptions = mysqlTable("personal_subscriptions", {
   lastExtraCharge: decimal("lastExtraCharge", { precision: 10, scale: 2 }).default("0"),
   lastExtraChargeAt: timestamp("lastExtraChargeAt"),
   
+  // Acúmulo de cobranças para próxima fatura
+  accumulatedExtraCharge: decimal("accumulatedExtraCharge", { precision: 10, scale: 2 }).default("0"), // Valor acumulado de extras
+  accumulatedExtraStudents: int("accumulatedExtraStudents").default(0), // Quantidade acumulada de alunos extras
+  lastAccumulationReset: timestamp("lastAccumulationReset"), // Última vez que o acúmulo foi zerado (após cobrança)
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

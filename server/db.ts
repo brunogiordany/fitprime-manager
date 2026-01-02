@@ -34,6 +34,8 @@ import {
   workoutLogExercises, InsertWorkoutLogExercise, WorkoutLogExercise,
   workoutLogSets, InsertWorkoutLogSet, WorkoutLogSet,
   workoutLogSuggestions, InsertWorkoutLogSuggestion, WorkoutLogSuggestion,
+  personalSubscriptions, InsertPersonalSubscription, PersonalSubscription,
+  subscriptionUsageLogs, InsertSubscriptionUsageLog, SubscriptionUsageLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -3682,4 +3684,81 @@ export async function getSupportConversationsWithUnreadMessages() {
     .orderBy(desc(chatConversations.updatedAt));
   
   return result;
+}
+
+
+// ==================== PERSONAL SUBSCRIPTIONS ====================
+
+export async function getPersonalSubscription(personalId: number): Promise<PersonalSubscription | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(personalSubscriptions)
+    .where(eq(personalSubscriptions.personalId, personalId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createPersonalSubscription(data: InsertPersonalSubscription): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(personalSubscriptions).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updatePersonalSubscriptionExtra(
+  personalId: number,
+  data: {
+    accumulatedExtraCharge?: number | string;
+    accumulatedExtraStudents?: number;
+    lastAccumulationReset?: Date;
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(personalSubscriptions)
+    .set(data)
+    .where(eq(personalSubscriptions.personalId, personalId));
+}
+
+export async function logSubscriptionUsage(data: InsertSubscriptionUsageLog): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(subscriptionUsageLogs).values(data);
+}
+
+export async function getSubscriptionUsageLogs(
+  personalId: number,
+  limit: number = 50
+): Promise<SubscriptionUsageLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(subscriptionUsageLogs)
+    .where(eq(subscriptionUsageLogs.personalId, personalId))
+    .orderBy(desc(subscriptionUsageLogs.createdAt))
+    .limit(limit);
+}
+
+export async function getActiveStudentsCount(personalId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(students)
+    .where(
+      and(
+        eq(students.personalId, personalId),
+        eq(students.status, 'active'),
+        isNull(students.deletedAt)
+      )
+    );
+  
+  return result[0]?.count || 0;
 }

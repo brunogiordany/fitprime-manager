@@ -2185,3 +2185,78 @@
 - [x] Criar painel de admin de chats no AdminPanel
 - [x] Adicionar métricas e relatórios de chat (tempo de resposta, taxa de resolução)
 - [x] Testar integração e salvar checkpoint
+
+
+## Personalização do Checkout Cakto (v8.0)
+
+### Análise e Planejamento
+- [ ] Acessar painel da Cakto e analisar opções de personalização disponíveis
+- [ ] Documentar campos customizáveis (cores, fontes, logos, textos, banners)
+- [ ] Definir paleta de cores do FitPrime para o checkout
+- [ ] Listar dimensões de imagens aceitas pela Cakto
+
+### Criação de Artes
+- [ ] Criar logo FitPrime otimizado para checkout (PNG transparente)
+- [ ] Criar banner hero para etapa de seleção de plano (1200x400px)
+- [ ] Criar ícones para cada plano (Starter, Pro, Business, Premium, Enterprise)
+- [ ] Criar banner de benefícios/features (1200x300px)
+- [ ] Criar imagem de segurança/confiança (pagamento seguro)
+- [ ] Criar ícones de métodos de pagamento (cartão, pix, boleto)
+- [ ] Criar imagem de sucesso/confirmação para página final
+
+### Personalização de Cores e Layout
+- [ ] Definir cor primária (emerald #10b981)
+- [ ] Definir cor secundária (teal #14b8a6)
+- [ ] Definir cor de destaque (laranja/coral para CTAs)
+- [ ] Personalizar background (branco ou gradiente suave)
+- [ ] Personalizar fonte (Geist ou similar moderna)
+- [ ] Ajustar padding e espaçamento
+- [ ] Adicionar bordas arredondadas aos botões
+
+### Copywriting Persuasivo
+- [ ] Escrever headline principal (problema + solução)
+- [ ] Escrever subtítulo com urgência/escassez
+- [ ] Escrever descrição de cada plano com benefícios principais
+- [ ] Escrever CTA principal (botão de checkout)
+- [ ] Escrever CTA secundário (continuar sem plano)
+- [ ] Escrever mensagem de garantia/segurança
+- [ ] Escrever mensagem de sucesso pós-pagamento
+- [ ] Escrever email de confirmação com próximos passos
+
+### Configuração Técnica
+- [ ] Configurar URL de redirecionamento pós-sucesso
+- [ ] Configurar URL de redirecionamento pós-cancelamento
+- [ ] Configurar email de confirmação automático
+- [ ] Configurar notificações para o owner
+- [ ] Testar fluxo completo de checkout
+- [ ] Testar em mobile (responsividade)
+- [ ] Testar em diferentes navegadores
+
+### Otimizações e Conversão
+- [ ] Adicionar social proof (avatares de clientes, número de usuários)
+- [ ] Adicionar FAQ rápido no checkout
+- [ ] Adicionar garantia de satisfação (7 dias de teste grátis)
+- [ ] Adicionar selo de segurança (SSL, PCI compliance)
+- [ ] Adicionar contato de suporte (chat, email, WhatsApp)
+- [ ] Adicionar timer de oferta (urgência)
+- [ ] Adicionar depoimentos de clientes satisfeitos
+
+### Testes e Validação
+- [ ] Teste de fluxo completo (seleção > dados > pagamento > sucesso)
+- [ ] Teste em mobile (iPhone, Android)
+- [ ] Teste em desktop (Chrome, Firefox, Safari, Edge)
+- [ ] Teste de validação de formulário
+- [ ] Teste de mensagens de erro
+- [ ] Teste de email de confirmação
+- [ ] Teste de redirecionamento pós-sucesso
+
+
+## Sistema de Cobranças por Aluno Excedente (v8.0)
+- [x] Atualizar schema do banco com campos de acúmulo
+- [x] Implementar helpers de banco de dados para cobranças extras
+- [x] Criar endpoints tRPC para calcular e gerenciar extras
+- [x] Implementar UI no dashboard (painel de alunos excedentes)
+- [ ] Integrar com Cakto para cobrar na renovação
+- [ ] Adicionar notificações por email
+- [x] Criar testes unitários
+- [ ] Testar fluxo completo

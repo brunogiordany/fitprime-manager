@@ -12,6 +12,7 @@ import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription, g
 import { subscriptionRouter } from "./subscription/subscriptionRouter";
 import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
 import { supportChatRouter } from "./routers/supportChatRouter";
+import { extraChargesRouter } from "./routers/extraChargesRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -150,6 +151,7 @@ const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   supportChat: supportChatRouter,
+  extraCharges: extraChargesRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({
