@@ -2556,3 +2556,11 @@
 - [x] CTA final agressivo e persuasivo (contraste vermelho/verde)
 - [x] FAQ por último com perguntas inteligentes (8 perguntas)
 - [x] Perguntas do FAQ mostram qualidades e geram desejo
+
+
+## Melhorias Landing Page v6.6
+- [x] Remover "Aluno remarca sozinho pelo app" (funcionalidade não existe)
+- [x] Criar 6 depoimentos estratégicos (3 dores resolvidas + 3 soluções)
+- [x] Gerar imagens de pessoas estilo rede social (bolinha + balão)
+- [x] Animação nos números da calculadora (efeito contador)
+- [x] Scroll suave entre seções ao clicar nos CTAs

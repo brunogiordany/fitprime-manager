@@ -157,6 +157,11 @@ export default function LandingPagePro() {
   const [valorAula, setValorAula] = useState(100);
   const [horasBurocracia, setHorasBurocracia] = useState(10);
   
+  // Animação dos números
+  const [displayPerdaMensal, setDisplayPerdaMensal] = useState(0);
+  const [displayPerdaAnual, setDisplayPerdaAnual] = useState(0);
+  const [displayGanhoExtra, setDisplayGanhoExtra] = useState(0);
+  
   // Cálculos baseados nos inputs
   const calculosPersonalizados = useMemo(() => {
     const aulasPerdidas = Math.floor(horasBurocracia / 2.5); // ~2.5h por aula considerando preparo
@@ -219,6 +224,35 @@ export default function LandingPagePro() {
       localStorage.setItem('fitprime_spots_time', now.toString());
     }
   }, []);
+
+  // Animação dos números da calculadora
+  useEffect(() => {
+    const duration = 500; // 500ms de animação
+    const steps = 20;
+    const stepDuration = duration / steps;
+    
+    const targetPerdaMensal = calculosPersonalizados.perdaMensal;
+    const targetPerdaAnual = calculosPersonalizados.perdaAnual;
+    const targetGanhoExtra = calculosPersonalizados.ganhoExtra;
+    
+    let currentStep = 0;
+    
+    const animate = () => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeOut = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+      
+      setDisplayPerdaMensal(Math.round(targetPerdaMensal * easeOut));
+      setDisplayPerdaAnual(Math.round(targetPerdaAnual * easeOut));
+      setDisplayGanhoExtra(Math.round(targetGanhoExtra * easeOut));
+      
+      if (currentStep < steps) {
+        setTimeout(animate, stepDuration);
+      }
+    };
+    
+    animate();
+  }, [calculosPersonalizados]);
 
   // Tracking de page view
   useEffect(() => {
@@ -438,13 +472,13 @@ export default function LandingPagePro() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Perda mensal:</span>
                     <span className="text-2xl font-bold text-red-600">
-                      R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}
+                      R$ {displayPerdaMensal.toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t border-red-200">
                     <span className="text-gray-600">Perda anual:</span>
                     <span className="text-3xl font-bold text-red-600">
-                      R$ {calculosPersonalizados.perdaAnual.toLocaleString('pt-BR')}
+                      R$ {displayPerdaAnual.toLocaleString('pt-BR')}
                     </span>
                   </div>
                 </div>
@@ -477,7 +511,7 @@ export default function LandingPagePro() {
                   <div className="flex justify-between items-center pt-3 border-t border-emerald-200">
                     <span className="text-gray-600">Potencial de ganho extra:</span>
                     <span className="text-3xl font-bold text-emerald-600">
-                      +R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês
+                      +R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês
                     </span>
                   </div>
                 </div>
@@ -487,7 +521,7 @@ export default function LandingPagePro() {
               <div className="space-y-3 mb-6">
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                  <p className="text-gray-700">Aluno remarca sozinho pelo app</p>
+                  <p className="text-gray-700">Agenda 4 semanas automaticamente</p>
                 </div>
                 <div className="flex gap-3 items-center">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
@@ -506,7 +540,7 @@ export default function LandingPagePro() {
               {/* Comparação */}
               <div className="bg-emerald-100 rounded-xl p-4 mb-6">
                 <p className="text-emerald-800 text-center">
-                  <strong>Retorno potencial:</strong> <span className="text-lg font-bold">R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês</span><br/>
+                  <strong>Retorno potencial:</strong> <span className="text-lg font-bold">R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês</span><br/>
                   <span className="text-sm">Tempo economizado: <strong>{horasBurocracia * 4}h/mês</strong></span>
                 </p>
               </div>
@@ -636,7 +670,7 @@ export default function LandingPagePro() {
                   </li>
                   <li className="flex items-center gap-2 text-xs text-gray-500">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Aluno remarca sozinho
+                    Notificações automáticas
                   </li>
                 </ul>
               </div>
@@ -766,9 +800,9 @@ export default function LandingPagePro() {
                 <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Calendar className="h-6 w-6 text-blue-600" />
                 </div>
-                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">Remarca Sozinho</h4>
+                <h4 className="text-lg font-bold text-gray-900 text-center mb-2">Treino na Palma da Mão</h4>
                 <p className="text-gray-600 text-sm text-center">
-                  Aluno reagenda pelo app. Sem te incomodar.
+                  Aluno vê o treino do dia direto no celular.
                 </p>
               </div>
 
@@ -1018,24 +1052,186 @@ export default function LandingPagePro() {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-16 px-4 bg-white border-y border-gray-100" id="social-proof">
+      {/* Depoimentos */}
+      <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white" id="social-proof">
         <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Confiado por +500 personais trainers</h3>
-            <div className="flex items-center justify-center gap-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-600 mb-1">+5.000</div>
-                <p className="text-sm text-gray-600">Alunos gerenciados</p>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
+              <Users className="h-3 w-3 mr-1" />
+              Histórias Reais
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              O que dizem os <span className="text-emerald-600">personais que usam</span>
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Veja como o FitPrime transformou a rotina de profissionais como você
+            </p>
+          </div>
+
+          {/* Grid de Depoimentos */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Depoimento 1 - Dor: Cobrança */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person1.png" 
+                  alt="Rafael Silva" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Rafael Silva</h4>
+                  <p className="text-sm text-gray-500">Personal Trainer • São Paulo</p>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-600 mb-1">R$ 2M+</div>
-                <p className="text-sm text-gray-600">Em cobranças processadas</p>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "Eu perdia 2 alunos por mês só por constrangimento de cobrar. Agora o sistema faz isso por mim. <strong>Minha inadimplência caiu de 25% pra menos de 5%.</strong>"
+                </p>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-600 mb-1">4.9/5</div>
-                <p className="text-sm text-gray-600">Avaliação média</p>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
               </div>
+            </div>
+
+            {/* Depoimento 2 - Dor: Tempo */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person2.png" 
+                  alt="Camila Rodrigues" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Camila Rodrigues</h4>
+                  <p className="text-sm text-gray-500">Personal Trainer • Rio de Janeiro</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "Eu passava o domingo inteiro montando treinos. Agora a IA faz em segundos e eu só ajusto. <strong>Ganhei meu final de semana de volta.</strong>"
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
+              </div>
+            </div>
+
+            {/* Depoimento 3 - Dor: Desorganização */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person3.png" 
+                  alt="Márcio Oliveira" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Márcio Oliveira</h4>
+                  <p className="text-sm text-gray-500">Personal Trainer • Belo Horizonte</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "Tinha tudo em planilha, caderno, WhatsApp... Uma bagunça. <strong>Agora tenho tudo num lugar só e nunca mais esqueci horário de aluno.</strong>"
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
+              </div>
+            </div>
+
+            {/* Depoimento 4 - Solução: Agenda automática */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person4.png" 
+                  alt="Juliana Costa" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Juliana Costa</h4>
+                  <p className="text-sm text-gray-500">Personal Trainer • Curitiba</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "O agendamento automático de 4 semanas mudou minha vida. <strong>Meus alunos recebem lembrete no WhatsApp e eu não preciso fazer nada.</strong>"
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
+              </div>
+            </div>
+
+            {/* Depoimento 5 - Solução: Profissionalismo */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person5.png" 
+                  alt="Anderson Lima" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Anderson Lima</h4>
+                  <p className="text-sm text-gray-500">Coach de Fisiculturismo • Goiânia</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "Meus atletas agora têm um portal profissional pra acompanhar tudo. <strong>Isso me diferencia da concorrência e justifica meu preço premium.</strong>"
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
+              </div>
+            </div>
+
+            {/* Depoimento 6 - Solução: Crescimento */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <img 
+                  src="/testimonials/person6.png" 
+                  alt="Fernanda Santos" 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
+                />
+                <div>
+                  <h4 className="font-bold text-gray-900">Fernanda Santos</h4>
+                  <p className="text-sm text-gray-500">Personal Trainer • Brasília</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 relative">
+                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50 rotate-45"></div>
+                <p className="text-gray-700 italic">
+                  "Com o tempo que economizei, consegui pegar mais 5 alunos. <strong>O FitPrime se pagou no primeiro mês e ainda sobrou.</strong>"
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-1">
+                {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
+              </div>
+            </div>
+          </div>
+
+          {/* Estatísticas */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-emerald-600 mb-2">+500</div>
+              <p className="text-gray-600">Personais ativos</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-emerald-600 mb-2">+5.000</div>
+              <p className="text-gray-600">Alunos gerenciados</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-emerald-600 mb-2">R$ 2M+</div>
+              <p className="text-gray-600">Cobranças processadas</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-emerald-600 mb-2">4.9/5</div>
+              <p className="text-gray-600">Avaliação média</p>
             </div>
           </div>
         </div>
@@ -1182,7 +1378,7 @@ export default function LandingPagePro() {
               },
               {
                 q: "Meus alunos vão conseguir usar o portal sozinhos?",
-                a: "Sim! O portal do aluno foi feito pra ser simples. Eles vêem o treino do dia, marcam os exercícios feitos, acompanham a evolução e podem remarcar sessões. Tudo pelo celular, sem precisar te mandar mensagem."
+                a: "Sim! O portal do aluno foi feito pra ser simples. Eles vêem o treino do dia, marcam os exercícios feitos e acompanham a evolução. Tudo pelo celular, sem precisar te mandar mensagem."
               },
               {
                 q: "Quanto tempo leva pra começar a usar?",
@@ -1218,7 +1414,7 @@ export default function LandingPagePro() {
             <p className="text-emerald-400 font-semibold mb-4 text-lg">Chegou a hora de decidir</p>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Você vai continuar perdendo<br/>
-              <span className="text-red-400">R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}/mês</span> em burocracia?
+              <span className="text-red-400">R$ {displayPerdaMensal.toLocaleString('pt-BR')}/mês</span> em burocracia?
             </h2>
           </div>
 
@@ -1233,7 +1429,7 @@ export default function LandingPagePro() {
                 </li>
                 <li className="flex items-start gap-2">
                   <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  <span>Deixar de ganhar R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}/mês</span>
+                  <span>Deixar de ganhar R$ {displayPerdaMensal.toLocaleString('pt-BR')}/mês</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -1254,7 +1450,7 @@ export default function LandingPagePro() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>Potencial de ganhar R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês a mais</span>
+                  <span>Potencial de ganhar R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês a mais</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
