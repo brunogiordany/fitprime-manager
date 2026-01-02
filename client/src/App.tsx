@@ -38,6 +38,7 @@ import EvolutionDashboard from "./pages/EvolutionDashboard";
 import Support from "./pages/Support";
 import StudentSupport from "./pages/StudentSupport";
 import AdminPanel from "./pages/AdminPanel";
+import PricingPage from "./pages/PricingPage";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 
 function Router() {
@@ -45,6 +46,7 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
+      <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login-aluno" component={StudentLogin} />
       <Route path="/portal-aluno" component={StudentDashboard} />

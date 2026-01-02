@@ -2149,3 +2149,12 @@
 - [x] Usar estratégias avançadas de copywriting (AIDA, social proof, urgência) (PAS, AIDA, etc)
 - [x] Remover menções a funcionalidades que não existem (vídeos demonstrativos)
 - [x] Integrar link de checkout da Cakto nos botões de assinatura
+
+
+## Sistema de Precificação Avançado (v5.4)
+- [ ] Criar produtos na Cakto para planos B2B (Starter, Pro, Business, Premium, Enterprise)
+- [ ] Implementar lógica de cobranças por aluno excedente
+- [ ] Criar página de seleção de planos com checkout
+- [ ] Adicionar dashboard de upgrade de plano
+- [ ] Implementar notificações de limite de alunos atingido
+- [ ] Adicionar histórico de cobranças extras

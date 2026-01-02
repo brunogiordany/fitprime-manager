@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Starter",
+    "price": 97,
+    "studentLimit": 15,
+    "extraStudentPrice": 6.47,
+    "description": "Perfeito para começar",
+    "offerId": "32rof96",
+    "checkoutUrl": "https://pay.cakto.com.br/32rof96"
+  },
+  {
+    "name": "Pro",
+    "price": 147,
+    "studentLimit": 25,
+    "extraStudentPrice": 5.88,
+    "description": "Para personais em crescimento",
+    "offerId": "onb2wr2",
+    "checkoutUrl": "https://pay.cakto.com.br/onb2wr2"
+  },
+  {
+    "name": "Business",
+    "price": 197,
+    "studentLimit": 40,
+    "extraStudentPrice": 4.03,
+    "description": "Para personais consolidados",
+    "offerId": "zh3rnh6",
+    "checkoutUrl": "https://pay.cakto.com.br/zh3rnh6"
+  },
+  {
+    "name": "Premium",
+    "price": 297,
+    "studentLimit": 70,
+    "extraStudentPrice": 4.24,
+    "description": "Para estúdios pequenos",
+    "offerId": "kbevbfw",
+    "checkoutUrl": "https://pay.cakto.com.br/kbevbfw"
+  },
+  {
+    "name": "Enterprise",
+    "price": 497,
+    "studentLimit": 150,
+    "extraStudentPrice": 3.31,
+    "description": "Para grandes estúdios",
+    "offerId": "apzipd3",
+    "checkoutUrl": "https://pay.cakto.com.br/apzipd3"
+  }
+]
