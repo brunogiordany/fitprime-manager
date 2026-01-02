@@ -45,12 +45,17 @@ export const adminProcedure = t.procedure.use(
 );
 
 // Owner procedure - apenas o dono do sistema pode acessar
+// Aceita: OWNER_OPEN_ID do ambiente OU usuário com role "admin" no banco
 export const ownerProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
     const ownerOpenId = process.env.OWNER_OPEN_ID ?? "";
 
-    if (!ctx.user || ctx.user.openId !== ownerOpenId) {
+    // Verificar se é o owner pelo openId OU se tem role admin
+    const isOwnerByOpenId = ctx.user && ownerOpenId && ctx.user.openId === ownerOpenId;
+    const isOwnerByRole = ctx.user && ctx.user.role === 'admin';
+
+    if (!ctx.user || (!isOwnerByOpenId && !isOwnerByRole)) {
       throw new TRPCError({ code: "FORBIDDEN", message: "Apenas o administrador do sistema pode acessar esta funcionalidade." });
     }
 

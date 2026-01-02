@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, name, email, openId, role FROM users WHERE email LIKE '%bruno%' OR name LIKE '%Bruno%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, openId, role FROM users WHERE email LIKE '%bruno%' OR name LIKE '%Bruno%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno Giordany",
+      "email": "brunogiordany@gmail.com",
+      "openId": "BNXqnXpziao88L4q2psTBp",
+      "role": "admin"
+    },
+    {
+      "id": "1290075",
+      "name": "Bruno Giordany PS",
+      "email": "brunogiordanyps@gmail.com",
+      "openId": "5y65YkjVCAwN2dGJbnYbGs",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\topenId\trole\n1\tBruno Giordany\tbrunogiordany@gmail.com\tBNXqnXpziao88L4q2psTBp\tadmin\n1290075\tBruno Giordany PS\tbrunogiordanyps@gmail.com\t5y65YkjVCAwN2dGJbnYbGs\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 182
+}

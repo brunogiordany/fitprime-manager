@@ -238,11 +238,15 @@ export const appRouter = router({
       }),
     
     // Verificar se o usuário atual é o owner
+    // Aceita: OWNER_OPEN_ID do ambiente OU usuário com role "admin" no banco
     isOwner: protectedProcedure.query(async ({ ctx }) => {
       const ownerOpenId = process.env.OWNER_OPEN_ID ?? '';
+      const isOwnerByOpenId = ownerOpenId && ctx.user.openId === ownerOpenId;
+      const isOwnerByRole = ctx.user.role === 'admin';
+      
       return {
-        isOwner: ctx.user.openId === ownerOpenId,
-        ownerName: process.env.OWNER_NAME ?? 'Admin',
+        isOwner: isOwnerByOpenId || isOwnerByRole,
+        ownerName: process.env.OWNER_NAME ?? ctx.user.name ?? 'Admin',
       };
     }),
   }),
