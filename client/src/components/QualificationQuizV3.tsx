@@ -1,0 +1,557 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+
+interface QuizQuestion {
+  id: string;
+  title: string;
+  description?: string;
+  type: "single" | "multiple";
+  options: {
+    value: string;
+    label: string;
+    pain: string;
+    score: number;
+  }[];
+}
+
+interface QuizResult {
+  profile: "beginner" | "starter" | "pro" | "business";
+  planName: string;
+  price: number;
+  studentLimit: number;
+  extraStudentPrice: number;
+  score: number;
+  pains: string[];
+  message: string;
+  urgency: "low" | "medium" | "high";
+}
+
+const QUIZ_QUESTIONS: QuizQuestion[] = [
+  {
+    id: "management",
+    title: "Como você gerencia seus alunos atualmente?",
+    description: "Escolha a opção que melhor descreve sua realidade",
+    type: "single",
+    options: [
+      {
+        value: "spreadsheet",
+        label: "Planilhas Excel + WhatsApp",
+        pain: "Desorganização",
+        score: 1,
+      },
+      {
+        value: "notebook",
+        label: "Caderno e anotações",
+        pain: "Falta de controle",
+        score: 1,
+      },
+      {
+        value: "head",
+        label: "Tudo na minha cabeça",
+        pain: "Risco de perder informações",
+        score: 1,
+      },
+      {
+        value: "system",
+        label: "Já uso um sistema",
+        pain: "Nenhuma",
+        score: 0,
+      },
+    ],
+  },
+  {
+    id: "pains",
+    title: "Quais são seus maiores desafios? (Selecione todos que se aplicam)",
+    description: "Escolha todos os que você enfrenta",
+    type: "multiple",
+    options: [
+      {
+        value: "organization",
+        label: "Desorganização com alunos e treinos",
+        pain: "Desorganização",
+        score: 1,
+      },
+      {
+        value: "dropout",
+        label: "Alunos desistem sem avisar",
+        pain: "Churn",
+        score: 1,
+      },
+      {
+        value: "time",
+        label: "Falta de tempo para admin",
+        pain: "Falta de tempo",
+        score: 1,
+      },
+      {
+        value: "billing",
+        label: "Problemas com cobranças e inadimplência",
+        pain: "Problemas financeiros",
+        score: 1,
+      },
+      {
+        value: "progress",
+        label: "Alunos não veem progresso",
+        pain: "Falta de dados",
+        score: 1,
+      },
+      {
+        value: "growth",
+        label: "Dificuldade em crescer/novos alunos",
+        pain: "Falta de crescimento",
+        score: 1,
+      },
+      {
+        value: "communication",
+        label: "Comunicação ruim com alunos",
+        pain: "Falta de comunicação",
+        score: 1,
+      },
+      {
+        value: "retention",
+        label: "Dificuldade em reter alunos",
+        pain: "Retenção",
+        score: 1,
+      },
+    ],
+  },
+  {
+    id: "admin_time",
+    title: "Quanto tempo você gasta por semana com admin?",
+    description: "Planilhas, WhatsApp, cobranças, anotações...",
+    type: "single",
+    options: [
+      {
+        value: "over_10",
+        label: "Mais de 10 horas",
+        pain: "Tempo perdido",
+        score: 1,
+      },
+      {
+        value: "5_10",
+        label: "5-10 horas",
+        pain: "Falta de tempo",
+        score: 1,
+      },
+      {
+        value: "2_5",
+        label: "2-5 horas",
+        pain: "Ainda é muito",
+        score: 1,
+      },
+      {
+        value: "under_2",
+        label: "Menos de 2 horas",
+        pain: "Nenhuma",
+        score: 0,
+      },
+    ],
+  },
+  {
+    id: "revenue",
+    title: "Qual é sua receita mensal com alunos?",
+    description: "Ajuda a entender melhor seu perfil",
+    type: "single",
+    options: [
+      {
+        value: "under_2k",
+        label: "Menos de R$ 2.000",
+        pain: "Negócio pequeno",
+        score: 1,
+      },
+      {
+        value: "2k_5k",
+        label: "R$ 2.000 - R$ 5.000",
+        pain: "Negócio em crescimento",
+        score: 1,
+      },
+      {
+        value: "5k_10k",
+        label: "R$ 5.000 - R$ 10.000",
+        pain: "Negócio consolidado",
+        score: 0,
+      },
+      {
+        value: "over_10k",
+        label: "Mais de R$ 10.000",
+        pain: "Negócio escalado",
+        score: 0,
+      },
+    ],
+  },
+  {
+    id: "priority",
+    title: "Se você pudesse resolver UM problema, qual seria?",
+    description: "Qual é o mais urgente?",
+    type: "single",
+    options: [
+      {
+        value: "time",
+        label: "Ter mais tempo para crescer",
+        pain: "Falta de tempo",
+        score: 1,
+      },
+      {
+        value: "retention",
+        label: "Parar de perder alunos",
+        pain: "Churn",
+        score: 1,
+      },
+      {
+        value: "data",
+        label: "Ter dados para tomar decisões",
+        pain: "Falta de inteligência",
+        score: 1,
+      },
+      {
+        value: "billing",
+        label: "Automatizar cobranças",
+        pain: "Problemas financeiros",
+        score: 1,
+      },
+    ],
+  },
+];
+
+const RESULT_MESSAGES: Record<number, Omit<QuizResult, "pains">> = {
+  0: {
+    profile: "beginner",
+    planName: "Beginner",
+    price: 39.9,
+    studentLimit: 5,
+    extraStudentPrice: 7.98,
+    score: 0,
+    message:
+      "Parece que você já tem um sistema bem organizado! Mas mesmo assim, FitPrime pode ajudar você a crescer 10x mais rápido.",
+    urgency: "low",
+  },
+  1: {
+    profile: "beginner",
+    planName: "Beginner",
+    price: 39.9,
+    studentLimit: 5,
+    extraStudentPrice: 7.98,
+    score: 1,
+    message:
+      "Você está começando a sentir as primeiras dores. Agora é a hora de implementar um sistema antes que cresça demais.",
+    urgency: "low",
+  },
+  2: {
+    profile: "starter",
+    planName: "Starter",
+    price: 97,
+    studentLimit: 15,
+    extraStudentPrice: 6.47,
+    score: 2,
+    message:
+      "Identificamos que você está perdendo tempo com admin e alunos. FitPrime foi feito exatamente para resolver isso.",
+    urgency: "medium",
+  },
+  3: {
+    profile: "starter",
+    planName: "Starter",
+    price: 97,
+    studentLimit: 15,
+    extraStudentPrice: 6.47,
+    score: 3,
+    message:
+      "Você está na mesma situação de 73% dos personals que começaram com FitPrime. Eles cresceram em média 3x em 6 meses.",
+    urgency: "medium",
+  },
+  4: {
+    profile: "pro",
+    planName: "Pro",
+    price: 147,
+    studentLimit: 25,
+    extraStudentPrice: 5.88,
+    score: 4,
+    message:
+      "Você está na mesma situação de 87% dos personals que começaram com FitPrime. Eles cresceram em média 3x em 6 meses.",
+    urgency: "high",
+  },
+  5: {
+    profile: "business",
+    planName: "Business",
+    price: 197,
+    studentLimit: 40,
+    extraStudentPrice: 4.93,
+    score: 5,
+    message:
+      "Você está em situação crítica. Mas temos boas notícias: FitPrime foi feito para salvar personals como você. 92% dos clientes em sua situação triplicaram a receita em 6 meses.",
+    urgency: "high",
+  },
+};
+
+interface QualificationQuizV3Props {
+  onComplete?: (result: QuizResult) => void;
+}
+
+export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [selectedPains, setSelectedPains] = useState<string[]>([]);
+  const [result, setResult] = useState<QuizResult | null>(null);
+
+  const currentQuestion = QUIZ_QUESTIONS[currentStep];
+  const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
+
+  const handleSingleAnswer = (value: string) => {
+    const option = currentQuestion.options.find((opt) => opt.value === value);
+    if (!option) return;
+
+    setAnswers({
+      ...answers,
+      [currentQuestion.id]: value,
+    });
+
+    setScores({
+      ...scores,
+      [currentQuestion.id]: option.score,
+    });
+  };
+
+  const handleMultipleAnswer = (value: string, checked: boolean) => {
+    const currentAnswers = (answers[currentQuestion.id] as string[]) || [];
+    let newAnswers: string[];
+
+    if (checked) {
+      newAnswers = [...currentAnswers, value];
+    } else {
+      newAnswers = currentAnswers.filter((a) => a !== value);
+    }
+
+    setAnswers({
+      ...answers,
+      [currentQuestion.id]: newAnswers,
+    });
+
+    // Calcular score para múltipla seleção
+    const totalScore = newAnswers.reduce((sum, val) => {
+      const option = currentQuestion.options.find((opt) => opt.value === val);
+      return sum + (option?.score || 0);
+    }, 0);
+
+    setScores({
+      ...scores,
+      [currentQuestion.id]: totalScore,
+    });
+
+    // Rastrear dores selecionadas
+    const pains = newAnswers.map((val) => {
+      const option = currentQuestion.options.find((opt) => opt.value === val);
+      return option?.pain || "";
+    });
+    setSelectedPains([...selectedPains.filter((p) => !currentQuestion.options.map((o) => o.pain).includes(p)), ...pains]);
+  };
+
+  const handleNext = () => {
+    if (currentStep < QUIZ_QUESTIONS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Calcular score total
+      const totalScore = Object.values(scores).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
+      const normalizedScore = Math.min(Math.max(Math.floor(totalScore / 2), 0), 5);
+      const baseResult = RESULT_MESSAGES[normalizedScore] || RESULT_MESSAGES[0];
+      
+      const quizResult: QuizResult = {
+        ...baseResult,
+        pains: Array.from(new Set(selectedPains)),
+      };
+      
+      setResult(quizResult);
+      onComplete?.(quizResult);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const isAnswered =
+    currentQuestion.type === "single"
+      ? answers[currentQuestion.id]
+      : (answers[currentQuestion.id] as string[])?.length > 0;
+
+  if (result) {
+    return (
+      <Card
+        className={`w-full max-w-2xl mx-auto border-2 ${
+          result.urgency === "high"
+            ? "border-red-500"
+            : result.urgency === "medium"
+              ? "border-yellow-500"
+              : "border-green-500"
+        }`}
+      >
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <CheckCircle2 className="w-16 h-16 text-green-500" />
+          </div>
+          <CardTitle className="text-3xl">Análise Completa! 🎯</CardTitle>
+          <CardDescription className="text-lg mt-2">{result.message}</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Dores Identificadas */}
+          <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+            <h3 className="font-bold text-lg mb-3">Dores Identificadas:</h3>
+            <div className="flex flex-wrap gap-2">
+              {result.pains.map((pain, idx) => (
+                <span key={idx} className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {pain}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Score Visual */}
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200">
+            <div className="text-center mb-4">
+              <p className="text-gray-600 text-sm">Seu Score de Dor</p>
+              <div className="text-5xl font-bold text-emerald-600">{result.score}/5</div>
+            </div>
+            <Progress value={(result.score / 5) * 100} className="h-3" />
+          </div>
+
+          {/* Plano Recomendado */}
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200">
+            <h3 className="font-bold text-xl mb-4">Seu Plano Recomendado:</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-gray-600">Plano</p>
+                <p className="text-2xl font-bold text-emerald-600">{result.planName}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600 text-sm">Preço/Mês</p>
+                  <p className="text-xl font-bold">R$ {result.price.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-sm">Alunos Inclusos</p>
+                  <p className="text-xl font-bold">{result.studentLimit}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Aluno Extra</p>
+                <p className="text-lg font-semibold">+ R$ {result.extraStudentPrice.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <Button
+            onClick={() => {
+              // Salvar resultado no localStorage
+              localStorage.setItem("quizResult", JSON.stringify(result));
+              window.location.href = `/pricing-complete?profile=${result.profile}`;
+            }}
+            className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            Ver Landing Page Completa <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+
+          <p className="text-center text-sm text-gray-500">
+            30 dias de teste gratuito. Sem cartão de crédito.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between mb-2">
+              <CardTitle>Descubra Seu Plano Ideal</CardTitle>
+              <span className="text-sm text-gray-500">
+                {currentStep + 1} de {QUIZ_QUESTIONS.length}
+              </span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">{currentQuestion.title}</h2>
+          {currentQuestion.description && (
+            <p className="text-gray-600">{currentQuestion.description}</p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          {currentQuestion.type === "single" ? (
+            currentQuestion.options.map((option) => (
+              <div key={option.value} className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  id={option.value}
+                  name={currentQuestion.id}
+                  value={option.value}
+                  checked={answers[currentQuestion.id] === option.value}
+                  onChange={() => handleSingleAnswer(option.value)}
+                  className="mt-1 w-4 h-4"
+                />
+                <Label
+                  htmlFor={option.value}
+                  className="flex-1 cursor-pointer p-4 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition"
+                >
+                  <p className="font-medium">{option.label}</p>
+                  <p className="text-xs text-gray-500 mt-1">Dor: {option.pain}</p>
+                </Label>
+              </div>
+            ))
+          ) : (
+            currentQuestion.options.map((option) => (
+              <div key={option.value} className="flex items-start space-x-3">
+                <Checkbox
+                  id={option.value}
+                  checked={((answers[currentQuestion.id] as string[]) || []).includes(option.value)}
+                  onCheckedChange={(checked) => handleMultipleAnswer(option.value, checked as boolean)}
+                  className="mt-1"
+                />
+                <Label
+                  htmlFor={option.value}
+                  className="flex-1 cursor-pointer p-4 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition"
+                >
+                  <p className="font-medium">{option.label}</p>
+                  <p className="text-xs text-gray-500 mt-1">Dor: {option.pain}</p>
+                </Label>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            disabled={currentStep === 0}
+            className="flex-1"
+          >
+            Voltar
+          </Button>
+          <Button
+            onClick={handleNext}
+            disabled={!isAnswered}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+          >
+            {currentStep === QUIZ_QUESTIONS.length - 1 ? "Ver Resultado" : "Próxima"}{" "}
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

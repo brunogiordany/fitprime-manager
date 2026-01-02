@@ -2291,3 +2291,13 @@
 - [ ] Implementar estorno de cobranças extras pelo painel
 - [ ] Implementar visualização de histórico por personal
 - [ ] Testar fluxo completo
+
+
+## LP Completa + Quiz Multi-Seleção + Admin Dashboard (v10.0)
+- [x] Reformular quiz com múltipla seleção (checkbox)
+- [x] Criar LP completa após quiz (beneñícios, dores, testimoniais, FAQ)
+- [x] Criar dashboard de admin com KPI do funil
+- [x] Adicionar gráficos visuais (conversão, respostas, jornada)
+- [x] Integrar rastreamento de slugs
+- [x] Implementar jornada completa do cliente
+- [ ] Testar fluxo completo

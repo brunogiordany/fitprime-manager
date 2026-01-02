@@ -44,6 +44,8 @@ import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 import QuizPage from "@/pages/QuizPage";
 import DynamicPricingPage from "@/pages/DynamicPricingPage";
+import CompletePricingPage from "@/pages/CompletePricingPage";
+import AdminFunnelDashboard from "@/pages/AdminFunnelDashboard";
 
 function Router() {
   return (
@@ -52,6 +54,7 @@ function Router() {
       <Route path="/" component={LandingPagePro} />
       <Route path="/quiz" component={QuizPage} />
       <Route path="/pricing" component={DynamicPricingPage} />
+      <Route path="/pricing-complete" component={CompletePricingPage} />
       <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login-aluno" component={StudentLogin} />
@@ -88,6 +91,7 @@ function Router() {
       <Route path="/evolucao" component={EvolutionDashboard} />
       <Route path="/suporte" component={Support} />
       <Route path="/admin" component={AdminPanel} />
+      <Route path="/admin/funil" component={AdminFunnelDashboard} />
       <Route path="/admin/suporte" component={AdminSupportChat} />
       
       <Route path="/404" component={NotFound} />

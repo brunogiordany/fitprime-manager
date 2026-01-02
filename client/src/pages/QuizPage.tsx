@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QualificationQuizV2 } from "@/components/QualificationQuizV2";
+import { QualificationQuizV3 } from "@/components/QualificationQuizV3";
 import { useLocation } from "wouter";
 
 interface QuizResult {
@@ -36,7 +36,7 @@ export default function QuizPage() {
         </div>
 
         {/* Quiz */}
-        <QualificationQuizV2 onComplete={handleQuizComplete} />
+        <QualificationQuizV3 onComplete={handleQuizComplete} />
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
