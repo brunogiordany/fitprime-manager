@@ -1199,3 +1199,89 @@ export const trackingPixels = mysqlTable("tracking_pixels", {
 
 export type TrackingPixel = typeof trackingPixels.$inferSelect;
 export type InsertTrackingPixel = typeof trackingPixels.$inferInsert;
+
+
+// ==================== A/B TESTS (Testes A/B) ====================
+export const abTests = mysqlTable("ab_tests", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  originalPageId: int("originalPageId").notNull().references(() => sitePages.id),
+  status: mysqlEnum("status", ["draft", "running", "paused", "completed"]).default("draft").notNull(),
+  trafficSplit: int("trafficSplit").default(50),
+  goalType: mysqlEnum("goalType", ["conversion", "click", "time_on_page", "scroll_depth"]).default("conversion"),
+  goalValue: varchar("goalValue", { length: 255 }),
+  winnerId: int("winnerId"),
+  startedAt: timestamp("startedAt"),
+  endedAt: timestamp("endedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AbTest = typeof abTests.$inferSelect;
+export type InsertAbTest = typeof abTests.$inferInsert;
+
+// ==================== A/B TEST VARIANTS (Variantes do Teste A/B) ====================
+export const abTestVariants = mysqlTable("ab_test_variants", {
+  id: int("id").autoincrement().primaryKey(),
+  testId: int("testId").notNull().references(() => abTests.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  isControl: boolean("isControl").default(false),
+  blocks: text("blocks"),
+  settings: text("settings"),
+  impressions: int("impressions").default(0),
+  conversions: int("conversions").default(0),
+  clicks: int("clicks").default(0),
+  totalTimeOnPage: int("totalTimeOnPage").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AbTestVariant = typeof abTestVariants.$inferSelect;
+export type InsertAbTestVariant = typeof abTestVariants.$inferInsert;
+
+// ==================== PAGE BLOCKS (Blocos individuais das páginas) ====================
+export const pageBlocks = mysqlTable("page_blocks", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").notNull().references(() => sitePages.id),
+  blockType: varchar("blockType", { length: 50 }).notNull(),
+  blockId: varchar("blockId", { length: 100 }).notNull(),
+  order: int("order").notNull().default(0),
+  content: text("content"),
+  delay: int("delay").default(0),
+  animation: varchar("animation", { length: 50 }),
+  animationDuration: int("animationDuration").default(500),
+  videoSync: boolean("videoSync").default(false),
+  videoTimestamp: int("videoTimestamp"),
+  videoId: varchar("videoId", { length: 100 }),
+  isVisible: boolean("isVisible").default(true),
+  visibilityCondition: text("visibilityCondition"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PageBlock = typeof pageBlocks.$inferSelect;
+export type InsertPageBlock = typeof pageBlocks.$inferInsert;
+
+// ==================== PAGE ASSETS (Imagens e arquivos das páginas) ====================
+export const pageAssets = mysqlTable("page_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  pageId: int("pageId").references(() => sitePages.id),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  originalFilename: varchar("originalFilename", { length: 255 }),
+  url: varchar("url", { length: 500 }).notNull(),
+  type: mysqlEnum("type", ["image", "video", "icon", "document", "other"]).default("image"),
+  mimeType: varchar("mimeType", { length: 100 }),
+  width: int("width"),
+  height: int("height"),
+  fileSize: int("fileSize"),
+  alt: varchar("alt", { length: 255 }),
+  caption: text("caption"),
+  tags: text("tags"),
+  thumbnailUrl: varchar("thumbnailUrl", { length: 500 }),
+  mediumUrl: varchar("mediumUrl", { length: 500 }),
+  largeUrl: varchar("largeUrl", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageAsset = typeof pageAssets.$inferSelect;
+export type InsertPageAsset = typeof pageAssets.$inferInsert;

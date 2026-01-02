@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS ab_tests (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  name VARCHAR(255) NOT NULL,\n  description TEXT,\n  originalPageId INT NOT NULL,\n  status ENUM('draft', 'running', 'paused', 'completed') NOT NULL DEFAULT 'draft',\n  trafficSplit INT DEFAULT 50,\n  goalType ENUM('conversion', 'click', 'time_on_page', 'scroll_depth') DEFAULT 'conversion',\n  goalValue VARCHAR(255),\n  winnerId INT,\n  startedAt TIMESTAMP NULL,\n  endedAt TIMESTAMP NULL,\n  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS ab_tests (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  name VARCHAR(255) NOT NULL,\n  description TEXT,\n  originalPageId INT NOT NULL,\n  status ENUM('draft', 'running', 'paused', 'completed') NOT NULL DEFAULT 'draft',\n  trafficSplit INT DEFAULT 50,\n  goalType ENUM('conversion', 'click', 'time_on_page', 'scroll_depth') DEFAULT 'conversion',\n  goalValue VARCHAR(255),\n  winnerId INT,\n  startedAt TIMESTAMP NULL,\n  endedAt TIMESTAMP NULL,\n  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 222
+}

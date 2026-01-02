@@ -61,6 +61,12 @@ export default function AdminPixelsConfig() {
   const [facebookEnabled, setFacebookEnabled] = useState(true);
   const [tiktokEnabled, setTiktokEnabled] = useState(true);
   
+  // Estado de API de Conversões (Server-Side)
+  const [facebookApiToken, setFacebookApiToken] = useState("");
+  const [tiktokApiToken, setTiktokApiToken] = useState("");
+  const [ga4ApiSecret, setGa4ApiSecret] = useState("");
+  const [serverSideEnabled, setServerSideEnabled] = useState(false);
+  
   // Carregar configuração salva
   useEffect(() => {
     try {
@@ -70,6 +76,11 @@ export default function AdminPixelsConfig() {
         setGa4Id(config.ga4Id || "");
         setFacebookPixelId(config.facebookPixelId || "");
         setTiktokPixelId(config.tiktokPixelId || "");
+        // Carregar configurações de API
+        setFacebookApiToken(config.facebookApiToken || "");
+        setTiktokApiToken(config.tiktokApiToken || "");
+        setGa4ApiSecret(config.ga4ApiSecret || "");
+        setServerSideEnabled(config.serverSideEnabled || false);
       }
     } catch (e) {
       console.warn('Erro ao carregar configuração:', e);
@@ -97,6 +108,11 @@ export default function AdminPixelsConfig() {
         ga4Id: ga4Enabled ? ga4Id : undefined,
         facebookPixelId: facebookEnabled ? facebookPixelId : undefined,
         tiktokPixelId: tiktokEnabled ? tiktokPixelId : undefined,
+        // Configurações de API Server-Side
+        facebookApiToken: serverSideEnabled ? facebookApiToken : undefined,
+        tiktokApiToken: serverSideEnabled ? tiktokApiToken : undefined,
+        ga4ApiSecret: serverSideEnabled ? ga4ApiSecret : undefined,
+        serverSideEnabled,
       };
       
       savePixelConfig(config);
@@ -375,12 +391,19 @@ export default function AdminPixelsConfig() {
                     <Badge variant="outline" className="text-purple-600 border-purple-600">
                       Avançado
                     </Badge>
+                    {serverSideEnabled && (
+                      <Badge variant="default" className="bg-purple-500">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Ativo
+                      </Badge>
+                    )}
                   </CardTitle>
                   <CardDescription>
                     Envie eventos diretamente do servidor para maior precisão
                   </CardDescription>
                 </div>
               </div>
+              <Switch checked={serverSideEnabled} onCheckedChange={setServerSideEnabled} />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -396,6 +419,9 @@ export default function AdminPixelsConfig() {
                     placeholder="EAAxxxxxxx..."
                     className="mt-1"
                     type="password"
+                    value={facebookApiToken}
+                    onChange={(e) => setFacebookApiToken(e.target.value)}
+                    disabled={!serverSideEnabled}
                   />
                   <p className="text-xs text-purple-600 mt-1">
                     Gere em: Facebook Events Manager → Configurações → API de Conversões
@@ -407,6 +433,9 @@ export default function AdminPixelsConfig() {
                     placeholder="Seu token de acesso..."
                     className="mt-1"
                     type="password"
+                    value={tiktokApiToken}
+                    onChange={(e) => setTiktokApiToken(e.target.value)}
+                    disabled={!serverSideEnabled}
                   />
                   <p className="text-xs text-purple-600 mt-1">
                     Gere em: TikTok Events Manager → Web Events → Settings → Generate Access Token
@@ -418,6 +447,9 @@ export default function AdminPixelsConfig() {
                     placeholder="Seu API secret..."
                     className="mt-1"
                     type="password"
+                    value={ga4ApiSecret}
+                    onChange={(e) => setGa4ApiSecret(e.target.value)}
+                    disabled={!serverSideEnabled}
                   />
                   <p className="text-xs text-purple-600 mt-1">
                     Gere em: GA4 → Admin → Data Streams → Measurement Protocol API secrets

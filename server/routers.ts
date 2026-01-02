@@ -16,7 +16,7 @@ import { extraChargesRouter } from "./routers/extraChargesRouter";
 import { adminExtraChargesRouter } from "./routers/adminExtraChargesRouter";
 import { quizRouter } from "./routers/quizRouter";
 import { trialRouter } from "./routers/trialRouter";
-import { sitePagesRouter, trackingPixelsRouter } from "./routers/sitePagesRouter";
+import { sitePagesRouter, trackingPixelsRouter, abTestsRouter, pageBlocksRouter, pageAssetsRouter, pageVersionsRouter } from "./routers/sitePagesRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -160,6 +160,10 @@ export const appRouter = router({
   trial: trialRouter,
   sitePages: sitePagesRouter,
   trackingPixels: trackingPixelsRouter,
+  abTests: abTestsRouter,
+  pageBlocks: pageBlocksRouter,
+  pageAssets: pageAssetsRouter,
+  pageVersions: pageVersionsRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

@@ -36,6 +36,14 @@ import {
   workoutLogSuggestions, InsertWorkoutLogSuggestion, WorkoutLogSuggestion,
   personalSubscriptions, InsertPersonalSubscription, PersonalSubscription,
   subscriptionUsageLogs, InsertSubscriptionUsageLog, SubscriptionUsageLog,
+  sitePages, InsertSitePage, SitePage,
+  pageVersions, InsertPageVersion, PageVersion,
+  pageAnalytics, InsertPageAnalytic, PageAnalytic,
+  pageBlocks, InsertPageBlock, PageBlock,
+  pageAssets, InsertPageAsset, PageAsset,
+  abTests, InsertAbTest, AbTest,
+  abTestVariants, InsertAbTestVariant, AbTestVariant,
+  trackingPixels, InsertTrackingPixel, TrackingPixel,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -3774,4 +3782,388 @@ export async function getActiveStudentsCount(personalId: number): Promise<number
     );
   
   return result[0]?.count || 0;
+}
+
+
+// ==================== SITE PAGES ====================
+
+// Site Pages CRUD
+export async function getAllSitePages(): Promise<SitePage[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(sitePages)
+    .orderBy(desc(sitePages.updatedAt));
+}
+
+export async function getSitePageById(id: number): Promise<SitePage | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(sitePages)
+    .where(eq(sitePages.id, id))
+    .limit(1);
+  
+  return result[0];
+}
+
+export async function getSitePageBySlug(slug: string): Promise<SitePage | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(sitePages)
+    .where(eq(sitePages.slug, slug))
+    .limit(1);
+  
+  return result[0];
+}
+
+export async function createSitePage(data: InsertSitePage): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(sitePages).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updateSitePage(id: number, data: Partial<InsertSitePage>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(sitePages)
+    .set(data)
+    .where(eq(sitePages.id, id));
+}
+
+export async function deleteSitePage(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Delete related records first
+  await db.delete(pageBlocks).where(eq(pageBlocks.pageId, id));
+  await db.delete(pageVersions).where(eq(pageVersions.pageId, id));
+  await db.delete(pageAnalytics).where(eq(pageAnalytics.pageId, id));
+  await db.delete(pageAssets).where(eq(pageAssets.pageId, id));
+  
+  // Delete the page
+  await db.delete(sitePages).where(eq(sitePages.id, id));
+}
+
+export async function duplicateSitePage(id: number, newName: string, newSlug: string): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const original = await getSitePageById(id);
+  if (!original) throw new Error("Page not found");
+  
+  const newPage: InsertSitePage = {
+    name: newName,
+    slug: newSlug,
+    status: 'draft',
+    blocks: original.blocks,
+    metaTitle: original.metaTitle,
+    metaDescription: original.metaDescription,
+    ogImage: original.ogImage,
+    template: original.template,
+    settings: original.settings,
+  };
+  
+  return await createSitePage(newPage);
+}
+
+// Page Versions
+export async function createPageVersion(data: InsertPageVersion): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(pageVersions).values(data);
+  return result[0].insertId as number;
+}
+
+export async function getPageVersions(pageId: number): Promise<PageVersion[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(pageVersions)
+    .where(eq(pageVersions.pageId, pageId))
+    .orderBy(desc(pageVersions.versionNumber));
+}
+
+export async function getLatestVersionNumber(pageId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db.select({ maxVersion: sql<number>`MAX(${pageVersions.versionNumber})` })
+    .from(pageVersions)
+    .where(eq(pageVersions.pageId, pageId));
+  
+  return result[0]?.maxVersion || 0;
+}
+
+export async function rollbackToVersion(pageId: number, versionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const version = await db.select()
+    .from(pageVersions)
+    .where(eq(pageVersions.id, versionId))
+    .limit(1);
+  
+  if (!version[0]) throw new Error("Version not found");
+  
+  await db.update(sitePages)
+    .set({
+      blocks: version[0].blocks,
+      settings: version[0].settings,
+    })
+    .where(eq(sitePages.id, pageId));
+}
+
+// Page Blocks
+export async function getPageBlocks(pageId: number): Promise<PageBlock[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(pageBlocks)
+    .where(eq(pageBlocks.pageId, pageId))
+    .orderBy(pageBlocks.order);
+}
+
+export async function createPageBlock(data: InsertPageBlock): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(pageBlocks).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updatePageBlock(id: number, data: Partial<InsertPageBlock>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(pageBlocks)
+    .set(data)
+    .where(eq(pageBlocks.id, id));
+}
+
+export async function deletePageBlock(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(pageBlocks).where(eq(pageBlocks.id, id));
+}
+
+export async function reorderPageBlocks(pageId: number, blockIds: number[]): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  for (let i = 0; i < blockIds.length; i++) {
+    await db.update(pageBlocks)
+      .set({ order: i })
+      .where(and(eq(pageBlocks.id, blockIds[i]), eq(pageBlocks.pageId, pageId)));
+  }
+}
+
+// Page Assets
+export async function getPageAssets(pageId?: number): Promise<PageAsset[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  if (pageId) {
+    return await db.select()
+      .from(pageAssets)
+      .where(eq(pageAssets.pageId, pageId))
+      .orderBy(desc(pageAssets.createdAt));
+  }
+  
+  return await db.select()
+    .from(pageAssets)
+    .orderBy(desc(pageAssets.createdAt));
+}
+
+export async function createPageAsset(data: InsertPageAsset): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(pageAssets).values(data);
+  return result[0].insertId as number;
+}
+
+export async function deletePageAsset(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(pageAssets).where(eq(pageAssets.id, id));
+}
+
+// A/B Tests
+export async function getAllAbTests(): Promise<AbTest[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(abTests)
+    .orderBy(desc(abTests.createdAt));
+}
+
+export async function getAbTestById(id: number): Promise<AbTest | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(abTests)
+    .where(eq(abTests.id, id))
+    .limit(1);
+  
+  return result[0];
+}
+
+export async function createAbTest(data: InsertAbTest): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(abTests).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updateAbTest(id: number, data: Partial<InsertAbTest>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(abTests)
+    .set(data)
+    .where(eq(abTests.id, id));
+}
+
+export async function deleteAbTest(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(abTestVariants).where(eq(abTestVariants.testId, id));
+  await db.delete(abTests).where(eq(abTests.id, id));
+}
+
+// A/B Test Variants
+export async function getAbTestVariants(testId: number): Promise<AbTestVariant[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(abTestVariants)
+    .where(eq(abTestVariants.testId, testId));
+}
+
+export async function createAbTestVariant(data: InsertAbTestVariant): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(abTestVariants).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updateAbTestVariant(id: number, data: Partial<InsertAbTestVariant>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(abTestVariants)
+    .set(data)
+    .where(eq(abTestVariants.id, id));
+}
+
+export async function incrementVariantMetrics(
+  id: number,
+  metrics: { impressions?: number; conversions?: number; clicks?: number; timeOnPage?: number }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const current = await db.select()
+    .from(abTestVariants)
+    .where(eq(abTestVariants.id, id))
+    .limit(1);
+  
+  if (!current[0]) return;
+  
+  await db.update(abTestVariants)
+    .set({
+      impressions: (current[0].impressions || 0) + (metrics.impressions || 0),
+      conversions: (current[0].conversions || 0) + (metrics.conversions || 0),
+      clicks: (current[0].clicks || 0) + (metrics.clicks || 0),
+      totalTimeOnPage: (current[0].totalTimeOnPage || 0) + (metrics.timeOnPage || 0),
+    })
+    .where(eq(abTestVariants.id, id));
+}
+
+// Tracking Pixels
+export async function getAllTrackingPixels(): Promise<TrackingPixel[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(trackingPixels)
+    .orderBy(trackingPixels.name);
+}
+
+export async function getActiveTrackingPixels(): Promise<TrackingPixel[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(trackingPixels)
+    .where(eq(trackingPixels.isActive, true));
+}
+
+export async function createTrackingPixel(data: InsertTrackingPixel): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(trackingPixels).values(data);
+  return result[0].insertId as number;
+}
+
+export async function updateTrackingPixel(id: number, data: Partial<InsertTrackingPixel>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(trackingPixels)
+    .set(data)
+    .where(eq(trackingPixels.id, id));
+}
+
+export async function deleteTrackingPixel(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(trackingPixels).where(eq(trackingPixels.id, id));
+}
+
+// Page Analytics
+export async function recordPageView(pageId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  // Increment total views on the page
+  const page = await getSitePageById(pageId);
+  if (page) {
+    await db.update(sitePages)
+      .set({ totalViews: (page.totalViews || 0) + 1 })
+      .where(eq(sitePages.id, pageId));
+  }
+}
+
+export async function recordPageConversion(pageId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const page = await getSitePageById(pageId);
+  if (page) {
+    await db.update(sitePages)
+      .set({ totalConversions: (page.totalConversions || 0) + 1 })
+      .where(eq(sitePages.id, pageId));
+  }
 }

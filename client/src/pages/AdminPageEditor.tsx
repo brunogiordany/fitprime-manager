@@ -86,6 +86,24 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { SortableBlockItem } from "@/components/SortableBlockItem";
 
 // Tipos de blocos disponíveis
 type BlockType = 
@@ -113,6 +131,7 @@ interface Block {
   delay?: number; // Delay em ms para animação/exibição
   syncWithVideo?: boolean; // Sincronizar com vídeo
   videoTimestamp?: number; // Timestamp do vídeo para sincronização
+  videoId?: string; // ID do vídeo de referência para sincronização
 }
 
 interface PageData {
@@ -389,6 +408,35 @@ export default function AdminPageEditor() {
   // Ref para o container de preview
   const previewRef = useRef<HTMLDivElement>(null);
   
+  // Sensors para drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
+  // Handler para drag end
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = pageData.blocks.findIndex(b => b.id === active.id);
+      const newIndex = pageData.blocks.findIndex(b => b.id === over.id);
+      
+      const newBlocks = arrayMove(pageData.blocks, oldIndex, newIndex);
+      const newData = { ...pageData, blocks: newBlocks };
+      
+      setPageData(newData);
+      saveToHistory(newData);
+      toast.success("Bloco reordenado!");
+    }
+  };
+  
   // Verificar se é admin
   if (authLoading) {
     return (
@@ -423,6 +471,51 @@ export default function AdminPageEditor() {
       setPageData(history[historyIndex + 1]);
     }
   };
+  
+  // Atalhos de teclado para Undo/Redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Z ou Cmd+Z para Undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          setHistoryIndex(prev => prev - 1);
+          setPageData(history[historyIndex - 1]);
+          toast.info("Desfeito!");
+        }
+      }
+      
+      // Ctrl+Y ou Cmd+Shift+Z para Redo
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => prev + 1);
+          setPageData(history[historyIndex + 1]);
+          toast.info("Refeito!");
+        }
+      }
+      
+      // Ctrl+S para Salvar
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      
+      // Delete para remover bloco selecionado
+      if (e.key === 'Delete' && selectedBlockId && !e.target?.toString().includes('Input')) {
+        e.preventDefault();
+        removeBlock(selectedBlockId);
+      }
+      
+      // Escape para desselecionar bloco
+      if (e.key === 'Escape') {
+        setSelectedBlockId(null);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history, selectedBlockId]);
 
   // Adicionar bloco
   const addBlock = (type: BlockType) => {
@@ -807,50 +900,39 @@ export default function AdminPageEditor() {
                     <p className="text-xs">Clique em "Adicionar Bloco"</p>
                   </div>
                 ) : (
-                  pageData.blocks.map((block, index) => {
-                    const template = BLOCK_TEMPLATES[block.type];
-                    const Icon = template.icon;
-                    
-                    return (
-                      <div
-                        key={block.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                          selectedBlockId === block.id 
-                            ? "border-emerald-500 bg-emerald-50" 
-                            : "hover:border-gray-300"
-                        }`}
-                        onClick={() => setSelectedBlockId(block.id)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                          <Icon className="h-4 w-4 text-muted-foreground" />
-                          <span className="flex-1 text-sm font-medium truncate">
-                            {template.name}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6"
-                              onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "up"); }}
-                              disabled={index === 0}
-                            >
-                              <ChevronUp className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6"
-                              onClick={(e) => { e.stopPropagation(); moveBlock(block.id, "down"); }}
-                              disabled={index === pageData.blocks.length - 1}
-                            >
-                              <ChevronDown className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={pageData.blocks.map(b => b.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {pageData.blocks.map((block, index) => {
+                        const template = BLOCK_TEMPLATES[block.type];
+                        const Icon = template.icon;
+                        
+                        return (
+                          <SortableBlockItem
+                            key={block.id}
+                            id={block.id}
+                            isSelected={selectedBlockId === block.id}
+                            onClick={() => setSelectedBlockId(block.id)}
+                            onMoveUp={() => moveBlock(block.id, "up")}
+                            onMoveDown={() => moveBlock(block.id, "down")}
+                            canMoveUp={index > 0}
+                            canMoveDown={index < pageData.blocks.length - 1}
+                          >
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <span className="flex-1 text-sm font-medium truncate">
+                              {template.name}
+                            </span>
+                          </SortableBlockItem>
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
                 )}
               </div>
             </ScrollArea>
@@ -926,6 +1008,198 @@ export default function AdminPageEditor() {
                 block={selectedBlock}
                 onUpdate={(key, value) => updateBlockContent(selectedBlock.id, key, value)}
               />
+              
+              <Separator />
+              
+              {/* Seção de Delay e Animação */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  Animação e Delay
+                </h4>
+                
+                <div>
+                  <Label className="text-xs">Delay de Exibição (ms)</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    step="100"
+                    value={selectedBlock.delay || 0}
+                    onChange={(e) => {
+                      const newBlocks = pageData.blocks.map(b => 
+                        b.id === selectedBlock.id 
+                          ? { ...b, delay: Number(e.target.value) }
+                          : b
+                      );
+                      setPageData({ ...pageData, blocks: newBlocks });
+                    }}
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tempo em milissegundos antes de exibir o bloco
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-xs">Tipo de Animação</Label>
+                  <Select
+                    value={selectedBlock.styles?.animation || 'none'}
+                    onValueChange={(value) => {
+                      const newBlocks = pageData.blocks.map(b => 
+                        b.id === selectedBlock.id 
+                          ? { ...b, styles: { ...b.styles, animation: value } }
+                          : b
+                      );
+                      setPageData({ ...pageData, blocks: newBlocks });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhuma</SelectItem>
+                      <SelectItem value="fadeIn">Fade In</SelectItem>
+                      <SelectItem value="fadeInUp">Fade In Up</SelectItem>
+                      <SelectItem value="fadeInDown">Fade In Down</SelectItem>
+                      <SelectItem value="fadeInLeft">Fade In Left</SelectItem>
+                      <SelectItem value="fadeInRight">Fade In Right</SelectItem>
+                      <SelectItem value="zoomIn">Zoom In</SelectItem>
+                      <SelectItem value="bounceIn">Bounce In</SelectItem>
+                      <SelectItem value="slideInUp">Slide In Up</SelectItem>
+                      <SelectItem value="slideInDown">Slide In Down</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-xs">Duração da Animação (ms)</Label>
+                  <Input 
+                    type="number"
+                    min="100"
+                    step="100"
+                    value={selectedBlock.styles?.animationDuration || 500}
+                    onChange={(e) => {
+                      const newBlocks = pageData.blocks.map(b => 
+                        b.id === selectedBlock.id 
+                          ? { ...b, styles: { ...b.styles, animationDuration: Number(e.target.value) } }
+                          : b
+                      );
+                      setPageData({ ...pageData, blocks: newBlocks });
+                    }}
+                    placeholder="500"
+                  />
+                </div>
+              </div>
+              
+              <Separator />
+              
+              {/* Seção de Sincronização com Vídeo */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  Sincronização com Vídeo
+                </h4>
+                
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={selectedBlock.syncWithVideo || false}
+                    onCheckedChange={(checked) => {
+                      const newBlocks = pageData.blocks.map(b => 
+                        b.id === selectedBlock.id 
+                          ? { ...b, syncWithVideo: checked }
+                          : b
+                      );
+                      setPageData({ ...pageData, blocks: newBlocks });
+                    }}
+                  />
+                  <Label className="text-xs">Sincronizar com vídeo</Label>
+                </div>
+                
+                {selectedBlock.syncWithVideo && (
+                  <>
+                    <div>
+                      <Label className="text-xs">ID do Vídeo de Referência</Label>
+                      <Select
+                        value={selectedBlock.videoId || ''}
+                        onValueChange={(value) => {
+                          const newBlocks = pageData.blocks.map(b => 
+                            b.id === selectedBlock.id 
+                              ? { ...b, videoId: value }
+                              : b
+                          );
+                          setPageData({ ...pageData, blocks: newBlocks });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um vídeo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pageData.blocks
+                            .filter(b => b.type === 'video')
+                            .map(b => (
+                              <SelectItem key={b.id} value={b.id}>
+                                Vídeo: {b.content.url?.substring(0, 30)}...
+                              </SelectItem>
+                            ))
+                          }
+                          {pageData.blocks.filter(b => b.type === 'video').length === 0 && (
+                            <SelectItem value="" disabled>
+                              Nenhum vídeo na página
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs">Timestamp do Vídeo (segundos)</Label>
+                      <Input 
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={selectedBlock.videoTimestamp || 0}
+                        onChange={(e) => {
+                          const newBlocks = pageData.blocks.map(b => 
+                            b.id === selectedBlock.id 
+                              ? { ...b, videoTimestamp: Number(e.target.value) }
+                              : b
+                          );
+                          setPageData({ ...pageData, blocks: newBlocks });
+                        }}
+                        placeholder="0"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Momento do vídeo em que este bloco deve aparecer
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs">Ação ao Atingir Timestamp</Label>
+                      <Select
+                        value={selectedBlock.styles?.videoAction || 'show'}
+                        onValueChange={(value) => {
+                          const newBlocks = pageData.blocks.map(b => 
+                            b.id === selectedBlock.id 
+                              ? { ...b, styles: { ...b.styles, videoAction: value } }
+                              : b
+                          );
+                          setPageData({ ...pageData, blocks: newBlocks });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="show">Mostrar bloco</SelectItem>
+                          <SelectItem value="hide">Esconder bloco</SelectItem>
+                          <SelectItem value="highlight">Destacar bloco</SelectItem>
+                          <SelectItem value="animate">Animar bloco</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+              </div>
               
               <Separator />
               

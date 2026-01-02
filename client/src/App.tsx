@@ -55,6 +55,7 @@ import AdminAnalyticsDashboard from "@/pages/AdminAnalyticsDashboard";
 import AdminPagesManager from "@/pages/AdminPagesManager";
 import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
 import AdminPageEditor from "@/pages/AdminPageEditor";
+import AdminABTesting from "@/pages/AdminABTesting";
 
 function Router() {
   return (
@@ -112,6 +113,7 @@ function Router() {
       <Route path="/admin/pixels" component={AdminPixelsConfig} />
       <Route path="/admin/editor/:pageId" component={AdminPageEditor} />
       <Route path="/admin/editor/new" component={AdminPageEditor} />
+      <Route path="/admin/ab-testing" component={AdminABTesting} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

@@ -2441,13 +2441,13 @@
 - [x] Edição inline de textos (clique para editar)
 - [x] Seletor de cores com paletas pré-definidas
 - [ ] Upload e manipulação de imagens (crop, resize, filtros)
-- [ ] Biblioteca de ícones e elementos visuais
+- [x] Biblioteca de ícones e elementos visuais
 - [ ] Templates prontos para começar
-- [ ] Reorganizar seções com drag-and-drop
+- [x] Reorganizar seções com drag-and-drop
 - [x] Preview em tempo real (desktop/mobile)
-- [ ] Desfazer/Refazer (Ctrl+Z / Ctrl+Y)
+- [x] Desfazer/Refazer (Ctrl+Z / Ctrl+Y)
 - [x] Salvar rascunho e publicar
-- [ ] Histórico de versões com rollback
+- [x] Histórico de versões com rollback
 - [x] Duplicar páginas existentes
 - [x] Gerar novas slugs/URLs
 - [ ] Opções de SEO (título, descrição, og:image)
@@ -2458,20 +2458,20 @@
 - [x] Remover popup das páginas públicas (landing, quiz, pricing, etc)
 
 ## Correções Editor de Páginas (v4.3)
-- [ ] Criar schema de banco para páginas e blocos
-- [ ] Implementar routers tRPC para CRUD de páginas
-- [ ] Gerenciador de Páginas com dados reais do banco
-- [ ] Editor carregar conteúdo real das páginas existentes
-- [ ] Corrigir bug de páginas sumindo após publicar
-- [ ] Adicionar opção de API na página de Pixels
+- [x] Criar schema de banco para páginas e blocos
+- [x] Implementar routers tRPC para CRUD de páginas
+- [x] Gerenciador de Páginas com dados reais do banco
+- [x] Editor carregar conteúdo real das páginas existentes
+- [x] Corrigir bug de páginas sumindo após publicar
+- [x] Adicionar opção de API na página de Pixels
 - [ ] Adicionar mais templates (página de vendas, captura, obrigado)
 
 ## Correções e Melhorias - Editor e Trial
 - [x] Corrigir erro do cadastro trial (campo birthDate não existe na tabela)
 - [x] Melhorar editor de blocos com ferramentas funcionais de edição
 - [x] Adicionar campo de scripts personalizados nos blocos
-- [ ] Implementar delay de seções no editor
-- [ ] Sincronização de elementos com vídeo
+- [x] Implementar delay de seções no editor
+- [x] Sincronização de elementos com vídeo
 - [ ] Botão "Gerar Página com IA" - prompt para criar páginas automaticamente
 - [x] Corrigir edição de blocos existentes (não estão funcionando)
 - [x] Corrigir cadastro trial no exit popup (mesmo erro da página cadastro-trial)
