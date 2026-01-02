@@ -11,6 +11,7 @@ import { nanoid } from "nanoid";
 import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription, getSubscription, createPaymentLink } from "./stripe";
 import { subscriptionRouter } from "./subscription/subscriptionRouter";
 import { billingCycleToStripeInterval, priceToCents } from "./stripe/products";
+import { supportChatRouter } from "./routers/supportChatRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -148,6 +149,7 @@ const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  supportChat: supportChatRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

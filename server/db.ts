@@ -27,6 +27,8 @@ import {
   passwordResetTokens, InsertPasswordResetToken, PasswordResetToken,
   pendingChanges, InsertPendingChange, PendingChange,
   chatMessages, InsertChatMessage, ChatMessage,
+  chatConversations, InsertChatConversation, ChatConversation,
+  chatSupportMessages, InsertChatSupportMessage, ChatSupportMessage,
   studentBadges, InsertStudentBadge, StudentBadge,
   sessionFeedback, InsertSessionFeedback, SessionFeedback,
   workoutLogExercises, InsertWorkoutLogExercise, WorkoutLogExercise,
@@ -3587,4 +3589,97 @@ export async function createPendingActivation(data: {
 export async function getPendingActivationByEmail(email: string) {
   // TODO: Implement when we have the pending activations table
   return null;
+}
+
+
+// ==================== SUPPORT CHAT FUNCTIONS ====================
+export async function createSupportConversation(data: InsertChatConversation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(chatConversations).values(data);
+  return result[0].insertId;
+}
+
+export async function getSupportConversationByVisitorId(visitorId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(chatConversations)
+    .where(eq(chatConversations.visitorId, visitorId))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllSupportConversations(limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(chatConversations)
+    .orderBy(desc(chatConversations.updatedAt))
+    .limit(limit);
+}
+
+export async function getSupportConversationById(conversationId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(chatConversations)
+    .where(eq(chatConversations.id, conversationId))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateSupportConversation(conversationId: number, data: Partial<InsertChatConversation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(chatConversations)
+    .set(data)
+    .where(eq(chatConversations.id, conversationId));
+}
+
+export async function createSupportMessage(data: InsertChatSupportMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(chatSupportMessages).values(data);
+  return result[0].insertId;
+}
+
+export async function getSupportMessages(conversationId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(chatSupportMessages)
+    .where(eq(chatSupportMessages.conversationId, conversationId))
+    .orderBy(asc(chatSupportMessages.createdAt))
+    .limit(limit);
+}
+
+export async function markSupportMessageAsRead(messageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(chatSupportMessages)
+    .set({ readAt: new Date() })
+    .where(eq(chatSupportMessages.id, messageId));
+}
+
+export async function getUnreadSupportMessagesCount() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(chatSupportMessages)
+    .where(isNull(chatSupportMessages.readAt));
+  return result[0]?.count || 0;
+}
+
+export async function getSupportConversationsWithUnreadMessages() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    conversation: chatConversations,
+    unreadCount: sql<number>`count(${chatSupportMessages.id})`
+  })
+    .from(chatConversations)
+    .leftJoin(chatSupportMessages, eq(chatConversations.id, chatSupportMessages.conversationId))
+    .where(isNull(chatSupportMessages.readAt))
+    .groupBy(chatConversations.id)
+    .orderBy(desc(chatConversations.updatedAt));
+  
+  return result;
 }

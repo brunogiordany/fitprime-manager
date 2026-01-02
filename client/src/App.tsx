@@ -40,6 +40,7 @@ import StudentSupport from "./pages/StudentSupport";
 import AdminPanel from "./pages/AdminPanel";
 import PricingPage from "./pages/PricingPage";
 import LandingPagePro from "./pages/LandingPagePro";
+import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 
 function Router() {
@@ -83,6 +84,7 @@ function Router() {
       <Route path="/evolucao" component={EvolutionDashboard} />
       <Route path="/suporte" component={Support} />
       <Route path="/admin" component={AdminPanel} />
+      <Route path="/admin/suporte" component={AdminSupportChat} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

@@ -2172,10 +2172,16 @@
 
 
 ## Widget de Chat de Suporte com IA (v7.0)
-
 - [x] Criar schema do banco de dados para chat (conversations, messages)
-- [ ] Implementar API tRPC para chat (enviar mensagem, listar histórico, marcar como lido)
+- [x] Implementar API tRPC para chat (enviar mensagem, listar histórico, marcar como lido)
 - [x] Criar componente widget de chat flutuante
 - [x] Integrar IA para respostas automáticas
-- [ ] Adicionar painel de admin para gerenciar chats
+- [x] Adicionar painel de admin para gerenciar chats
 - [x] Testar widget e salvar checkpoint
+## Integração de Chat com tRPC Backend (v7.1)
+- [x] Criar helpers de banco de dados para chat
+- [x] Implementar procedures tRPC para chat (criar conversa, enviar mensagem, listar, responder)
+- [ ] Integrar ChatWidget com tRPC (persistir no banco)
+- [x] Criar painel de admin de chats no AdminPanel
+- [x] Adicionar métricas e relatórios de chat (tempo de resposta, taxa de resolução)
+- [x] Testar integração e salvar checkpoint
