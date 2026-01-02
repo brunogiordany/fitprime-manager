@@ -2496,3 +2496,4 @@
 - [x] Remover botões "Como Funciona", "Descubra seu Plano" e "Teste Grátis" do topo
 - [x] Reformular cálculo de perda financeira com valores realistas de mercado
 - [ ] Ajustar copy para conectar melhor com ICP de personal trainers
+- [ ] Remover TODOS os botões do header (incluindo Planos e Começar Agora)

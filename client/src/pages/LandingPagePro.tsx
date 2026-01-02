@@ -239,14 +239,7 @@ export default function LandingPagePro() {
             </div>
             <span className="font-bold text-xl text-gray-900">FitPrime</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
-              Planos
-            </Button>
-            <Button onClick={() => window.location.href = '/quiz'} className="bg-emerald-600 hover:bg-emerald-700">
-              Começar Agora
-            </Button>
-          </div>
+
         </div>
       </header>
 
