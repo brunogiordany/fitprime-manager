@@ -508,7 +508,6 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
                   className="flex-1 cursor-pointer p-4 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition"
                 >
                   <p className="font-medium">{option.label}</p>
-                  <p className="text-xs text-gray-500 mt-1">Dor: {option.pain}</p>
                 </Label>
               </div>
             ))
@@ -526,7 +525,6 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
                   className="flex-1 cursor-pointer p-4 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition"
                 >
                   <p className="font-medium">{option.label}</p>
-                  <p className="text-xs text-gray-500 mt-1">Dor: {option.pain}</p>
                 </Label>
               </div>
             ))
