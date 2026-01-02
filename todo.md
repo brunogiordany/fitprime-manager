@@ -2115,3 +2115,19 @@
 - [ ] Adicionar gráfico de linha no modal de detalhes do personal
 - [ ] Mostrar evolução de alunos nos últimos 6 meses
 - [ ] Incluir indicadores de crescimento (%, absoluto)
+
+
+## Reformulação da Landing Page (v5.1)
+- [ ] Pesquisar dados e estatísticas sobre dores dos personal trainers
+- [ ] Criar seção de ancoragem com dores (tempo perdido, dinheiro perdido, clientes perdidos)
+- [ ] Adicionar dados concretos de quanto o personal perde sem sistema
+- [ ] Apresentar todas as funcionalidades de forma didática (para leigos)
+- [ ] Comunicação persuasiva estilo "black" (sem termos proibidos Meta Ads)
+- [ ] Seção de benefícios vs custo de não usar
+- [ ] Depoimentos e prova social
+- [ ] Integrar link de pagamento Stripe
+- [ ] CTA forte e persuasivo
+- [ ] Design moderno e profissional
+
+- [ ] Adicionar seção para entusiastas da musculação (não personal) na landing page
+- [x] Copy persuasiva para usuário comum que quer controlar treinos e métricas
