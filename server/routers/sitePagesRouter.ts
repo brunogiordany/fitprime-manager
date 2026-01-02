@@ -352,10 +352,17 @@ export const sitePagesRouter = router({
     .mutation(async ({ input }) => {
       const { invokeLLM } = await import('../_core/llm');
       
-      const systemPrompt = `Você é um especialista em criar páginas web de alta conversão.
-Baseado no prompt do usuário, gere uma estrutura de blocos para a página.
+      const systemPrompt = `Você é um especialista em criar páginas web de alta conversão e quizzes de qualificação de leads.
 
-TIPOS DE BLOCOS DISPONÍVEIS:
+## REGRA FUNDAMENTAL - SIGA O PROMPT DO USUÁRIO À RISCA:
+- Se o usuário pedir 13 perguntas, você DEVE criar EXATAMENTE 13 perguntas
+- Se o usuário especificar categorias (ex: 5 sobre dores, 5 sobre benefícios, 3 de qualificação), você DEVE seguir EXATAMENTE essa distribuição
+- Se o usuário descrever o conteúdo das perguntas, use EXATAMENTE esse conteúdo
+- NÃO adicione blocos extras que não foram pedidos
+- NÃO crie menos perguntas do que foi solicitado
+- NÃO ignore nenhuma instrução do usuário
+
+## TIPOS DE BLOCOS DISPONÍVEIS:
 - "hero": Seção principal com título, subtítulo e botão CTA
 - "features": Lista de benefícios/características com ícones
 - "testimonials": Depoimentos de clientes
@@ -371,38 +378,58 @@ TIPOS DE BLOCOS DISPONÍVEIS:
 - "quiz": Quiz interativo com perguntas e respostas
 - "steps": Passos/etapas de um processo
 
-PARA QUIZ:
-Quando o usuário pedir um quiz, crie um bloco do tipo "quiz" com a estrutura:
+## ESTRUTURA DO QUIZ:
+Quando o usuário pedir um quiz, crie um bloco do tipo "quiz" com TODAS as perguntas solicitadas:
 {
   "type": "quiz",
   "content": {
     "title": "Título do Quiz",
-    "description": "Descrição",
+    "description": "Descrição breve",
     "questions": [
       {
         "id": "q1",
-        "question": "Pergunta 1?",
-        "type": "single", // ou "multiple" para múltipla escolha
+        "question": "Texto da pergunta?",
+        "category": "dores|beneficios|qualificacao|descoberta",
+        "type": "single",
         "options": [
           { "id": "a", "text": "Opção A", "value": 1 },
-          { "id": "b", "text": "Opção B", "value": 2 }
+          { "id": "b", "text": "Opção B", "value": 2 },
+          { "id": "c", "text": "Opção C", "value": 3 },
+          { "id": "d", "text": "Opção D", "value": 4 }
         ]
       }
     ],
     "results": [
-      { "minScore": 0, "maxScore": 5, "title": "Resultado 1", "description": "Descrição do resultado" }
+      { "minScore": 0, "maxScore": 20, "title": "Perfil Iniciante", "description": "Descrição do resultado", "recommendedPlan": "starter" },
+      { "minScore": 21, "maxScore": 40, "title": "Perfil Intermediário", "description": "Descrição do resultado", "recommendedPlan": "professional" },
+      { "minScore": 41, "maxScore": 100, "title": "Perfil Avançado", "description": "Descrição do resultado", "recommendedPlan": "enterprise" }
     ],
-    "buttonText": "Ver Resultado",
+    "buttonText": "Ver Meu Resultado",
     "redirectUrl": "/resultado"
   }
 }
 
-IMPORTANTE:
-1. SIGA EXATAMENTE o que o usuário pediu no prompt
-2. Se o usuário pedir X perguntas, crie EXATAMENTE X perguntas
-3. Se o usuário especificar o conteúdo das perguntas, use EXATAMENTE esse conteúdo
-4. Não adicione blocos extras que não foram pedidos
-5. Mantenha o tom e estilo que o usuário solicitou
+## EXEMPLO DE QUIZ PARA PERSONAL TRAINERS:
+Se o usuário pedir "quiz com 13 perguntas: 5 descobrindo dores, 5 sobre benefícios, 3 de qualificação", você deve criar:
+
+Perguntas de DORES (5):
+- "Quanto tempo você perde por semana com tarefas administrativas?"
+- "Você já perdeu alunos por falta de acompanhamento?"
+- "Tem dificuldade em cobrar seus alunos?"
+- "Seus alunos abandonam os treinos com frequência?"
+- "Você consegue acompanhar a evolução de todos os alunos?"
+
+Perguntas de BENEFÍCIOS (5):
+- "Você gostaria de automatizar o envio de treinos?"
+- "Seria útil ter relatórios automáticos de evolução?"
+- "Você quer que seus alunos vejam os treinos pelo celular?"
+- "Gostaria de receber cobranças automáticas?"
+- "Quer ter mais tempo para treinar e menos para administrar?"
+
+Perguntas de QUALIFICAÇÃO (3):
+- "Quantos alunos você atende atualmente?"
+- "Qual sua renda mensal com personal training?"
+- "Você já usa algum sistema de gestão?"
 
 Retorne APENAS um JSON válido com a estrutura:
 {
