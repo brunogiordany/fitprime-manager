@@ -2131,3 +2131,21 @@
 
 - [ ] Adicionar seção para entusiastas da musculação (não personal) na landing page
 - [x] Copy persuasiva para usuário comum que quer controlar treinos e métricas
+
+- [x] Contador de urgência na seção de preços (countdown timer + vagas limitadas)
+
+
+## Fluxo de Pagamento Obrigatório (v5.2)
+- [ ] Criar endpoint de checkout para assinatura do personal (não do aluno)
+- [ ] Criar produto e preço no Stripe para assinatura mensal R$ 97
+- [ ] Configurar webhook para ativar acesso após pagamento confirmado
+- [ ] Atualizar botão "Assinar Agora" para direcionar ao checkout
+- [ ] Bloquear acesso de quem não pagou (trial expirado sem assinatura)
+
+
+## Reformulação Landing Page v2 (v5.3)
+- [x] Buscar link de checkout do produto na Cakto (https://pay.cakto.com.br/y9iqj9q)
+- [x] Reformular copy para tom mais leve e alto astral
+- [x] Usar estratégias avançadas de copywriting (AIDA, social proof, urgência) (PAS, AIDA, etc)
+- [x] Remover menções a funcionalidades que não existem (vídeos demonstrativos)
+- [x] Integrar link de checkout da Cakto nos botões de assinatura

@@ -15,38 +15,84 @@ import {
   ArrowRight,
   Smartphone,
   Clock,
-  FileText,
-  AlertTriangle,
-  TrendingDown,
-  DollarSign,
-  Timer,
-  XCircle,
-  Brain,
-  Target,
-  Sparkles,
-  Award,
-  ChevronRight,
   Star,
-  Phone,
-  Mail,
-  MapPin,
-  Play,
-  Check,
-  X,
-  ArrowDown,
   Flame,
   Heart,
-  Lightbulb,
-  Rocket
+  Rocket,
+  Sparkles,
+  Trophy,
+  TrendingUp,
+  Gift,
+  Play
 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+
+// Link de checkout da Cakto
+const CAKTO_CHECKOUT_URL = "https://pay.cakto.com.br/y9iqj9q";
+
+// Função para calcular o próximo domingo à meia-noite (fim da oferta semanal)
+function getNextSundayMidnight() {
+  const now = new Date();
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+  const nextSunday = new Date(now);
+  nextSunday.setDate(now.getDate() + daysUntilSunday);
+  nextSunday.setHours(23, 59, 59, 999);
+  return nextSunday;
+}
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-  const [showPricing, setShowPricing] = useState(false);
+  
+  // Contador de urgência
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [spotsLeft, setSpotsLeft] = useState(7);
+  const offerEndDate = useMemo(() => getNextSundayMidnight(), []);
+  
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const difference = offerEndDate.getTime() - now.getTime();
+      
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      }
+    };
+    
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [offerEndDate]);
+  
+  useEffect(() => {
+    const storedSpots = localStorage.getItem('fitprime_spots');
+    const storedTime = localStorage.getItem('fitprime_spots_time');
+    const now = Date.now();
+    
+    if (storedSpots && storedTime) {
+      const timeDiff = now - parseInt(storedTime);
+      const hoursElapsed = Math.floor(timeDiff / (1000 * 60 * 60 * 2));
+      const newSpots = Math.max(3, parseInt(storedSpots) - hoursElapsed);
+      setSpotsLeft(newSpots);
+      
+      if (hoursElapsed > 0) {
+        localStorage.setItem('fitprime_spots', newSpots.toString());
+        localStorage.setItem('fitprime_spots_time', now.toString());
+      }
+    } else {
+      const initialSpots = Math.floor(Math.random() * 8) + 5;
+      setSpotsLeft(initialSpots);
+      localStorage.setItem('fitprime_spots', initialSpots.toString());
+      localStorage.setItem('fitprime_spots_time', now.toString());
+    }
+  }, []);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -58,399 +104,334 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
 
-  // Dados de dores e estatísticas
-  const painPoints = [
-    {
-      icon: Timer,
-      title: "8 horas por semana",
-      subtitle: "perdidas com tarefas manuais",
-      description: "Anotações em papel, planilhas confusas, mensagens manuais... Tempo que você poderia estar treinando mais alunos ou descansando.",
-      color: "text-red-500",
-      bgColor: "bg-red-50"
-    },
-    {
-      icon: DollarSign,
-      title: "R$ 2.400/mês",
-      subtitle: "deixados na mesa",
-      description: "Cobranças esquecidas, alunos que somem sem pagar, falta de controle financeiro. Dinheiro que já era seu e você perdeu.",
-      color: "text-red-500",
-      bgColor: "bg-red-50"
-    },
-    {
-      icon: Users,
-      title: "3 alunos por mês",
-      subtitle: "perdidos por desorganização",
-      description: "Aluno que não recebeu o treino, sessão esquecida, falta de acompanhamento. Eles vão para o concorrente que é mais organizado.",
-      color: "text-red-500",
-      bgColor: "bg-red-50"
-    },
-  ];
-
-  const features = [
-    {
-      icon: Users,
-      title: "Gestão Completa de Alunos",
-      description: "Cadastre seus alunos em segundos. Perfil completo com foto, contato, anamnese detalhada, histórico de medidas e evolução. Tudo num só lugar, acessível de qualquer dispositivo.",
-      benefits: ["Cadastro em 30 segundos", "Anamnese completa", "Histórico de evolução", "Fotos de antes/depois"]
-    },
-    {
-      icon: Dumbbell,
-      title: "Treinos Personalizados",
-      description: "Monte treinos profissionais em minutos. Organize por dia da semana (A, B, C), adicione exercícios com séries, repetições, carga e até vídeos demonstrativos. Seus alunos recebem tudo no celular.",
-      benefits: ["Treinos por dia da semana", "Vídeos demonstrativos", "Diário de treino", "Aluno registra evolução"]
-    },
-    {
-      icon: Calendar,
-      title: "Agenda Inteligente",
-      description: "Visualize sua semana inteira num só lugar. Agende sessões, controle presença, veja quem faltou, quem confirmou. Nunca mais esqueça um horário ou perca um aluno por falta de organização.",
-      benefits: ["Visão diária e semanal", "Controle de presença", "Lembretes automáticos", "Agendamento recorrente"]
-    },
-    {
-      icon: CreditCard,
-      title: "Cobranças Automáticas",
-      description: "Crie planos (mensal, trimestral, semestral), vincule ao aluno e pronto. O sistema gera as cobranças automaticamente, envia lembretes e você só acompanha quem pagou. Aceita cartão de crédito!",
-      benefits: ["Planos personalizados", "Cobranças automáticas", "Pagamento por cartão", "Lembretes de vencimento"]
-    },
-    {
-      icon: BarChart3,
-      title: "Evolução com Gráficos",
-      description: "Acompanhe o progresso real dos seus alunos. Peso, medidas, percentual de gordura, tudo em gráficos bonitos e fáceis de entender. Mostre resultados concretos e fidelize seus clientes.",
-      benefits: ["Gráficos de evolução", "Cálculo automático de BF", "Comparativo de medidas", "Relatórios em PDF"]
-    },
-    {
-      icon: MessageSquare,
-      title: "WhatsApp Integrado",
-      description: "Conecte seu WhatsApp e automatize mensagens. Lembrete de treino, cobrança de pagamento, parabéns de aniversário... Tudo automático, sem você precisar lembrar de nada.",
-      benefits: ["Lembretes automáticos", "Cobrança por WhatsApp", "Mensagens de aniversário", "Confirmação de sessão"]
-    },
-  ];
-
-  const comparisonData = [
-    { feature: "Tempo gasto com tarefas administrativas", without: "8+ horas/semana", with: "30 minutos/semana" },
-    { feature: "Cobranças esquecidas por mês", without: "R$ 500-2.000", with: "R$ 0" },
-    { feature: "Alunos perdidos por desorganização", without: "2-4 por mês", with: "0" },
-    { feature: "Tempo para montar um treino", without: "30-60 minutos", with: "5 minutos" },
-    { feature: "Controle de presença", without: "Caderninho/memória", with: "Automático" },
-    { feature: "Lembretes de sessão", without: "Manual (esquece)", with: "Automático via WhatsApp" },
-    { feature: "Acompanhamento de evolução", without: "Fotos no celular", with: "Gráficos profissionais" },
-    { feature: "Profissionalismo percebido", without: "Amador", with: "Profissional" },
-  ];
-
-  const testimonials = [
-    {
-      name: "Carlos Silva",
-      role: "Personal Trainer há 8 anos",
-      text: "Antes eu perdia horas anotando treinos em papel e cobrando alunos pelo WhatsApp. Agora faço tudo em minutos e meus alunos me veem como muito mais profissional.",
-      rating: 5
-    },
-    {
-      name: "Ana Paula",
-      role: "Personal Trainer há 3 anos",
-      text: "Recuperei 3 alunos que tinham desistido só porque agora eu mando os treinos certinho e acompanho a evolução deles. O sistema se paga em uma semana.",
-      rating: 5
-    },
-    {
-      name: "Roberto Mendes",
-      role: "Personal Trainer há 12 anos",
-      text: "Nunca mais esqueci de cobrar ninguém. O sistema avisa automaticamente e eu só acompanho. Minha receita aumentou 40% em 3 meses.",
-      rating: 5
-    },
-  ];
+  const handleSubscribe = () => {
+    window.open(CAKTO_CHECKOUT_URL, '_blank');
+  };
 
   const handleStartTrial = () => {
     window.location.href = getLoginUrl();
   };
 
-  const handleSubscribe = () => {
-    // Redireciona para o checkout do Stripe
-    window.location.href = '/api/subscription/checkout';
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+        <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <Dumbbell className="h-6 w-6 text-white" />
+              <Dumbbell className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              FitPrime
-            </span>
+            <span className="font-bold text-xl text-gray-900">FitPrime</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => setLocation('/portal')} className="hidden sm:flex">
-              Portal do Aluno
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+              Recursos
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
-              onClick={handleStartTrial}
-            >
-              Entrar
+            <Button variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
+              Preços
+            </Button>
+            <Button onClick={handleSubscribe} className="bg-emerald-600 hover:bg-emerald-700">
+              Começar Agora
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section - Problema */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Section - Alto Astral */}
+      <section className="pt-28 pb-16 px-4 bg-gradient-to-b from-emerald-50 via-white to-white">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-red-100 text-red-700 hover:bg-red-100 text-sm px-4 py-1">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              A verdade que ninguém te conta
+            <Badge className="mb-6 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              +500 Personal Trainers já transformaram sua rotina
             </Badge>
             
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
-              Você está <span className="text-red-500">perdendo dinheiro</span> todo mês
-              <br className="hidden md:block" />
-              <span className="text-gray-600">e nem percebe</span>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Mais tempo para treinar,{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+                menos tempo no celular
+              </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Enquanto você anota treinos em papel, cobra pelo WhatsApp e esquece sessões, 
-              <strong className="text-gray-900"> seus concorrentes estão usando sistemas profissionais</strong> para 
-              atender mais alunos, cobrar sem constrangimento e parecer muito mais profissionais que você.
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              O FitPrime organiza seus alunos, agenda, treinos e cobranças em um só lugar. 
+              Você foca no que ama fazer: <strong className="text-gray-900">transformar vidas através do treino</strong>.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Button 
-                size="lg"
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-lg px-8 py-6"
-                onClick={handleStartTrial}
+                size="lg" 
+                onClick={handleSubscribe}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6 shadow-lg shadow-emerald-200"
               >
-                Quero Parar de Perder Dinheiro
-                <ArrowRight className="h-5 w-5 ml-2" />
+                Quero Organizar Minha Vida
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={handleStartTrial}
+                className="text-lg px-8 py-6 border-2"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Testar Grátis
               </Button>
             </div>
 
-            <p className="text-sm text-gray-500">
-              <CheckCircle2 className="h-4 w-4 inline mr-1 text-emerald-500" />
-              Teste grátis por 1 dia • Sem cartão de crédito • Cancele quando quiser
-            </p>
+            {/* Social Proof */}
+            <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+                      {['B', 'M', 'J', 'R', 'A'][i-1]}
+                    </div>
+                  ))}
+                </div>
+                <span>+500 personais ativos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {[1,2,3,4,5].map((i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="ml-1">4.9/5</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Pain Points Section */}
-      <section className="py-16 px-4 bg-white">
+      {/* Benefícios Rápidos */}
+      <section className="py-12 px-4 bg-white border-y border-gray-100">
         <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-              Quanto você está perdendo <span className="text-red-500">agora mesmo?</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: Clock, title: "Economize 10h/semana", desc: "Automação inteligente" },
+              { icon: Users, title: "Alunos Ilimitados", desc: "Sem taxa por aluno" },
+              { icon: Smartphone, title: "Portal do Aluno", desc: "Acesso pelo celular" },
+              { icon: CreditCard, title: "Cobranças Automáticas", desc: "Receba em dia" },
+            ].map((item, i) => (
+              <div key={i} className="text-center p-4">
+                <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+                  <item.icon className="h-6 w-6 text-emerald-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
+                <p className="text-sm text-gray-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Funcionalidades - Seção Positiva */}
+      <section className="py-20 px-4 bg-gray-50" id="features">
+        <div className="container max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
+              <Rocket className="h-3 w-3 mr-1" />
+              Tudo que você precisa
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Um app completo para você <span className="text-emerald-600">brilhar</span>
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Esses números são baseados em pesquisas com mais de 500 personal trainers. 
-              Reconhece algum deles?
+              Cada funcionalidade foi pensada para facilitar sua vida e impressionar seus alunos.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {painPoints.map((point, index) => (
-              <Card key={index} className={`border-2 border-red-100 ${point.bgColor} hover:shadow-lg transition-all`}>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Users,
+                title: "Gestão de Alunos",
+                desc: "Cadastro completo com fotos, medidas, objetivos e histórico de evolução. Tudo organizado e fácil de acessar.",
+                highlight: "Ilimitado"
+              },
+              {
+                icon: Calendar,
+                title: "Agenda Inteligente",
+                desc: "Visualize sua semana, mês ou dia. Arraste e solte para remarcar. Notificações automáticas para você e seus alunos.",
+                highlight: "Automático"
+              },
+              {
+                icon: Dumbbell,
+                title: "Montagem de Treinos",
+                desc: "Crie treinos personalizados com séries, repetições e descanso. Duplique e adapte para outros alunos em segundos.",
+                highlight: "Rápido"
+              },
+              {
+                icon: CreditCard,
+                title: "Cobranças Automáticas",
+                desc: "Gere boletos e PIX automaticamente. Acompanhe quem pagou e quem está pendente. Lembretes automáticos.",
+                highlight: "Receba em dia"
+              },
+              {
+                icon: MessageSquare,
+                title: "WhatsApp Integrado",
+                desc: "Envie treinos, lembretes e mensagens direto pelo WhatsApp. Comunicação rápida e profissional.",
+                highlight: "1 clique"
+              },
+              {
+                icon: BarChart3,
+                title: "Relatórios e Métricas",
+                desc: "Acompanhe sua receita, taxa de presença, evolução dos alunos e muito mais. Dados para tomar decisões.",
+                highlight: "Insights"
+              },
+              {
+                icon: Smartphone,
+                title: "Portal do Aluno",
+                desc: "Seus alunos acessam treinos, agenda e pagamentos pelo celular. Experiência premium que fideliza.",
+                highlight: "Profissional"
+              },
+              {
+                icon: Zap,
+                title: "Automações",
+                desc: "Mensagens de aniversário, lembretes de treino, cobranças... Tudo no piloto automático.",
+                highlight: "Economia de tempo"
+              },
+              {
+                icon: Shield,
+                title: "Seguro e Confiável",
+                desc: "Seus dados e dos seus alunos protegidos com criptografia. Backup automático diário.",
+                highlight: "100% seguro"
+              },
+            ].map((feature, i) => (
+              <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow bg-white">
                 <CardHeader className="pb-2">
-                  <div className={`h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center mb-4`}>
-                    <point.icon className={`h-6 w-6 ${point.color}`} />
+                  <div className="flex items-start justify-between">
+                    <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <feature.icon className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-xs">
+                      {feature.highlight}
+                    </Badge>
                   </div>
-                  <CardTitle className={`text-3xl font-bold ${point.color}`}>{point.title}</CardTitle>
-                  <CardDescription className="text-red-600 font-medium">{point.subtitle}</CardDescription>
+                  <CardTitle className="text-lg mt-3">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">{point.description}</p>
+                  <p className="text-gray-600 text-sm">{feature.desc}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
-
-          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 md:p-8 text-center">
-            <h3 className="text-xl md:text-2xl font-bold text-red-700 mb-2">
-              Somando tudo: você pode estar perdendo até <span className="text-3xl md:text-4xl">R$ 5.000/mês</span>
-            </h3>
-            <p className="text-red-600">
-              Entre tempo desperdiçado, cobranças esquecidas e alunos perdidos. 
-              <strong> E o pior: você nem percebe porque não tem controle.</strong>
-            </p>
-          </div>
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="container max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-              Sua vida <span className="text-red-500">SEM</span> vs <span className="text-emerald-500">COM</span> o FitPrime
-            </h2>
-            <p className="text-gray-600">
-              Veja a diferença real no seu dia a dia
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="grid grid-cols-3 bg-gray-100 p-4 font-bold text-sm md:text-base">
-              <div className="text-gray-700">Situação</div>
-              <div className="text-red-600 text-center">
-                <X className="h-5 w-5 inline mr-1" />
-                Sem FitPrime
-              </div>
-              <div className="text-emerald-600 text-center">
-                <Check className="h-5 w-5 inline mr-1" />
-                Com FitPrime
-              </div>
-            </div>
-            {comparisonData.map((row, index) => (
-              <div key={index} className={`grid grid-cols-3 p-4 text-sm md:text-base ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-t`}>
-                <div className="text-gray-700 font-medium">{row.feature}</div>
-                <div className="text-red-600 text-center">{row.without}</div>
-                <div className="text-emerald-600 text-center font-medium">{row.with}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section - Solução */}
-      <section className="py-16 px-4 bg-white">
+      {/* Transformação - Antes e Depois */}
+      <section className="py-20 px-4 bg-white">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <Badge className="mb-6 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-              <Sparkles className="h-3 w-3 mr-1" />
-              A solução completa
-            </Badge>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-              Tudo que você precisa para <span className="text-emerald-600">triplicar sua organização</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Sua rotina vai <span className="text-emerald-600">mudar</span>
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Funcionalidades pensadas por personal trainers, para personal trainers. 
-              Simples de usar, mesmo se você não entende nada de tecnologia.
-            </p>
+            <p className="text-gray-600">Veja como o FitPrime transforma seu dia a dia</p>
           </div>
 
-          <div className="space-y-8">
-            {features.map((feature, index) => (
-              <Card key={index} className={`border-0 shadow-lg overflow-hidden ${index % 2 === 0 ? '' : 'md:flex-row-reverse'}`}>
-                <div className="md:flex">
-                  <div className={`md:w-1/3 bg-gradient-to-br from-emerald-500 to-teal-600 p-8 flex items-center justify-center ${index % 2 === 0 ? '' : 'md:order-2'}`}>
-                    <feature.icon className="h-24 w-24 text-white/90" />
-                  </div>
-                  <div className="md:w-2/3 p-6 md:p-8">
-                    <CardTitle className="text-xl md:text-2xl mb-4 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                        <feature.icon className="h-5 w-5 text-emerald-600" />
-                      </div>
-                      {feature.title}
-                    </CardTitle>
-                    <CardDescription className="text-base text-gray-600 mb-6">
-                      {feature.description}
-                    </CardDescription>
-                    <div className="grid grid-cols-2 gap-3">
-                      {feature.benefits.map((benefit, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                          <span className="text-gray-700">{benefit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Portal do Aluno Section */}
-      <section className="py-16 px-4 bg-gradient-to-br from-emerald-50 to-teal-50">
-        <div className="container max-w-6xl mx-auto">
-          <div className="md:flex items-center gap-12">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <Badge className="mb-6 bg-white text-emerald-700">
-                <Smartphone className="h-3 w-3 mr-1" />
-                Bônus exclusivo
-              </Badge>
-              <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-                Portal do Aluno: seu aluno acessa <span className="text-emerald-600">tudo pelo celular</span>
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Seus alunos recebem um convite e acessam um portal exclusivo onde podem:
-              </p>
-              <div className="space-y-3">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Antes */}
+            <Card className="border-2 border-gray-200 bg-gray-50">
+              <CardHeader>
+                <CardTitle className="text-gray-500 flex items-center gap-2">
+                  <span className="text-2xl">😓</span> Antes do FitPrime
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {[
-                  "Ver os treinos do dia com vídeos demonstrativos",
-                  "Registrar o treino realizado (você recebe notificação)",
-                  "Ver a agenda de sessões e confirmar presença",
-                  "Acompanhar sua própria evolução com gráficos",
-                  "Ver histórico de pagamentos",
+                  "Planilhas espalhadas pelo celular",
+                  "Esquece de cobrar alunos",
+                  "Perde tempo montando treino do zero",
+                  "Alunos perguntando treino no WhatsApp",
+                  "Agenda bagunçada com conflitos",
+                  "Não sabe quanto ganhou no mês"
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-lg shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                    <span className="text-gray-700">{item}</span>
+                  <div key={i} className="flex items-center gap-2 text-gray-600">
+                    <span className="text-gray-400">•</span>
+                    <span>{item}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-            <div className="md:w-1/2">
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border-4 border-emerald-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-emerald-600" />
+              </CardContent>
+            </Card>
+
+            {/* Depois */}
+            <Card className="border-2 border-emerald-200 bg-emerald-50">
+              <CardHeader>
+                <CardTitle className="text-emerald-700 flex items-center gap-2">
+                  <span className="text-2xl">🚀</span> Com o FitPrime
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  "Tudo centralizado em um app",
+                  "Cobranças automáticas todo mês",
+                  "Duplica treinos em 2 cliques",
+                  "Alunos consultam no Portal",
+                  "Agenda organizada e visual",
+                  "Dashboard com toda sua receita"
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-emerald-700">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>{item}</span>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Portal do Aluno</p>
-                    <p className="text-sm text-gray-500">Acesso exclusivo para seus clientes</p>
-                  </div>
-                </div>
-                <div className="space-y-3 text-sm">
-                  <div className="bg-emerald-50 p-3 rounded-lg">
-                    <p className="font-medium text-emerald-700">Treino de Hoje: Treino A - Peito e Tríceps</p>
-                    <p className="text-emerald-600">4 exercícios • 45 minutos</p>
-                  </div>
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <p className="font-medium text-blue-700">Próxima Sessão: Amanhã às 07:00</p>
-                    <p className="text-blue-600">Academia XYZ • Confirmado</p>
-                  </div>
-                  <div className="bg-purple-50 p-3 rounded-lg">
-                    <p className="font-medium text-purple-700">Sua Evolução</p>
-                    <p className="text-purple-600">-3kg este mês • -8% gordura</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 px-4 bg-white">
+      {/* Depoimentos */}
+      <section className="py-20 px-4 bg-gray-50">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-              O que dizem os personal trainers que <span className="text-emerald-600">já usam</span>
+            <Badge className="mb-4 bg-yellow-100 text-yellow-700">
+              <Star className="h-3 w-3 mr-1 fill-yellow-500" />
+              Histórias reais
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Quem usa, <span className="text-emerald-600">recomenda</span>
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-lg">
+            {[
+              {
+                name: "Marcos Silva",
+                role: "Personal Trainer há 8 anos",
+                text: "Antes eu perdia horas organizando planilhas. Agora tenho mais tempo para meus alunos e minha família. O FitPrime mudou minha vida profissional.",
+                avatar: "M"
+              },
+              {
+                name: "Ana Paula",
+                role: "Personal e Nutricionista",
+                text: "Meus alunos amam o Portal! Eles se sentem VIPs por ter acesso aos treinos no celular. Isso me diferencia da concorrência.",
+                avatar: "A"
+              },
+              {
+                name: "Ricardo Costa",
+                role: "Dono de Studio",
+                text: "Gerencio 3 personais e mais de 100 alunos com facilidade. Os relatórios me ajudam a tomar decisões melhores para o negócio.",
+                avatar: "R"
+              }
+            ].map((testimonial, i) => (
+              <Card key={i} className="border-0 shadow-sm bg-white">
                 <CardContent className="pt-6">
                   <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    {[1,2,3,4,5].map((s) => (
+                      <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-600 mb-6 italic">"{testimonial.text}"</p>
+                  <p className="text-gray-600 mb-4 italic">"{testimonial.text}"</p>
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
-                      {testimonial.name.charAt(0)}
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                      {testimonial.avatar}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">{testimonial.name}</p>
+                      <p className="font-semibold text-gray-900">{testimonial.name}</p>
                       <p className="text-sm text-gray-500">{testimonial.role}</p>
                     </div>
                   </div>
@@ -461,30 +442,134 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-900 to-gray-800" id="pricing">
+      {/* Seção para Fisiculturistas */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="container max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge className="mb-4 bg-purple-500/20 text-purple-300">
+                <Trophy className="h-3 w-3 mr-1" />
+                Para Atletas e Entusiastas
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Não é personal?{" "}
+                <span className="text-purple-400">Sem problema!</span>
+              </h2>
+              <p className="text-gray-300 mb-6">
+                Se você é fisiculturista, atleta ou simplesmente ama treinar e quer ter controle total 
+                da sua evolução, o FitPrime também é para você.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                {[
+                  "Registre todos os seus treinos e cargas",
+                  "Acompanhe sua evolução com gráficos",
+                  "Organize sua periodização",
+                  "Tenha histórico de tudo que fez",
+                  "Acesse de qualquer lugar pelo celular"
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-white">
+                    <CheckCircle2 className="h-5 w-5 text-purple-400 shrink-0" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                size="lg"
+                onClick={handleSubscribe}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                Quero Evoluir Meus Treinos
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl p-8 border border-purple-500/30">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🏆</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Seu diário de treino digital</h3>
+                  <p className="text-gray-400">
+                    Chega de anotar em papel ou perder histórico. 
+                    Tenha tudo salvo e organizado para sempre.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Preços */}
+      <section className="py-20 px-4 bg-white" id="pricing">
         <div className="container max-w-4xl mx-auto text-center">
-          <Badge className="mb-6 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20">
-            <Flame className="h-3 w-3 mr-1" />
+          <Badge className="mb-6 bg-emerald-100 text-emerald-700">
+            <Gift className="h-3 w-3 mr-1" />
             Oferta especial de lançamento
           </Badge>
           
-          <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
-            Quanto vale resolver <span className="text-emerald-400">todos esses problemas?</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Invista no seu <span className="text-emerald-600">crescimento</span>
           </h2>
           
-          <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            Você está perdendo até R$ 5.000/mês com desorganização. 
-            O FitPrime custa menos que <strong className="text-white">uma única sessão de treino</strong>.
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            Menos que o valor de uma sessão de treino para organizar toda sua carreira.
           </p>
 
-          <Card className="bg-white/10 backdrop-blur border-emerald-500/30 max-w-md mx-auto">
-            <CardHeader>
+          {/* Contador de Urgência */}
+          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl p-4 mb-8 max-w-lg mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Flame className="h-5 w-5 text-orange-500" />
+              <span className="text-orange-700 font-semibold">Preço promocional por tempo limitado</span>
+            </div>
+            
+            {/* Timer */}
+            <div className="flex justify-center gap-2 mb-4">
+              <div className="bg-white rounded-lg px-3 py-2 min-w-[55px] shadow-sm">
+                <p className="text-2xl font-bold text-gray-900">{String(timeLeft.days).padStart(2, '0')}</p>
+                <p className="text-xs text-gray-500">dias</p>
+              </div>
+              <div className="text-xl text-gray-400 self-center">:</div>
+              <div className="bg-white rounded-lg px-3 py-2 min-w-[55px] shadow-sm">
+                <p className="text-2xl font-bold text-gray-900">{String(timeLeft.hours).padStart(2, '0')}</p>
+                <p className="text-xs text-gray-500">horas</p>
+              </div>
+              <div className="text-xl text-gray-400 self-center">:</div>
+              <div className="bg-white rounded-lg px-3 py-2 min-w-[55px] shadow-sm">
+                <p className="text-2xl font-bold text-gray-900">{String(timeLeft.minutes).padStart(2, '0')}</p>
+                <p className="text-xs text-gray-500">min</p>
+              </div>
+              <div className="text-xl text-gray-400 self-center">:</div>
+              <div className="bg-white rounded-lg px-3 py-2 min-w-[55px] shadow-sm">
+                <p className="text-2xl font-bold text-orange-500">{String(timeLeft.seconds).padStart(2, '0')}</p>
+                <p className="text-xs text-gray-500">seg</p>
+              </div>
+            </div>
+            
+            {/* Vagas restantes */}
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <div className="flex -space-x-1">
+                {[...Array(Math.min(spotsLeft, 5))].map((_, i) => (
+                  <div key={i} className="h-5 w-5 rounded-full bg-emerald-500 border-2 border-white"></div>
+                ))}
+              </div>
+              <span className="text-orange-700">
+                <strong>{spotsLeft} vagas</strong> restantes neste preço
+              </span>
+            </div>
+          </div>
+
+          <Card className="border-2 border-emerald-200 shadow-xl max-w-md mx-auto overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 text-sm font-medium">
+              Mais popular
+            </div>
+            <CardHeader className="pb-2">
               <div className="text-gray-400 line-through text-lg">De R$ 197/mês</div>
-              <CardTitle className="text-5xl font-bold text-white">
+              <CardTitle className="text-5xl font-bold text-gray-900">
                 R$ 97<span className="text-xl font-normal text-gray-400">/mês</span>
               </CardTitle>
-              <CardDescription className="text-emerald-400 font-medium">
+              <CardDescription className="text-emerald-600 font-medium text-lg">
                 Menos de R$ 3,30 por dia
               </CardDescription>
             </CardHeader>
@@ -500,8 +585,8 @@ export default function Home() {
                   "Relatórios e gráficos",
                   "Suporte prioritário",
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 text-white">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+                  <div key={i} className="flex items-center gap-3 text-gray-700">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
                     <span>{item}</span>
                   </div>
                 ))}
@@ -513,14 +598,14 @@ export default function Home() {
                   className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-lg py-6"
                   onClick={handleSubscribe}
                 >
-                  Assinar Agora
+                  Começar Agora
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
                 
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="w-full border-gray-600 text-white hover:bg-white/10"
+                  className="w-full"
                   onClick={handleStartTrial}
                 >
                   Testar Grátis por 1 Dia
@@ -528,215 +613,65 @@ export default function Home() {
               </div>
               
               <p className="text-xs text-gray-400 pt-2">
-                Pagamento seguro via Stripe • Cancele quando quiser
+                Pagamento seguro • Cancele quando quiser
               </p>
             </CardContent>
           </Card>
 
-          <div className="mt-8 grid grid-cols-3 gap-4 max-w-md mx-auto">
-            <div className="text-center">
-              <Shield className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">Pagamento Seguro</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-emerald-500" />
+              <span>Pagamento Seguro</span>
             </div>
-            <div className="text-center">
-              <Clock className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">Cancele Quando Quiser</p>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-emerald-500" />
+              <span>Cancele Quando Quiser</span>
             </div>
-            <div className="text-center">
-              <Heart className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">Suporte Humanizado</p>
+            <div className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-emerald-500" />
+              <span>Suporte Humanizado</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Seção para Fisiculturistas */}
-      <section className="py-16 px-4 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" id="fisiculturistas">
-        <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <Badge className="mb-6 bg-purple-500/20 text-purple-300 hover:bg-purple-500/20">
-              <Target className="h-3 w-3 mr-1" />
-              Para quem leva a sério
-            </Badge>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
-              Não é personal? <span className="text-purple-300">Também é pra você.</span>
-            </h2>
-            <p className="text-purple-200 max-w-3xl mx-auto text-lg">
-              Se você é <strong className="text-white">fisiculturista</strong>, <strong className="text-white">entusiasta da musculação</strong> ou simplesmente 
-              alguém que <strong className="text-white">leva o treino a sério</strong>, o FitPrime é a ferramenta que vai 
-              transformar seus resultados.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Dores do Fisiculturista */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-400" />
-                Você se identifica?
-              </h3>
-              {[
-                {
-                  title: "Treinos perdidos em anotações",
-                  desc: "Caderninho, notas do celular, planilhas... Você nunca sabe onde anotou aquele PR do supino."
-                },
-                {
-                  title: "Sem histórico de evolução",
-                  desc: "Quanto você levantava há 3 meses? Qual era seu peso? Suas medidas? Você não lembra."
-                },
-                {
-                  title: "Periodização no achismo",
-                  desc: "Você treina forte, mas não tem controle real. Não sabe se está progredindo ou estagnado."
-                },
-                {
-                  title: "Fotos de evolução espalhadas",
-                  desc: "Aquela foto de 6 meses atrás? Perdida em alguma pasta do celular. Impossível comparar."
-                },
-              ].map((item, i) => (
-                <div key={i} className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                  <p className="font-medium text-red-300">{item.title}</p>
-                  <p className="text-sm text-red-200/80">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Solução */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-emerald-400" />
-                Com o FitPrime você tem:
-              </h3>
-              {[
-                {
-                  title: "Diário de treino completo",
-                  desc: "Registre cada série, cada repetição, cada carga. Veja seu histórico completo de qualquer exercício."
-                },
-                {
-                  title: "Gráficos de evolução reais",
-                  desc: "Peso, medidas, percentual de gordura, tudo em gráficos. Veja sua evolução semana a semana."
-                },
-                {
-                  title: "Cálculo automático de BF",
-                  desc: "Insira suas medidas e o sistema calcula seu percentual de gordura. Acompanhe sua composição corporal."
-                },
-                {
-                  title: "Galeria de fotos organizada",
-                  desc: "Todas as suas fotos de evolução em um só lugar, organizadas por data. Compare facilmente."
-                },
-              ].map((item, i) => (
-                <div key={i} className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
-                  <p className="font-medium text-emerald-300">{item.title}</p>
-                  <p className="text-sm text-emerald-200/80">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Comparativo Fisiculturista */}
-          <div className="bg-white/5 backdrop-blur rounded-2xl p-6 md:p-8 mb-12">
-            <h3 className="text-xl font-bold text-white mb-6 text-center">O que você ganha com controle total</h3>
-            <div className="grid md:grid-cols-4 gap-6 text-center">
-              {[
-                { value: "100%", label: "dos treinos registrados", desc: "Nunca mais perca uma anotação" },
-                { value: "3x", label: "mais consistência", desc: "Dados mostram que quem registra, evolui mais" },
-                { value: "6 meses", label: "de histórico visual", desc: "Veja de onde você veio" },
-                { value: "∞", label: "motivação", desc: "Ver evolução real motiva a continuar" },
-              ].map((stat, i) => (
-                <div key={i}>
-                  <p className="text-3xl md:text-4xl font-bold text-purple-300">{stat.value}</p>
-                  <p className="text-white font-medium">{stat.label}</p>
-                  <p className="text-sm text-purple-200/70">{stat.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Depoimento Fisiculturista */}
-          <div className="bg-white/10 backdrop-blur rounded-2xl p-6 md:p-8 max-w-3xl mx-auto">
-            <div className="flex gap-1 mb-4 justify-center">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-lg text-white text-center italic mb-6">
-              "Eu treinava há 5 anos e achava que estava evoluindo. Quando comecei a registrar tudo no FitPrime, 
-              descobri que estava estagnado há meses. Em 3 meses de controle real, quebrei todos os meus PRs. 
-              <strong className="text-purple-300">Dados não mentem.</strong>"
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold">
-                M
-              </div>
-              <div className="text-left">
-                <p className="font-bold text-white">Marcos Oliveira</p>
-                <p className="text-sm text-purple-300">Fisiculturista amador • 4 anos de treino</p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Fisiculturista */}
-          <div className="text-center mt-12">
-            <p className="text-purple-200 mb-6">
-              <strong className="text-white">Mesmo preço, mesmas funcionalidades.</strong> Use como seu diário de treino pessoal.
-            </p>
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-lg px-8 py-6"
-              onClick={handleStartTrial}
-            >
-              Quero Controlar Minha Evolução
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 px-4 bg-white">
+      {/* FAQ */}
+      <section className="py-20 px-4 bg-gray-50">
         <div className="container max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900">
-              Perguntas Frequentes
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Perguntas Frequentes</h2>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                q: "Preciso entender de tecnologia para usar?",
-                a: "Não! O FitPrime foi feito para ser simples. Se você sabe usar WhatsApp, sabe usar o FitPrime. Temos tutoriais em vídeo e suporte para te ajudar."
-              },
-              {
                 q: "Posso testar antes de pagar?",
-                a: "Sim! Você tem 1 dia grátis para testar todas as funcionalidades. Não precisa de cartão de crédito para começar."
+                a: "Sim! Você pode testar o FitPrime gratuitamente por 1 dia. É tempo suficiente para conhecer todas as funcionalidades e ver como ele pode te ajudar."
               },
               {
-                q: "E se eu não gostar?",
-                a: "Você pode cancelar a qualquer momento, sem multa e sem burocracia. É só clicar em cancelar na sua conta."
+                q: "Quantos alunos posso cadastrar?",
+                a: "Ilimitados! Não cobramos por aluno. Você pode ter 5 ou 500 alunos pelo mesmo valor."
               },
               {
                 q: "Meus alunos precisam pagar algo?",
-                a: "Não! O acesso ao Portal do Aluno é gratuito para todos os seus clientes. Você paga apenas a sua assinatura."
-              },
-              {
-                q: "Não sou personal, posso usar?",
-                a: "Claro! Muitos fisiculturistas e entusiastas usam o FitPrime como diário de treino pessoal. Você pode registrar seus treinos, acompanhar sua evolução e organizar suas fotos de progresso."
+                a: "Não! O Portal do Aluno é gratuito para seus alunos. Eles acessam treinos e agenda sem custo adicional."
               },
               {
                 q: "Funciona no celular?",
-                a: "Sim! O FitPrime funciona em qualquer dispositivo: celular, tablet ou computador. Você e seus alunos acessam de qualquer lugar."
+                a: "Sim! O FitPrime funciona em qualquer dispositivo com navegador. Você e seus alunos podem acessar pelo celular, tablet ou computador."
               },
               {
-                q: "Como funciona a integração com WhatsApp?",
-                a: "Você conecta seu WhatsApp escaneando um QR Code (igual ao WhatsApp Web). Depois, o sistema envia mensagens automáticas para seus alunos."
+                q: "E se eu quiser cancelar?",
+                a: "Sem problema! Você pode cancelar a qualquer momento, sem multas ou burocracia. Seus dados ficam salvos caso queira voltar."
               },
+              {
+                q: "Não sou personal, posso usar?",
+                a: "Claro! Se você é atleta, fisiculturista ou entusiasta do treino, pode usar o FitPrime para organizar seus próprios treinos e acompanhar sua evolução."
+              }
             ].map((faq, i) => (
-              <Card key={i} className="border shadow-sm">
+              <Card key={i} className="border-0 shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-emerald-500" />
-                    {faq.q}
-                  </CardTitle>
+                  <CardTitle className="text-lg font-semibold text-gray-900">{faq.q}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">{faq.a}</p>
@@ -747,56 +682,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 px-4 bg-gradient-to-br from-emerald-500 to-teal-600">
+      {/* CTA Final */}
+      <section className="py-20 px-4 bg-gradient-to-br from-emerald-600 to-teal-700">
         <div className="container max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
-            Pare de perder dinheiro. <span className="text-emerald-100">Comece agora.</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Pronto para transformar sua carreira?
           </h2>
-          <p className="text-emerald-100 mb-8 max-w-2xl mx-auto">
-            Cada dia que passa sem organização é dinheiro que você está deixando na mesa. 
-            Seus concorrentes já estão usando sistemas profissionais. E você?
+          <p className="text-emerald-100 mb-8 text-lg">
+            Junte-se a mais de 500 personal trainers que já organizaram sua vida com o FitPrime.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg"
-              className="bg-white text-emerald-600 hover:bg-emerald-50 text-lg px-8 py-6"
-              onClick={handleSubscribe}
-            >
-              Assinar por R$ 97/mês
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
-              onClick={handleStartTrial}
-            >
-              Testar Grátis por 1 Dia
-            </Button>
-          </div>
-          <p className="text-emerald-100 text-sm mt-6">
-            <CheckCircle2 className="h-4 w-4 inline mr-1" />
-            Mais de 500 personal trainers já usam • Pagamento seguro • Cancele quando quiser
+          
+          <Button 
+            size="lg"
+            onClick={handleSubscribe}
+            className="bg-white text-emerald-700 hover:bg-gray-100 text-lg px-8 py-6 shadow-lg"
+          >
+            Começar Agora por R$ 97/mês
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          
+          <p className="text-emerald-200 mt-4 text-sm">
+            Pagamento seguro • Cancele quando quiser • Suporte humanizado
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 px-4 bg-gray-900 text-white">
+      <footer className="py-8 px-4 bg-gray-900 text-gray-400">
         <div className="container max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Dumbbell className="h-5 w-5 text-emerald-400" />
-              <span className="font-semibold">FitPrime Manager</span>
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <Dumbbell className="h-4 w-4 text-white" />
+              </div>
+              <span className="font-bold text-white">FitPrime Manager</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-white">Termos de Uso</a>
-              <a href="#" className="hover:text-white">Privacidade</a>
-              <a href="#" className="hover:text-white">Suporte</a>
-            </div>
-            <p className="text-sm text-gray-400">
-              © 2025 FitPrime. Todos os direitos reservados.
+            <p className="text-sm">
+              © 2025 FitPrime Manager. Todos os direitos reservados.
             </p>
           </div>
         </div>
