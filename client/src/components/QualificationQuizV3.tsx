@@ -451,10 +451,76 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
     if (currentStep < QUIZ_QUESTIONS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Calcular score total
-      const totalScore = Object.values(scores).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
-      const normalizedScore = Math.min(Math.max(Math.floor(totalScore / 2), 0), 5);
-      const baseResult = RESULT_MESSAGES[normalizedScore] || RESULT_MESSAGES[0];
+      // Determinar plano baseado na quantidade de alunos (prioridade principal)
+      const studentAnswer = answers["students_count"] as string[] || [];
+      const revenueAnswer = answers["revenue"] as string[] || [];
+      
+      let recommendedProfile: "beginner" | "starter" | "pro" | "business" = "beginner";
+      
+      // Lógica baseada em alunos
+      if (studentAnswer.includes("1_5")) {
+        recommendedProfile = "beginner";
+      } else if (studentAnswer.includes("6_15")) {
+        recommendedProfile = "starter";
+      } else if (studentAnswer.includes("16_30")) {
+        recommendedProfile = "pro";
+      } else if (studentAnswer.includes("over_30")) {
+        recommendedProfile = "business";
+      }
+      
+      // Ajustar se renda for muito baixa (não pode pagar plano caro)
+      if (revenueAnswer.includes("under_2k")) {
+        // Se ganha menos de 2k, máximo é Starter
+        if (recommendedProfile === "pro" || recommendedProfile === "business") {
+          recommendedProfile = "starter";
+        }
+      }
+      
+      // Mapear profile para resultado
+      const profileToResult: Record<string, Omit<QuizResult, "pains">> = {
+        beginner: {
+          profile: "beginner",
+          planName: "Beginner",
+          price: 39.9,
+          studentLimit: 5,
+          extraStudentPrice: 7.98,
+          score: 1,
+          message: "Perfeito para quem está começando! Com até 5 alunos, o plano Beginner é ideal para organizar seu negócio sem pesar no bolso.",
+          urgency: "low",
+        },
+        starter: {
+          profile: "starter",
+          planName: "Starter",
+          price: 97,
+          studentLimit: 15,
+          extraStudentPrice: 6.47,
+          score: 2,
+          message: "Você já tem uma base sólida de alunos! O plano Starter vai te ajudar a organizar tudo e crescer ainda mais.",
+          urgency: "medium",
+        },
+        pro: {
+          profile: "pro",
+          planName: "Pro",
+          price: 147,
+          studentLimit: 25,
+          extraStudentPrice: 5.88,
+          score: 3,
+          message: "Seu negócio está crescendo! O plano Pro tem tudo que você precisa para gerenciar até 25 alunos com eficiência.",
+          urgency: "medium",
+        },
+        business: {
+          profile: "business",
+          planName: "Business",
+          price: 197,
+          studentLimit: 40,
+          extraStudentPrice: 4.93,
+          score: 4,
+          message: "Você é um personal de sucesso! O plano Business foi feito para profissionais como você que precisam escalar.",
+          urgency: "high",
+        },
+      };
+      
+      const baseResult = profileToResult[recommendedProfile];
       
       const quizResult: QuizResult = {
         ...baseResult,

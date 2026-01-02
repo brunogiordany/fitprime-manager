@@ -2317,3 +2317,14 @@
 - [x] Quem não tem renda → Desqualifica e encerra funil
 - [x] Criar tela de desqualificação com mensagem apropriada
 - [ ] Testar fluxo de desqualificação
+
+
+## Melhoria do Quiz - Direcionamento Correto (v10.3)
+- [x] Reformular perguntas para mapear perfil real do personal
+- [x] Usar quantidade de alunos para indicar plano correto
+- [x] Quem ganha menos de R$ 2k → Máximo Starter (R$ 97)
+- [x] Quem tem 1-5 alunos → Beginner
+- [x] Quem tem 6-15 alunos → Starter
+- [x] Quem tem 16-30 alunos → Pro
+- [x] Quem tem 30+ alunos → Business
+- [ ] Testar fluxo completo de direcionamento
