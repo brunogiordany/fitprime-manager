@@ -2169,3 +2169,13 @@
 - [x] Adicionar jornada visual do Aluno com prints passo a passo
 - [x] Criar tabela comparativa de planos com todos os preços e funcionalidades
 - [x] Testar landing page e salvar checkpoint
+
+
+## Widget de Chat de Suporte com IA (v7.0)
+
+- [x] Criar schema do banco de dados para chat (conversations, messages)
+- [ ] Implementar API tRPC para chat (enviar mensagem, listar histórico, marcar como lido)
+- [x] Criar componente widget de chat flutuante
+- [x] Integrar IA para respostas automáticas
+- [ ] Adicionar painel de admin para gerenciar chats
+- [x] Testar widget e salvar checkpoint

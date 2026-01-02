@@ -37,6 +37,7 @@ import {
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo } from "react";
+import ChatWidget from "@/components/ChatWidget";
 
 // Links de checkout dos planos
 const PLANS_CHECKOUT = {
@@ -220,6 +221,7 @@ export default function LandingPagePro() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ChatWidget />
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">

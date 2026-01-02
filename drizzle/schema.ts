@@ -941,3 +941,38 @@ export const subscriptionUsageLogs = mysqlTable("subscription_usage_logs", {
 
 export type SubscriptionUsageLog = typeof subscriptionUsageLogs.$inferSelect;
 export type InsertSubscriptionUsageLog = typeof subscriptionUsageLogs.$inferInsert;
+
+
+// ==================== CHAT SUPPORT (Suporte ao Visitante) ====================
+export const chatConversations = mysqlTable("chat_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  visitorId: varchar("visitorId", { length: 255 }).notNull().unique(), // ID único do visitante (gerado no cliente)
+  visitorName: varchar("visitorName", { length: 255 }),
+  visitorEmail: varchar("visitorEmail", { length: 320 }),
+  visitorPhone: varchar("visitorPhone", { length: 20 }),
+  status: mysqlEnum("status", ["active", "closed", "waiting"]).default("active").notNull(),
+  assignedToPersonalId: int("assignedToPersonalId").references(() => personals.id), // Personal que está atendendo
+  lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"), // Quando foi resolvido
+  source: mysqlEnum("source", ["landing", "website", "app"]).default("landing").notNull(),
+  notes: text("notes"), // Notas internas do personal
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChatConversation = typeof chatConversations.$inferSelect;
+export type InsertChatConversation = typeof chatConversations.$inferInsert;
+
+export const chatSupportMessages = mysqlTable("chat_support_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull().references(() => chatConversations.id),
+  sender: mysqlEnum("sender", ["visitor", "ai", "personal"]).notNull(),
+  senderName: varchar("senderName", { length: 255 }), // Nome de quem enviou (para personal)
+  message: text("message").notNull(),
+  isAutoReply: boolean("isAutoReply").default(false), // Se foi resposta automática da IA
+  readAt: timestamp("readAt"), // Quando foi lido
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChatSupportMessage = typeof chatSupportMessages.$inferSelect;
+export type InsertChatSupportMessage = typeof chatSupportMessages.$inferInsert;
