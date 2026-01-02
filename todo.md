@@ -2525,3 +2525,34 @@
 - [x] Criar tabela comparativa sem expor nomes (App A, B, C)
 - [x] Mostrar todas as funcionalidades do FitPrime vs concorrentes
 - [x] Destacar diferenciais do FitPrime
+
+
+## Reformulação Landing Page v6.5 - Fluxo de Leitura
+- [ ] CTAs levam para seção abaixo (não para quiz direto)
+- [ ] Renomear botões baseado na próxima seção para gerar curiosidade
+- [ ] Lead deve ler página toda para elevar nível de consciência
+- [ ] Sempre passar pelo quiz antes dos planos
+
+## Tabela Comparativa - Correções
+- [ ] Remover "Biblioteca de exercícios em vídeo" (em breve)
+- [ ] Remover menção a preço (R$ 97)
+- [ ] Mostrar APENAS o que o FitPrime tem
+- [ ] Adicionar mais benefícios do FitPrime na tabela
+- [ ] Pesquisar mais concorrentes se necessário
+
+## CTA Final e FAQ
+- [ ] Criar chamada agressiva e persuasiva antes do FAQ
+- [ ] FAQ deve ser a última seção
+- [ ] Perguntas inteligentes que mostram qualidades e geram desejo
+
+
+## Reformulação Landing Page - Fluxo e CTAs (v6.5)
+- [x] Botões CTA levam para seção abaixo (não para quiz direto)
+- [x] Renomear botões baseado na próxima seção (gerar curiosidade)
+- [x] Tabela comparativa: remover "biblioteca de vídeos" (em breve)
+- [x] Tabela comparativa: remover preço (R$ 97)
+- [x] Tabela comparativa: mostrar só o que temos
+- [x] Tabela comparativa: adicionar mais benefícios nossos (17 funcionalidades)
+- [x] CTA final agressivo e persuasivo (contraste vermelho/verde)
+- [x] FAQ por último com perguntas inteligentes (8 perguntas)
+- [x] Perguntas do FAQ mostram qualidades e geram desejo

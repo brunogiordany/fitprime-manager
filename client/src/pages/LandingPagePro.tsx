@@ -320,20 +320,20 @@ export default function LandingPagePro() {
               </div>
             </div>
 
-            {/* CTA Principal */}
+            {/* CTA Principal - Leva para Calculadora */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
                 onClick={() => {
-                  const quizSection = document.getElementById('quiz');
-                  if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+                  const calcSection = document.getElementById('calculadora');
+                  if (calcSection) calcSection.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
               >
-                Descubra Se o FitPrime É Pra Você
+                Quanto Você Está Perdendo Por Mês?
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-sm text-gray-500">Responda 3 perguntas rápidas e descubra</p>
+              <p className="text-sm text-gray-500">Calcule em 30 segundos</p>
             </div>
           </div>
         </div>
@@ -506,23 +506,23 @@ export default function LandingPagePro() {
               {/* Comparação */}
               <div className="bg-emerald-100 rounded-xl p-4 mb-6">
                 <p className="text-emerald-800 text-center">
-                  <strong>Investimento:</strong> A partir de R$ 97/mês<br/>
-                  <span className="text-sm">Retorno potencial: <strong>R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês</strong></span>
+                  <strong>Retorno potencial:</strong> <span className="text-lg font-bold">R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês</span><br/>
+                  <span className="text-sm">Tempo economizado: <strong>{horasBurocracia * 4}h/mês</strong></span>
                 </p>
               </div>
 
               <Button 
                 size="lg" 
                 onClick={() => {
-                  const quizSection = document.getElementById('quiz');
-                  if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+                  const featuresSection = document.getElementById('features');
+                  if (featuresSection) featuresSection.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
               >
-                Qual Plano Combina Comigo?
+                Como o FitPrime Faz Isso?
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-center text-sm text-gray-500 mt-3">Descubra em menos de 2 minutos</p>
+              <p className="text-center text-sm text-gray-500 mt-3">Veja o passo a passo completo</p>
             </div>
           </div>
 
@@ -799,7 +799,7 @@ export default function LandingPagePro() {
               }}
               className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
             >
-              Veja Se o FitPrime É Pra Você
+              Quais São os Benefícios Exclusivos?
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -900,39 +900,33 @@ export default function LandingPagePro() {
           {/* CTA Principal - Quiz */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-10 text-center text-white">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Será que o FitPrime é pra você?
+              Tudo isso em um só lugar
             </h3>
             <p className="text-emerald-100 mb-8 text-lg max-w-2xl mx-auto">
-              Responda 3 perguntas simples e descubra qual plano combina com seu momento como personal.
+              Economize tempo, ganhe mais dinheiro e tenha controle total do seu negócio.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => window.location.href = '/quiz'}
+                onClick={() => {
+                  const atletasSection = document.getElementById('atletas');
+                  if (atletasSection) atletasSection.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
               >
-                <Target className="mr-2 h-5 w-5" />
-                Descobrir Meu Plano Ideal
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => window.location.href = '/pricing-complete'}
-                className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
-              >
-                Já Sei o Que Quero
+                E Para Atletas e Fisiculturistas?
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
             <p className="text-emerald-200 text-sm mt-6">
-              Menos de 2 minutos • Resultado personalizado • Sem compromisso
+              Funcionalidades avançadas para quem leva a sério
             </p>
           </div>
         </div>
       </section>
 
       {/* Seção para Fisiculturistas e Atletas */}
-      <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white" id="atletas">
         <div className="container max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -1010,10 +1004,14 @@ export default function LandingPagePro() {
               </p>
 
               <Button 
-                onClick={() => window.location.href = '/quiz'}
+                onClick={() => {
+                  const socialSection = document.getElementById('social-proof');
+                  if (socialSection) socialSection.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg py-6"
               >
-                Descubra Se É Pra Você
+                Quem Já Usa o FitPrime?
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -1021,7 +1019,7 @@ export default function LandingPagePro() {
       </section>
 
       {/* Social Proof */}
-      <section className="py-16 px-4 bg-white border-y border-gray-100">
+      <section className="py-16 px-4 bg-white border-y border-gray-100" id="social-proof">
         <div className="container max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Confiado por +500 personais trainers</h3>
@@ -1076,30 +1074,29 @@ export default function LandingPagePro() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { feature: "IA para gerar treinos personalizados", fitprime: true, a: false, b: false, c: "partial" },
-                  { feature: "Agendamento automático com IA", fitprime: true, a: false, b: false, c: false },
-                  { feature: "Cobranças automáticas (PIX/Cartão)", fitprime: true, a: "partial", b: true, c: false },
-                  { feature: "Bloqueio automático para inadimplentes", fitprime: true, a: false, b: false, c: false },
-                  { feature: "WhatsApp integrado", fitprime: true, a: false, b: "partial", c: false },
-                  { feature: "Dashboard financeiro (MRR, Churn)", fitprime: true, a: false, b: false, c: "partial" },
-                  { feature: "Biblioteca de exercícios em vídeo", fitprime: true, a: true, b: true, c: true },
-                  { feature: "Anamnese e avaliação física", fitprime: true, a: true, b: true, c: true },
-                  { feature: "App do aluno (iOS/Android)", fitprime: true, a: true, b: true, c: true },
-                  { feature: "Gráficos de evolução do aluno", fitprime: true, a: false, b: false, c: true },
-                  { feature: "Diário de treino detalhado", fitprime: true, a: false, b: false, c: false },
-                  { feature: "Relatórios de negócio", fitprime: true, a: false, b: false, c: "partial" },
-                  { feature: "Integração com wearables", fitprime: "soon", a: false, b: false, c: true },
-                  { feature: "Suporte em português", fitprime: true, a: true, b: true, c: "partial" },
-                  { feature: "Preço acessível (a partir de R$ 97)", fitprime: true, a: true, b: true, c: false },
-                ].map((row, i) => (
+                {([
+                  { feature: "IA para gerar treinos personalizados", a: false, b: false, c: "partial" },
+                  { feature: "Agendamento automático com IA (4 semanas)", a: false, b: false, c: false },
+                  { feature: "Cobranças automáticas (PIX/Cartão)", a: "partial", b: true, c: false },
+                  { feature: "Bloqueio automático para inadimplentes", a: false, b: false, c: false },
+                  { feature: "WhatsApp integrado (notificações)", a: false, b: "partial", c: false },
+                  { feature: "Dashboard financeiro (MRR, Churn, Previsão)", a: false, b: false, c: "partial" },
+                  { feature: "Portal do aluno personalizado", a: "partial", b: "partial", c: true },
+                  { feature: "Anamnese e avaliação física completa", a: true, b: true, c: true },
+                  { feature: "Gráficos de evolução (peso, medidas, fotos)", a: false, b: false, c: "partial" },
+                  { feature: "Diário de treino detalhado", a: false, b: false, c: false },
+                  { feature: "Relatórios de negócio avançados", a: false, b: false, c: "partial" },
+                  { feature: "Análise de composição corporal", a: false, b: false, c: "partial" },
+                  { feature: "Periodização de treinos", a: "partial", b: "partial", c: true },
+                  { feature: "Gestão de múltiplos personais", a: false, b: false, c: "partial" },
+                  { feature: "Suporte em português 24/7", a: true, b: true, c: "partial" },
+                  { feature: "Automações personalizadas", a: false, b: false, c: false },
+                  { feature: "Lixeira com recuperação de dados", a: false, b: false, c: false },
+                ] as { feature: string; a: boolean | "partial"; b: boolean | "partial"; c: boolean | "partial" }[]).map((row, i) => (
                   <tr key={i} className={`border-b border-gray-100 ${i % 2 === 0 ? 'bg-gray-50/50' : ''}`}>
                     <td className="py-4 px-4 text-gray-700 font-medium">{row.feature}</td>
                     <td className="py-4 px-4 text-center bg-emerald-50/50">
-                      {row.fitprime === true && <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto" />}
-                      {row.fitprime === false && <X className="h-6 w-6 text-gray-300 mx-auto" />}
-                      {row.fitprime === "partial" && <Minus className="h-6 w-6 text-amber-500 mx-auto" />}
-                      {row.fitprime === "soon" && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Em breve</span>}
+                      <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto" />
                     </td>
                     <td className="py-4 px-4 text-center">
                       {row.a === true && <CheckCircle2 className="h-5 w-5 text-gray-400 mx-auto" />}
@@ -1142,10 +1139,13 @@ export default function LandingPagePro() {
           <div className="text-center mt-12">
             <Button 
               size="lg" 
-              onClick={() => window.location.href = '/quiz'}
+              onClick={() => {
+                const faqSection = document.getElementById('faq');
+                if (faqSection) faqSection.scrollIntoView({ behavior: 'smooth' });
+              }}
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
             >
-              Descubra Se o FitPrime É Pra Você
+              Ainda Tem Dúvidas?
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -1153,42 +1153,55 @@ export default function LandingPagePro() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-20 px-4 bg-gray-50" id="faq">
         <div className="container max-w-4xl mx-auto">
           <div className="text-center mb-16">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
+              <MessageSquare className="h-3 w-3 mr-1" />
+              Dúvidas Frequentes
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Perguntas Frequentes
+              Tudo o que você precisa saber
             </h2>
+            <p className="text-gray-600">Respostas para as perguntas mais comuns dos personais</p>
           </div>
 
           <div className="space-y-6">
             {[
               {
-                q: "Como funciona para começar?",
-                a: "Você faz o quiz para descobrir o plano ideal, escolhe o que combina com seu momento e já pode começar a usar. Simples assim!"
+                q: "Como a IA gera treinos personalizados em segundos?",
+                a: "Nossa IA analisa a anamnese completa do aluno (objetivos, restrições, experiência, equipamentos disponíveis) e gera um treino 100% personalizado em menos de 30 segundos. Você pode ajustar qualquer exercício depois. É como ter um assistente que nunca dorme."
               },
               {
-                q: "Posso cancelar a qualquer momento?",
-                a: "Sim! Sem contrato, sem multa. Você pode cancelar sua assinatura a qualquer momento diretamente na plataforma."
+                q: "Como funciona o agendamento automático de 4 semanas?",
+                a: "Você define os dias e horários de cada aluno uma vez. A IA cria automaticamente 4 semanas de agenda, envia notificações pelo WhatsApp e gerencia remarcações. Você nunca mais vai precisar ficar trocando mensagem pra confirmar horário."
               },
               {
-                q: "Como funciona a cobrança por aluno excedente?",
-                a: "Se você contratar o plano Starter (15 alunos) e tiver 20 alunos, paga R$ 6,47 por cada aluno extra. Automático e sem surpresas."
+                q: "Como as cobranças automáticas acabam com a inadimplência?",
+                a: "O FitPrime envia cobranças automáticas por PIX ou cartão na data que você definir. Se o aluno não pagar, o sistema bloqueia o acesso ao portal automaticamente. Sem constrangimento, sem conversa difícil. Você foca em treinar, não em cobrar."
               },
               {
-                q: "Meus dados estão seguros?",
-                a: "100% seguro! Usamos criptografia de ponta a ponta, backup automático e conformidade com LGPD. Seus dados são seus."
+                q: "Meus alunos vão conseguir usar o portal sozinhos?",
+                a: "Sim! O portal do aluno foi feito pra ser simples. Eles vêem o treino do dia, marcam os exercícios feitos, acompanham a evolução e podem remarcar sessões. Tudo pelo celular, sem precisar te mandar mensagem."
               },
               {
-                q: "Posso integrar com outras ferramentas?",
-                a: "Sim! FitPrime integra com WhatsApp, Cakto (pagamentos), Google Calendar e mais. Veja nossa documentação de API."
+                q: "Quanto tempo leva pra começar a usar?",
+                a: "Menos de 10 minutos. Você faz o quiz, escolhe o plano, cadastra seus alunos (pode importar do Excel) e já começa a usar. Sem treinamento complicado, sem curva de aprendizado. Se você sabe usar WhatsApp, sabe usar o FitPrime."
               },
               {
-                q: "Qual é o suporte?",
-                a: "Depende do plano. Starter tem suporte por email. Pro+ tem suporte prioritário. Enterprise tem suporte 24/7 dedicado."
+                q: "E se eu precisar de ajuda?",
+                a: "Nosso suporte é 100% em português e responde rápido. Além disso, temos tutoriais em vídeo, central de ajuda e um grupo exclusivo de personais que usam o FitPrime pra trocar experiências."
+              },
+              {
+                q: "Posso cancelar quando quiser?",
+                a: "Sim, sem contrato e sem multa. Mas a verdade é que depois que você experimentar ter 10+ horas por semana de volta e nunca mais precisar cobrar aluno, vai ser difícil querer voltar pro WhatsApp e planilha."
+              },
+              {
+                q: "O FitPrime funciona pra quem tem poucos alunos?",
+                a: "Funciona e faz ainda mais sentido! Com poucos alunos, cada hora que você perde com burocracia é uma hora que poderia estar captando novos alunos ou descansando. O FitPrime te dá esse tempo de volta."
               }
             ].map((faq, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 border border-gray-200">
+              <div key={i} className="bg-white rounded-xl p-6 border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all">
                 <h3 className="font-semibold text-gray-900 mb-3 text-lg">{faq.q}</h3>
                 <p className="text-gray-600 leading-relaxed">{faq.a}</p>
               </div>
@@ -1197,55 +1210,89 @@ export default function LandingPagePro() {
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section className="py-20 px-4 bg-gradient-to-r from-emerald-600 to-teal-600">
-        <div className="container max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Será que o FitPrime é pra você?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Responda 3 perguntas rápidas e descubra qual plano combina com seu momento.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* CTA Final - Agressivo e Persuasivo */}
+      <section className="py-24 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="container max-w-4xl mx-auto text-center">
+          {/* Headline Agressiva */}
+          <div className="mb-8">
+            <p className="text-emerald-400 font-semibold mb-4 text-lg">Chegou a hora de decidir</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              Você vai continuar perdendo<br/>
+              <span className="text-red-400">R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}/mês</span> em burocracia?
+            </h2>
+          </div>
+
+          {/* Contraste */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <div className="bg-red-900/30 border border-red-500/30 rounded-2xl p-6 text-left">
+              <h3 className="text-red-400 font-bold text-xl mb-4">Continuar como está:</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Perder {horasBurocracia * 4}h/mês com WhatsApp e planilhas</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Deixar de ganhar R$ {calculosPersonalizados.perdaMensal.toLocaleString('pt-BR')}/mês</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Continuar cobrando aluno no constrangimento</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Trabalhar mais, ganhar menos</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl p-6 text-left">
+              <h3 className="text-emerald-400 font-bold text-xl mb-4">Usar o FitPrime:</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span>Recuperar {horasBurocracia * 4}h/mês pra treinar ou descansar</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span>Potencial de ganhar R$ {calculosPersonalizados.ganhoExtra.toLocaleString('pt-BR')}/mês a mais</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span>Cobranças automáticas sem constrangimento</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span>Trabalhar menos, ganhar mais</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 md:p-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              Descubra em 2 minutos se o FitPrime é pra você
+            </h3>
+            <p className="text-emerald-100 mb-8 text-lg">
+              Responda 3 perguntas simples e veja qual plano combina com seu momento.
+            </p>
             <Button 
               size="lg" 
               onClick={() => window.location.href = '/quiz'}
-              className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
+              className="bg-white text-emerald-600 hover:bg-gray-100 text-xl px-12 py-8 font-bold shadow-2xl hover:scale-105 transition-transform"
             >
-              Descobrir Meu Plano Ideal
-              <ArrowRight className="ml-2 h-5 w-5" />
+              QUERO DESCOBRIR AGORA
+              <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/pricing-complete'}
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 text-lg px-8 py-6"
-            >
-              Já Sei o Que Quero
-            </Button>
+            <p className="text-emerald-200 text-sm mt-6">
+              Sem compromisso • Sem cartão de crédito • Resultado instantâneo
+            </p>
           </div>
 
-          {/* Urgência */}
-          <div className="mt-12 bg-white/10 rounded-xl p-6 backdrop-blur border border-white/20">
-            <p className="text-sm opacity-90 mb-2">⏰ Oferta especial por tempo limitado:</p>
-            <div className="flex items-center justify-center gap-4 text-2xl font-bold">
-              <div className="text-center">
-                <div>{timeLeft.days}</div>
-                <div className="text-xs opacity-75">dias</div>
-              </div>
-              <span>:</span>
-              <div className="text-center">
-                <div>{String(timeLeft.hours).padStart(2, '0')}</div>
-                <div className="text-xs opacity-75">horas</div>
-              </div>
-              <span>:</span>
-              <div className="text-center">
-                <div>{String(timeLeft.minutes).padStart(2, '0')}</div>
-                <div className="text-xs opacity-75">minutos</div>
-              </div>
-            </div>
-            <p className="text-sm opacity-90 mt-4">🎯 Apenas {spotsLeft} vagas restantes para este período</p>
-          </div>
+          {/* Urgência Sutil */}
+          <p className="text-gray-400 mt-8 text-sm">
+            +500 personais já usam o FitPrime. A pergunta é: você vai ficar pra trás?
+          </p>
         </div>
       </section>
 
