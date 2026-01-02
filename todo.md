@@ -2491,3 +2491,8 @@
 
 - [x] Corrigir editor de páginas para carregar conteúdo das páginas existentes
 - [ ] Ao clicar em Editar Página, deve carregar os blocos salvos no banco
+
+## Landing Page - Melhorias ICP (v6.0)
+- [x] Remover botões "Como Funciona", "Descubra seu Plano" e "Teste Grátis" do topo
+- [x] Reformular cálculo de perda financeira com valores realistas de mercado
+- [ ] Ajustar copy para conectar melhor com ICP de personal trainers

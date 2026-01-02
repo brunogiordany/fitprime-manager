@@ -240,14 +240,11 @@ export default function LandingPagePro() {
             <span className="font-bold text-xl text-gray-900">FitPrime</span>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
-              Como Funciona
+            <Button variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
+              Planos
             </Button>
-            <Button variant="ghost" onClick={() => window.location.href = '/quiz'}>
-              Descubra Seu Plano
-            </Button>
-            <Button onClick={handleStartTrial} className="bg-emerald-600 hover:bg-emerald-700">
-              Testar Grátis
+            <Button onClick={() => window.location.href = '/quiz'} className="bg-emerald-600 hover:bg-emerald-700">
+              Começar Agora
             </Button>
           </div>
         </div>
@@ -311,7 +308,7 @@ export default function LandingPagePro() {
               </div>
 
               <p className="text-lg text-gray-700 font-semibold">
-                💰 Resultado: Você perde <span className="text-red-600">R$ 5.000 a R$ 15.000 por mês</span> em tempo desperdiçado e alunos que saem
+                ⏰ Resultado: São <span className="text-red-600">40+ horas por mês</span> que você poderia usar para atender mais alunos ou ter tempo livre
               </p>
             </div>
 

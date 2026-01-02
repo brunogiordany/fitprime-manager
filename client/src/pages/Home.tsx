@@ -129,11 +129,8 @@ export default function Home() {
             <span className="font-bold text-xl text-gray-900">FitPrime</span>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
-              Recursos
-            </Button>
             <Button variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
-              Preços
+              Planos
             </Button>
             <Button onClick={handleSubscribe} className="bg-emerald-600 hover:bg-emerald-700">
               Começar Agora
