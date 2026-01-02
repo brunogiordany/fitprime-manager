@@ -1989,3 +1989,91 @@
 - [x] Acesso de teste de 30 dias (liberado manualmente pelo owner)
 - [x] Mostrar dias restantes de trial/teste no paymentStatus
 - [x] Testes unitários passando (12 testes)
+
+
+## Painel de Administração Completo (v5.0)
+
+### Dashboard Principal
+- [ ] KPIs principais (total personais, ativos, trial, receita estimada)
+- [ ] Gráfico de crescimento de usuários (últimos 30 dias)
+- [ ] Gráfico de conversão trial -> pagante
+- [ ] Gráfico de receita mensal
+- [ ] Mapa de calor de atividade dos personais
+- [ ] Top 5 personais mais ativos
+- [ ] Alertas e notificações do sistema
+
+### Gestão de Personais
+- [ ] Lista completa com filtros avançados
+- [ ] Detalhes do personal (alunos, sessões, receita)
+- [ ] Histórico de assinatura
+- [ ] Ações em massa (ativar, desativar, notificar)
+- [ ] Exportar lista para CSV/Excel
+
+### Gestão de Assinaturas
+- [ ] Visão geral de assinaturas por status
+- [ ] Renovações pendentes
+- [ ] Cancelamentos recentes
+- [ ] Histórico de pagamentos
+- [ ] Cupons e descontos
+
+### Métricas e Relatórios
+- [ ] Relatório de crescimento
+- [ ] Relatório de churn (cancelamentos)
+- [ ] Relatório de receita (MRR, ARR)
+- [ ] Relatório de uso do sistema
+- [ ] Exportar relatórios em PDF
+
+### Logs e Auditoria
+- [ ] Log de ações administrativas
+- [ ] Log de logins
+- [ ] Log de erros do sistema
+- [ ] Filtros por data, usuário, ação
+
+### Configurações do Sistema
+- [ ] Configurações gerais
+- [ ] Configurações de email/notificações
+- [ ] Configurações de pagamento
+- [ ] Backup e manutenção
+
+### Comunicação
+- [ ] Enviar notificação para todos os personais
+- [ ] Enviar notificação para grupo específico
+- [ ] Templates de mensagens
+- [ ] Histórico de comunicações
+
+
+## Painel de Administração Completo (v5.0) - IMPLEMENTADO
+### Dashboard Principal
+- [x] KPIs principais (total personais, ativos, trial, MRR estimado, taxa de conversão)
+- [x] Gráfico de crescimento de usuários (últimos 30 dias)
+- [x] Distribuição de status das assinaturas (gráfico de pizza)
+- [x] Top 5 personais por número de alunos
+- [x] Top 5 personais mais ativos (sessões nos últimos 30 dias)
+- [x] Alertas de assinaturas expirando em 7 dias
+
+### Gestão de Personais
+- [x] Lista completa com busca por nome, email, empresa, WhatsApp
+- [x] Detalhes do personal (alunos, sessões, treinos)
+- [x] Ações: Liberar teste, Revogar teste, Ativar assinatura, Cancelar
+- [x] Badges de status (Ativo, Trial, Teste, Expirado, Cancelado)
+
+### Gestão de Assinaturas
+- [x] Métricas de receita (MRR e ARR estimados)
+- [x] Funil de conversão trial → pagante
+- [x] Distribuição por status
+
+### Atividade
+- [x] Estatísticas do sistema (alunos, sessões, usuários)
+- [x] Atividade recente (últimos cadastros)
+
+### Endpoints Backend
+- [x] admin.dashboardMetrics - Métricas gerais
+- [x] admin.growthData - Dados de crescimento
+- [x] admin.topPersonalsByStudents - Top personais por alunos
+- [x] admin.mostActivePersonals - Personais mais ativos
+- [x] admin.subscriptionDistribution - Distribuição de assinaturas
+- [x] admin.expiringSubscriptions - Assinaturas expirando
+- [x] admin.recentActivity - Atividade recente
+- [x] admin.personalDetails - Detalhes de um personal
+- [x] admin.revenueMetrics - Métricas de receita
+- [x] admin.conversionData - Dados de conversão

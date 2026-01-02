@@ -249,6 +249,78 @@ export const appRouter = router({
         ownerName: process.env.OWNER_NAME ?? ctx.user.name ?? 'Admin',
       };
     }),
+    
+    // Métricas do dashboard admin
+    dashboardMetrics: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.getAdminDashboardMetrics();
+    }),
+    
+    // Dados de crescimento
+    growthData: ownerProcedure
+      .input(z.object({ days: z.number().default(30) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getGrowthData(input.days);
+      }),
+    
+    // Top personais por alunos
+    topPersonalsByStudents: ownerProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getTopPersonalsByStudents(input.limit);
+      }),
+    
+    // Personais mais ativos
+    mostActivePersonals: ownerProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getMostActivePersonals(input.limit);
+      }),
+    
+    // Distribuição de assinaturas
+    subscriptionDistribution: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.getSubscriptionDistribution();
+    }),
+    
+    // Assinaturas expirando em breve
+    expiringSubscriptions: ownerProcedure
+      .input(z.object({ days: z.number().default(7) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getExpiringSubscriptions(input.days);
+      }),
+    
+    // Atividade recente
+    recentActivity: ownerProcedure
+      .input(z.object({ limit: z.number().default(50) }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getRecentActivity(input.limit);
+      }),
+    
+    // Detalhes de um personal
+    personalDetails: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        const adminDb = await import('./adminDb');
+        return adminDb.getPersonalDetailsForAdmin(input.personalId);
+      }),
+    
+    // Métricas de receita
+    revenueMetrics: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.getRevenueMetrics();
+    }),
+    
+    // Dados de conversão
+    conversionData: ownerProcedure.query(async () => {
+      const adminDb = await import('./adminDb');
+      return adminDb.getConversionData();
+    }),
   }),
   
   // ==================== SUPORTE COM IA ====================
