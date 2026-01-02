@@ -145,6 +145,56 @@ export async function updatePersonal(id: number, data: Partial<InsertPersonal>) 
   await db.update(personals).set(data).where(eq(personals.id, id));
 }
 
+// Listar todos os personais (para administração)
+export async function getAllPersonals() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db
+    .select({
+      id: personals.id,
+      userId: personals.userId,
+      businessName: personals.businessName,
+      cref: personals.cref,
+      whatsappNumber: personals.whatsappNumber,
+      subscriptionStatus: personals.subscriptionStatus,
+      subscriptionExpiresAt: personals.subscriptionExpiresAt,
+      trialEndsAt: personals.trialEndsAt,
+      testAccessEndsAt: personals.testAccessEndsAt,
+      testAccessGrantedBy: personals.testAccessGrantedBy,
+      testAccessGrantedAt: personals.testAccessGrantedAt,
+      createdAt: personals.createdAt,
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(personals)
+    .leftJoin(users, eq(personals.userId, users.id))
+    .orderBy(desc(personals.createdAt));
+  
+  return result;
+}
+
+// Atualizar acesso de teste de um personal
+export async function updatePersonalTestAccess(personalId: number, data: {
+  testAccessEndsAt: Date | null;
+  testAccessGrantedBy: string | null;
+  testAccessGrantedAt: Date | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(personals).set(data).where(eq(personals.id, personalId));
+}
+
+// Atualizar assinatura de um personal
+export async function updatePersonalSubscription(personalId: number, data: {
+  subscriptionStatus?: 'active' | 'trial' | 'expired' | 'cancelled';
+  subscriptionExpiresAt?: Date | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(personals).set(data).where(eq(personals.id, personalId));
+}
+
 // ==================== STUDENT FUNCTIONS ====================
 export async function getStudentsByPersonalId(personalId: number, filters?: { status?: string; search?: string }) {
   const db = await getDb();

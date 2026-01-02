@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router, ownerProcedure } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
@@ -38,22 +38,64 @@ async function getOrCreatePersonal(userId: number) {
 }
 
 // Helper to check if subscription is valid (with 1 day grace period)
-function isSubscriptionValid(personal: { subscriptionStatus: string; subscriptionExpiresAt: Date | null }): { valid: boolean; daysOverdue: number } {
-  // Trial and active statuses are always valid if not expired
+// Considera: trial de 1 dia, acesso de teste (30 dias), e assinatura paga
+function isSubscriptionValid(personal: { 
+  subscriptionStatus: string; 
+  subscriptionExpiresAt: Date | null;
+  trialEndsAt?: Date | null;
+  testAccessEndsAt?: Date | null;
+  createdAt?: Date | null;
+}): { valid: boolean; daysOverdue: number } {
+  const now = new Date();
+  
+  // 1. Verificar acesso de teste (liberado pelo owner - 30 dias)
+  if (personal.testAccessEndsAt) {
+    const testEndsAt = new Date(personal.testAccessEndsAt);
+    if (now <= testEndsAt) {
+      return { valid: true, daysOverdue: 0 };
+    }
+  }
+  
+  // 2. Verificar trial de 1 dia (novos usuários)
   if (personal.subscriptionStatus === 'trial') {
+    // Verificar se tem data de término do trial
+    if (personal.trialEndsAt) {
+      const trialEndsAt = new Date(personal.trialEndsAt);
+      if (now <= trialEndsAt) {
+        return { valid: true, daysOverdue: 0 };
+      } else {
+        // Trial expirou
+        const daysOverdue = Math.floor((now.getTime() - trialEndsAt.getTime()) / (1000 * 60 * 60 * 24));
+        return { valid: false, daysOverdue };
+      }
+    }
+    // Trial sem data definida (legado) - considerar válido por 1 dia a partir do cadastro
+    if (personal.createdAt) {
+      const createdAt = new Date(personal.createdAt);
+      const trialEnd = new Date(createdAt);
+      trialEnd.setDate(trialEnd.getDate() + 1); // 1 dia de trial
+      
+      if (now <= trialEnd) {
+        return { valid: true, daysOverdue: 0 };
+      } else {
+        const daysOverdue = Math.floor((now.getTime() - trialEnd.getTime()) / (1000 * 60 * 60 * 24));
+        return { valid: false, daysOverdue };
+      }
+    }
+    // Fallback: trial sem data de criação - considerar válido
     return { valid: true, daysOverdue: 0 };
   }
   
+  // 3. Cancelado ou expirado
   if (personal.subscriptionStatus === 'cancelled' || personal.subscriptionStatus === 'expired') {
     return { valid: false, daysOverdue: 999 };
   }
   
-  // Check expiration date with 1 day grace period
+  // 4. Verificar data de expiração com 1 dia de tolerância (assinatura ativa)
   if (personal.subscriptionExpiresAt) {
-    const now = new Date();
     const expiresAt = new Date(personal.subscriptionExpiresAt);
     const gracePeriodEnd = new Date(expiresAt);
-    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1); // 1 day grace period
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1); // 1 dia de tolerância
     
     if (now > gracePeriodEnd) {
       const daysOverdue = Math.floor((now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60 * 24));
@@ -106,6 +148,104 @@ const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  
+  // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
+  admin: router({
+    // Listar todos os personais para gerenciamento
+    listPersonals: ownerProcedure.query(async () => {
+      const personals = await db.getAllPersonals();
+      return personals;
+    }),
+    
+    // Liberar acesso de teste para um personal (30 dias)
+    grantTestAccess: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+        days: z.number().default(30),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const testAccessEndsAt = new Date();
+        testAccessEndsAt.setDate(testAccessEndsAt.getDate() + input.days);
+        
+        await db.updatePersonalTestAccess(input.personalId, {
+          testAccessEndsAt,
+          testAccessGrantedBy: ctx.user.name || 'Owner',
+          testAccessGrantedAt: new Date(),
+        });
+        
+        return {
+          success: true,
+          message: `Acesso de teste liberado por ${input.days} dias`,
+          expiresAt: testAccessEndsAt,
+        };
+      }),
+    
+    // Revogar acesso de teste
+    revokeTestAccess: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updatePersonalTestAccess(input.personalId, {
+          testAccessEndsAt: null,
+          testAccessGrantedBy: null,
+          testAccessGrantedAt: null,
+        });
+        
+        return {
+          success: true,
+          message: 'Acesso de teste revogado',
+        };
+      }),
+    
+    // Ativar assinatura manualmente (para testes ou casos especiais)
+    activateSubscription: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+        days: z.number().default(30),
+      }))
+      .mutation(async ({ input }) => {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + input.days);
+        
+        await db.updatePersonalSubscription(input.personalId, {
+          subscriptionStatus: 'active',
+          subscriptionExpiresAt: expiresAt,
+        });
+        
+        return {
+          success: true,
+          message: `Assinatura ativada por ${input.days} dias`,
+          expiresAt,
+        };
+      }),
+    
+    // Cancelar assinatura manualmente
+    cancelSubscription: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updatePersonalSubscription(input.personalId, {
+          subscriptionStatus: 'cancelled',
+        });
+        
+        return {
+          success: true,
+          message: 'Assinatura cancelada',
+        };
+      }),
+    
+    // Verificar se o usuário atual é o owner
+    isOwner: protectedProcedure.query(async ({ ctx }) => {
+      const ownerOpenId = process.env.OWNER_OPEN_ID ?? '';
+      return {
+        isOwner: ctx.user.openId === ownerOpenId,
+        ownerName: process.env.OWNER_NAME ?? 'Admin',
+      };
+    }),
+  }),
   
   // ==================== SUPORTE COM IA ====================
   support: router({

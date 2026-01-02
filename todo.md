@@ -1976,3 +1976,16 @@
 - [x] Redirecionar para página de bloqueio quando assinatura vencida
 - [x] Botão de renovação aponta para checkout da Cakto
 - [x] Testes unitários passando (7 testes)
+
+
+## Sistema de Trial e Acesso de Teste (v4.9)
+- [x] Adicionar campo trialEndsAt na tabela personals (1 dia após cadastro)
+- [x] Adicionar campo testAccessEndsAt na tabela personals (para acessos liberados pelo owner)
+- [x] Adicionar campo testAccessGrantedBy e testAccessGrantedAt na tabela personals
+- [x] Criar endpoint para owner liberar acesso de teste (30 dias)
+- [x] Criar página de administração para gerenciar acessos de teste (/admin)
+- [x] Atualizar verificação de assinatura para considerar trial e acesso de teste
+- [x] Trial de 1 dia para novos usuários (automático no cadastro)
+- [x] Acesso de teste de 30 dias (liberado manualmente pelo owner)
+- [x] Mostrar dias restantes de trial/teste no paymentStatus
+- [x] Testes unitários passando (12 testes)

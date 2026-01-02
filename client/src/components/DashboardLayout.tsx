@@ -165,18 +165,6 @@ function DashboardLayoutContent({
     }
   );
   
-  // Se assinatura não está válida, mostrar tela de bloqueio
-  if (!paymentLoading && paymentStatus && !paymentStatus.isValid) {
-    return (
-      <SubscriptionBlocked
-        status={paymentStatus.status as 'overdue' | 'cancelled' | 'expired'}
-        daysOverdue={paymentStatus.daysOverdue}
-        expiresAt={paymentStatus.expiresAt}
-        message={paymentStatus.message}
-      />
-    );
-  }
-  
   // Query para mensagens não lidas do chat
   const { data: totalUnread } = trpc.chat.totalUnread.useQuery(
     undefined,
@@ -189,6 +177,7 @@ function DashboardLayoutContent({
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
+  // Todos os useEffects devem vir antes de qualquer return condicional
   useEffect(() => {
     if (isCollapsed) {
       setIsResizing(false);
@@ -224,6 +213,18 @@ function DashboardLayoutContent({
       document.body.style.userSelect = "";
     };
   }, [isResizing, setSidebarWidth]);
+  
+  // Se assinatura não está válida, mostrar tela de bloqueio (após todos os hooks e useEffects)
+  if (!paymentLoading && paymentStatus && !paymentStatus.isValid) {
+    return (
+      <SubscriptionBlocked
+        status={paymentStatus.status as 'overdue' | 'cancelled' | 'expired' | 'trial_expired'}
+        daysOverdue={paymentStatus.daysOverdue}
+        expiresAt={paymentStatus.expiresAt}
+        message={paymentStatus.message}
+      />
+    );
+  }
 
   return (
     <>

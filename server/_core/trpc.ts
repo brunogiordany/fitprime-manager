@@ -43,3 +43,22 @@ export const adminProcedure = t.procedure.use(
     });
   }),
 );
+
+// Owner procedure - apenas o dono do sistema pode acessar
+export const ownerProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const { ctx, next } = opts;
+    const ownerOpenId = process.env.OWNER_OPEN_ID ?? "";
+
+    if (!ctx.user || ctx.user.openId !== ownerOpenId) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Apenas o administrador do sistema pode acessar esta funcionalidade." });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }),
+);

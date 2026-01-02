@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, CreditCard, Clock, ExternalLink } from "lucide-react";
 
 interface SubscriptionBlockedProps {
-  status: 'overdue' | 'cancelled' | 'expired';
+  status: 'overdue' | 'cancelled' | 'expired' | 'trial_expired';
   daysOverdue: number;
   expiresAt?: Date | null;
   message: string;
@@ -27,6 +27,7 @@ export default function SubscriptionBlocked({ status, daysOverdue, message }: Su
           <CardTitle className="text-2xl text-red-700">
             {status === 'cancelled' ? 'Assinatura Cancelada' : 
              status === 'expired' ? 'Assinatura Expirada' : 
+             status === 'trial_expired' ? 'Período de Teste Encerrado' :
              'Pagamento em Atraso'}
           </CardTitle>
           <CardDescription className="text-base text-gray-600 mt-2">
@@ -45,6 +46,8 @@ export default function SubscriptionBlocked({ status, daysOverdue, message }: Su
                     ? `${daysOverdue} dia(s) em atraso`
                     : status === 'cancelled' 
                     ? 'Assinatura foi cancelada'
+                    : status === 'trial_expired'
+                    ? 'Seu período de teste de 1 dia terminou'
                     : 'Assinatura expirou'}
                 </p>
                 <p className="text-sm text-red-600">

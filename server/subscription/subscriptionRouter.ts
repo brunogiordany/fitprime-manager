@@ -36,22 +36,84 @@ async function getPersonal(userId: number) {
 export const subscriptionRouter = router({
   /**
    * Verifica se o pagamento está em dia (com 1 dia de tolerância)
+   * Considera: trial de 1 dia, acesso de teste (30 dias), e assinatura paga
    */
   paymentStatus: protectedProcedure.query(async ({ ctx }) => {
     const personal = await getPersonal(ctx.user.id);
+    const now = new Date();
     
-    // Trial sempre é válido
-    if (personal.subscriptionStatus === 'trial') {
-      return {
-        isValid: true,
-        status: 'trial' as const,
-        daysOverdue: 0,
-        expiresAt: null,
-        message: 'Período de teste ativo',
-      };
+    // 1. Verificar acesso de teste (liberado pelo owner - 30 dias)
+    if (personal.testAccessEndsAt) {
+      const testEndsAt = new Date(personal.testAccessEndsAt);
+      if (now <= testEndsAt) {
+        const daysRemaining = Math.ceil((testEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          isValid: true,
+          status: 'test_access' as const,
+          daysOverdue: 0,
+          expiresAt: personal.testAccessEndsAt,
+          daysRemaining,
+          grantedBy: personal.testAccessGrantedBy,
+          message: `Acesso de teste ativo. ${daysRemaining} dia(s) restante(s).`,
+        };
+      }
     }
     
-    // Cancelado ou expirado
+    // 2. Verificar trial de 1 dia (novos usuários)
+    if (personal.subscriptionStatus === 'trial') {
+      // Verificar se tem data de término do trial
+      if (personal.trialEndsAt) {
+        const trialEndsAt = new Date(personal.trialEndsAt);
+        if (now <= trialEndsAt) {
+          const hoursRemaining = Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60));
+          return {
+            isValid: true,
+            status: 'trial' as const,
+            daysOverdue: 0,
+            expiresAt: personal.trialEndsAt,
+            hoursRemaining,
+            message: hoursRemaining > 24 
+              ? `Período de teste ativo. ${Math.ceil(hoursRemaining / 24)} dia(s) restante(s).`
+              : `Período de teste ativo. ${hoursRemaining} hora(s) restante(s).`,
+          };
+        } else {
+          // Trial expirou
+          return {
+            isValid: false,
+            status: 'trial_expired' as const,
+            daysOverdue: Math.floor((now.getTime() - trialEndsAt.getTime()) / (1000 * 60 * 60 * 24)),
+            expiresAt: personal.trialEndsAt,
+            message: 'Período de teste expirado. Assine para continuar usando.',
+          };
+        }
+      }
+      // Trial sem data definida (legado) - considerar válido por 1 dia a partir do cadastro
+      const createdAt = new Date(personal.createdAt);
+      const trialEnd = new Date(createdAt);
+      trialEnd.setDate(trialEnd.getDate() + 1); // 1 dia de trial
+      
+      if (now <= trialEnd) {
+        const hoursRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60));
+        return {
+          isValid: true,
+          status: 'trial' as const,
+          daysOverdue: 0,
+          expiresAt: trialEnd,
+          hoursRemaining,
+          message: `Período de teste ativo. ${hoursRemaining} hora(s) restante(s).`,
+        };
+      } else {
+        return {
+          isValid: false,
+          status: 'trial_expired' as const,
+          daysOverdue: Math.floor((now.getTime() - trialEnd.getTime()) / (1000 * 60 * 60 * 24)),
+          expiresAt: trialEnd,
+          message: 'Período de teste expirado. Assine para continuar usando.',
+        };
+      }
+    }
+    
+    // 3. Cancelado ou expirado
     if (personal.subscriptionStatus === 'cancelled' || personal.subscriptionStatus === 'expired') {
       return {
         isValid: false,
@@ -64,9 +126,8 @@ export const subscriptionRouter = router({
       };
     }
     
-    // Verificar data de expiração com 1 dia de tolerância
+    // 4. Verificar data de expiração com 1 dia de tolerância (assinatura ativa)
     if (personal.subscriptionExpiresAt) {
-      const now = new Date();
       const expiresAt = new Date(personal.subscriptionExpiresAt);
       const gracePeriodEnd = new Date(expiresAt);
       gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1); // 1 dia de tolerância

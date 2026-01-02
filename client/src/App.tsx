@@ -37,6 +37,7 @@ import TrainingDiaryPage from "./pages/TrainingDiaryPage";
 import EvolutionDashboard from "./pages/EvolutionDashboard";
 import Support from "./pages/Support";
 import StudentSupport from "./pages/StudentSupport";
+import AdminPanel from "./pages/AdminPanel";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 
 function Router() {
@@ -78,6 +79,7 @@ function Router() {
       <Route path="/diario-treino" component={TrainingDiaryPage} />
       <Route path="/evolucao" component={EvolutionDashboard} />
       <Route path="/suporte" component={Support} />
+      <Route path="/admin" component={AdminPanel} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

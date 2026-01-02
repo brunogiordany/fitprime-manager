@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE personals SET testAccessEndsAt = DATE_ADD(NOW(), INTERVAL 30 DAY), testAccessGrantedBy = 'Owner', testAccessGrantedAt = NOW() WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute UPDATE personals SET testAccessEndsAt = DATE_ADD(NOW(), INTERVAL 30 DAY), testAccessGrantedBy = 'Owner', testAccessGrantedAt = NOW() WHERE id = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 197
+}

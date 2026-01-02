@@ -33,6 +33,10 @@ export const personals = mysqlTable("personals", {
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "trial", "expired", "cancelled"]).default("trial").notNull(),
   subscriptionPeriod: mysqlEnum("subscriptionPeriod", ["monthly", "quarterly", "semiannual", "annual"]).default("monthly"),
   subscriptionExpiresAt: timestamp("subscriptionExpiresAt"),
+  trialEndsAt: timestamp("trialEndsAt"), // Data de término do trial (1 dia após cadastro)
+  testAccessEndsAt: timestamp("testAccessEndsAt"), // Data de término do acesso de teste (liberado pelo owner)
+  testAccessGrantedBy: varchar("testAccessGrantedBy", { length: 255 }), // Nome de quem liberou o acesso de teste
+  testAccessGrantedAt: timestamp("testAccessGrantedAt"), // Data em que o acesso de teste foi liberado
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
