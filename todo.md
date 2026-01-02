@@ -2399,3 +2399,10 @@
 - [x] Reformular Landing Page - remover seção de planos, adicionar CTAs focados em benefícios
 - [x] Implementar fluxo de trial de 1 dia com coleta de dados (nome, data nascimento, CPF, email, telefone)
 - [x] Adicionar validação de unicidade do CPF (um cadastro por CPF)
+
+
+## Próximos Passos - Funil v2.1 (v10.8)
+- [x] Bloquear geração de treino sem CREF preenchido
+- [x] Solicitar CREF na primeira tentativa de gerar treino com IA
+- [x] Criar página de cadastro trial (/cadastro-trial)
+- [ ] Implementar tracking de conversão (quiz iniciado, quiz completo, trial criado)

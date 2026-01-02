@@ -37,6 +37,7 @@ import {
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo } from "react";
+import { trackPageView, trackQuizStarted } from "@/lib/analytics";
 import ChatWidget from "@/components/ChatWidget";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 
@@ -192,6 +193,11 @@ export default function LandingPagePro() {
       localStorage.setItem('fitprime_spots', initialSpots.toString());
       localStorage.setItem('fitprime_spots_time', now.toString());
     }
+  }, []);
+
+  // Tracking de page view
+  useEffect(() => {
+    trackPageView('/');
   }, []);
 
   // Redirect authenticated users to dashboard

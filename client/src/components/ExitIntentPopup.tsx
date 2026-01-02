@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Gift, Clock, X, Loader2, CheckCircle2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { trackExitIntentShown, trackExitIntentConverted, trackTrialFormSubmitted } from "@/lib/analytics";
 
 interface ExitIntentPopupProps {
   enabled?: boolean;
@@ -34,6 +35,7 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
       setHasShown(true);
       // Salvar no localStorage para não mostrar novamente na sessão
       localStorage.setItem("exitIntentShown", "true");
+      trackExitIntentShown(window.location.pathname);
     }
   }, [hasShown, enabled]);
 
@@ -185,6 +187,7 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
       });
       
       setIsSuccess(true);
+      trackExitIntentConverted();
       
       // Redirecionar após 2 segundos
       setTimeout(() => {

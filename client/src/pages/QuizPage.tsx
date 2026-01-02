@@ -1,5 +1,7 @@
 import QualificationQuizV4 from "@/components/QualificationQuizV4";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { trackPageView, trackQuizCompleted } from "@/lib/analytics";
 
 interface QuizResult {
   painScore: number;
@@ -15,11 +17,16 @@ interface QuizResult {
 export default function QuizPage() {
   const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    trackPageView('/quiz');
+  }, []);
+
   const handleQuizComplete = (result: QuizResult) => {
     // Armazenar resultado no localStorage para usar na página de pricing
     localStorage.setItem("quizResult", JSON.stringify(result));
     
-    // O componente já redireciona internamente, mas podemos usar isso para tracking
+    // Tracking de conversão
+    trackQuizCompleted(result.painScore + result.solutionScore, result.answers);
     console.log("Quiz completed:", result);
   };
 

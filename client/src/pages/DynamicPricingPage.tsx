@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
+import { trackPageView, trackPricingViewed, trackPlanSelected } from "@/lib/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -262,6 +263,12 @@ export default function DynamicPricingPage() {
   const [profile, setProfile] = useState<string>("beginner");
   const [quizResult, setQuizResult] = useState<any>(null);
 
+  // Tracking de page view
+  useEffect(() => {
+    trackPageView('/pricing');
+    trackPricingViewed('dynamic_pricing_page');
+  }, []);
+
   useEffect(() => {
     // Obter profile da URL
     const params = new URLSearchParams(search);
@@ -353,6 +360,9 @@ export default function DynamicPricingPage() {
                 {/* CTA */}
                 <Button
                   onClick={() => {
+                    // Tracking de seleção de plano
+                    trackPlanSelected(plan.id, plan.name, plan.price);
+                    
                     // Usar link direto da Cakto se disponível
                     const checkoutUrl = getCheckoutUrl(plan.id);
                     if (checkoutUrl) {
