@@ -2271,3 +2271,15 @@
 - [x] Adicionar estatísticas (total cobrado, média, top personals)
 - [x] Integrar no AdminPanel
 - [x] Testar painel completo
+
+
+## Quiz de Qualificação + LP Dinâmica (v9.0)
+- [x] Pesquisar scripts de copy de LPs que convertem
+- [x] Criar sistema de quiz de qualificação
+- [x] Implementar LP dinâmica com preços baseados no perfil
+- [x] Adicionar plano Beginner (5 alunos por R$ 39,90 + R$ 7,98/extra)
+- [ ] Melhorar copy da LP com scripts que convertem (em progresso)
+- [ ] Implementar notificações para admins sobre falhas
+- [ ] Implementar estorno de cobranças extras pelo painel
+- [ ] Implementar visualização de histórico por personal
+- [ ] Testar fluxo completo

@@ -42,12 +42,16 @@ import PricingPage from "./pages/PricingPage";
 import LandingPagePro from "./pages/LandingPagePro";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
+import QuizPage from "@/pages/QuizPage";
+import DynamicPricingPage from "@/pages/DynamicPricingPage";
 
 function Router() {
   return (
     <Switch>
       {/* Public routes */}
       <Route path="/" component={LandingPagePro} />
+      <Route path="/quiz" component={QuizPage} />
+      <Route path="/pricing" component={DynamicPricingPage} />
       <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login-aluno" component={StudentLogin} />
