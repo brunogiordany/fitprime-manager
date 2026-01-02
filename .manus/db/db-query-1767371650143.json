@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE quiz_responses \nADD COLUMN IF NOT EXISTS studentsCount varchar(50),\nADD COLUMN IF NOT EXISTS managementPain varchar(50),\nADD COLUMN IF NOT EXISTS timePain varchar(50),\nADD COLUMN IF NOT EXISTS retentionPain varchar(50),\nADD COLUMN IF NOT EXISTS billingPain varchar(50),\nADD COLUMN IF NOT EXISTS priority varchar(50),\nADD COLUMN IF NOT EXISTS allAnswers text,\nADD COLUMN IF NOT EXISTS recommendedProfile varchar(50),\nADD COLUMN IF NOT EXISTS totalScore int,\nADD COLUMN IF NOT EXISTS identifiedPains text,\nADD COLUMN IF NOT EXISTS isQualified boolean DEFAULT true,\nADD COLUMN IF NOT EXISTS disqualificationReason varchar(255),\nADD COLUMN IF NOT EXISTS landingPage varchar(500);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE quiz_responses \nADD COLUMN IF NOT EXISTS studentsCount varchar(50),\nADD COLUMN IF NOT EXISTS managementPain varchar(50),\nADD COLUMN IF NOT EXISTS timePain varchar(50),\nADD COLUMN IF NOT EXISTS retentionPain varchar(50),\nADD COLUMN IF NOT EXISTS billingPain varchar(50),\nADD COLUMN IF NOT EXISTS priority varchar(50),\nADD COLUMN IF NOT EXISTS allAnswers text,\nADD COLUMN IF NOT EXISTS recommendedProfile varchar(50),\nADD COLUMN IF NOT EXISTS totalScore int,\nADD COLUMN IF NOT EXISTS identifiedPains text,\nADD COLUMN IF NOT EXISTS isQualified boolean DEFAULT true,\nADD COLUMN IF NOT EXISTS disqualificationReason varchar(255),\nADD COLUMN IF NOT EXISTS landingPage varchar(500);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 3494
+}

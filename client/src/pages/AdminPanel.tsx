@@ -73,7 +73,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Redirect } from "wouter";
+import { Redirect, Link } from "wouter";
 
 // Componente de gráfico simples de barras
 function SimpleBarChart({ data, label }: { data: { date: string; count: number }[]; label: string }) {
@@ -1038,6 +1038,70 @@ export default function AdminPanel() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+            
+            {/* Links Rápidos */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link href="/admin/quiz">
+                <Card className="cursor-pointer hover:border-emerald-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+                        <BarChart3 className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Quiz Dashboard</p>
+                        <p className="text-xs text-muted-foreground">Análise de respostas</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/admin/funil">
+                <Card className="cursor-pointer hover:border-blue-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Funil de Vendas</p>
+                        <p className="text-xs text-muted-foreground">Jornada do cliente</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/admin/suporte">
+                <Card className="cursor-pointer hover:border-purple-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                        <MessageSquare className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Chat Suporte</p>
+                        <p className="text-xs text-muted-foreground">Conversas com leads</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/cobranças-extras">
+                <Card className="cursor-pointer hover:border-amber-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-lg">
+                        <DollarSign className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Cobranças Extras</p>
+                        <p className="text-xs text-muted-foreground">Alunos excedentes</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             
             {/* Gráficos */}

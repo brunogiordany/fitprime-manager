@@ -2338,3 +2338,17 @@
 - [x] Integrar dashboard admin com dados do quiz
 - [x] Adicionar gráficos de análise das respostas
 - [ ] Testar fluxo completo
+
+
+## Integração Quiz + Admin (v10.5)
+- [ ] Integrar chamada trpc.quiz.saveResponse no QualificationQuizV3
+- [ ] Adicionar link para /admin/quiz no AdminPanel
+- [ ] Testar fluxo completo do quiz
+
+
+## Integração Quiz + Admin (v10.5)
+- [x] Integrar chamada trpc.quiz.saveResponse no QualificationQuizV3
+- [x] Adicionar link para /admin/quiz no AdminPanel
+- [x] Testar fluxo completo do quiz
+- [x] Corrigir quizRouter para usar campos corretos da tabela existente
+- [x] Corrigir AdminQuizDashboard para usar campos corretos do quizRouter

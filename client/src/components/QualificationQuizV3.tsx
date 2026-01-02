@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -369,6 +370,24 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
   const [selectedPains, setSelectedPains] = useState<string[]>([]);
   const [result, setResult] = useState<QuizResult | null>(null);
   const [disqualified, setDisqualified] = useState<{ reason: string; message: string } | null>(null);
+  const [sessionId] = useState(() => {
+    // Gerar ou recuperar sessionId único para este visitante
+    const stored = localStorage.getItem('quiz_session_id');
+    if (stored) return stored;
+    const newId = `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('quiz_session_id', newId);
+    return newId;
+  });
+
+  // Mutation para salvar resposta do quiz
+  const saveResponseMutation = trpc.quiz.saveResponse.useMutation({
+    onSuccess: (data) => {
+      console.log('Quiz salvo com sucesso:', data);
+    },
+    onError: (error) => {
+      console.error('Erro ao salvar quiz:', error);
+    },
+  });
 
   const currentQuestion = QUIZ_QUESTIONS[currentStep];
   const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
@@ -527,6 +546,37 @@ export function QualificationQuizV3({ onComplete }: QualificationQuizV3Props) {
         ...baseResult,
         pains: Array.from(new Set(selectedPains)),
       };
+      
+      // Salvar resposta no banco de dados
+      const urlParams = new URLSearchParams(window.location.search);
+      const answersObj = answers as Record<string, string | string[]>;
+      saveResponseMutation.mutate({
+        visitorId: sessionId,
+        sessionId,
+        studentsCount: Array.isArray(answersObj.students_count) ? answersObj.students_count[0] : answersObj.students_count,
+        revenue: Array.isArray(answersObj.revenue) ? answersObj.revenue[0] : answersObj.revenue,
+        managementPain: Array.isArray(answersObj.management_pain) ? answersObj.management_pain[0] : answersObj.management_pain,
+        timePain: Array.isArray(answersObj.time_pain) ? answersObj.time_pain[0] : answersObj.time_pain,
+        retentionPain: Array.isArray(answersObj.retention_pain) ? answersObj.retention_pain[0] : answersObj.retention_pain,
+        billingPain: Array.isArray(answersObj.billing_pain) ? answersObj.billing_pain[0] : answersObj.billing_pain,
+        priority: Array.isArray(answersObj.priority) ? answersObj.priority[0] : answersObj.priority,
+        allAnswers: answers,
+        recommendedProfile: quizResult.profile,
+        recommendedPlan: quizResult.planName,
+        totalScore: quizResult.score,
+        identifiedPains: quizResult.pains,
+        isQualified: true,
+        utmSource: urlParams.get('utm_source') || undefined,
+        utmMedium: urlParams.get('utm_medium') || undefined,
+        utmCampaign: urlParams.get('utm_campaign') || undefined,
+        utmContent: urlParams.get('utm_content') || undefined,
+        utmTerm: urlParams.get('utm_term') || undefined,
+        referrer: document.referrer || undefined,
+        landingPage: window.location.pathname,
+        userAgent: navigator.userAgent,
+        deviceType: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+        browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'Other',
+      });
       
       setResult(quizResult);
       onComplete?.(quizResult);

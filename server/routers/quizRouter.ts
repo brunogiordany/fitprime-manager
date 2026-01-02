@@ -1,15 +1,14 @@
 import { z } from "zod";
 import { publicProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
-import { quizResponses, quizAnalytics } from "../../drizzle/schema";
-import { eq, desc, sql, and, gte, lte, count } from "drizzle-orm";
+import { sql, desc, and, gte, lte, count, eq } from "drizzle-orm";
 
-// Schema para salvar resposta do quiz
+// Schema para salvar resposta do quiz - usando campos da tabela existente
 const saveQuizResponseSchema = z.object({
   visitorId: z.string(),
-  sessionId: z.string().optional(),
+  sessionId: z.string(),
   
-  // Respostas
+  // Respostas individuais
   studentsCount: z.string().optional(),
   revenue: z.string().optional(),
   managementPain: z.string().optional(),
@@ -52,64 +51,51 @@ export const quizRouter = router({
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      const [result] = await db.insert(quizResponses).values({
-        visitorId: input.visitorId,
-        sessionId: input.sessionId,
-        studentsCount: input.studentsCount,
-        revenue: input.revenue,
-        managementPain: input.managementPain,
-        timePain: input.timePain,
-        retentionPain: input.retentionPain,
-        billingPain: input.billingPain,
-        priority: input.priority,
-        allAnswers: input.allAnswers ? JSON.stringify(input.allAnswers) : null,
-        recommendedProfile: input.recommendedProfile,
-        recommendedPlan: input.recommendedPlan,
-        totalScore: input.totalScore,
-        identifiedPains: input.identifiedPains ? JSON.stringify(input.identifiedPains) : null,
-        isQualified: input.isQualified,
-        disqualificationReason: input.disqualificationReason,
-        utmSource: input.utmSource,
-        utmMedium: input.utmMedium,
-        utmCampaign: input.utmCampaign,
-        utmContent: input.utmContent,
-        utmTerm: input.utmTerm,
-        referrer: input.referrer,
-        landingPage: input.landingPage,
-        userAgent: input.userAgent,
-        deviceType: input.deviceType,
-        browser: input.browser,
-        os: input.os,
-        completedAt: new Date(),
-      });
       
-      return { success: true, id: result.insertId };
+      // Inserir usando SQL direto para garantir compatibilidade com a tabela existente
+      const result = await db.execute(sql`
+        INSERT INTO quiz_responses (
+          visitorId, sessionId, answers, 
+          studentsCount, revenue, managementPain, timePain, retentionPain, billingPain, priority,
+          allAnswers, recommendedProfile, recommendedPlan, totalScore, identifiedPains,
+          isQualified, disqualificationReason,
+          utmSource, utmMedium, utmCampaign, utmContent, utmTerm, referrer, landingPage,
+          userAgent, deviceType, browser, os, completedAt, createdAt
+        ) VALUES (
+          ${input.visitorId}, ${input.sessionId}, ${JSON.stringify(input.allAnswers || {})},
+          ${input.studentsCount || null}, ${input.revenue || null}, ${input.managementPain || null}, 
+          ${input.timePain || null}, ${input.retentionPain || null}, ${input.billingPain || null}, ${input.priority || null},
+          ${JSON.stringify(input.allAnswers || {})}, ${input.recommendedProfile || null}, ${input.recommendedPlan || null}, 
+          ${input.totalScore || null}, ${JSON.stringify(input.identifiedPains || [])},
+          ${input.isQualified ? 1 : 0}, ${input.disqualificationReason || null},
+          ${input.utmSource || null}, ${input.utmMedium || null}, ${input.utmCampaign || null}, 
+          ${input.utmContent || null}, ${input.utmTerm || null}, ${input.referrer || null}, ${input.landingPage || null},
+          ${input.userAgent || null}, ${input.deviceType || null}, ${input.browser || null}, ${input.os || null},
+          NOW(), NOW()
+        )
+      `);
+      
+      return { success: true, id: (result as any)[0]?.insertId };
     }),
 
   // Atualizar conversão (público)
   updateConversion: publicProcedure
     .input(z.object({
       visitorId: z.string(),
-      viewedPricing: z.boolean().optional(),
-      clickedCta: z.boolean().optional(),
-      selectedPlan: z.string().optional(),
-      convertedToTrial: z.boolean().optional(),
-      convertedToPaid: z.boolean().optional(),
+      converted: z.boolean().optional(),
+      conversionType: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      const updateData: Record<string, any> = {};
-      
-      if (input.viewedPricing !== undefined) updateData.viewedPricing = input.viewedPricing;
-      if (input.clickedCta !== undefined) updateData.clickedCta = input.clickedCta;
-      if (input.selectedPlan !== undefined) updateData.selectedPlan = input.selectedPlan;
-      if (input.convertedToTrial !== undefined) updateData.convertedToTrial = input.convertedToTrial;
-      if (input.convertedToPaid !== undefined) updateData.convertedToPaid = input.convertedToPaid;
-      
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      await db.update(quizResponses)
-        .set(updateData)
-        .where(eq(quizResponses.visitorId, input.visitorId));
+      
+      await db.execute(sql`
+        UPDATE quiz_responses 
+        SET converted = ${input.converted ? 1 : 0}, 
+            conversionType = ${input.conversionType || null},
+            convertedAt = ${input.converted ? sql`NOW()` : sql`NULL`}
+        WHERE visitorId = ${input.visitorId}
+      `);
       
       return { success: true };
     }),
@@ -126,40 +112,42 @@ export const quizRouter = router({
     }))
     .query(async ({ input }) => {
       const offset = (input.page - 1) * input.limit;
-      
-      let whereConditions = [];
-      
-      if (input.startDate) {
-        whereConditions.push(gte(quizResponses.createdAt, new Date(input.startDate)));
-      }
-      if (input.endDate) {
-        whereConditions.push(lte(quizResponses.createdAt, new Date(input.endDate)));
-      }
-      if (input.profile) {
-        whereConditions.push(eq(quizResponses.recommendedProfile, input.profile));
-      }
-      if (input.isQualified !== undefined) {
-        whereConditions.push(eq(quizResponses.isQualified, input.isQualified));
-      }
-      
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      const responses = await db.select()
-        .from(quizResponses)
-        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
-        .orderBy(desc(quizResponses.createdAt))
-        .limit(input.limit)
-        .offset(offset);
       
-      const [totalResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+      let whereClause = sql`1=1`;
+      
+      if (input.startDate) {
+        whereClause = sql`${whereClause} AND createdAt >= ${input.startDate}`;
+      }
+      if (input.endDate) {
+        whereClause = sql`${whereClause} AND createdAt <= ${input.endDate}`;
+      }
+      if (input.profile) {
+        whereClause = sql`${whereClause} AND recommendedProfile = ${input.profile}`;
+      }
+      if (input.isQualified !== undefined) {
+        whereClause = sql`${whereClause} AND isQualified = ${input.isQualified ? 1 : 0}`;
+      }
+      
+      const responses = await db.execute(sql`
+        SELECT * FROM quiz_responses 
+        WHERE ${whereClause}
+        ORDER BY createdAt DESC
+        LIMIT ${input.limit} OFFSET ${offset}
+      `);
+      
+      const [totalResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM quiz_responses WHERE ${whereClause}
+      `);
+      
+      const total = (totalResult as any)?.count || 0;
       
       return {
-        responses,
-        total: totalResult.count,
+        responses: (responses as any)[0] || [],
+        total,
         page: input.page,
-        totalPages: Math.ceil(totalResult.count / input.limit),
+        totalPages: Math.ceil(total / input.limit),
       };
     }),
 
@@ -170,132 +158,105 @@ export const quizRouter = router({
       endDate: z.string().optional(),
     }))
     .query(async ({ input }) => {
-      let whereConditions = [];
-      
-      if (input.startDate) {
-        whereConditions.push(gte(quizResponses.createdAt, new Date(input.startDate)));
-      }
-      if (input.endDate) {
-        whereConditions.push(lte(quizResponses.createdAt, new Date(input.endDate)));
-      }
-      
-      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
-      
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+      
+      let whereClause = sql`1=1`;
+      
+      if (input.startDate) {
+        whereClause = sql`${whereClause} AND createdAt >= ${input.startDate}`;
+      }
+      if (input.endDate) {
+        whereClause = sql`${whereClause} AND createdAt <= ${input.endDate}`;
+      }
+      
       // Total de respostas
-      const [totalResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause);
+      const [totalResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM quiz_responses WHERE ${whereClause}
+      `);
+      const total = (totalResult as any)?.count || 0;
       
       // Qualificados
-      const [qualifiedResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.isQualified, true)) : eq(quizResponses.isQualified, true));
+      const [qualifiedResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM quiz_responses WHERE ${whereClause} AND isQualified = 1
+      `);
+      const qualified = (qualifiedResult as any)?.count || 0;
       
       // Desqualificados
-      const [disqualifiedResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.isQualified, false)) : eq(quizResponses.isQualified, false));
+      const disqualified = total - qualified;
       
-      // Viram preços
-      const [viewedPricingResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.viewedPricing, true)) : eq(quizResponses.viewedPricing, true));
-      
-      // Clicaram CTA
-      const [clickedCtaResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.clickedCta, true)) : eq(quizResponses.clickedCta, true));
-      
-      // Converteram trial
-      const [trialResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.convertedToTrial, true)) : eq(quizResponses.convertedToTrial, true));
-      
-      // Converteram pago
-      const [paidResult] = await db.select({ count: count() })
-        .from(quizResponses)
-        .where(whereClause ? and(whereClause, eq(quizResponses.convertedToPaid, true)) : eq(quizResponses.convertedToPaid, true));
+      // Convertidos
+      const [convertedResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM quiz_responses WHERE ${whereClause} AND converted = 1
+      `);
+      const converted = (convertedResult as any)?.count || 0;
       
       // Distribuição por perfil
-      const profileDistribution = await db.select({
-        profile: quizResponses.recommendedProfile,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.recommendedProfile);
+      const profileDistribution = await db.execute(sql`
+        SELECT recommendedProfile as profile, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND recommendedProfile IS NOT NULL
+        GROUP BY recommendedProfile
+      `);
       
-      // Distribuição por dor (priority)
-      const painDistribution = await db.select({
-        pain: quizResponses.priority,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.priority);
+      // Distribuição por prioridade
+      const painDistribution = await db.execute(sql`
+        SELECT priority as pain, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND priority IS NOT NULL
+        GROUP BY priority
+      `);
       
       // Distribuição por quantidade de alunos
-      const studentsDistribution = await db.select({
-        students: quizResponses.studentsCount,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.studentsCount);
+      const studentsDistribution = await db.execute(sql`
+        SELECT studentsCount as students, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND studentsCount IS NOT NULL
+        GROUP BY studentsCount
+      `);
       
       // Distribuição por renda
-      const revenueDistribution = await db.select({
-        revenue: quizResponses.revenue,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.revenue);
+      const revenueDistribution = await db.execute(sql`
+        SELECT revenue, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND revenue IS NOT NULL
+        GROUP BY revenue
+      `);
       
       // Distribuição por dispositivo
-      const deviceDistribution = await db.select({
-        device: quizResponses.deviceType,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.deviceType);
+      const deviceDistribution = await db.execute(sql`
+        SELECT deviceType as device, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND deviceType IS NOT NULL
+        GROUP BY deviceType
+      `);
       
       // Distribuição por fonte UTM
-      const sourceDistribution = await db.select({
-        source: quizResponses.utmSource,
-        count: count(),
-      })
-        .from(quizResponses)
-        .where(whereClause)
-        .groupBy(quizResponses.utmSource);
+      const sourceDistribution = await db.execute(sql`
+        SELECT utmSource as source, COUNT(*) as count 
+        FROM quiz_responses 
+        WHERE ${whereClause} AND utmSource IS NOT NULL
+        GROUP BY utmSource
+      `);
       
       return {
         funnel: {
-          total: totalResult.count,
-          qualified: qualifiedResult.count,
-          disqualified: disqualifiedResult.count,
-          viewedPricing: viewedPricingResult.count,
-          clickedCta: clickedCtaResult.count,
-          convertedTrial: trialResult.count,
-          convertedPaid: paidResult.count,
+          total,
+          qualified,
+          disqualified,
+          converted,
         },
         conversionRates: {
-          qualificationRate: totalResult.count > 0 ? (qualifiedResult.count / totalResult.count * 100).toFixed(1) : "0",
-          pricingViewRate: qualifiedResult.count > 0 ? (viewedPricingResult.count / qualifiedResult.count * 100).toFixed(1) : "0",
-          ctaClickRate: viewedPricingResult.count > 0 ? (clickedCtaResult.count / viewedPricingResult.count * 100).toFixed(1) : "0",
-          trialConversionRate: clickedCtaResult.count > 0 ? (trialResult.count / clickedCtaResult.count * 100).toFixed(1) : "0",
-          paidConversionRate: trialResult.count > 0 ? (paidResult.count / trialResult.count * 100).toFixed(1) : "0",
+          qualificationRate: total > 0 ? (qualified / total * 100).toFixed(1) : "0",
+          conversionRate: qualified > 0 ? (converted / qualified * 100).toFixed(1) : "0",
         },
         distributions: {
-          profile: profileDistribution,
-          pain: painDistribution,
-          students: studentsDistribution,
-          revenue: revenueDistribution,
-          device: deviceDistribution,
-          source: sourceDistribution,
+          profile: (profileDistribution as any)[0] || [],
+          pain: (painDistribution as any)[0] || [],
+          students: (studentsDistribution as any)[0] || [],
+          revenue: (revenueDistribution as any)[0] || [],
+          device: (deviceDistribution as any)[0] || [],
+          source: (sourceDistribution as any)[0] || [],
         },
       };
     }),
@@ -306,22 +267,21 @@ export const quizRouter = router({
       days: z.number().default(30),
     }))
     .query(async ({ input }) => {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - input.days);
-      
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      const responses = await db.select({
-        date: sql<string>`DATE(${quizResponses.createdAt})`,
-        total: count(),
-        qualified: sql<number>`SUM(CASE WHEN ${quizResponses.isQualified} = true THEN 1 ELSE 0 END)`,
-        converted: sql<number>`SUM(CASE WHEN ${quizResponses.convertedToTrial} = true THEN 1 ELSE 0 END)`,
-      })
-        .from(quizResponses)
-        .where(gte(quizResponses.createdAt, startDate))
-        .groupBy(sql`DATE(${quizResponses.createdAt})`)
-        .orderBy(sql`DATE(${quizResponses.createdAt})`);
       
-      return responses;
+      const responses = await db.execute(sql`
+        SELECT 
+          DATE(createdAt) as date,
+          COUNT(*) as total,
+          SUM(CASE WHEN isQualified = 1 THEN 1 ELSE 0 END) as qualified,
+          SUM(CASE WHEN converted = 1 THEN 1 ELSE 0 END) as converted
+        FROM quiz_responses 
+        WHERE createdAt >= DATE_SUB(NOW(), INTERVAL ${input.days} DAY)
+        GROUP BY DATE(createdAt)
+        ORDER BY DATE(createdAt)
+      `);
+      
+      return (responses as any)[0] || [];
     }),
 });

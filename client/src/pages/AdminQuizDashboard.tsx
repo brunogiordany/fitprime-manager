@@ -70,18 +70,12 @@ export default function AdminQuizDashboard() {
     total: 0,
     qualified: 0,
     disqualified: 0,
-    viewedPricing: 0,
-    clickedCta: 0,
-    convertedTrial: 0,
-    convertedPaid: 0,
+    converted: 0,
   };
 
   const rates = funnelStats?.conversionRates || {
     qualificationRate: "0",
-    pricingViewRate: "0",
-    ctaClickRate: "0",
-    trialConversionRate: "0",
-    paidConversionRate: "0",
+    conversionRate: "0",
   };
 
   const distributions = funnelStats?.distributions || {
@@ -195,45 +189,12 @@ export default function AdminQuizDashboard() {
           
           <Card>
             <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-blue-600 mb-1">
-                <Eye className="h-4 w-4" />
-                <span className="text-xs">Viram Preços</span>
-              </div>
-              <p className="text-2xl font-bold">{funnel.viewedPricing}</p>
-              <p className="text-xs text-gray-500">{rates.pricingViewRate}%</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-purple-600 mb-1">
-                <MousePointer className="h-4 w-4" />
-                <span className="text-xs">Clicaram CTA</span>
-              </div>
-              <p className="text-2xl font-bold">{funnel.clickedCta}</p>
-              <p className="text-xs text-gray-500">{rates.ctaClickRate}%</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-amber-600 mb-1">
-                <Target className="h-4 w-4" />
-                <span className="text-xs">Trial</span>
-              </div>
-              <p className="text-2xl font-bold">{funnel.convertedTrial}</p>
-              <p className="text-xs text-gray-500">{rates.trialConversionRate}%</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-emerald-600 mb-1">
                 <CreditCard className="h-4 w-4" />
-                <span className="text-xs">Pagos</span>
+                <span className="text-xs">Convertidos</span>
               </div>
-              <p className="text-2xl font-bold">{funnel.convertedPaid}</p>
-              <p className="text-xs text-gray-500">{rates.paidConversionRate}%</p>
+              <p className="text-2xl font-bold">{funnel.converted || 0}</p>
+              <p className="text-xs text-gray-500">{rates.conversionRate}%</p>
             </CardContent>
           </Card>
         </div>
@@ -406,10 +367,7 @@ export default function AdminQuizDashboard() {
                 {[
                   { label: "Iniciaram Quiz", value: funnel.total, color: "bg-gray-200" },
                   { label: "Qualificados", value: funnel.qualified, color: "bg-emerald-200" },
-                  { label: "Viram Preços", value: funnel.viewedPricing, color: "bg-blue-200" },
-                  { label: "Clicaram CTA", value: funnel.clickedCta, color: "bg-purple-200" },
-                  { label: "Trial", value: funnel.convertedTrial, color: "bg-amber-200" },
-                  { label: "Pagos", value: funnel.convertedPaid, color: "bg-emerald-400" },
+                  { label: "Convertidos", value: funnel.converted || 0, color: "bg-emerald-400" },
                 ].map((step, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div 

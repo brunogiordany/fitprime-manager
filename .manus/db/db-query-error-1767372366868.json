@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO quiz_responses (visitorId, sessionId, studentsCount, revenue, recommendedPlan, recommendedProfile, isQualified, createdAt) VALUES ('test-visitor-123', 'test-session-123', '6_15', '2k_5k', 'Starter', 'starter', true, NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute INSERT INTO quiz_responses (visitorId, sessionId, studentsCount, revenue, recommendedPlan, recommendedProfile, isQualified, createdAt) VALUES ('test-visitor-123', 'test-session-123', '6_15', '2k_5k', 'Starter', 'starter', true, NOW());",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1364 (HY000) at line 1: Field 'answers' doesn't have a default value"
+  ]
+}

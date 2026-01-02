@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, visitorId, sessionId, recommendedPlan, recommendedProfile, studentsCount, revenue, createdAt FROM quiz_responses ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, visitorId, sessionId, recommendedPlan, recommendedProfile, studentsCount, revenue, createdAt FROM quiz_responses ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "visitorId": "quiz_1767370901375_ex13cjt19",
+      "sessionId": "quiz_1767370901375_ex13cjt19",
+      "recommendedPlan": "Business",
+      "recommendedProfile": "business",
+      "studentsCount": "over_30",
+      "revenue": "over_10k",
+      "createdAt": "2026-01-02 16:50:39"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tvisitorId\tsessionId\trecommendedPlan\trecommendedProfile\tstudentsCount\trevenue\tcreatedAt\n1\tquiz_1767370901375_ex13cjt19\tquiz_1767370901375_ex13cjt19\tBusiness\tbusiness\tover_30\tover_10k\t2026-01-02 16:50:39\n",
+  "stderr": "",
+  "execution_time_ms": 90
+}
