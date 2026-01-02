@@ -456,7 +456,13 @@ export default function AdminPageEditor() {
   // Carregar dados da página do banco quando disponível
   useEffect(() => {
     if (dbPage) {
-      const blocks = dbPage.blocks ? JSON.parse(dbPage.blocks as string) : [];
+      let blocks: Block[] = [];
+      try {
+        blocks = dbPage.blocks ? JSON.parse(dbPage.blocks as string) : [];
+      } catch (e) {
+        console.error('Error parsing blocks:', e);
+        blocks = [];
+      }
       const seo = dbPage.metaTitle || dbPage.metaDescription ? {
         title: dbPage.metaTitle || "",
         description: dbPage.metaDescription || "",
@@ -493,6 +499,28 @@ export default function AdminPageEditor() {
   // Ref para o container de preview
   const previewRef = useRef<HTMLDivElement>(null);
   
+  // Salvar no histórico - DEVE estar antes de qualquer return condicional
+  const saveToHistory = useCallback((newData: PageData) => {
+    setHistory(prev => [...prev.slice(0, historyIndex + 1), newData]);
+    setHistoryIndex(prev => prev + 1);
+  }, [historyIndex]);
+
+  // Undo
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+      setPageData(history[historyIndex - 1]);
+    }
+  }, [historyIndex, history]);
+
+  // Redo
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+      setPageData(history[historyIndex + 1]);
+    }
+  }, [historyIndex, history]);
+  
   // Sensors para drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -506,58 +534,23 @@ export default function AdminPageEditor() {
   );
   
   // Handler para drag end
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     
     if (over && active.id !== over.id) {
-      const oldIndex = pageData.blocks.findIndex(b => b.id === active.id);
-      const newIndex = pageData.blocks.findIndex(b => b.id === over.id);
-      
-      const newBlocks = arrayMove(pageData.blocks, oldIndex, newIndex);
-      const newData = { ...pageData, blocks: newBlocks };
-      
-      setPageData(newData);
-      saveToHistory(newData);
+      setPageData(prev => {
+        const oldIndex = prev.blocks.findIndex(b => b.id === active.id);
+        const newIndex = prev.blocks.findIndex(b => b.id === over.id);
+        const newBlocks = arrayMove(prev.blocks, oldIndex, newIndex);
+        const newData = { ...prev, blocks: newBlocks };
+        saveToHistory(newData);
+        return newData;
+      });
       toast.success("Bloco reordenado!");
     }
-  };
+  }, [saveToHistory]);
   
-  // Verificar se é admin
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-  
-  if (!user || user.role !== "admin") {
-    return <Redirect to="/dashboard" />;
-  }
-
-  // Salvar no histórico
-  const saveToHistory = useCallback((newData: PageData) => {
-    setHistory(prev => [...prev.slice(0, historyIndex + 1), newData]);
-    setHistoryIndex(prev => prev + 1);
-  }, [historyIndex]);
-
-  // Undo
-  const handleUndo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(prev => prev - 1);
-      setPageData(history[historyIndex - 1]);
-    }
-  };
-
-  // Redo
-  const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(prev => prev + 1);
-      setPageData(history[historyIndex + 1]);
-    }
-  };
-  
-  // Atalhos de teclado para Undo/Redo
+  // Atalhos de teclado para Undo/Redo - DEVE estar antes de qualquer return condicional
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl+Z ou Cmd+Z para Undo
@@ -762,6 +755,19 @@ export default function AdminPageEditor() {
 
   // Largura do preview baseada no modo
   const previewWidth = previewMode === "desktop" ? "100%" : previewMode === "tablet" ? "768px" : "375px";
+
+  // Verificar se é admin - DEVE estar após todos os hooks
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  if (!user || user.role !== "admin") {
+    return <Redirect to="/dashboard" />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">

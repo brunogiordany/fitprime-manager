@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, name, slug, LENGTH(blocks) as blocks_length, LEFT(blocks, 100) as blocks_preview FROM site_pages WHERE id IN (1, 2, 3, 4);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, slug, LENGTH(blocks) as blocks_length, LEFT(blocks, 100) as blocks_preview FROM site_pages WHERE id IN (1, 2, 3, 4);",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Landing Page",
+      "slug": "/",
+      "blocks_length": "NULL",
+      "blocks_preview": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Quiz de Qualificação",
+      "slug": "/quiz",
+      "blocks_length": "NULL",
+      "blocks_preview": "NULL"
+    },
+    {
+      "id": "3",
+      "name": "Resultado do Quiz",
+      "slug": "/quiz-resultado",
+      "blocks_length": "NULL",
+      "blocks_preview": "NULL"
+    },
+    {
+      "id": "4",
+      "name": "Página de Preços",
+      "slug": "/pricing",
+      "blocks_length": "NULL",
+      "blocks_preview": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tblocks_length\tblocks_preview\n1\tLanding Page\t/\tNULL\tNULL\n2\tQuiz de Qualificação\t/quiz\tNULL\tNULL\n3\tResultado do Quiz\t/quiz-resultado\tNULL\tNULL\n4\tPágina de Preços\t/pricing\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

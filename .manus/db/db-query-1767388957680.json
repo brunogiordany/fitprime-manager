@@ -1,0 +1,66 @@
+{
+  "query": "SELECT id, name, slug, status, CASE WHEN blocks IS NULL THEN 'NULL' WHEN blocks = '' THEN 'EMPTY' ELSE 'HAS_DATA' END as blocks_status FROM site_pages;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, slug, status, CASE WHEN blocks IS NULL THEN 'NULL' WHEN blocks = '' THEN 'EMPTY' ELSE 'HAS_DATA' END as blocks_status FROM site_pages;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Landing Page",
+      "slug": "/",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Quiz de Qualificação",
+      "slug": "/quiz",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "3",
+      "name": "Resultado do Quiz",
+      "slug": "/quiz-resultado",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "4",
+      "name": "Página de Preços",
+      "slug": "/pricing",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "5",
+      "name": "Cadastro Trial",
+      "slug": "/cadastro-trial",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "6",
+      "name": "Checkout",
+      "slug": "/checkout",
+      "status": "published",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "7",
+      "name": "Planos (Antigo)",
+      "slug": "/planos",
+      "status": "draft",
+      "blocks_status": "NULL"
+    },
+    {
+      "id": "8",
+      "name": "teste",
+      "slug": "/teste",
+      "status": "draft",
+      "blocks_status": "HAS_DATA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tstatus\tblocks_status\n1\tLanding Page\t/\tpublished\tNULL\n2\tQuiz de Qualificação\t/quiz\tpublished\tNULL\n3\tResultado do Quiz\t/quiz-resultado\tpublished\tNULL\n4\tPágina de Preços\t/pricing\tpublished\tNULL\n5\tCadastro Trial\t/cadastro-trial\tpublished\tNULL\n6\tCheckout\t/checkout\tpublished\tNULL\n7\tPlanos (Antigo)\t/planos\tdraft\tNULL\n8\tteste\t/teste\tdraft\tHAS_DATA\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, name, slug, status, blocks IS NULL as blocks_is_null, LENGTH(blocks) as blocks_length FROM site_pages;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, slug, status, blocks IS NULL as blocks_is_null, LENGTH(blocks) as blocks_length FROM site_pages;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Landing Page",
+      "slug": "/",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Quiz de Qualificação",
+      "slug": "/quiz",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "3",
+      "name": "Resultado do Quiz",
+      "slug": "/quiz-resultado",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "4",
+      "name": "Página de Preços",
+      "slug": "/pricing",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "5",
+      "name": "Cadastro Trial",
+      "slug": "/cadastro-trial",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "6",
+      "name": "Checkout",
+      "slug": "/checkout",
+      "status": "published",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "7",
+      "name": "Planos (Antigo)",
+      "slug": "/planos",
+      "status": "draft",
+      "blocks_is_null": "1",
+      "blocks_length": "NULL"
+    },
+    {
+      "id": "8",
+      "name": "teste",
+      "slug": "/teste",
+      "status": "draft",
+      "blocks_is_null": "0",
+      "blocks_length": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tstatus\tblocks_is_null\tblocks_length\n1\tLanding Page\t/\tpublished\t1\tNULL\n2\tQuiz de Qualificação\t/quiz\tpublished\t1\tNULL\n3\tResultado do Quiz\t/quiz-resultado\tpublished\t1\tNULL\n4\tPágina de Preços\t/pricing\tpublished\t1\tNULL\n5\tCadastro Trial\t/cadastro-trial\tpublished\t1\tNULL\n6\tCheckout\t/checkout\tpublished\t1\tNULL\n7\tPlanos (Antigo)\t/planos\tdraft\t1\tNULL\n8\tteste\t/teste\tdraft\t0\t2\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

@@ -2488,3 +2488,6 @@
 - [x] Bloco Testimonials: campos para editar depoimentos
 - [x] Bloco FAQ: campos para editar perguntas e respostas
 - [x] Bloco Quiz: campos para editar perguntas e opções
+
+- [x] Corrigir editor de páginas para carregar conteúdo das páginas existentes
+- [ ] Ao clicar em Editar Página, deve carregar os blocos salvos no banco
