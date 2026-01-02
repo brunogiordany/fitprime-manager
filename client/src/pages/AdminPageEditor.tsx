@@ -956,11 +956,12 @@ export default function AdminPageEditor() {
         <main className="flex-1 overflow-auto p-6 flex justify-center">
           <div 
             ref={previewRef}
-            className="bg-white shadow-xl rounded-lg overflow-hidden transition-all"
+            className="bg-white shadow-xl rounded-lg overflow-y-auto transition-all"
             style={{ 
               width: previewWidth, 
               maxWidth: "100%",
-              minHeight: "600px"
+              minHeight: "600px",
+              maxHeight: "calc(100vh - 150px)"
             }}
           >
             {pageData.blocks.length === 0 ? (
@@ -1643,6 +1644,276 @@ function BlockRenderer({
             </div>
           </div>
         );
+
+      case "pricing":
+        return (
+          <div className="py-16 px-8">
+            <h2 className="text-3xl font-bold text-center mb-12">{block.content.title}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {block.content.plans?.map((plan: any, i: number) => (
+                <div 
+                  key={i} 
+                  className={`p-6 rounded-xl border-2 ${plan.highlighted ? 'border-emerald-500 shadow-lg scale-105' : 'border-gray-200'}`}
+                >
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold" style={{ color: pageStyles.primaryColor }}>R$ {plan.price}</span>
+                    <span className="text-muted-foreground">/{plan.period || 'mês'}</span>
+                  </div>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features?.map((feature: string, fi: number) => (
+                      <li key={fi} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full" style={{ backgroundColor: plan.highlighted ? pageStyles.primaryColor : undefined }} variant={plan.highlighted ? "default" : "outline"}>
+                    Escolher Plano
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "testimonials":
+        return (
+          <div className="py-16 px-8 bg-gray-50">
+            <h2 className="text-3xl font-bold text-center mb-12">{block.content.title}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {block.content.items?.map((item: any, i: number) => (
+                <div key={i} className="bg-white p-6 rounded-xl shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
+                      style={{ backgroundColor: pageStyles.primaryColor }}
+                    >
+                      {item.name?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">{item.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground italic">"{item.text}"</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "faq":
+        return (
+          <div className="py-16 px-8">
+            <h2 className="text-3xl font-bold text-center mb-12">{block.content.title}</h2>
+            <div className="max-w-2xl mx-auto space-y-4">
+              {block.content.items?.map((item: any, i: number) => (
+                <div key={i} className="border rounded-lg p-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5" style={{ color: pageStyles.primaryColor }} />
+                    {item.question}
+                  </h4>
+                  <p className="text-muted-foreground mt-2 pl-7">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "logos":
+        return (
+          <div className="py-12 px-8">
+            <h2 className="text-xl font-semibold text-center mb-8 text-muted-foreground">{block.content.title}</h2>
+            <div className="flex flex-wrap justify-center items-center gap-8">
+              {block.content.logos?.length > 0 ? (
+                block.content.logos.map((logo: string, i: number) => (
+                  <img key={i} src={logo} alt={`Logo ${i + 1}`} className="h-12 grayscale hover:grayscale-0 transition-all" />
+                ))
+              ) : (
+                <p className="text-muted-foreground">Adicione logos de empresas parceiras</p>
+              )}
+            </div>
+          </div>
+        );
+
+      case "quiz":
+        return (
+          <div className="py-16 px-8 bg-gradient-to-br from-emerald-50 to-white">
+            <div className="max-w-2xl mx-auto text-center">
+              <HelpCircle className="h-16 w-16 mx-auto mb-4" style={{ color: pageStyles.primaryColor }} />
+              <h2 className="text-3xl font-bold mb-4">{block.content.title}</h2>
+              <p className="text-muted-foreground mb-8">{block.content.description}</p>
+              <div className="bg-white rounded-xl shadow-lg p-6 text-left">
+                <p className="text-sm text-muted-foreground mb-2">Pergunta 1 de {block.content.questions?.length || 0}</p>
+                <h3 className="text-xl font-semibold mb-4">{block.content.questions?.[0]?.question || 'Pergunta de exemplo'}</h3>
+                <div className="space-y-2">
+                  {block.content.questions?.[0]?.options?.map((opt: any, i: number) => (
+                    <button key={i} className="w-full p-3 text-left border rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-colors">
+                      {opt.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Button className="mt-6" style={{ backgroundColor: pageStyles.primaryColor }}>
+                {block.content.buttonText || 'Próxima'}
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "form":
+        return (
+          <div className="py-16 px-8">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-4">{block.content.title}</h2>
+              <p className="text-muted-foreground text-center mb-8">{block.content.description}</p>
+              <div className="space-y-4">
+                {block.content.fields?.map((field: any, i: number) => (
+                  <div key={i}>
+                    <Label>{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+                    {field.type === 'textarea' ? (
+                      <Textarea placeholder={field.label} className="mt-1" />
+                    ) : (
+                      <Input type={field.type} placeholder={field.label} className="mt-1" />
+                    )}
+                  </div>
+                ))}
+                <Button className="w-full" style={{ backgroundColor: pageStyles.primaryColor }}>
+                  {block.content.buttonText || 'Enviar'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "countdown":
+        return (
+          <div className="py-12 px-8 text-center" style={{ backgroundColor: pageStyles.primaryColor + '10' }}>
+            <h2 className="text-2xl font-bold mb-6">{block.content.title}</h2>
+            <div className="flex justify-center gap-4">
+              {block.content.showDays && (
+                <div className="bg-white rounded-lg p-4 shadow-sm min-w-[80px]">
+                  <p className="text-3xl font-bold" style={{ color: pageStyles.primaryColor }}>00</p>
+                  <p className="text-sm text-muted-foreground">Dias</p>
+                </div>
+              )}
+              {block.content.showHours && (
+                <div className="bg-white rounded-lg p-4 shadow-sm min-w-[80px]">
+                  <p className="text-3xl font-bold" style={{ color: pageStyles.primaryColor }}>00</p>
+                  <p className="text-sm text-muted-foreground">Horas</p>
+                </div>
+              )}
+              {block.content.showMinutes && (
+                <div className="bg-white rounded-lg p-4 shadow-sm min-w-[80px]">
+                  <p className="text-3xl font-bold" style={{ color: pageStyles.primaryColor }}>00</p>
+                  <p className="text-sm text-muted-foreground">Min</p>
+                </div>
+              )}
+              {block.content.showSeconds && (
+                <div className="bg-white rounded-lg p-4 shadow-sm min-w-[80px]">
+                  <p className="text-3xl font-bold" style={{ color: pageStyles.primaryColor }}>00</p>
+                  <p className="text-sm text-muted-foreground">Seg</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "steps":
+        return (
+          <div className="py-16 px-8">
+            <h2 className="text-3xl font-bold text-center mb-12">{block.content.title}</h2>
+            <div className="max-w-3xl mx-auto">
+              <div className="relative">
+                {block.content.items?.map((item: any, i: number) => (
+                  <div key={i} className="flex gap-4 mb-8 last:mb-0">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+                      style={{ backgroundColor: pageStyles.primaryColor }}
+                    >
+                      {item.step || i + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "gallery":
+        return (
+          <div className="py-16 px-8">
+            <h2 className="text-3xl font-bold text-center mb-12">{block.content.title}</h2>
+            <div className={`grid gap-4`} style={{ gridTemplateColumns: `repeat(${block.content.columns || 3}, 1fr)` }}>
+              {block.content.images?.length > 0 ? (
+                block.content.images.map((img: string, i: number) => (
+                  <img key={i} src={img} alt={`Imagem ${i + 1}`} className="w-full h-48 object-cover rounded-lg" />
+                ))
+              ) : (
+                Array.from({ length: block.content.columns || 3 }).map((_, i) => (
+                  <div key={i} className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Images className="h-8 w-8 text-gray-400" />
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        );
+
+      case "image":
+        return (
+          <div className="py-8 px-8">
+            {block.content.src ? (
+              <img 
+                src={block.content.src} 
+                alt={block.content.alt || 'Imagem'} 
+                className="max-w-full mx-auto rounded-lg"
+                style={{ maxHeight: block.content.maxHeight || '400px' }}
+              />
+            ) : (
+              <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">Adicione uma imagem</p>
+              </div>
+            )}
+          </div>
+        );
+
+      case "video":
+        return (
+          <div className="py-8 px-8">
+            {block.content.url ? (
+              <div className="aspect-video max-w-3xl mx-auto">
+                <iframe 
+                  src={block.content.url.replace('watch?v=', 'embed/')} 
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="aspect-video max-w-3xl mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
+                <Play className="h-12 w-12 text-gray-400" />
+              </div>
+            )}
+          </div>
+        );
+
+      case "columns":
+        return (
+          <div className="py-8 px-8">
+            <div className={`grid gap-6`} style={{ gridTemplateColumns: `repeat(${block.content.columns || 2}, 1fr)` }}>
+              {Array.from({ length: block.content.columns || 2 }).map((_, i) => (
+                <div key={i} className="p-4 border border-dashed rounded-lg min-h-[100px] flex items-center justify-center text-muted-foreground">
+                  Coluna {i + 1}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
         
       default:
         return (
@@ -2219,6 +2490,501 @@ function BlockPropertiesEditor({
               />
             </div>
           </div>
+        </div>
+      );
+
+    case "logos":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Logos ({block.content.logos?.length || 0})</Label>
+            <div className="space-y-2 mt-2">
+              {block.content.logos?.map((logo: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input 
+                    value={logo}
+                    onChange={(e) => {
+                      const newLogos = [...block.content.logos];
+                      newLogos[index] = e.target.value;
+                      onUpdate("logos", newLogos);
+                    }}
+                    placeholder="URL do logo"
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-red-600 shrink-0"
+                    onClick={() => {
+                      const newLogos = block.content.logos.filter((_: any, i: number) => i !== index);
+                      onUpdate("logos", newLogos);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newLogos = [...(block.content.logos || []), ""];
+                  onUpdate("logos", newLogos);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Logo
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "quiz":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título do Quiz</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea 
+              value={block.content.description}
+              onChange={(e) => onUpdate("description", e.target.value)}
+              rows={2}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Perguntas ({block.content.questions?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.questions?.map((q: any, qIndex: number) => (
+                <div key={qIndex} className="p-3 border rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Pergunta {qIndex + 1}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-600 h-6"
+                      onClick={() => {
+                        const newQuestions = block.content.questions.filter((_: any, i: number) => i !== qIndex);
+                        onUpdate("questions", newQuestions);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <Input 
+                    placeholder="Texto da pergunta"
+                    value={q.question}
+                    onChange={(e) => {
+                      const newQuestions = [...block.content.questions];
+                      newQuestions[qIndex] = { ...q, question: e.target.value };
+                      onUpdate("questions", newQuestions);
+                    }}
+                  />
+                  <div className="pl-2 space-y-1">
+                    <Label className="text-xs">Opções:</Label>
+                    {q.options?.map((opt: any, oIndex: number) => (
+                      <div key={oIndex} className="flex gap-1">
+                        <Input 
+                          value={opt.text}
+                          onChange={(e) => {
+                            const newQuestions = [...block.content.questions];
+                            newQuestions[qIndex].options[oIndex] = { ...opt, text: e.target.value };
+                            onUpdate("questions", newQuestions);
+                          }}
+                          placeholder={`Opção ${oIndex + 1}`}
+                          className="h-8 text-sm"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-red-600"
+                          onClick={() => {
+                            const newQuestions = [...block.content.questions];
+                            newQuestions[qIndex].options = q.options.filter((_: any, i: number) => i !== oIndex);
+                            onUpdate("questions", newQuestions);
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 text-xs"
+                      onClick={() => {
+                        const newQuestions = [...block.content.questions];
+                        newQuestions[qIndex].options = [...(q.options || []), { id: `o${Date.now()}`, text: "", value: 1 }];
+                        onUpdate("questions", newQuestions);
+                      }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Opção
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newQuestions = [...(block.content.questions || []), { 
+                    id: `q${Date.now()}`, 
+                    question: "Nova pergunta?", 
+                    type: "single",
+                    options: [{ id: "a", text: "Opção A", value: 1 }] 
+                  }];
+                  onUpdate("questions", newQuestions);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Pergunta
+              </Button>
+            </div>
+          </div>
+          <Separator />
+          <div>
+            <Label>Texto do Botão</Label>
+            <Input 
+              value={block.content.buttonText}
+              onChange={(e) => onUpdate("buttonText", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>URL de Redirecionamento</Label>
+            <Input 
+              value={block.content.redirectUrl}
+              onChange={(e) => onUpdate("redirectUrl", e.target.value)}
+              placeholder="/resultado"
+            />
+          </div>
+        </div>
+      );
+
+    case "form":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea 
+              value={block.content.description}
+              onChange={(e) => onUpdate("description", e.target.value)}
+              rows={2}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Campos ({block.content.fields?.length || 0})</Label>
+            <div className="space-y-2 mt-2">
+              {block.content.fields?.map((field: any, index: number) => (
+                <div key={index} className="p-2 border rounded-lg space-y-2">
+                  <div className="flex gap-2">
+                    <Input 
+                      value={field.label}
+                      onChange={(e) => {
+                        const newFields = [...block.content.fields];
+                        newFields[index] = { ...field, label: e.target.value };
+                        onUpdate("fields", newFields);
+                      }}
+                      placeholder="Label"
+                      className="flex-1"
+                    />
+                    <select 
+                      value={field.type}
+                      onChange={(e) => {
+                        const newFields = [...block.content.fields];
+                        newFields[index] = { ...field, type: e.target.value };
+                        onUpdate("fields", newFields);
+                      }}
+                      className="border rounded px-2 text-sm"
+                    >
+                      <option value="text">Texto</option>
+                      <option value="email">Email</option>
+                      <option value="tel">Telefone</option>
+                      <option value="number">Número</option>
+                      <option value="textarea">Texto Longo</option>
+                    </select>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="text-red-600"
+                      onClick={() => {
+                        const newFields = block.content.fields.filter((_: any, i: number) => i !== index);
+                        onUpdate("fields", newFields);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="checkbox"
+                      checked={field.required}
+                      onChange={(e) => {
+                        const newFields = [...block.content.fields];
+                        newFields[index] = { ...field, required: e.target.checked };
+                        onUpdate("fields", newFields);
+                      }}
+                    />
+                    <Label className="text-xs">Obrigatório</Label>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newFields = [...(block.content.fields || []), { name: `field_${Date.now()}`, label: "Novo Campo", type: "text", required: false }];
+                  onUpdate("fields", newFields);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Campo
+              </Button>
+            </div>
+          </div>
+          <Separator />
+          <div>
+            <Label>Texto do Botão</Label>
+            <Input 
+              value={block.content.buttonText}
+              onChange={(e) => onUpdate("buttonText", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Mensagem de Sucesso</Label>
+            <Input 
+              value={block.content.successMessage}
+              onChange={(e) => onUpdate("successMessage", e.target.value)}
+            />
+          </div>
+        </div>
+      );
+
+    case "countdown":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Data/Hora Alvo</Label>
+            <Input 
+              type="datetime-local"
+              value={block.content.targetDate?.slice(0, 16)}
+              onChange={(e) => onUpdate("targetDate", new Date(e.target.value).toISOString())}
+            />
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <Label>Exibir:</Label>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={block.content.showDays} onChange={(e) => onUpdate("showDays", e.target.checked)} />
+                <Label className="text-sm">Dias</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={block.content.showHours} onChange={(e) => onUpdate("showHours", e.target.checked)} />
+                <Label className="text-sm">Horas</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={block.content.showMinutes} onChange={(e) => onUpdate("showMinutes", e.target.checked)} />
+                <Label className="text-sm">Minutos</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={block.content.showSeconds} onChange={(e) => onUpdate("showSeconds", e.target.checked)} />
+                <Label className="text-sm">Segundos</Label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <Label>Mensagem quando expirar</Label>
+            <Input 
+              value={block.content.expiredMessage}
+              onChange={(e) => onUpdate("expiredMessage", e.target.value)}
+            />
+          </div>
+        </div>
+      );
+
+    case "steps":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Seção</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <Separator />
+          <div>
+            <Label>Passos ({block.content.items?.length || 0})</Label>
+            <div className="space-y-3 mt-2">
+              {block.content.items?.map((item: any, index: number) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <Input 
+                      placeholder="Título do passo"
+                      value={item.title}
+                      onChange={(e) => {
+                        const newItems = [...block.content.items];
+                        newItems[index] = { ...item, title: e.target.value, step: index + 1 };
+                        onUpdate("items", newItems);
+                      }}
+                      className="flex-1"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="text-red-600"
+                      onClick={() => {
+                        const newItems = block.content.items.filter((_: any, i: number) => i !== index);
+                        onUpdate("items", newItems);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Textarea 
+                    placeholder="Descrição"
+                    value={item.description}
+                    onChange={(e) => {
+                      const newItems = [...block.content.items];
+                      newItems[index] = { ...item, description: e.target.value };
+                      onUpdate("items", newItems);
+                    }}
+                    rows={2}
+                  />
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newItems = [...(block.content.items || []), { step: (block.content.items?.length || 0) + 1, title: "Novo Passo", description: "Descrição do passo" }];
+                  onUpdate("items", newItems);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Passo
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "gallery":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Título da Galeria</Label>
+            <Input 
+              value={block.content.title}
+              onChange={(e) => onUpdate("title", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Número de Colunas</Label>
+            <select 
+              value={block.content.columns || 3}
+              onChange={(e) => onUpdate("columns", parseInt(e.target.value))}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value={2}>2 Colunas</option>
+              <option value={3}>3 Colunas</option>
+              <option value={4}>4 Colunas</option>
+            </select>
+          </div>
+          <Separator />
+          <div>
+            <Label>Imagens ({block.content.images?.length || 0})</Label>
+            <div className="space-y-2 mt-2">
+              {block.content.images?.map((img: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input 
+                    value={img}
+                    onChange={(e) => {
+                      const newImages = [...block.content.images];
+                      newImages[index] = e.target.value;
+                      onUpdate("images", newImages);
+                    }}
+                    placeholder="URL da imagem"
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-red-600 shrink-0"
+                    onClick={() => {
+                      const newImages = block.content.images.filter((_: any, i: number) => i !== index);
+                      onUpdate("images", newImages);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  const newImages = [...(block.content.images || []), ""];
+                  onUpdate("images", newImages);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Adicionar Imagem
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "columns":
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>Número de Colunas</Label>
+            <select 
+              value={block.content.columns || 2}
+              onChange={(e) => onUpdate("columns", parseInt(e.target.value))}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value={2}>2 Colunas</option>
+              <option value={3}>3 Colunas</option>
+              <option value={4}>4 Colunas</option>
+            </select>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Arraste blocos para dentro das colunas no preview.
+          </p>
         </div>
       );
       

@@ -2479,3 +2479,12 @@
 - [x] Corrigir geração de páginas com IA para seguir prompt do usuário
 - [x] Adicionar tipo de bloco Quiz ao editor de páginas
 - [x] IA deve interpretar pedidos específicos (ex: quiz com X perguntas)
+
+- [x] Corrigir scroll da área de preview no editor de páginas
+- [x] Implementar renderização visual de todos os blocos (pricing, testimonials, faq, etc)
+- [x] Implementar campos de edição específicos para cada tipo de bloco
+- [x] Bloco Logos: adicionar campos de edição (título, upload de logos)
+- [x] Bloco Pricing: campos para editar planos, preços, features
+- [x] Bloco Testimonials: campos para editar depoimentos
+- [x] Bloco FAQ: campos para editar perguntas e respostas
+- [x] Bloco Quiz: campos para editar perguntas e opções
