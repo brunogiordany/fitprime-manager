@@ -35,8 +35,8 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "management",
     title: "Como você gerencia seus alunos atualmente?",
-    description: "Escolha a opção que melhor descreve sua realidade",
-    type: "single",
+    description: "Selecione todas as opções que se aplicam",
+    type: "multiple",
     options: [
       {
         value: "spreadsheet",
@@ -58,9 +58,9 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
       },
       {
         value: "system",
-        label: "Já uso um sistema",
-        pain: "Nenhuma",
-        score: 0,
+        label: "Já uso um sistema, mas é incompleto ou complicado",
+        pain: "Sistema inadequado",
+        score: 1,
       },
     ],
   },
@@ -123,8 +123,8 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "admin_time",
     title: "Quanto tempo você gasta por semana com admin?",
-    description: "Planilhas, WhatsApp, cobranças, anotações...",
-    type: "single",
+    description: "Selecione todas as atividades que consomem seu tempo",
+    type: "multiple",
     options: [
       {
         value: "over_10",
@@ -155,8 +155,8 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "revenue",
     title: "Qual é sua receita mensal com alunos?",
-    description: "Ajuda a entender melhor seu perfil",
-    type: "single",
+    description: "Selecione a faixa que melhor representa seu negócio",
+    type: "multiple",
     options: [
       {
         value: "under_2k",
@@ -186,9 +186,9 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "priority",
-    title: "Se você pudesse resolver UM problema, qual seria?",
-    description: "Qual é o mais urgente?",
-    type: "single",
+    title: "Quais problemas você mais quer resolver?",
+    description: "Selecione todos os que são urgentes para você",
+    type: "multiple",
     options: [
       {
         value: "time",

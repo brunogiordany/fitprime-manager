@@ -31,7 +31,7 @@ export default function QuizPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2">Encontre o Plano Perfeito</h1>
           <p className="text-xl text-gray-600">
-            Responda 3 perguntas rápidas e descobriremos qual plano vai turbinar seu negócio
+            Responda 5 perguntas rápidas e descobriremos qual plano vai turbinar seu negócio
           </p>
         </div>
 

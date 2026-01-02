@@ -2301,3 +2301,10 @@
 - [x] Integrar rastreamento de slugs
 - [x] Implementar jornada completa do cliente
 - [ ] Testar fluxo completo
+
+
+## Correções do Quiz (v10.1)
+- [x] Corrigir texto do topo: "3 perguntas" → "5 perguntas"
+- [x] Tornar opção "Já uso um sistema" mais persuasiva (ex: "mas é incompleto")
+- [x] Converter TODAS as perguntas para multi-seleção (checkbox)
+- [ ] Testar fluxo completo
