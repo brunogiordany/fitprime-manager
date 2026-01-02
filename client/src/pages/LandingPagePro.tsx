@@ -243,119 +243,113 @@ export default function LandingPagePro() {
         </div>
       </header>
 
-      {/* Hero Section - Problema + Solução */}
+      {/* Hero Section - Conexão com ICP */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-emerald-50 via-white to-white">
         <div className="container max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Lado Esquerdo - Problema */}
+            {/* Lado Esquerdo - Problema Real */}
             <div>
-              <Badge className="mb-6 bg-red-100 text-red-700 hover:bg-red-100">
+              <Badge className="mb-6 bg-amber-100 text-amber-700 hover:bg-amber-100">
                 <AlertCircle className="h-4 w-4 mr-2" />
-                O Problema Real
+                Isso te parece familiar?
               </Badge>
               
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                Você perde <span className="text-red-600">10+ horas por semana</span> com tarefas administrativas
+                Você é personal, não <span className="text-amber-600">secretário</span>
               </h2>
               
+              <p className="text-lg text-gray-600 mb-8">
+                Mas passa mais tempo no WhatsApp cobrando aluno, remarcando horário e montando planilha do que treinando gente.
+              </p>
+              
               <div className="space-y-4 mb-8">
-                <div className="flex gap-4">
-                  <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-red-600 font-bold">1</span>
+                <div className="flex gap-4 items-start">
+                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Agenda desorganizada</h3>
-                    <p className="text-gray-600">Planilhas, agendas em papel, mensagens perdidas no WhatsApp</p>
+                    <p className="text-gray-700"><strong>"Oi, posso remarcar pra quinta?"</strong></p>
+                    <p className="text-gray-500 text-sm">E lá vai você reorganizar a semana inteira...</p>
                   </div>
                 </div>
                 
-                <div className="flex gap-4">
-                  <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-red-600 font-bold">2</span>
+                <div className="flex gap-4 items-start">
+                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Cobranças manuais</h3>
-                    <p className="text-gray-600">Ficar atrás de alunos para pagar, perder dinheiro com inadimplência</p>
+                    <p className="text-gray-700"><strong>"Esqueci de pagar, manda o pix de novo?"</strong></p>
+                    <p className="text-gray-500 text-sm">Terceira vez esse mês que você manda...</p>
                   </div>
                 </div>
                 
-                <div className="flex gap-4">
-                  <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-red-600 font-bold">3</span>
+                <div className="flex gap-4 items-start">
+                  <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Dumbbell className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Treinos repetitivos</h3>
-                    <p className="text-gray-600">Montar treino do zero para cada aluno, sem dados de evolução</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-red-600 font-bold">4</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Alunos desengajados</h3>
-                    <p className="text-gray-600">Sem acompanhamento de evolução, alunos desistem mais rápido</p>
+                    <p className="text-gray-700"><strong>"Qual era meu treino mesmo?"</strong></p>
+                    <p className="text-gray-500 text-sm">Aluno perdeu a ficha, de novo...</p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-lg text-gray-700 font-semibold">
-                ⏰ Resultado: São <span className="text-red-600">40+ horas por mês</span> que você poderia usar para atender mais alunos ou ter tempo livre
-              </p>
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                <p className="text-amber-800">
+                  <strong>Fazendo as contas:</strong> Se você cobra <strong>R$ 100/aula</strong> e gasta <strong>10h/semana</strong> com burocracia, são <strong>4 aulas perdidas</strong> = <strong className="text-amber-600">R$ 1.600/mês</strong> que você deixa de ganhar.
+                </p>
+              </div>
             </div>
 
             {/* Lado Direito - Solução */}
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-200">
               <Badge className="mb-6 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                 <Sparkles className="h-4 w-4 mr-2" />
-                A Solução
+                A solução simples
               </Badge>
               
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                FitPrime: Seu <span className="text-emerald-600">assistente administrativo</span> 24/7
+                Deixa a <span className="text-emerald-600">burocracia</span> com a gente
               </h2>
               
-              <div className="space-y-4 mb-8">
-                <div className="flex gap-4">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Agenda inteligente</h3>
-                    <p className="text-gray-600">Visualize tudo em um calendário, notificações automáticas</p>
-                  </div>
+              <p className="text-gray-600 mb-6">
+                O FitPrime cuida da agenda, cobranças e treinos. Você foca em treinar seus alunos.
+              </p>
+              
+              <div className="space-y-3 mb-8">
+                <div className="flex gap-3 items-center">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <p className="text-gray-700">Aluno remarca sozinho pelo app</p>
                 </div>
                 
-                <div className="flex gap-4">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Cobranças automáticas</h3>
-                    <p className="text-gray-600">Receba no prazo, sem correr atrás de ninguém</p>
-                  </div>
+                <div className="flex gap-3 items-center">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <p className="text-gray-700">Cobrança automática no WhatsApp</p>
                 </div>
                 
-                <div className="flex gap-4">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Treinos com IA</h3>
-                    <p className="text-gray-600">Gere treinos em segundos baseado na anamnese do aluno</p>
-                  </div>
+                <div className="flex gap-3 items-center">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <p className="text-gray-700">Treino sempre no celular do aluno</p>
                 </div>
                 
-                <div className="flex gap-4">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Portal do aluno</h3>
-                    <p className="text-gray-600">Alunos acompanham evolução, aumenta engajamento</p>
-                  </div>
+                <div className="flex gap-3 items-center">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <p className="text-gray-700">Evolução com fotos e medidas</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 border border-emerald-200 mb-6">
-                <p className="text-sm text-gray-600 mb-2">Economize por mês:</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-emerald-600">10h</span>
-                  <span className="text-gray-600">+ R$ 5-15k em receita recuperada</span>
+              <div className="bg-white rounded-xl p-5 border border-emerald-200 mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">Tempo economizado</p>
+                    <p className="text-2xl font-bold text-emerald-600">+10h/semana</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">Potencial de ganho extra</p>
+                    <p className="text-2xl font-bold text-emerald-600">+R$ 1.600/mês</p>
+                  </div>
                 </div>
+                <p className="text-xs text-gray-400 mt-2">*Baseado em 10h/semana × R$ 100/aula × 4 semanas</p>
               </div>
 
               <Button 
@@ -363,9 +357,10 @@ export default function LandingPagePro() {
                 onClick={handleStartTrial}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
               >
-                Começar Teste Grátis (1 dia)
+                Testar Grátis por 7 Dias
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
+              <p className="text-center text-sm text-gray-500 mt-3">Sem cartão de crédito. Cancele quando quiser.</p>
             </div>
           </div>
         </div>
