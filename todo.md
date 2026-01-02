@@ -2272,13 +2272,21 @@
 - [x] Integrar no AdminPanel
 - [x] Testar painel completo
 
+## Quiz de Qualificação Reformulado (v9.1)
+- [x] Analisar dores que FitPrime resolve
+- [x] Criar perguntas com manipulação inconsciente
+- [x] Implementar QualificationQuizV2
+- [x] Integrar scoring inteligente
+- [x] Adicionar mensagens de urgência
+- [x] Atualizar QuizPage para usar V2
 
 ## Quiz de Qualificação + LP Dinâmica (v9.0)
 - [x] Pesquisar scripts de copy de LPs que convertem
-- [x] Criar sistema de quiz de qualificação
+- [x] Criar sistema de quiz de qualificação (v1 - genérico)
+- [x] Reformular quiz com manipulação inconsciente (v2 - estratégico)
 - [x] Implementar LP dinâmica com preços baseados no perfil
 - [x] Adicionar plano Beginner (5 alunos por R$ 39,90 + R$ 7,98/extra)
-- [ ] Melhorar copy da LP com scripts que convertem (em progresso)
+- [x] Melhorar copy da LP com scripts que convertem
 - [ ] Implementar notificações para admins sobre falhas
 - [ ] Implementar estorno de cobranças extras pelo painel
 - [ ] Implementar visualização de histórico por personal
