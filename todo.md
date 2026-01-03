@@ -2618,3 +2618,9 @@
 - [x] Calcular: se cobrasse 25% a mais, ganharia X
 - [x] Somar com ganho do FitPrime para mostrar potencial total
 - [x] Público-alvo: fisiculturistas, empresários, amantes do mundo maromba
+
+## Ajuste Ancoragem de Preço v6.12
+- [x] Calcular ancoragem baseado em perda + ganho potencial (valor maior)
+- [x] Sempre mostrar 3x o valor real do plano
+- [x] Garantir mínimo de R$ 291 (3x R$ 97 do plano Beginner)
+- [x] Nunca revelar o valor real do plano na ancoragem

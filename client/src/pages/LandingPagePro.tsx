@@ -581,27 +581,41 @@ export default function LandingPagePro() {
                 </p>
               </div>
 
-              {/* Cálculos */}
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
-                  <p className="text-red-400 text-sm mb-2">Você perde por mês:</p>
-                  <p className="text-3xl font-bold text-red-400">
-                    R$ {displayPerdaMensal.toLocaleString('pt-BR')}
-                  </p>
-                </div>
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 text-center">
-                  <p className="text-amber-400 text-sm mb-2">10% disso seria:</p>
-                  <p className="text-3xl font-bold text-amber-400">
-                    R$ {Math.round(displayPerdaMensal * 0.1).toLocaleString('pt-BR')}
-                  </p>
-                </div>
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center">
-                  <p className="text-emerald-400 text-sm mb-2">Potencial de ganho:</p>
-                  <p className="text-3xl font-bold text-emerald-400">
-                    +R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês
-                  </p>
-                </div>
-              </div>
+              {/* Cálculos - Ancoragem inteligente: perda + ganho, sempre 3x o valor real, mínimo R$ 291 */}
+              {(() => {
+                // Valor total de impacto = perda mensal + ganho potencial
+                const impactoTotal = displayPerdaMensal + displayGanhoExtra;
+                // 10% do impacto total
+                const dezPorcentoImpacto = Math.round(impactoTotal * 0.1);
+                // Garantir mínimo de R$ 291 (3x o plano Beginner de R$ 97)
+                const valorAncoragemMinimo = 291;
+                // Valor final da ancoragem: sempre o maior entre 10% do impacto ou R$ 291
+                const valorAncoragem = Math.max(dezPorcentoImpacto, valorAncoragemMinimo);
+                
+                return (
+                  <div className="grid md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
+                      <p className="text-red-400 text-sm mb-2">Você perde por mês:</p>
+                      <p className="text-3xl font-bold text-red-400">
+                        R$ {displayPerdaMensal.toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 text-center">
+                      <p className="text-amber-400 text-sm mb-2">Deixa de ganhar:</p>
+                      <p className="text-3xl font-bold text-amber-400">
+                        +R$ {displayGanhoExtra.toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 rounded-xl p-6 text-center">
+                      <p className="text-emerald-400 text-sm mb-2">10% disso seria:</p>
+                      <p className="text-4xl font-black text-emerald-400">
+                        R$ {valorAncoragem.toLocaleString('pt-BR')}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">por mês</p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Mensagem de tranquilidade */}
               <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center mb-8">
