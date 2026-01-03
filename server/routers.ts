@@ -681,7 +681,12 @@ export const appRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
         }
         
-        // Salvar mensagem no banco de dados (chat interno)
+        // Salvar mensagem no banco de dados
+        // Se vai enviar via WhatsApp, marcar como 'whatsapp', senão 'internal'
+        const willSendViaWhatsApp = input.sendViaWhatsApp && student.phone && student.whatsappOptIn;
+        const personal = ctx.personal;
+        const hasWhatsAppConfig = personal.evolutionApiKey && personal.evolutionInstance;
+        
         const messageId = await db.createChatMessage({
           personalId: ctx.personal.id,
           studentId: input.studentId,
@@ -695,6 +700,7 @@ export const appRouter = router({
           mediaDuration: input.mediaDuration,
           audioTranscription: input.audioTranscription,
           linkPreviewUrl: input.linkPreview,
+          source: (willSendViaWhatsApp && hasWhatsAppConfig) ? 'whatsapp' : 'internal',
         });
         
         // Enviar via WhatsApp/Stevo se habilitado e aluno tem telefone

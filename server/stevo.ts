@@ -748,7 +748,30 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     
     console.log('[Stevo Webhook] Aluno encontrado:', student.name);
     
-    // Criar objeto de mensagem para análise
+    // SALVAR A MENSAGEM NO CHAT (independente do conteúdo)
+    try {
+      // Mapear tipo de mensagem do Stevo para o tipo do chat
+      const chatMessageType = messageType === 'document' ? 'file' : messageType;
+      
+      // Criar mensagem no chat como vinda do aluno via WhatsApp
+      await db.createChatMessage({
+        personalId: student.personalId,
+        studentId: student.id,
+        senderType: 'student',
+        message: messageText || null,
+        messageType: chatMessageType as any,
+        mediaUrl: mediaUrl || null,
+        mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
+        isRead: false,
+        source: 'whatsapp', // Marcar como vinda do WhatsApp
+      });
+      
+      console.log('[Stevo Webhook] Mensagem salva no chat do aluno:', student.name);
+    } catch (chatError) {
+      console.error('[Stevo Webhook] Erro ao salvar mensagem no chat:', chatError);
+    }
+    
+    // Criar objeto de mensagem para análise de pagamento
     const webhookMessage: StevoWebhookMessage = {
       instanceName: payload.instance || '',
       from: from,
@@ -758,14 +781,15 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       timestamp: timestamp,
     };
     
-    // Analisar a mensagem
+    // Analisar a mensagem para ver se é relacionada a pagamento
     const analysis = analyzePaymentMessage(webhookMessage);
     
-    console.log('[Stevo Webhook] Análise:', analysis);
+    console.log('[Stevo Webhook] Análise de pagamento:', analysis);
     
+    // Se não for relacionada a pagamento, já salvamos no chat, então retornar sucesso
     if (!analysis.isPaymentRelated) {
-      console.log('[Stevo Webhook] Mensagem não relacionada a pagamento');
-      return { success: true, processed: false, error: 'not_payment_related' };
+      console.log('[Stevo Webhook] Mensagem não relacionada a pagamento, mas salva no chat');
+      return { success: true, processed: true, action: 'saved_to_chat' };
     }
     
     // Buscar cobrança pendente mais recente do aluno

@@ -660,6 +660,8 @@ export const chatMessages = mysqlTable("chat_messages", {
   // Leitura
   isRead: boolean("isRead").default(false),
   readAt: timestamp("readAt"),
+  // Origem da mensagem (whatsapp = via Stevo, internal = chat interno)
+  source: mysqlEnum("source", ["internal", "whatsapp"]).default("internal"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

@@ -742,8 +742,14 @@ export default function Messages() {
                                           <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
                                         )}
                                         
-                                        {/* Horário e status */}
+                                        {/* Horário, origem e status */}
                                         <div className={`flex items-center justify-end gap-1 mt-1 ${isPersonal ? "text-emerald-700 dark:text-emerald-300" : "text-gray-500"}`}>
+                                          {/* Indicador de WhatsApp */}
+                                          {(msg as any).source === 'whatsapp' && (
+                                            <span title="Via WhatsApp">
+                                              <MessageSquare className="h-3 w-3 text-green-500" />
+                                            </span>
+                                          )}
                                           <span className="text-[10px]">{formatMessageTime(msg.createdAt)}</span>
                                           {isPersonal && (
                                             msg.isRead ? (

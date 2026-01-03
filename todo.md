@@ -2907,3 +2907,15 @@
 - [x] Opção "Selecionar todos" / "Desmarcar todos"
 - [x] Melhorar integração WhatsApp na página de Mensagens
 - [x] Permitir conversar em tempo real via WhatsApp (mensagens enviadas no chat são enviadas via Stevo)
+
+## Chat WhatsApp Completo (v4.9)
+- [x] Interface de chat estilo WhatsApp Web (já existia)
+- [x] Lista de conversas com alunos na lateral (já existia)
+- [x] Área de mensagens com histórico completo (já existia)
+- [x] Envio de mensagens via Stevo para WhatsApp do aluno
+- [x] Recebimento de mensagens via webhook do Stevo (agora salva TODAS as mensagens)
+- [x] Indicador de mensagens não lidas (já existia)
+- [x] Notificação de novas mensagens (já existia)
+- [x] Suporte a mídia (imagens, áudios, documentos) (já existia)
+- [x] Campo 'source' para identificar origem da mensagem (whatsapp/internal)
+- [x] Indicador visual de WhatsApp nas mensagens
