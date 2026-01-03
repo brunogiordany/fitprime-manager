@@ -27,7 +27,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   XCircle,
-  Info
+  Info,
+  Wand2,
+  Loader2
 } from "lucide-react";
 
 export default function AiAssistantSettings() {
@@ -50,6 +52,74 @@ export default function AiAssistantSettings() {
       });
     },
   });
+  
+  // Estado para controlar qual campo está gerando
+  const [generatingField, setGeneratingField] = useState<string | null>(null);
+  
+  // Mutation para gerar sugestões com IA
+  const generateSuggestions = trpc.aiAssistant.generateSuggestions.useMutation({
+    onSuccess: (data) => {
+      if ('suggestions' in data && data.suggestions) {
+        // Preencher todos os campos
+        setFormData(prev => ({
+          ...prev,
+          personalBio: data.suggestions.personalBio || prev.personalBio,
+          servicesOffered: data.suggestions.servicesOffered || prev.servicesOffered,
+          workingHoursDescription: data.suggestions.workingHoursDescription || prev.workingHoursDescription,
+          locationDescription: data.suggestions.locationDescription || prev.locationDescription,
+          priceRange: data.suggestions.priceRange || prev.priceRange,
+          welcomeMessageLead: data.suggestions.welcomeMessageLead || prev.welcomeMessageLead,
+          welcomeMessageStudent: data.suggestions.welcomeMessageStudent || prev.welcomeMessageStudent,
+          awayMessage: data.suggestions.awayMessage || prev.awayMessage,
+          customPersonality: data.suggestions.customPersonality || prev.customPersonality,
+        }));
+        toast.success("Sugestões geradas!", {
+          description: "Todos os campos foram preenchidos com sugestões da IA. Revise e ajuste conforme necessário.",
+        });
+      } else if ('suggestion' in data && data.field) {
+        // Preencher campo específico
+        updateField(data.field as keyof typeof formData, data.suggestion as any);
+        toast.success("Sugestão gerada!", {
+          description: "O campo foi preenchido com uma sugestão da IA.",
+        });
+      }
+      setGeneratingField(null);
+    },
+    onError: (error) => {
+      toast.error("Erro ao gerar sugestão", {
+        description: error.message,
+      });
+      setGeneratingField(null);
+    },
+  });
+  
+  // Função para gerar sugestão para um campo
+  const handleGenerateSuggestion = (field: string) => {
+    setGeneratingField(field);
+    generateSuggestions.mutate({
+      field: field as any,
+      context: {
+        assistantName: formData.assistantName,
+        assistantGender: formData.assistantGender,
+        communicationTone: formData.communicationTone,
+        existingBio: formData.personalBio,
+        existingServices: formData.servicesOffered,
+      },
+    });
+  };
+  
+  // Função para gerar todas as sugestões
+  const handleGenerateAll = () => {
+    setGeneratingField("all");
+    generateSuggestions.mutate({
+      field: "all",
+      context: {
+        assistantName: formData.assistantName,
+        assistantGender: formData.assistantGender,
+        communicationTone: formData.communicationTone,
+      },
+    });
+  };
   
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -303,17 +373,51 @@ export default function AiAssistantSettings() {
               {/* Informações do Personal */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Sobre Você
-                  </CardTitle>
-                  <CardDescription>
-                    Informações que a IA usará para apresentar seus serviços
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Sobre Você
+                      </CardTitle>
+                      <CardDescription>
+                        Informações que a IA usará para apresentar seus serviços
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateAll}
+                      disabled={generatingField !== null}
+                      className="gap-2"
+                    >
+                      {generatingField === "all" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                      Preencher Tudo com IA
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="personalBio">Sua Bio</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="personalBio">Sua Bio</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("personalBio")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "personalBio" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="personalBio"
                       value={formData.personalBio}
@@ -324,7 +428,23 @@ export default function AiAssistantSettings() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="servicesOffered">Serviços Oferecidos</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="servicesOffered">Serviços Oferecidos</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("servicesOffered")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "servicesOffered" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="servicesOffered"
                       value={formData.servicesOffered}
@@ -336,7 +456,22 @@ export default function AiAssistantSettings() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="locationDescription">Local de Atendimento</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="locationDescription">Local de Atendimento</Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleGenerateSuggestion("locationDescription")}
+                          disabled={generatingField !== null}
+                          className="h-6 px-1.5 text-xs gap-1"
+                        >
+                          {generatingField === "locationDescription" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Wand2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
                       <Input
                         id="locationDescription"
                         value={formData.locationDescription}
@@ -345,7 +480,22 @@ export default function AiAssistantSettings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="priceRange">Faixa de Preço</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="priceRange">Faixa de Preço</Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleGenerateSuggestion("priceRange")}
+                          disabled={generatingField !== null}
+                          className="h-6 px-1.5 text-xs gap-1"
+                        >
+                          {generatingField === "priceRange" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Wand2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
                       <Input
                         id="priceRange"
                         value={formData.priceRange}
@@ -447,7 +597,23 @@ export default function AiAssistantSettings() {
                   )}
                   
                   <div className="space-y-2">
-                    <Label htmlFor="customPersonality">Personalidade Customizada</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="customPersonality">Personalidade Customizada</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("customPersonality")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "customPersonality" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="customPersonality"
                       value={formData.customPersonality}
@@ -475,7 +641,23 @@ export default function AiAssistantSettings() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="welcomeMessageLead">Boas-vindas para Leads</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="welcomeMessageLead">Boas-vindas para Leads</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("welcomeMessageLead")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "welcomeMessageLead" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="welcomeMessageLead"
                       value={formData.welcomeMessageLead}
@@ -489,7 +671,23 @@ export default function AiAssistantSettings() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="welcomeMessageStudent">Boas-vindas para Alunos</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="welcomeMessageStudent">Boas-vindas para Alunos</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("welcomeMessageStudent")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "welcomeMessageStudent" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="welcomeMessageStudent"
                       value={formData.welcomeMessageStudent}
@@ -503,7 +701,23 @@ export default function AiAssistantSettings() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="awayMessage">Mensagem Fora do Horário</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="awayMessage">Mensagem Fora do Horário</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGenerateSuggestion("awayMessage")}
+                        disabled={generatingField !== null}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        {generatingField === "awayMessage" ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3" />
+                        )}
+                        Sugerir
+                      </Button>
+                    </div>
                     <Textarea
                       id="awayMessage"
                       value={formData.awayMessage}
@@ -511,6 +725,9 @@ export default function AiAssistantSettings() {
                       placeholder="Ex: Oi! Estamos fora do horário de atendimento agora, mas vou passar sua mensagem para o personal e ele te responde assim que possível! 🙏"
                       rows={3}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Mensagem enviada automaticamente fora do horário de atendimento
+                    </p>
                   </div>
                 </CardContent>
               </Card>

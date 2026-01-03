@@ -2962,3 +2962,23 @@
 ## Bugs Reportados (03/01/2026)
 - [x] Mensagens duplicadas no chat (webhook salvando mesma mensagem 2x)
 - [x] IA não está respondendo mensagens do WhatsApp
+
+## Melhorias IA de Atendimento (v5.1)
+- [ ] Preenchimento automático com IA nos campos de configuração
+  - [ ] Botão "Preencher com IA" para gerar sugestões baseadas no perfil do personal
+  - [ ] Bio do personal
+  - [ ] Serviços oferecidos
+  - [ ] Descrição de horários
+  - [ ] Faixa de preço
+  - [ ] Mensagem de boas-vindas para leads
+  - [ ] Mensagem de boas-vindas para alunos
+  - [ ] Mensagem de ausência
+- [ ] Melhorar UX da configuração de mensagem de ausência
+- [ ] Personalização do tom e personalidade da IA
+
+## Melhorias IA de Atendimento (03/01/2026)
+- [x] Botão "Preencher Tudo com IA" no card Sobre Você
+- [x] Botões "Sugerir" individuais em cada campo de texto
+- [x] Endpoint generateSuggestions no backend
+- [x] Teste unitário para geração de sugestões
+- [x] Testar preenchimento automático em produção

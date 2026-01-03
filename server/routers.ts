@@ -163,6 +163,140 @@ const aiAssistantRouter = router({
     return config;
   }),
   
+  // Gerar sugestões com IA para os campos de configuração
+  generateSuggestions: protectedProcedure
+    .input(z.object({
+      field: z.enum([
+        "personalBio",
+        "servicesOffered",
+        "workingHoursDescription",
+        "locationDescription",
+        "priceRange",
+        "welcomeMessageLead",
+        "welcomeMessageStudent",
+        "awayMessage",
+        "customPersonality",
+        "all"
+      ]),
+      context: z.object({
+        personalName: z.string().optional(),
+        assistantName: z.string().optional(),
+        assistantGender: z.enum(["male", "female", "neutral"]).optional(),
+        communicationTone: z.enum(["formal", "casual", "motivational", "friendly"]).optional(),
+        existingBio: z.string().optional(),
+        existingServices: z.string().optional(),
+      }).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { invokeLLM } = await import("./_core/llm");
+      const personal = await getOrCreatePersonal(ctx.user.id);
+      if (!personal) throw new TRPCError({ code: 'NOT_FOUND', message: 'Personal não encontrado' });
+      
+      const personalName = input.context?.personalName || personal.businessName || "Personal";
+      const assistantName = input.context?.assistantName || "Sofia";
+      const gender = input.context?.assistantGender || "female";
+      const tone = input.context?.communicationTone || "friendly";
+      const genderText = gender === "female" ? "feminino" : gender === "male" ? "masculino" : "neutro";
+      const toneText = tone === "formal" ? "formal e profissional" : tone === "casual" ? "casual e descontraído" : tone === "motivational" ? "motivacional e energético" : "amigável e acolhedor";
+      
+      const prompts: Record<string, string> = {
+        personalBio: `Crie uma bio profissional curta (2-3 frases) para um personal trainer chamado ${personalName}. 
+A bio deve destacar experiência, especializações e diferenciais.
+Exemplo: "Personal trainer com 8 anos de experiência, especializado em emagrecimento e hipertrofia. Formado em Educação Física com pós-graduação em Fisiologia do Exercício."
+Retorne APENAS a bio, sem explicações.`,
+        
+        servicesOffered: `Liste os serviços típicos oferecidos por um personal trainer moderno.
+Exemplo: "Personal presencial, consultoria online, acompanhamento nutricional, treinos personalizados, avaliação física completa"
+Retorne APENAS a lista de serviços separados por vírgula, sem explicações.`,
+        
+        workingHoursDescription: `Descreva horários de atendimento típicos de um personal trainer.
+Exemplo: "Segunda a sexta das 6h às 21h, sábados das 8h às 14h"
+Retorne APENAS a descrição de horários, sem explicações.`,
+        
+        locationDescription: `Sugira uma descrição de local de atendimento para personal trainer.
+Exemplo: "Atendimento em academias parceiras, domicílio ou online"
+Retorne APENAS a descrição do local, sem explicações.`,
+        
+        priceRange: `Sugira uma faixa de preço típica para serviços de personal trainer no Brasil.
+Exemplo: "R$ 150-300 por sessão, pacotes a partir de R$ 800/mês"
+Retorne APENAS a faixa de preço, sem explicações.`,
+        
+        welcomeMessageLead: `Crie uma mensagem de boas-vindas ${toneText} para novos leads (pessoas interessadas) de um personal trainer.
+A assistente se chama ${assistantName} (gênero ${genderText}).
+A mensagem deve:
+- Ser curta (2-3 frases)
+- Cumprimentar de forma calorosa
+- Se apresentar como assistente do ${personalName}
+- Perguntar como pode ajudar
+- Usar emojis moderadamente
+Exemplo: "Oi! 👋 Tudo bem? Sou a ${assistantName}, da equipe do ${personalName}. Vi que você entrou em contato! Como posso te ajudar hoje?"
+Retorne APENAS a mensagem, sem explicações.`,
+        
+        welcomeMessageStudent: `Crie uma mensagem de boas-vindas ${toneText} para alunos já cadastrados de um personal trainer.
+A assistente se chama ${assistantName} (gênero ${genderText}).
+A mensagem deve:
+- Ser curta (1-2 frases)
+- Ser mais íntima/familiar
+- Perguntar como pode ajudar
+- Usar emojis moderadamente
+Exemplo: "E aí! 💪 Tudo certo por aí? Em que posso te ajudar hoje?"
+Retorne APENAS a mensagem, sem explicações.`,
+        
+        awayMessage: `Crie uma mensagem automática ${toneText} para quando o atendimento estiver fora do horário.
+A assistente se chama ${assistantName} (gênero ${genderText}).
+A mensagem deve:
+- Informar que está fora do horário
+- Garantir que a mensagem será respondida
+- Ser acolhedora
+- Usar emojis moderadamente
+Exemplo: "Oi! Estamos fora do horário de atendimento agora, mas recebi sua mensagem e vou passar para o ${personalName}. Ele te responde assim que possível! 🙏"
+Retorne APENAS a mensagem, sem explicações.`,
+        
+        customPersonality: `Crie instruções de personalidade para uma IA assistente de personal trainer.
+O tom deve ser ${toneText}.
+Exemplo: "Sempre mencione a importância do descanso e recuperação. Use expressões motivacionais como 'bora treinar!' e 'vamos com tudo!'. Seja empátic${gender === "female" ? "a" : "o"} com dificuldades dos alunos."
+Retorne APENAS as instruções, sem explicações.`,
+      };
+      
+      if (input.field === "all") {
+        // Gerar todas as sugestões de uma vez
+        const results: Record<string, string> = {};
+        for (const [field, prompt] of Object.entries(prompts)) {
+          try {
+            const response = await invokeLLM({
+              messages: [
+                { role: "system", content: "Você é um assistente que gera textos curtos e diretos para configuração de sistemas. Responda APENAS com o texto solicitado, sem explicações ou comentários adicionais." },
+                { role: "user", content: prompt }
+              ],
+            });
+            const content = response.choices[0]?.message?.content;
+            results[field] = typeof content === 'string' ? content.trim() : "";
+          } catch (e) {
+            console.error(`Erro ao gerar ${field}:`, e);
+            results[field] = "";
+          }
+        }
+        return { suggestions: results };
+      } else {
+        // Gerar sugestão para um campo específico
+        const prompt = prompts[input.field];
+        if (!prompt) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Campo inválido' });
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Você é um assistente que gera textos curtos e diretos para configuração de sistemas. Responda APENAS com o texto solicitado, sem explicações ou comentários adicionais." },
+            { role: "user", content: prompt }
+          ],
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        return { 
+          suggestion: typeof content === 'string' ? content.trim() : "",
+          field: input.field 
+        };
+      }
+    }),
+  
   saveConfig: protectedProcedure
     .input(z.object({
       assistantName: z.string().default("Assistente"),
