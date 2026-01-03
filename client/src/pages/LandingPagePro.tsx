@@ -1464,31 +1464,70 @@ export default function LandingPagePro() {
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 md:p-12">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Descubra em 2 minutos se o FitPrime é pra você
-            </h3>
-            <p className="text-emerald-100 mb-8 text-lg">
-              Responda 3 perguntas simples e veja qual plano combina com seu momento.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/quiz'}
-              className="bg-white text-emerald-600 hover:bg-gray-100 text-xl px-12 py-8 font-bold shadow-2xl hover:scale-105 transition-transform"
-            >
-              QUERO DESCOBRIR AGORA
-              <ArrowRight className="ml-3 h-6 w-6" />
-            </Button>
-            <p className="text-emerald-200 text-sm mt-6">
-              Sem compromisso • Sem cartão de crédito • Resultado instantâneo
-            </p>
+          {/* CTA Final - Impactante */}
+          <div className="relative overflow-hidden">
+            {/* Background com efeito */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 rounded-3xl"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.05%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+            
+            <div className="relative p-8 md:p-16 text-center">
+              {/* Badge de urgência */}
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
+                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                +500 personais já transformaram seus negócios
+              </div>
+              
+              {/* Headline principal */}
+              <h3 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
+                Chega de perder tempo e dinheiro
+              </h3>
+              <p className="text-xl md:text-2xl text-emerald-100 mb-2 font-medium">
+                Descubra em 2 minutos se o FitPrime é pra você
+              </p>
+              <p className="text-emerald-200 mb-10 text-lg max-w-xl mx-auto">
+                Responda 3 perguntas rápidas e veja qual plano combina com seu momento como personal.
+              </p>
+              
+              {/* Botão principal com efeito */}
+              <div className="relative inline-block group">
+                <div className="absolute -inset-1 bg-white/30 rounded-2xl blur-lg group-hover:blur-xl transition-all"></div>
+                <Button 
+                  size="lg" 
+                  onClick={() => window.location.href = '/quiz'}
+                  className="relative bg-white text-emerald-600 hover:bg-gray-50 text-xl md:text-2xl px-12 md:px-16 py-8 md:py-10 font-black shadow-2xl hover:scale-105 transition-all rounded-xl"
+                >
+                  QUERO DESCOBRIR AGORA
+                  <ArrowRight className="ml-3 h-7 w-7" />
+                </Button>
+              </div>
+              
+              {/* Garantias */}
+              <div className="flex flex-wrap justify-center gap-6 mt-8 text-emerald-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  <span>Sem compromisso</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  <span>Sem cartão de crédito</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  <span>Resultado instantâneo</span>
+                </div>
+              </div>
+              
+              {/* Prova social final */}
+              <div className="mt-10 pt-8 border-t border-white/20">
+                <p className="text-white/80 text-sm">
+                  A cada dia que passa, você perde dinheiro com burocracia.
+                </p>
+                <p className="text-white font-bold mt-1">
+                  A pergunta é: até quando?
+                </p>
+              </div>
+            </div>
           </div>
-
-          {/* Urgência Sutil */}
-          <p className="text-gray-400 mt-8 text-sm">
-            +500 personais já usam o FitPrime. A pergunta é: você vai ficar pra trás?
-          </p>
         </div>
       </section>
 

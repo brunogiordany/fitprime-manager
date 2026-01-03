@@ -2588,3 +2588,11 @@
 - [x] Remover menção a import Excel (não tem)
 - [x] Anamnese já está pronta no sistema
 
+
+
+## Melhoria CTA Final v6.8
+- [x] Tornar o CTA final mais impactante e persuasivo
+- [x] Adicionar elementos visuais que chamem mais atenção
+- [x] Criar senso de urgência ou escassez
+- [x] Melhorar a copy para gerar mais desejo
+
