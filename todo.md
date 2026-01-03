@@ -2689,3 +2689,7 @@
 - [x] Mostrar lucro anual mesmo pagando R$ 291/mês (R$ 3.492/ano)
 - [x] Adicionar CTA: "Descubra se o FitPrime é pra você e quanto vai te custar"
 - [x] Reforçar: "Mas lembre-se, você não vai pagar R$ 291"
+
+## Bug Fotos Repetidas v6.26
+- [x] Identificar TODAS as fotos repetidas nos depoimentos
+- [x] Garantir que cada depoimento tenha uma foto ÚNICA

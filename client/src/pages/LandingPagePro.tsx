@@ -778,7 +778,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 3 - Personal que triplicou */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <img src="/testimonials-premium/marcos.jpg" alt="Marcos Tavares" className="h-10 w-10 rounded-full object-cover border-2 border-emerald-400" />
+                      <img src="/testimonials-premium/marcos.webp" alt="Marcos Tavares" className="h-10 w-10 rounded-full object-cover border-2 border-emerald-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Marcos Tavares</p>
                         <p className="text-emerald-400 text-xs">Personal Trainer</p>
