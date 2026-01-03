@@ -158,6 +158,7 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     subtitle: "Aproximadamente, só para entendermos seu momento",
     icon: <DollarSign className="w-6 h-6 text-green-500" />,
     options: [
+      { id: "no_income", text: "Ainda não tenho renda como personal", emoji: "🌱", value: 0 },
       { id: "2k", text: "Até R$ 2.000", emoji: "💵", value: 2000 },
       { id: "5k", text: "R$ 2.000 a R$ 5.000", emoji: "💰", value: 5000 },
       { id: "10k", text: "R$ 5.000 a R$ 10.000", emoji: "💎", value: 10000 },
@@ -258,6 +259,7 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [eliminated, setEliminated] = useState(false);
   const [sessionId] = useState(() => `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   const saveQuizMutation = trpc.quiz.saveResponse.useMutation();
@@ -291,6 +293,12 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
 
   const handleNext = () => {
     if (selectedOptions.length === 0) return;
+
+    // Verificar se selecionou "sem renda" para eliminar do funil
+    if (currentQuestion.id === "financial_revenue" && selectedOptions[0] === "no_income") {
+      setEliminated(true);
+      return;
+    }
 
     const newAnswers = {
       ...answers,
@@ -393,79 +401,153 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
     };
   };
 
-  // Tela de resultado
-  if (result) {
-    const painLevel = result.painScore > 15 ? "alto" : result.painScore > 10 ? "médio" : "baixo";
-    const potentialGain = result.goalRevenue - result.currentRevenue;
-    const timeSaved = result.painScore > 15 ? "10+" : result.painScore > 10 ? "5-10" : "2-5";
-
+  // Tela de eliminação para quem não tem renda
+  if (eliminated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <Card className="border-0 shadow-xl">
             <CardContent className="p-8">
-              {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-10 h-10 text-amber-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Análise Completa!
+                  O FitPrime ainda não é pra você...
                 </h2>
-                <p className="text-gray-600">
-                  Identificamos seu perfil e temos uma solução personalizada
+                <p className="text-gray-600 mb-6">
+                  Mas calma, isso pode mudar!
                 </p>
               </div>
 
-              {/* Diagnóstico */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+                <h3 className="font-semibold text-amber-800 mb-3">Por que estamos dizendo isso?</h3>
+                <p className="text-amber-700 text-sm mb-4">
+                  O FitPrime foi criado para personal trainers que já têm alunos e precisam organizar seu negócio. 
+                  Se você ainda não tem renda como personal, o mais importante agora é <strong>conquistar seus primeiros alunos</strong>.
+                </p>
+                <p className="text-amber-700 text-sm">
+                  Quando você tiver pelo menos 3-5 alunos, volte aqui! O FitPrime vai te ajudar a escalar de forma profissional.
+                </p>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-8">
+                <h3 className="font-semibold text-emerald-800 mb-3">💡 Dica para começar:</h3>
+                <ul className="text-emerald-700 text-sm space-y-2">
+                  <li>• Ofereça aulas experimentais gratuitas para amigos e família</li>
+                  <li>• Poste conteúdo de valor nas redes sociais</li>
+                  <li>• Faça parcerias com academias locais</li>
+                  <li>• Crie um perfil profissional no Instagram</li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => window.location.href = "/"}
+                >
+                  Voltar para a Página Inicial
+                </Button>
+                <p className="text-center text-gray-500 text-sm">
+                  Quando tiver seus primeiros alunos, estaremos aqui esperando! 💪
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de resultado - SENSACIONALISTA
+  if (result) {
+    const painLevel = result.painScore > 15 ? "CRÍTICO" : result.painScore > 10 ? "ALTO" : "MODERADO";
+    const potentialGain = result.goalRevenue - result.currentRevenue;
+    const timeSaved = result.painScore > 15 ? "10+" : result.painScore > 10 ? "5-10" : "2-5";
+    const hoursPerMonth = result.painScore > 15 ? 40 : result.painScore > 10 ? 30 : 15;
+    const moneyLostPerMonth = Math.round((hoursPerMonth / 4) * (result.currentRevenue / result.currentStudents / 4)); // Estimativa de perda
+    const yearlyLoss = moneyLostPerMonth * 12;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-0 shadow-2xl bg-gray-800/50 backdrop-blur">
+            <CardContent className="p-8">
+              {/* Header Impactante */}
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <AlertTriangle className="w-10 h-10 text-red-500" />
+                </div>
+                <h2 className="text-3xl font-black text-white mb-2">
+                  Você está SANGRANDO dinheiro
+                </h2>
+                <p className="text-gray-400">
+                  E provavelmente nem percebe...
+                </p>
+              </div>
+
+              {/* Dados contra o lead */}
               <div className="space-y-4 mb-8">
-                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-600" />
-                    <span className="font-semibold text-amber-800">Nível de Dor: {painLevel.toUpperCase()}</span>
-                  </div>
-                  <p className="text-sm text-amber-700">
-                    Você está perdendo aproximadamente <strong>{timeSaved} horas por semana</strong> com tarefas que poderiam ser automatizadas.
+                {/* Situação atual */}
+                <div className="p-5 bg-red-500/10 rounded-xl border border-red-500/30">
+                  <p className="text-red-400 text-sm mb-2">SUA SITUAÇÃO ATUAL:</p>
+                  <p className="text-white text-lg">
+                    Você ganha <span className="text-red-400 font-bold">R$ {result.currentRevenue.toLocaleString('pt-BR')}/mês</span> com <span className="font-bold">{result.currentStudents} alunos</span>
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    E perde <span className="text-red-400 font-semibold">{hoursPerMonth}+ horas por mês</span> com burocracia que poderia estar atendendo mais alunos
                   </p>
                 </div>
 
-                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-emerald-800">Potencial de Crescimento</span>
-                  </div>
-                  <p className="text-sm text-emerald-700">
-                    Com as ferramentas certas, você pode aumentar sua renda em até <strong>R$ {potentialGain.toLocaleString('pt-BR')}/mês</strong>.
+                {/* O que quer */}
+                <div className="p-5 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                  <p className="text-emerald-400 text-sm mb-2">O QUE VOCÊ QUER:</p>
+                  <p className="text-white text-lg">
+                    Chegar em <span className="text-emerald-400 font-bold">R$ {result.goalRevenue.toLocaleString('pt-BR')}/mês</span>
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Isso significa ganhar <span className="text-emerald-400 font-semibold">+R$ {potentialGain.toLocaleString('pt-BR')}</span> a mais todo mês
                   </p>
                 </div>
 
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Target className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold text-blue-800">Plano Ideal para Você</span>
-                  </div>
-                  <p className="text-sm text-blue-700">
-                    Baseado nos seus <strong>{result.currentStudents} alunos</strong> e objetivos, recomendamos o plano <strong className="uppercase">{result.recommendedPlan}</strong>.
+                {/* A verdade */}
+                <div className="p-5 bg-amber-500/10 rounded-xl border border-amber-500/30">
+                  <p className="text-amber-400 text-sm mb-2">A VERDADE DURA:</p>
+                  <p className="text-white">
+                    Com o tempo que você perde em burocracia, você poderia atender <span className="text-amber-400 font-bold">+{Math.round(hoursPerMonth / 4)} alunos</span> por mês.
                   </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Isso é <span className="text-amber-400 font-semibold">R$ {(Math.round(hoursPerMonth / 4) * (result.currentRevenue / result.currentStudents)).toLocaleString('pt-BR')}/mês</span> que você deixa na mesa.
+                  </p>
+                </div>
+
+                {/* Solução */}
+                <div className="p-5 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 rounded-xl border border-emerald-500/50">
+                  <p className="text-emerald-400 text-sm mb-2">COM O FITPRIME:</p>
+                  <p className="text-white text-lg font-semibold">
+                    Você recupera essas {hoursPerMonth}+ horas e pode finalmente chegar nos <span className="text-emerald-400">R$ {result.goalRevenue.toLocaleString('pt-BR')}/mês</span>
+                  </p>
+                  <ul className="text-gray-300 text-sm mt-3 space-y-1">
+                    <li>✓ Cobranças automáticas (sem constrangimento)</li>
+                    <li>✓ Treinos gerados por IA em segundos</li>
+                    <li>✓ Agenda inteligente que se organiza sozinha</li>
+                    <li>✓ Tudo em um só lugar</li>
+                  </ul>
                 </div>
               </div>
 
               {/* CTA */}
               <div className="space-y-3">
                 <Button 
-                  className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full h-14 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 font-bold"
                   onClick={() => window.location.href = "/quiz-resultado"}
                 >
-                  Ver Meus Planos Recomendados
+                  QUERO PARAR DE PERDER DINHEIRO
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => window.location.href = "/pricing"}
-                >
-                  Ver Todos os Planos
-                </Button>
+                <p className="text-center text-gray-500 text-sm">
+                  Veja o plano ideal para seus {result.currentStudents} alunos
+                </p>
               </div>
             </CardContent>
           </Card>

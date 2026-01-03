@@ -2596,3 +2596,16 @@
 - [x] Criar senso de urgência ou escassez
 - [x] Melhorar a copy para gerar mais desejo
 
+
+
+## Melhoria Quiz v6.9
+- [x] Adicionar opção "Ainda não tenho renda" na pergunta de renda
+- [x] Criar tela de eliminação para quem não tem renda
+- [x] Reformular resultado com copy sensacionalista (usar dados contra o lead) - JÁ IMPLEMENTADO
+- [x] Mostrar apenas 2 planos: Beginner + plano ideal baseado no número de alunos
+- [x] Verificar se backredirect está funcionando (implementado no ExitIntentPopup)
+- [x] MEGA ANCORAGEM: Abaixo da calculadora mostrar "Se custasse 10% do que você perde, ainda valeria a pena"
+
+
+## Bug Landing Page v6.10
+- [x] Corrigir botão "Quais São os Benefícios Exclusivos?" que está cortado/fora do container

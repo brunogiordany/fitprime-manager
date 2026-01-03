@@ -560,6 +560,75 @@ export default function LandingPagePro() {
             </div>
           </div>
 
+          {/* MEGA ANCORAGEM DE PREÇO */}
+          <div className="mt-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+            {/* Efeito de brilho */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              {/* Headline */}
+              <div className="text-center mb-8">
+                <Badge className="mb-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Reflexão importante
+                </Badge>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                  Se o FitPrime custasse <span className="text-emerald-400">apenas 10%</span> do que você perde...
+                </h3>
+                <p className="text-gray-400 text-lg">
+                  Ainda assim seria um ótimo investimento, certo?
+                </p>
+              </div>
+
+              {/* Cálculos */}
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
+                  <p className="text-red-400 text-sm mb-2">Você perde por mês:</p>
+                  <p className="text-3xl font-bold text-red-400">
+                    R$ {displayPerdaMensal.toLocaleString('pt-BR')}
+                  </p>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 text-center">
+                  <p className="text-amber-400 text-sm mb-2">10% disso seria:</p>
+                  <p className="text-3xl font-bold text-amber-400">
+                    R$ {Math.round(displayPerdaMensal * 0.1).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center">
+                  <p className="text-emerald-400 text-sm mb-2">Potencial de ganho:</p>
+                  <p className="text-3xl font-bold text-emerald-400">
+                    +R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês
+                  </p>
+                </div>
+              </div>
+
+              {/* Mensagem de tranquilidade */}
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center mb-8">
+                <p className="text-xl text-white font-semibold mb-2">
+                  Mas relaxa... o FitPrime <span className="text-emerald-400">não custa nem perto disso</span>
+                </p>
+                <p className="text-gray-400">
+                  Você vai se surpreender com o preço quando chegar lá. Por enquanto, continue descobrindo tudo que o FitPrime faz por você.
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    const featuresSection = document.getElementById('features');
+                    if (featuresSection) featuresSection.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
+                >
+                  Ver Como Funciona
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -820,9 +889,9 @@ export default function LandingPagePro() {
           </div>
 
           {/* Resultado */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-12 text-white text-center">
-            <h3 className="text-3xl font-bold mb-4">Resultado: Você ganha 10h por semana</h3>
-            <p className="text-xl mb-8 opacity-90">
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 md:p-12 text-white text-center">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Resultado: Você ganha 10h por semana</h3>
+            <p className="text-lg md:text-xl mb-8 opacity-90">
               Menos tempo em tarefas administrativas = Mais tempo para treinar, criar conteúdo e crescer seu negócio
             </p>
             <Button 
@@ -831,7 +900,7 @@ export default function LandingPagePro() {
                 const quizSection = document.getElementById('quiz');
                 if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
+              className="bg-white text-emerald-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 w-full sm:w-auto"
             >
               Quais São os Benefícios Exclusivos?
               <ArrowRight className="ml-2 h-5 w-5" />

@@ -51,16 +51,13 @@ interface RecommendedPlan {
   icon: React.ReactNode;
 }
 
-// Função para calcular os 3 melhores planos baseado no quiz
+// Função para retornar apenas 2 planos: Beginner + plano ideal baseado no número de alunos
 function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
   const students = result.currentStudents || 5;
-  const goalRevenue = result.goalRevenue || 5000;
-  const painScore = result.painScore || 0;
-  const solutionScore = result.solutionScore || 0;
 
-  // Definir todos os planos com scores de match
-  const allPlans: RecommendedPlan[] = [
-    {
+  // Definir todos os planos
+  const allPlans: Record<string, RecommendedPlan> = {
+    beginner: {
       id: "beginner",
       name: "Beginner",
       price: 39.9,
@@ -78,7 +75,7 @@ function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
       isRecommended: false,
       icon: <Gift className="w-6 h-6" />,
     },
-    {
+    starter: {
       id: "starter",
       name: "Starter",
       price: 97,
@@ -93,11 +90,11 @@ function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
         "Relatórios detalhados",
         "Suporte prioritário",
       ],
-      matchScore: 0,
+      matchScore: 80,
       isRecommended: false,
       icon: <Rocket className="w-6 h-6" />,
     },
-    {
+    pro: {
       id: "pro",
       name: "Pro",
       price: 147,
@@ -113,12 +110,12 @@ function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
         "Integração com apps",
         "Suporte dedicado",
       ],
-      matchScore: 0,
+      matchScore: 80,
       isRecommended: false,
       badge: "Mais Popular",
       icon: <Star className="w-6 h-6" />,
     },
-    {
+    business: {
       id: "business",
       name: "Business",
       price: 197,
@@ -134,11 +131,11 @@ function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
         "Onboarding dedicado",
         "Suporte 24/7",
       ],
-      matchScore: 0,
+      matchScore: 80,
       isRecommended: false,
       icon: <Shield className="w-6 h-6" />,
     },
-    {
+    premium: {
       id: "premium",
       name: "Premium",
       price: 297,
@@ -153,74 +150,38 @@ function getRecommendedPlans(result: QuizResult): RecommendedPlan[] {
         "SLA garantido",
         "Gerente de conta",
       ],
-      matchScore: 0,
+      matchScore: 80,
       isRecommended: false,
       icon: <Crown className="w-6 h-6" />,
     },
-  ];
+  };
 
-  // Calcular score de match para cada plano
-  allPlans.forEach((plan) => {
-    let score = 0;
+  // Determinar o plano ideal baseado no número de alunos
+  let idealPlanId = "starter";
+  if (students <= 5) idealPlanId = "beginner";
+  else if (students <= 15) idealPlanId = "starter";
+  else if (students <= 25) idealPlanId = "pro";
+  else if (students <= 40) idealPlanId = "business";
+  else idealPlanId = "premium";
 
-    // Score baseado no número de alunos (40%)
-    if (students <= plan.studentLimit) {
-      const utilizationRatio = students / plan.studentLimit;
-      if (utilizationRatio >= 0.5 && utilizationRatio <= 0.9) {
-        score += 40; // Ideal: usando 50-90% da capacidade
-      } else if (utilizationRatio < 0.5) {
-        score += 20; // Plano grande demais
-      } else {
-        score += 30; // Quase no limite
-      }
-    } else {
-      score += 10; // Plano pequeno demais
-    }
+  // Sempre retornar 2 planos: Beginner + plano ideal
+  const beginnerPlan = { ...allPlans.beginner };
+  const idealPlan = { ...allPlans[idealPlanId] };
+  
+  // Marcar o plano ideal como recomendado
+  idealPlan.isRecommended = true;
+  idealPlan.matchScore = 100;
+  idealPlan.badge = "Ideal para você";
 
-    // Score baseado no objetivo de receita (30%)
-    const estimatedRevenue = plan.studentLimit * 200; // Média de R$200/aluno
-    if (estimatedRevenue >= goalRevenue * 0.8) {
-      score += 30;
-    } else if (estimatedRevenue >= goalRevenue * 0.5) {
-      score += 20;
-    } else {
-      score += 10;
-    }
+  // Se o ideal for beginner, retornar só beginner + starter
+  if (idealPlanId === "beginner") {
+    beginnerPlan.isRecommended = true;
+    beginnerPlan.matchScore = 100;
+    beginnerPlan.badge = "Ideal para você";
+    return [beginnerPlan, { ...allPlans.starter }];
+  }
 
-    // Score baseado no nível de dor (15%)
-    if (painScore >= 15) {
-      // Alta dor = precisa de mais recursos
-      if (plan.id === "pro" || plan.id === "business") score += 15;
-      else if (plan.id === "starter") score += 10;
-      else score += 5;
-    } else if (painScore >= 10) {
-      if (plan.id === "starter" || plan.id === "pro") score += 15;
-      else score += 8;
-    } else {
-      if (plan.id === "beginner" || plan.id === "starter") score += 15;
-      else score += 5;
-    }
-
-    // Score baseado no interesse em soluções (15%)
-    if (solutionScore >= 7) {
-      // Alto interesse em automação
-      if (plan.id === "pro" || plan.id === "business" || plan.id === "premium") score += 15;
-      else score += 8;
-    } else {
-      score += 10;
-    }
-
-    plan.matchScore = score;
-  });
-
-  // Ordenar por score e pegar os 3 melhores
-  const sortedPlans = allPlans.sort((a, b) => b.matchScore - a.matchScore);
-  const top3 = sortedPlans.slice(0, 3);
-
-  // Marcar o melhor como recomendado
-  top3[0].isRecommended = true;
-
-  return top3;
+  return [beginnerPlan, idealPlan];
 }
 
 export default function QuizResultPage() {
@@ -360,15 +321,15 @@ export default function QuizResultPage() {
         {/* Título dos Planos */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Os 3 Planos Ideais Para Você
+            Escolha o Plano Ideal Para Você
           </h2>
           <p className="text-gray-600">
-            Selecionados com base no seu perfil e objetivos
+            Baseado nos seus {currentStudents} alunos, selecionamos as melhores opções
           </p>
         </div>
 
-        {/* Cards de Planos */}
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
+        {/* Cards de Planos - Apenas 2 planos */}
+        <div className="grid md:grid-cols-2 gap-6 mb-10 max-w-4xl mx-auto">
           {recommendedPlans.map((plan, index) => (
             <Card
               key={plan.id}
