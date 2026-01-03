@@ -2826,3 +2826,10 @@
 
 ## Bug Login Portal do Aluno (v6.48)
 - [x] Corrigir login do portal do aluno para usar aluno existente pelo email ao invés de criar novo
+
+
+## Correções v6.49
+- [ ] Links dos planos anuais não funcionam (botão "Ver plano anual" na página de planos)
+- [ ] Corrigir modal Comparar Treinos - palavras encavalando
+- [ ] Ajustar UX da tela de medidas corporais - card de cálculos automáticos visível
+- [x] Upgrade de plano deve cobrar apenas a diferença (proration), não o valor cheio do novo plano

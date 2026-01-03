@@ -1570,7 +1570,7 @@ export default function Workouts() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="px-3 sm:px-6">
-                        <p className="text-xs sm:text-sm whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{comparisonResult.analysis}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto' }}>{comparisonResult.analysis}</p>
                       </CardContent>
                     </Card>
                   )}

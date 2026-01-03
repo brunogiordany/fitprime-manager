@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { PLANS } from "@/../../shared/plans";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -64,9 +65,13 @@ export default function Settings() {
   const [isLoadingQR, setIsLoadingQR] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<string | null>(null);
 
   const { data: personalData, isLoading } = trpc.personal.get.useQuery();
   const { data: subscription } = trpc.subscription.info.useQuery();
+  const { data: availableUpgrades } = trpc.subscription.availableUpgrades.useQuery();
+  const { data: currentPlanDetails } = trpc.subscription.currentPlanDetails.useQuery();
   
   // Determinar plano atual
   const getPlanFromId = (planId: string | undefined) => {
@@ -668,33 +673,87 @@ export default function Settings() {
             {/* Opções de Upgrade */}
             <div>
               <h4 className="font-medium mb-4">Fazer upgrade</h4>
+              
+              {/* Informação sobre proration */}
+              {currentPlanDetails && currentPlanDetails.daysRemaining > 0 && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-700">
+                    <strong>Upgrade proporcional:</strong> Você tem {currentPlanDetails.daysRemaining} dias restantes no período atual. 
+                    O upgrade cobrará apenas a diferença proporcional.
+                  </p>
+                </div>
+              )}
+              
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {plansArray
-                  .filter(plan => plan.price > currentPlan.price)
-                  .slice(0, 3)
-                  .map((plan) => (
+                {availableUpgrades && availableUpgrades.length > 0 ? (
+                  availableUpgrades.slice(0, 3).map((upgrade) => (
                     <div 
-                      key={plan.id}
+                      key={upgrade.planId}
                       className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
-                      onClick={() => window.open(plan.checkoutUrl, '_blank')}
+                      onClick={() => {
+                        setSelectedUpgradePlan(upgrade.planId);
+                        setUpgradeModalOpen(true);
+                      }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold">{plan.name}</h5>
-                        {plan.id === 'business' && (
+                        <h5 className="font-semibold">{upgrade.planName}</h5>
+                        {upgrade.planId === 'business' && (
                           <Badge className="bg-blue-100 text-blue-700 text-xs">
                             <Star className="h-3 w-3 mr-1" />
                             Popular
                           </Badge>
                         )}
                       </div>
-                      <p className="text-2xl font-bold">R$ {plan.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                      <p className="text-sm text-muted-foreground mt-1">Até {plan.studentLimit} alunos</p>
+                      <p className="text-2xl font-bold">R$ {upgrade.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                      <p className="text-sm text-muted-foreground mt-1">Até {upgrade.studentLimit} alunos</p>
+                      
+                      {upgrade.isProrated && upgrade.prorationAmount > 0 ? (
+                        <div className="mt-2 p-2 bg-emerald-50 rounded-lg">
+                          <p className="text-xs text-emerald-700 font-medium">Pague agora apenas:</p>
+                          <p className="text-lg font-bold text-emerald-600">R$ {upgrade.prorationAmount.toFixed(2)}</p>
+                          <p className="text-xs text-emerald-600">({upgrade.daysRemaining} dias restantes)</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-emerald-600 mt-2">+{upgrade.additionalStudents} alunos</p>
+                      )}
+                      
                       <Button size="sm" className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
                         <ArrowUpRight className="h-4 w-4 mr-1" />
                         Fazer Upgrade
                       </Button>
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  plansArray
+                    .filter(plan => plan.price > currentPlan.price)
+                    .slice(0, 3)
+                    .map((plan) => (
+                      <div 
+                        key={plan.id}
+                        className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedUpgradePlan(plan.id);
+                          setUpgradeModalOpen(true);
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="font-semibold">{plan.name}</h5>
+                          {plan.id === 'business' && (
+                            <Badge className="bg-blue-100 text-blue-700 text-xs">
+                              <Star className="h-3 w-3 mr-1" />
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-2xl font-bold">R$ {plan.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                        <p className="text-sm text-muted-foreground mt-1">Até {plan.studentLimit} alunos</p>
+                        <Button size="sm" className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
+                          <ArrowUpRight className="h-4 w-4 mr-1" />
+                          Fazer Upgrade
+                        </Button>
+                      </div>
+                    ))
+                )}
               </div>
               
               {!isAnnualPlan && (
@@ -710,7 +769,9 @@ export default function Settings() {
                     variant="outline" 
                     size="sm"
                     className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    onClick={() => window.open(currentPlan.annualCheckoutUrl, '_blank')}
+                    onClick={() => {
+                      toast.info("Planos anuais em breve! Entre em contato para mais informações.");
+                    }}
                   >
                     Ver plano anual - R$ {currentPlan.annualMonthlyPrice}/mês
                   </Button>
@@ -751,6 +812,150 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Upgrade com Proration */}
+      <Dialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-emerald-600" />
+              Fazer Upgrade
+            </DialogTitle>
+            <DialogDescription>
+              Confirme os detalhes do seu upgrade de plano
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedUpgradePlan && (() => {
+            const selectedUpgrade = availableUpgrades?.find(u => u.planId === selectedUpgradePlan);
+            const selectedPlan = PLANS[selectedUpgradePlan as keyof typeof PLANS];
+            
+            if (selectedUpgrade) {
+              return (
+                <div className="space-y-4">
+                  {/* Resumo do Upgrade */}
+                  <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Plano atual:</span>
+                      <span className="font-medium">{currentPlan.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Novo plano:</span>
+                      <span className="font-medium text-emerald-600">{selectedUpgrade.planName}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Diferença mensal:</span>
+                      <span>R$ {(selectedUpgrade.price - currentPlan.price).toFixed(2)}</span>
+                    </div>
+                    {selectedUpgrade.isProrated && selectedUpgrade.daysRemaining && selectedUpgrade.daysRemaining > 0 ? (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Dias restantes:</span>
+                          <span>{selectedUpgrade.daysRemaining} dias</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Proporcional:</span>
+                          <span>{Math.round((selectedUpgrade.percentageRemaining || 0) * 100)}%</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between items-center text-lg font-bold">
+                          <span>Valor a pagar agora:</span>
+                          <span className="text-emerald-600">
+                            R$ {selectedUpgrade.prorationAmount.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Valor proporcional ao período restante da sua assinatura atual.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <Separator />
+                        <div className="flex justify-between items-center text-lg font-bold">
+                          <span>Valor mensal:</span>
+                          <span className="text-emerald-600">
+                            R$ {selectedUpgrade.price.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Após o pagamento, seu plano será atualizado imediatamente.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Benefícios */}
+                  <div className="p-3 bg-emerald-50 rounded-lg">
+                    <p className="text-sm font-medium text-emerald-700 mb-2">Benefícios do upgrade:</p>
+                    <ul className="text-sm text-emerald-600 space-y-1">
+                      <li>✓ +{selectedUpgrade.additionalStudents || (selectedUpgrade.studentLimit - currentPlan.studentLimit)} alunos (total: {selectedUpgrade.studentLimit})</li>
+                      <li>✓ Acesso imediato aos novos recursos</li>
+                      <li>✓ Sem interrupção do serviço</li>
+                    </ul>
+                  </div>
+                  
+                  <DialogFooter className="flex gap-2">
+                    <Button variant="outline" onClick={() => setUpgradeModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => {
+                        // Abrir checkout do Cakto
+                        window.open(selectedUpgrade.checkoutUrl, '_blank');
+                        setUpgradeModalOpen(false);
+                        toast.info("Após o pagamento, seu plano será atualizado automaticamente.");
+                      }}
+                    >
+                      <ArrowUpRight className="h-4 w-4 mr-1" />
+                      Confirmar Upgrade
+                    </Button>
+                  </DialogFooter>
+                </div>
+              );
+            } else if (selectedPlan) {
+              // Fallback para planos sem proration calculado
+              return (
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Plano atual:</span>
+                      <span className="font-medium">{currentPlan.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Novo plano:</span>
+                      <span className="font-medium text-emerald-600">{selectedPlan.name}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center text-lg font-bold">
+                      <span>Valor mensal:</span>
+                      <span className="text-emerald-600">R$ {selectedPlan.price.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter className="flex gap-2">
+                    <Button variant="outline" onClick={() => setUpgradeModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => {
+                        window.open(selectedPlan.checkoutUrl, '_blank');
+                        setUpgradeModalOpen(false);
+                      }}
+                    >
+                      <ArrowUpRight className="h-4 w-4 mr-1" />
+                      Ir para Pagamento
+                    </Button>
+                  </DialogFooter>
+                </div>
+              );
+            }
+            return null;
+          })()}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

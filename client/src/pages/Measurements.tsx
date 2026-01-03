@@ -1312,6 +1312,74 @@ export default function Measurements() {
           </div>
         )}
 
+        {/* Card de Cálculos Automáticos - Visível fora do modal */}
+        {latestMeasurement && (
+          <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2 text-emerald-800">
+                <Calculator className="h-5 w-5" />
+                Cálculos Automáticos
+              </CardTitle>
+              <CardDescription className="text-emerald-600">
+                Baseado na última medição registrada
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* IMC */}
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-emerald-600">{latestMeasurement.bmi || '-'}</p>
+                    <p className="text-sm font-medium text-emerald-700 mt-1">IMC</p>
+                    <p className="text-xs text-emerald-500 mt-1">
+                      {latestMeasurement.bmi ? (
+                        parseFloat(String(latestMeasurement.bmi)) < 18.5 ? 'Abaixo do peso' :
+                        parseFloat(String(latestMeasurement.bmi)) < 25 ? 'Peso normal' :
+                        parseFloat(String(latestMeasurement.bmi)) < 30 ? 'Sobrepeso' : 'Obesidade'
+                      ) : '-'}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* BF Estimado */}
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-100">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-orange-500">{latestMeasurement.bodyFat || '-'}%</p>
+                    <p className="text-sm font-medium text-orange-600 mt-1">BF Estimado</p>
+                    <p className="text-xs text-orange-400 mt-1">% Gordura Corporal</p>
+                  </div>
+                </div>
+                
+                {/* Massa Gorda */}
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-red-100">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-red-500">
+                      {latestMeasurement.weight && latestMeasurement.bodyFat 
+                        ? ((parseFloat(String(latestMeasurement.weight)) * parseFloat(String(latestMeasurement.bodyFat))) / 100).toFixed(1)
+                        : '-'} kg
+                    </p>
+                    <p className="text-sm font-medium text-red-600 mt-1">Massa Gorda</p>
+                    <p className="text-xs text-red-400 mt-1">Peso de gordura</p>
+                  </div>
+                </div>
+                
+                {/* Massa Magra */}
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-100">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-blue-500">
+                      {latestMeasurement.weight && latestMeasurement.bodyFat 
+                        ? (parseFloat(String(latestMeasurement.weight)) - (parseFloat(String(latestMeasurement.weight)) * parseFloat(String(latestMeasurement.bodyFat))) / 100).toFixed(1)
+                        : '-'} kg
+                    </p>
+                    <p className="text-sm font-medium text-blue-600 mt-1">Massa Magra</p>
+                    <p className="text-xs text-blue-400 mt-1">Músculos + ossos</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Gráficos */}
         {chartData.length > 1 && (
           <div className="grid gap-6 md:grid-cols-2">

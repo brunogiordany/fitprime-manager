@@ -19,6 +19,13 @@ import {
   calculateMonthlyPrice,
 } from "./subscriptionService";
 import {
+  calculateProration,
+  getAvailableUpgrades,
+  validateUpgrade,
+  type BillingPeriod,
+} from "./prorationService";
+import { PLANS } from "../../shared/plans";
+import {
   processExtraStudentCharge,
   getBillingPeriodSummary,
 } from "./billingService";
@@ -338,6 +345,192 @@ export const subscriptionRouter = router({
       pricePerStudent: EXTRA_STUDENT_BR.pricePerStudent,
       totalExtraCost: status.extraCost,
       currency: 'BRL' as const,
+    };
+  }),
+
+  /**
+   * Calcula o proration para upgrade de plano
+   */
+  calculateUpgradeProration: protectedProcedure
+    .input(z.object({
+      newPlanId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const personal = await getPersonal(ctx.user.id);
+      const info = await getSubscriptionInfo(personal.id);
+      
+      if (!info) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Assinatura não encontrada' });
+      }
+      
+      // Determinar período de cobrança baseado no status atual
+      const billingPeriod: BillingPeriod = personal.subscriptionPeriod === 'annual' ? 'annual' : 'monthly';
+      
+      // Mapear planId do pricing.ts para plans.ts
+      const planMapping: Record<string, string> = {
+        'fitprime_br_starter': 'starter',
+        'fitprime_br_growth': 'pro',
+        'fitprime_br_pro': 'business',
+        'fitprime_br_scale': 'premium',
+        'fitprime_br_advanced': 'enterprise',
+      };
+      
+      const currentPlanId = planMapping[info.planId] || 'starter';
+      
+      // Validar upgrade
+      const validation = validateUpgrade(currentPlanId, input.newPlanId, info.currentStudents);
+      if (!validation.valid) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: validation.reason });
+      }
+      
+      // Calcular proration
+      const subscriptionStart = info.currentPeriodEnd 
+        ? new Date(new Date(info.currentPeriodEnd).getTime() - (billingPeriod === 'annual' ? 365 : 30) * 24 * 60 * 60 * 1000)
+        : new Date(personal.createdAt);
+      
+      const calculation = calculateProration(
+        currentPlanId,
+        input.newPlanId,
+        billingPeriod,
+        subscriptionStart,
+        info.currentPeriodEnd || undefined
+      );
+      
+      if (!calculation) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Não foi possível calcular o upgrade' });
+      }
+      
+      return {
+        ...calculation,
+        currentPlan: {
+          id: calculation.currentPlan.id,
+          name: calculation.currentPlan.name,
+          price: calculation.currentPlan.price,
+          studentLimit: calculation.currentPlan.studentLimit,
+        },
+        newPlan: {
+          id: calculation.newPlan.id,
+          name: calculation.newPlan.name,
+          price: calculation.newPlan.price,
+          studentLimit: calculation.newPlan.studentLimit,
+          checkoutUrl: calculation.newPlan.checkoutUrl,
+        },
+      };
+    }),
+
+  /**
+   * Lista todos os upgrades disponíveis com proration calculado
+   */
+  availableUpgrades: protectedProcedure.query(async ({ ctx }) => {
+    const personal = await getPersonal(ctx.user.id);
+    const info = await getSubscriptionInfo(personal.id);
+    
+    if (!info) {
+      // Se não tem subscription, retornar todos os planos
+      return Object.values(PLANS).map(plan => ({
+        planId: plan.id,
+        planName: plan.name,
+        price: plan.price,
+        studentLimit: plan.studentLimit,
+        checkoutUrl: plan.checkoutUrl,
+        prorationAmount: plan.price, // Valor cheio
+        priceDifference: plan.price,
+        daysRemaining: 0,
+        percentageRemaining: 0,
+        additionalStudents: plan.studentLimit,
+        isProrated: false,
+        billingPeriod: 'monthly' as BillingPeriod,
+      }));
+    }
+    
+    const billingPeriod: BillingPeriod = personal.subscriptionPeriod === 'annual' ? 'annual' : 'monthly';
+    
+    // Mapear planId
+    const planMapping: Record<string, string> = {
+      'fitprime_br_starter': 'starter',
+      'fitprime_br_growth': 'pro',
+      'fitprime_br_pro': 'business',
+      'fitprime_br_scale': 'premium',
+      'fitprime_br_advanced': 'enterprise',
+    };
+    
+    const currentPlanId = planMapping[info.planId] || 'starter';
+    
+    const subscriptionStart = info.currentPeriodEnd 
+      ? new Date(new Date(info.currentPeriodEnd).getTime() - (billingPeriod === 'annual' ? 365 : 30) * 24 * 60 * 60 * 1000)
+      : new Date(personal.createdAt);
+    
+    const upgrades = getAvailableUpgrades(
+      currentPlanId,
+      billingPeriod,
+      subscriptionStart,
+      info.currentPeriodEnd || undefined
+    );
+    
+    return upgrades.map(calc => ({
+      planId: calc.newPlan.id,
+      planName: calc.newPlan.name,
+      price: calc.newPlan.price,
+      studentLimit: calc.newPlan.studentLimit,
+      checkoutUrl: calc.newPlan.checkoutUrl,
+      prorationAmount: calc.prorationAmount,
+      priceDifference: calc.priceDifference,
+      daysRemaining: calc.daysRemaining,
+      percentageRemaining: calc.percentageRemaining,
+      additionalStudents: calc.additionalStudents,
+      isProrated: true,
+      billingPeriod: calc.billingPeriod,
+    }));
+  }),
+
+  /**
+   * Obtém informações do plano atual para exibição
+   */
+  currentPlanDetails: protectedProcedure.query(async ({ ctx }) => {
+    const personal = await getPersonal(ctx.user.id);
+    const info = await getSubscriptionInfo(personal.id);
+    
+    const billingPeriod: BillingPeriod = personal.subscriptionPeriod === 'annual' ? 'annual' : 'monthly';
+    
+    // Mapear planId
+    const planMapping: Record<string, string> = {
+      'fitprime_br_starter': 'starter',
+      'fitprime_br_growth': 'pro',
+      'fitprime_br_pro': 'business',
+      'fitprime_br_scale': 'premium',
+      'fitprime_br_advanced': 'enterprise',
+    };
+    
+    const currentPlanId = info ? (planMapping[info.planId] || 'starter') : 'starter';
+    const currentPlan = PLANS[currentPlanId];
+    
+    if (!currentPlan) {
+      return null;
+    }
+    
+    // Calcular dias restantes
+    let daysRemaining = 0;
+    let currentPeriodEnd: Date | null = null;
+    
+    if (info?.currentPeriodEnd) {
+      currentPeriodEnd = new Date(info.currentPeriodEnd);
+      const now = new Date();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      daysRemaining = Math.max(0, Math.ceil((currentPeriodEnd.getTime() - now.getTime()) / msPerDay));
+    }
+    
+    return {
+      planId: currentPlan.id,
+      planName: currentPlan.name,
+      price: billingPeriod === 'annual' ? currentPlan.annualPrice : currentPlan.price,
+      monthlyPrice: billingPeriod === 'annual' ? currentPlan.annualMonthlyPrice : currentPlan.price,
+      studentLimit: billingPeriod === 'annual' ? currentPlan.annualStudentLimit : currentPlan.studentLimit,
+      billingPeriod,
+      daysRemaining,
+      currentPeriodEnd: currentPeriodEnd?.toISOString() || null,
+      features: currentPlan.features,
+      checkoutUrl: currentPlan.checkoutUrl,
+      annualCheckoutUrl: currentPlan.annualCheckoutUrl,
     };
   }),
 });
