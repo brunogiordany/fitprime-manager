@@ -202,6 +202,22 @@ export default function StudentProfile() {
     },
   });
 
+  const resendInviteMutation = trpc.students.resendInvite.useMutation({
+    onSuccess: async (data) => {
+      if (data.type === 'reminder') {
+        toast.success(data.message);
+      } else {
+        const fullLink = window.location.origin + data.inviteLink;
+        setInviteLink(fullLink);
+        setShowInviteModal(true);
+        toast.success(data.message);
+      }
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao reenviar convite: " + error.message);
+    },
+  });
+
   const resetAccessMutation = trpc.students.resetAccess.useMutation({
     onSuccess: (data) => {
       toast.success(data.message);
@@ -669,12 +685,20 @@ export default function StudentProfile() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => sendInviteMutation.mutate({ studentId, sendVia: 'both' })}
-                  disabled={sendInviteMutation.isPending}
-                  title="Enviar convite para o aluno acessar o app"
+                  onClick={() => {
+                    if (student.userId) {
+                      resendInviteMutation.mutate({ studentId, sendVia: 'email' });
+                    } else {
+                      sendInviteMutation.mutate({ studentId, sendVia: 'both' });
+                    }
+                  }}
+                  disabled={sendInviteMutation.isPending || resendInviteMutation.isPending}
+                  title={student.userId ? "Reenviar lembrete de acesso" : "Enviar convite para o aluno acessar o app"}
                 >
-                  {sendInviteMutation.isPending ? (
+                  {(sendInviteMutation.isPending || resendInviteMutation.isPending) ? (
                     <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                  ) : student.userId ? (
+                    <><Send className="h-4 w-4 mr-2" /> Reenviar Acesso</>
                   ) : (
                     <><Send className="h-4 w-4 mr-2" /> Convidar</>
                   )}

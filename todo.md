@@ -2725,3 +2725,9 @@
 - [x] Validar login de personal: apenas personais com assinatura ativa podem acessar (já implementado via paidPersonalProcedure)
 - [x] Validar login de aluno: apenas alunos cadastrados por personais (via convite) (já implementado - alunos só existem se cadastrados)
 - [x] Mostrar mensagem apropriada para personais sem assinatura (SubscriptionBlocked)
+
+## Reenvio de Convite para Alunos
+- [x] Criar endpoint para reenviar link de convite
+- [x] Adicionar botão de reenvio na lista de alunos
+- [x] Adicionar botão de reenvio no perfil do aluno
+- [x] Enviar email/WhatsApp com novo link

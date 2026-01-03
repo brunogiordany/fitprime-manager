@@ -93,6 +93,22 @@ export default function Students() {
     },
   });
 
+  const resendInviteMutation = trpc.students.resendInvite.useMutation({
+    onSuccess: (data) => {
+      if (data.type === 'reminder') {
+        toast.success(data.message);
+      } else {
+        const fullLink = `${window.location.origin}${data.inviteLink}`;
+        setInviteLink(fullLink);
+        setInviteDialogOpen(true);
+        toast.success(data.message);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao reenviar convite");
+    },
+  });
+
   const createMutation = trpc.students.create.useMutation({
     onSuccess: () => {
       toast.success("Aluno cadastrado com sucesso!");
@@ -376,15 +392,21 @@ export default function Students() {
                               <DropdownMenuItem 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  sendInviteMutation.mutate({ studentId: student.id, sendVia: 'both' });
+                                  if (student.userId) {
+                                    // Aluno já conectado - reenviar lembrete
+                                    resendInviteMutation.mutate({ studentId: student.id, sendVia: 'email' });
+                                  } else {
+                                    // Aluno sem conta - enviar convite
+                                    sendInviteMutation.mutate({ studentId: student.id, sendVia: 'both' });
+                                  }
                                 }}
-                                disabled={sendInviteMutation.isPending}
+                                disabled={sendInviteMutation.isPending || resendInviteMutation.isPending}
                                 className="text-emerald-600 focus:text-emerald-600"
                               >
                                 {student.userId ? (
-                                  <><CheckCircle className="h-4 w-4 mr-2" /> Já conectado</>
+                                  <><Send className="h-4 w-4 mr-2" /> Reenviar Acesso</>
                                 ) : (
-                                  <><Send className="h-4 w-4 mr-2" /> Enviar Acesso</>
+                                  <><Send className="h-4 w-4 mr-2" /> Enviar Convite</>
                                 )}
                               </DropdownMenuItem>
                               <DropdownMenuItem 

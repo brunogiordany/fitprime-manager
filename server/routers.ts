@@ -972,6 +972,109 @@ export const appRouter = router({
         };
       }),
     
+    // Reenviar convite para aluno (gera novo token ou usa existente)
+    resendInvite: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        sendVia: z.enum(['email', 'whatsapp', 'both']).default('both'),
+        forceNew: z.boolean().default(false), // Se true, gera novo token mesmo se houver um válido
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Verificar se aluno já tem conta ativa
+        if (student.passwordHash && student.status === 'active') {
+          // Aluno já tem conta, enviar lembrete de acesso
+          const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+          const loginLink = `${baseUrl}/login-aluno`;
+          
+          if (student.email && (input.sendVia === 'email' || input.sendVia === 'both')) {
+            const { sendEmail } = await import('./email');
+            const personalName = ctx.user.name || 'Seu Personal Trainer';
+            await sendEmail({
+              to: student.email,
+              subject: `💪 Lembrete de Acesso - FitPrime`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #10b981;">Olá, ${student.name}!</h2>
+                  <p>${personalName} enviou um lembrete para você acessar seu portal de treinos.</p>
+                  <p>Você já tem uma conta cadastrada. Clique no botão abaixo para acessar:</p>
+                  <a href="${loginLink}" style="display: inline-block; background: linear-gradient(to right, #10b981, #14b8a6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0;">Acessar Portal</a>
+                  <p style="color: #666; font-size: 14px;">Se você esqueceu sua senha, use a opção "Esqueci minha senha" na tela de login.</p>
+                </div>
+              `,
+              text: `Olá ${student.name}! ${personalName} enviou um lembrete para você acessar seu portal de treinos. Acesse: ${loginLink}`,
+            });
+          }
+          
+          return {
+            success: true,
+            type: 'reminder',
+            message: 'Lembrete de acesso enviado! O aluno já possui conta cadastrada.',
+            loginLink,
+          };
+        }
+        
+        // Buscar convite existente válido
+        const invites = await db.getStudentInvitesByStudentId(input.studentId);
+        let activeInvite = invites.find(i => i.status === 'pending' && new Date(i.expiresAt) > new Date());
+        
+        let inviteToken: string;
+        let expiresAt: Date;
+        
+        if (activeInvite && !input.forceNew) {
+          // Usar convite existente
+          inviteToken = activeInvite.inviteToken;
+          expiresAt = new Date(activeInvite.expiresAt);
+        } else {
+          // Cancelar convites antigos pendentes
+          for (const invite of invites.filter(i => i.status === 'pending')) {
+            await db.updateStudentInvite(invite.id, { status: 'cancelled' });
+          }
+          
+          // Gerar novo token
+          inviteToken = nanoid(32);
+          expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
+          
+          // Criar novo convite
+          await db.createStudentInvite({
+            personalId: ctx.personal.id,
+            studentId: input.studentId,
+            inviteToken,
+            email: student.email || undefined,
+            phone: student.phone || undefined,
+            expiresAt,
+          });
+        }
+        
+        // Construir link completo
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+        const inviteLink = `/convite/${inviteToken}`;
+        const fullInviteLink = `${baseUrl}${inviteLink}`;
+        
+        // Enviar email se tiver email cadastrado
+        if (student.email && (input.sendVia === 'email' || input.sendVia === 'both')) {
+          const { sendInviteEmail } = await import('./email');
+          const personalName = ctx.user.name || 'Seu Personal Trainer';
+          await sendInviteEmail(student.email, student.name, personalName, fullInviteLink);
+        }
+        
+        return { 
+          success: true,
+          type: 'invite',
+          message: activeInvite && !input.forceNew 
+            ? 'Convite reenviado com sucesso!' 
+            : 'Novo convite enviado com sucesso!',
+          inviteLink,
+          inviteToken,
+          expiresAt,
+        };
+      }),
+
     // Listar convites de um aluno
     getInvites: personalProcedure
       .input(z.object({ studentId: z.number() }))
