@@ -1,0 +1,15 @@
+{
+  "query": "SELECT * FROM ai_assistant_config;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM ai_assistant_config;",
+  "rows": [],
+  "messages": [
+    "1\t1\tAna\tfemale\tformal\t1\tmedium\t\tPersonal trainer especializado em hipertrofia e emagrecimento, com 10 anos de experiencia\taulas presenciais e online\t\tonline ou presencial em alguma academia da cidade\tvai de 80 a 120 dependendo do numero de aulas que fechamos na semana\t1\t1\t1\t1\t8\t23\t1\tOii, tudo bem? ",
+    "Sou a Ana, do time do Bruno Personal.",
+    "Vou te ajudar com os planos e te indicar o que mais combina com você!",
+    "Ah! Antes de tudo, caso ainda não nos siga, já aproveita e segue, ",
+    "Instagram.com/brunogiordany\tE aí, tudo certo? em que posso ajudar hoje?\tEstamos fora do horario de atendimento que vai das 8h ate as 23h59. Amanha logo no primeiro horario ja retomo seu atendimento.\t\t10\t1\t1\t1\t1\t1\t1\t1\t2\t8\t2026-01-03 22:17:37\t2026-01-03 22:22:35"
+  ],
+  "stdout": "id\tpersonalId\tassistantName\tassistantGender\tcommunicationTone\tuseEmojis\temojiFrequency\tcustomPersonality\tpersonalBio\tservicesOffered\tworkingHoursDescription\tlocationDescription\tpriceRange\tisEnabled\tenabledForLeads\tenabledForStudents\tautoReplyEnabled\tautoReplyStartHour\tautoReplyEndHour\tautoReplyWeekends\twelcomeMessageLead\twelcomeMessageStudent\tawayMessage\tescalateOnKeywords\tescalateAfterMessages\tescalateOnSentiment\tcanScheduleEvaluation\tcanScheduleSession\tcanAnswerWorkoutQuestions\tcanAnswerDietQuestions\tcanSendMotivation\tcanHandlePayments\tminResponseDelay\tmaxResponseDelay\tcreatedAt\tupdatedAt\n1\t1\tAna\tfemale\tformal\t1\tmedium\t\tPersonal trainer especializado em hipertrofia e emagrecimento, com 10 anos de experiencia\taulas presenciais e online\t\tonline ou presencial em alguma academia da cidade\tvai de 80 a 120 dependendo do numero de aulas que fechamos na semana\t1\t1\t1\t1\t8\t23\t1\tOii, tudo bem? \nSou a Ana, do time do Bruno Personal.\nVou te ajudar com os planos e te indicar o que mais combina com você!\n\nAh! Antes de tudo, caso ainda não nos siga, já aproveita e segue, \n\nInstagram.com/brunogiordany\tE aí, tudo certo? em que posso ajudar hoje?\tEstamos fora do horario de atendimento que vai das 8h ate as 23h59. Amanha logo no primeiro horario ja retomo seu atendimento.\t\t10\t1\t1\t1\t1\t1\t1\t1\t2\t8\t2026-01-03 22:17:37\t2026-01-03 22:22:35\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

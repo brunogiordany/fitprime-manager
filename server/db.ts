@@ -2333,6 +2333,21 @@ export async function createChatMessage(data: InsertChatMessage) {
   return result[0].insertId;
 }
 
+// Buscar mensagem por ID externo (para evitar duplicação de mensagens do WhatsApp)
+export async function getChatMessageByExternalId(personalId: number, studentId: number, externalId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select()
+    .from(chatMessages)
+    .where(and(
+      eq(chatMessages.personalId, personalId),
+      eq(chatMessages.studentId, studentId),
+      eq(chatMessages.externalId, externalId)
+    ))
+    .limit(1);
+  return result[0] || null;
+}
+
 export async function markChatMessagesAsRead(personalId: number, studentId: number, senderType: 'personal' | 'student') {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, personalId, assistantName, isEnabled, enabledForStudents, autoReplyEnabled, autoReplyStartHour, autoReplyEndHour, autoReplyWeekends FROM ai_assistant_config;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, personalId, assistantName, isEnabled, enabledForStudents, autoReplyEnabled, autoReplyStartHour, autoReplyEndHour, autoReplyWeekends FROM ai_assistant_config;",
+  "rows": [
+    {
+      "id": "1",
+      "personalId": "1",
+      "assistantName": "Ana",
+      "isEnabled": "1",
+      "enabledForStudents": "1",
+      "autoReplyEnabled": "1",
+      "autoReplyStartHour": "8",
+      "autoReplyEndHour": "23",
+      "autoReplyWeekends": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tassistantName\tisEnabled\tenabledForStudents\tautoReplyEnabled\tautoReplyStartHour\tautoReplyEndHour\tautoReplyWeekends\n1\t1\tAna\t1\t1\t1\t8\t23\t1\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

@@ -2958,3 +2958,7 @@
 - [x] Identificação automática de lead vs aluno
 - [x] Transição suave IA -> Personal
 - [x] Menu lateral com link para IA de Atendimento
+
+## Bugs Reportados (03/01/2026)
+- [x] Mensagens duplicadas no chat (webhook salvando mesma mensagem 2x)
+- [x] IA não está respondendo mensagens do WhatsApp

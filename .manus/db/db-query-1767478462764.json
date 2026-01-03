@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, name, phone, email, personalId FROM students WHERE name LIKE '%bruno%' OR phone LIKE '%15997612063%' OR phone LIKE '%5515997612063%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, phone, email, personalId FROM students WHERE name LIKE '%bruno%' OR phone LIKE '%15997612063%' OR phone LIKE '%5515997612063%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "phone": "15997612063",
+      "email": "brunogiordany@gmail.com",
+      "personalId": "1"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "phone": "13996442520",
+      "email": "brunogiordanyps@gmail.com",
+      "personalId": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\temail\tpersonalId\n1\tBruno\t15997612063\tbrunogiordany@gmail.com\t1\n90001\tbruno ps\t13996442520\tbrunogiordanyps@gmail.com\t1\n",
+  "stderr": "",
+  "execution_time_ms": 223
+}

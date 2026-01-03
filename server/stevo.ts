@@ -749,7 +749,17 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     console.log('[Stevo Webhook] Aluno encontrado:', student.name);
     
     // SALVAR A MENSAGEM NO CHAT (independente do conteúdo)
+    // Extrair messageId para evitar duplicação
+    const messageId = payload.data?.key?.id || `${from}_${timestamp}`;
+    
     try {
+      // Verificar se a mensagem já foi processada (evitar duplicação)
+      const existingMessage = await db.getChatMessageByExternalId(student.personalId, student.id, messageId);
+      if (existingMessage) {
+        console.log('[Stevo Webhook] Mensagem já processada, ignorando duplicata:', messageId);
+        return { success: true, processed: false, error: 'duplicate_message' };
+      }
+      
       // Mapear tipo de mensagem do Stevo para o tipo do chat
       const chatMessageType = messageType === 'document' ? 'file' : messageType;
       
@@ -764,9 +774,10 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
         mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
         isRead: false,
         source: 'whatsapp', // Marcar como vinda do WhatsApp
+        externalId: messageId, // Salvar ID externo para evitar duplicação
       });
       
-      console.log('[Stevo Webhook] Mensagem salva no chat do aluno:', student.name);
+      console.log('[Stevo Webhook] Mensagem salva no chat do aluno:', student.name, 'ID:', messageId);
     } catch (chatError) {
       console.error('[Stevo Webhook] Erro ao salvar mensagem no chat:', chatError);
     }
@@ -793,7 +804,9 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       // Tentar responder com IA de atendimento
       try {
         const aiAssistant = await import('./aiAssistant');
+        console.log('[Stevo Webhook] Buscando config da IA para personalId:', student.personalId);
         const aiConfig = await aiAssistant.default.getAiConfig(student.personalId);
+        console.log('[Stevo Webhook] Config da IA:', JSON.stringify(aiConfig, null, 2));
         
         // Verificar se a IA está habilitada para alunos
         if (aiConfig && aiConfig.isEnabled && aiConfig.enabledForStudents) {
@@ -804,23 +817,33 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
           const currentHour = now.getHours();
           const isWeekend = now.getDay() === 0 || now.getDay() === 6;
           
+          console.log('[Stevo Webhook] Hora atual:', currentHour, 'Horário config:', aiConfig.autoReplyStartHour, '-', aiConfig.autoReplyEndHour);
+          console.log('[Stevo Webhook] É fim de semana:', isWeekend, 'Atende fim de semana:', aiConfig.autoReplyWeekends);
+          console.log('[Stevo Webhook] Auto reply enabled:', aiConfig.autoReplyEnabled);
+          
           const isWithinWorkingHours = 
             currentHour >= aiConfig.autoReplyStartHour && 
             currentHour < aiConfig.autoReplyEndHour &&
             (aiConfig.autoReplyWeekends || !isWeekend);
           
+          console.log('[Stevo Webhook] Dentro do horário:', isWithinWorkingHours);
+          
           if (isWithinWorkingHours && aiConfig.autoReplyEnabled) {
+            console.log('[Stevo Webhook] Processando mensagem com IA...');
             // Processar mensagem com IA
             const aiResponse = await aiAssistant.default.processMessage({
               personalId: student.personalId,
               phone: student.phone || '',
               message: messageText || '[Mídia recebida]',
-              messageType: messageType,
+              messageType: messageType === 'document' ? 'file' : messageType,
             });
+            
+            console.log('[Stevo Webhook] Resposta da IA:', JSON.stringify(aiResponse, null, 2));
             
             if (aiResponse.message && !aiResponse.shouldEscalate) {
               // Buscar configurações do Stevo do personal
               const personal = await db.getPersonalByUserId(student.personalId);
+              console.log('[Stevo Webhook] Personal encontrado:', personal?.id, 'API Key:', personal?.evolutionApiKey ? 'SIM' : 'NÃO', 'Instance:', personal?.evolutionInstance);
               
               if (personal?.evolutionApiKey && personal?.evolutionInstance) {
                 // Aplicar delay humanizado

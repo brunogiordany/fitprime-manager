@@ -45,9 +45,11 @@ async function startServer() {
   
   // Stevo webhook - receives WhatsApp messages
   app.post('/api/webhook/stevo', express.json(), async (req: any, res: any) => {
+    console.log('[Stevo Webhook] Recebido payload:', JSON.stringify(req.body, null, 2));
     try {
       const { handleStevoWebhook } = await import('../stevo');
       const result = await handleStevoWebhook(req.body);
+      console.log('[Stevo Webhook] Resultado:', JSON.stringify(result, null, 2));
       res.json(result);
     } catch (error: any) {
       console.error('[Stevo Webhook] Error:', error);

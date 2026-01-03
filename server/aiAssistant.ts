@@ -8,6 +8,17 @@
 import { invokeLLM } from "./_core/llm";
 import * as db from "./db";
 
+// ==================== HELPERS ====================
+
+// Função para fazer parse seguro de JSON
+function safeJsonParse<T>(value: string, defaultValue: T): T {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return defaultValue;
+  }
+}
+
 // ==================== TIPOS ====================
 
 interface AiConfig {
@@ -37,6 +48,13 @@ interface AiConfig {
   isEnabled: boolean;
   enabledForLeads: boolean;
   enabledForStudents: boolean;
+  // Auto-reply settings
+  autoReplyEnabled: boolean;
+  autoReplyStartHour: number;
+  autoReplyEndHour: number;
+  autoReplyWeekends: boolean;
+  minResponseDelay: number;
+  maxResponseDelay: number;
 }
 
 interface StudentContext {
@@ -530,14 +548,14 @@ async function getAiConfig(personalId: number): Promise<AiConfig | null> {
     emojiFrequency: config.emojiFrequency as any,
     customPersonality: config.customPersonality || undefined,
     personalBio: config.personalBio || undefined,
-    servicesOffered: config.servicesOffered ? JSON.parse(config.servicesOffered) : undefined,
+    servicesOffered: config.servicesOffered ? safeJsonParse(config.servicesOffered, [config.servicesOffered]) : undefined,
     workingHoursDescription: config.workingHoursDescription || undefined,
     locationDescription: config.locationDescription || undefined,
     priceRange: config.priceRange || undefined,
     welcomeMessageLead: config.welcomeMessageLead || undefined,
     welcomeMessageStudent: config.welcomeMessageStudent || undefined,
     awayMessage: config.awayMessage || undefined,
-    escalateOnKeywords: config.escalateOnKeywords ? JSON.parse(config.escalateOnKeywords) : undefined,
+    escalateOnKeywords: config.escalateOnKeywords ? safeJsonParse(config.escalateOnKeywords, []) : undefined,
     escalateAfterMessages: config.escalateAfterMessages ?? 10,
     escalateOnSentiment: config.escalateOnSentiment ?? true,
     canScheduleEvaluation: config.canScheduleEvaluation ?? true,
@@ -548,7 +566,14 @@ async function getAiConfig(personalId: number): Promise<AiConfig | null> {
     canHandlePayments: config.canHandlePayments ?? false,
     isEnabled: config.isEnabled ?? true,
     enabledForLeads: config.enabledForLeads ?? true,
-    enabledForStudents: config.enabledForStudents ?? true
+    enabledForStudents: config.enabledForStudents ?? true,
+    // Auto-reply settings
+    autoReplyEnabled: config.autoReplyEnabled ?? true,
+    autoReplyStartHour: config.autoReplyStartHour ?? 8,
+    autoReplyEndHour: config.autoReplyEndHour ?? 22,
+    autoReplyWeekends: config.autoReplyWeekends ?? true,
+    minResponseDelay: config.minResponseDelay ?? 2,
+    maxResponseDelay: config.maxResponseDelay ?? 8
   };
 }
 

@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, evolutionApiKey, evolutionInstance, stevoServer FROM personals WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, evolutionApiKey, evolutionInstance, stevoServer FROM personals WHERE id = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "evolutionApiKey": "1767462392574JpuVNfwwzstKdXX5",
+      "evolutionInstance": "ea9857c453e5133e3a00045038a7b77e",
+      "stevoServer": "sm15"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tevolutionApiKey\tevolutionInstance\tstevoServer\n1\t1767462392574JpuVNfwwzstKdXX5\tea9857c453e5133e3a00045038a7b77e\tsm15\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

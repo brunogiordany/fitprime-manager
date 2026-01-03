@@ -1,0 +1,73 @@
+{
+  "query": "SELECT id, studentId, message, createdAt, source FROM chat_messages WHERE studentId = (SELECT id FROM students WHERE phone LIKE '%15997612063%' LIMIT 1) ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, message, createdAt, source FROM chat_messages WHERE studentId = (SELECT id FROM students WHERE phone LIKE '%15997612063%' LIMIT 1) ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "270007",
+      "studentId": "1",
+      "message": "Teste IA",
+      "createdAt": "2026-01-03 22:26:01",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270006",
+      "studentId": "1",
+      "message": "Teste IA",
+      "createdAt": "2026-01-03 22:25:57",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270005",
+      "studentId": "1",
+      "message": "Oi, qual meu treino de hoje?",
+      "createdAt": "2026-01-03 22:25:35",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270004",
+      "studentId": "1",
+      "message": "Oi, qual meu treino de hoje?",
+      "createdAt": "2026-01-03 22:24:51",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270003",
+      "studentId": "1",
+      "message": "Oi, tudo bem?",
+      "createdAt": "2026-01-03 22:14:47",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270002",
+      "studentId": "1",
+      "message": "oi",
+      "createdAt": "2026-01-03 21:37:19",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270001",
+      "studentId": "1",
+      "message": "oi",
+      "createdAt": "2026-01-03 21:27:27",
+      "source": "whatsapp"
+    },
+    {
+      "id": "240001",
+      "studentId": "1",
+      "message": "Opaa",
+      "createdAt": "2025-12-31 14:56:45",
+      "source": "internal"
+    },
+    {
+      "id": "210002",
+      "studentId": "1",
+      "message": "Teste",
+      "createdAt": "2025-12-31 02:30:07",
+      "source": "internal"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tmessage\tcreatedAt\tsource\n270007\t1\tTeste IA\t2026-01-03 22:26:01\twhatsapp\n270006\t1\tTeste IA\t2026-01-03 22:25:57\twhatsapp\n270005\t1\tOi, qual meu treino de hoje?\t2026-01-03 22:25:35\twhatsapp\n270004\t1\tOi, qual meu treino de hoje?\t2026-01-03 22:24:51\twhatsapp\n270003\t1\tOi, tudo bem?\t2026-01-03 22:14:47\twhatsapp\n270002\t1\toi\t2026-01-03 21:37:19\twhatsapp\n270001\t1\toi\t2026-01-03 21:27:27\twhatsapp\n240001\t1\tOpaa\t2025-12-31 14:56:45\tinternal\n210002\t1\tTeste\t2025-12-31 02:30:07\tinternal\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

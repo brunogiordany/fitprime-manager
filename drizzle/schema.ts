@@ -662,6 +662,8 @@ export const chatMessages = mysqlTable("chat_messages", {
   readAt: timestamp("readAt"),
   // Origem da mensagem (whatsapp = via Stevo, internal = chat interno)
   source: mysqlEnum("source", ["internal", "whatsapp"]).default("internal"),
+  // ID externo para evitar duplicação de mensagens do WhatsApp
+  externalId: varchar("externalId", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
