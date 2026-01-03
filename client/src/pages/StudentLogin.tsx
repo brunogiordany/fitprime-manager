@@ -56,6 +56,13 @@ export default function StudentLogin() {
     onSuccess: (data) => {
       toast.success(`Bem-vindo, ${data.studentName}!`);
       
+      // IMPORTANTE: Limpar dados antigos antes de salvar novos
+      // Isso evita que dados de outro aluno fiquem no localStorage
+      localStorage.removeItem("studentToken");
+      localStorage.removeItem("studentId");
+      localStorage.removeItem("studentData");
+      localStorage.removeItem("studentTokenExpiry");
+      
       // Salvar ou remover email baseado em "Lembrar de mim"
       if (rememberMe) {
         localStorage.setItem("studentRememberEmail", loginForm.email);
@@ -67,6 +74,7 @@ export default function StudentLogin() {
         localStorage.setItem("studentTokenExpiry", String(Date.now() + 24 * 60 * 60 * 1000));
       }
       
+      // Salvar novos dados do aluno logado
       localStorage.setItem("studentToken", data.token);
       localStorage.setItem("studentId", String(data.studentId));
       localStorage.setItem("studentData", JSON.stringify({
@@ -74,6 +82,8 @@ export default function StudentLogin() {
         name: data.studentName,
         email: loginForm.email,
       }));
+      
+      // Redirecionar para o portal
       setLocation("/meu-portal");
     },
     onError: (error: any) => {

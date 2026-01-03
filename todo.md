@@ -2805,14 +2805,14 @@
 - [x] Erro 404 ao clicar no lápis para editar medidas no lado do personal
 - [x] Adicionar gráfico de Cálculos Automáticos visível fora do modal de edição
 - [ ] Ajustar UX da tela de medidas corporais
-- [ ] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros modais
+- [x] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros modais
 
 
 ## Bugs Portal do Aluno e Evolução (v4.4)
 - [x] Modal de edição de medidas no portal do aluno - calendário e campos fechando automaticamente
 - [x] Erro 404 ao editar medidas no lado do personal (botão de lápis)
 - [x] Adicionar gráfico de Cálculos Automáticos visível fora do modal (para aluno e personal)
-- [ ] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros (PENDENTE - próxima tarefa)
+- [x] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros (PENDENTE - próxima tarefa)
 
 ## Funcionalidade Logar como Aluno (v6.47)
 - [x] Botão "Logar como Aluno" no portal do personal (movido para dropdown do usuário)
@@ -2820,6 +2820,9 @@
 - [x] Personal pode acessar o portal do aluno como seu próprio aluno
 
 ## Card Visual Cálculos Automáticos (v6.48)
-- [ ] Criar card visual com fundo verde claro igual à imagem de referência
-- [ ] 4 quadrantes: IMC + classificação, BF Estimado, Massa Gorda Est., Massa Magra Est.
-- [ ] Estilo visual igual ao print enviado (cores verde, laranja, azul)
+- [x] Criar card visual com fundo verde claro igual à imagem de referência
+- [x] 4 quadrantes: IMC + classificação, BF Estimado, Massa Gorda Est., Massa Magra Est.
+- [x] Estilo visual igual ao print enviado (cores verde, laranja, azul)
+
+## Bug Login Portal do Aluno (v6.48)
+- [x] Corrigir login do portal do aluno para usar aluno existente pelo email ao invés de criar novo

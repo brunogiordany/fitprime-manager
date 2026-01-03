@@ -906,56 +906,60 @@ export default function StudentMeasurementForm({
         if (!imc && !bodyFat) return null;
         
         return (
-          <Card className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+          <Card className="bg-gradient-to-br from-emerald-50/80 to-green-100/80 dark:from-emerald-950/30 dark:to-green-950/30 border-2 border-emerald-200 dark:border-emerald-800 rounded-2xl overflow-hidden">
+            <CardHeader className="pb-3 pt-4">
+              <CardTitle className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-lg">
                 <Calculator className="h-5 w-5" />
                 Cálculos Automáticos
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-4">
               <div className="grid grid-cols-2 gap-3">
+                {/* IMC */}
                 {imc && (
-                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
-                    <p className={`text-2xl font-bold ${parseFloat(imc) >= 25 ? 'text-orange-500' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className={`text-3xl font-bold ${parseFloat(imc) >= 25 ? 'text-emerald-600' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
                       {imc}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">IMC</p>
-                    <p className={`text-xs font-medium ${parseFloat(imc) >= 25 ? 'text-orange-500' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">IMC</p>
+                    <p className={`text-sm font-semibold mt-0.5 ${parseFloat(imc) >= 25 ? 'text-emerald-600' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
                       {imcCategory}
                     </p>
                   </div>
                 )}
+                {/* BF Estimado */}
                 {bodyFat && (
-                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
-                    <p className="text-2xl font-bold text-emerald-600">
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className="text-3xl font-bold text-emerald-600">
                       {bodyFat.toFixed(1)}%
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">BF {estimatedBF && !latest.bodyFat ? 'Estimado' : ''}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">BF {estimatedBF && !latest.bodyFat ? 'Estimado' : ''}</p>
                     {estimatedBF && !latest.bodyFat && (
-                      <p className="text-xs text-emerald-600">Fórmula Marinha EUA</p>
+                      <p className="text-sm font-semibold text-emerald-600 mt-0.5">Fórmula Marinha EUA</p>
                     )}
                   </div>
                 )}
+                {/* Massa Gorda */}
                 {fatMass && (
-                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
-                    <p className="text-2xl font-bold text-orange-500">
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className="text-3xl font-bold text-orange-500">
                       {fatMass} kg
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Massa Gorda Est.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Massa Gorda Est.</p>
                   </div>
                 )}
+                {/* Massa Magra */}
                 {leanMass && (
-                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
-                    <p className="text-2xl font-bold text-blue-500">
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className="text-3xl font-bold text-blue-500">
                       {leanMass} kg
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Massa Magra Est.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Massa Magra Est.</p>
                   </div>
                 )}
               </div>
               {estimatedBF && !latest.bodyFat && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
                   * BF estimado requer: altura, pescoço, cintura{studentGender === 'female' ? ', quadril' : ''}
                 </p>
               )}

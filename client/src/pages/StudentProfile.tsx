@@ -2318,7 +2318,7 @@ export default function StudentProfile() {
         {/* Modal de Análise por IA */}
         <Dialog open={showAIAnalysisModal} onOpenChange={setShowAIAnalysisModal}>
           <DialogContent className="w-full max-w-[95vw] sm:max-w-[700px] max-h-[90vh] flex flex-col p-0 overflow-hidden overflow-x-hidden">
-            <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0">
+            <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0 bg-gradient-to-r from-purple-50 to-indigo-50">
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                 <span className="truncate">Análise - {student?.name}</span>
@@ -2337,64 +2337,16 @@ export default function StudentProfile() {
                 </div>
               ) : aiAnalysis ? (
                 <div className="space-y-4 min-w-0 w-full">
-                  {/* Resumo Geral */}
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-purple-200">
-                    <h3 className="font-semibold text-purple-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                      <Activity className="h-4 w-4 flex-shrink-0" /> Resumo Geral
-                    </h3>
-                    <p className="text-gray-700 text-xs sm:text-sm break-words whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{aiAnalysis.analysis.resumoGeral}</p>
-                  </div>
-                  
-                  {/* Alerta (se houver) */}
-                  {aiAnalysis.analysis.alerta && (
-                    <div className="bg-red-50 rounded-lg p-3 sm:p-4 border border-red-200">
-                      <h3 className="font-semibold text-red-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" /> Alerta
+                  {/* Desequilíbrios - Card em destaque no topo */}
+                  {aiAnalysis.analysis.desequilibriosMusculares && aiAnalysis.analysis.desequilibriosMusculares.length > 0 && (
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200">
+                      <h3 className="font-bold text-blue-700 flex items-center gap-2 mb-3 text-base">
+                        <Target className="h-5 w-5 flex-shrink-0" /> Desequilíbrios
                       </h3>
-                      <p className="text-red-700 text-xs sm:text-sm break-words whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{aiAnalysis.analysis.alerta}</p>
-                    </div>
-                  )}
-                  
-                  {/* Pontos Fortes */}
-                  <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
-                    <h3 className="font-semibold text-green-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                      <CheckCircle className="h-4 w-4 flex-shrink-0" /> Pontos Fortes
-                    </h3>
-                    <ul className="space-y-1.5">
-                      {aiAnalysis.analysis.pontosFortes.map((ponto: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-green-700">
-                          <span className="text-green-500 mt-0.5 flex-shrink-0">•</span>
-                          <span className="break-words" style={{ wordBreak: 'break-word' }}>{ponto}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {/* Pontos de Atenção */}
-                  <div className="bg-amber-50 rounded-lg p-3 sm:p-4 border border-amber-200">
-                    <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                      <AlertTriangle className="h-4 w-4 flex-shrink-0" /> Pontos de Atenção
-                    </h3>
-                    <ul className="space-y-1.5">
-                      {aiAnalysis.analysis.pontosAtencao.map((ponto: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-amber-700">
-                          <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
-                          <span className="break-words" style={{ wordBreak: 'break-word' }}>{ponto}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {/* Desequilíbrios Musculares */}
-                  {aiAnalysis.analysis.desequilibriosMusculares.length > 0 && (
-                    <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
-                      <h3 className="font-semibold text-blue-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                        <Target className="h-4 w-4 flex-shrink-0" /> Desequilíbrios
-                      </h3>
-                      <ul className="space-y-1.5">
+                      <ul className="space-y-2">
                         {aiAnalysis.analysis.desequilibriosMusculares.map((item: string, i: number) => (
-                          <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-blue-700">
-                            <span className="text-blue-500 mt-0.5 flex-shrink-0">•</span>
+                          <li key={i} className="flex items-start gap-2 text-sm text-blue-700">
+                            <span className="text-blue-500 mt-0.5 flex-shrink-0 font-bold">•</span>
                             <span className="break-words" style={{ wordBreak: 'break-word' }}>{item}</span>
                           </li>
                         ))}
@@ -2402,15 +2354,15 @@ export default function StudentProfile() {
                     </div>
                   )}
                   
-                  {/* Recomendações */}
-                  <div className="bg-indigo-50 rounded-lg p-3 sm:p-4 border border-indigo-200">
-                    <h3 className="font-semibold text-indigo-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
-                      <Lightbulb className="h-4 w-4 flex-shrink-0" /> Recomendações
+                  {/* Recomendações - Card em destaque */}
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border-2 border-purple-200">
+                    <h3 className="font-bold text-purple-700 flex items-center gap-2 mb-3 text-base">
+                      <Lightbulb className="h-5 w-5 flex-shrink-0" /> Recomendações
                     </h3>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-2.5">
                       {aiAnalysis.analysis.recomendacoes.map((rec: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-indigo-700">
-                          <span className="bg-indigo-200 text-indigo-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0">
+                        <li key={i} className="flex items-start gap-3 text-sm text-purple-700">
+                          <span className="bg-purple-200 text-purple-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                             {i + 1}
                           </span>
                           <span className="break-words" style={{ wordBreak: 'break-word' }}>{rec}</span>
@@ -2420,7 +2372,7 @@ export default function StudentProfile() {
                   </div>
                   
                   {/* Metadados */}
-                  <div className="text-[10px] sm:text-xs text-muted-foreground border-t pt-3 space-y-1">
+                  <div className="text-xs text-muted-foreground border-t pt-3 space-y-1">
                     <div>Análise: {new Date(aiAnalysis.metadata.analyzedAt).toLocaleString('pt-BR')}</div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1">
                       <span>{aiAnalysis.metadata.dataPoints.measurements} medidas</span>
@@ -2438,19 +2390,19 @@ export default function StudentProfile() {
             </div>
             
             <DialogFooter className="px-4 py-3 sm:px-6 sm:py-4 border-t flex-shrink-0 gap-2">
-              <Button variant="outline" onClick={() => setShowAIAnalysisModal(false)} className="flex-1 sm:flex-none">
-                Fechar
-              </Button>
               <Button
                 onClick={() => aiAnalysisMutation.mutate({ studentId })}
                 disabled={aiAnalysisMutation.isPending}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
               >
                 {aiAnalysisMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando...</>
                 ) : (
                   <><RefreshCw className="h-4 w-4 mr-2" /> Gerar Análise</>
                 )}
+              </Button>
+              <Button variant="outline" onClick={() => setShowAIAnalysisModal(false)} className="flex-1 sm:flex-none">
+                Fechar
               </Button>
             </DialogFooter>
           </DialogContent>

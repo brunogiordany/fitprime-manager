@@ -164,22 +164,61 @@ export default function StudentPortalPage() {
   // Verificar token do aluno
   useEffect(() => {
     const token = localStorage.getItem("studentToken");
-    const storedData = localStorage.getItem("studentData");
     
-    if (!token || !storedData) {
+    if (!token) {
       setLocation("/login-aluno");
       return;
     }
 
-    try {
-      const data = JSON.parse(storedData);
-      setStudentData(data);
-    } catch {
-      localStorage.removeItem("studentToken");
-      localStorage.removeItem("studentData");
-      setLocation("/login-aluno");
+    // Dados iniciais do localStorage (fallback enquanto carrega do servidor)
+    const storedData = localStorage.getItem("studentData");
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData);
+        setStudentData(data);
+      } catch {
+        // Ignorar erro de parse
+      }
     }
   }, [setLocation]);
+
+  // Buscar perfil atualizado do servidor (fonte da verdade)
+  const { data: profileData, isError: profileError } = trpc.studentPortal.profile.useQuery(
+    undefined,
+    { 
+      enabled: !!localStorage.getItem("studentToken"),
+      retry: 1,
+    }
+  );
+
+  // Atualizar studentData quando o perfil for carregado do servidor
+  useEffect(() => {
+    if (profileData) {
+      const updatedData: StudentData = {
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email || '',
+        phone: profileData.phone,
+        status: profileData.status,
+        createdAt: new Date(profileData.createdAt).getTime(),
+        goal: (profileData as any).goal || null,
+        gender: profileData.gender || null,
+      };
+      setStudentData(updatedData);
+      // Atualizar localStorage com dados corretos
+      localStorage.setItem("studentData", JSON.stringify(updatedData));
+    }
+  }, [profileData]);
+
+  // Se o token for inválido, redirecionar para login
+  useEffect(() => {
+    if (profileError) {
+      localStorage.removeItem("studentToken");
+      localStorage.removeItem("studentData");
+      localStorage.removeItem("studentId");
+      setLocation("/login-aluno");
+    }
+  }, [profileError, setLocation]);
 
   // Buscar anamnese do aluno (usa endpoint do studentPortal para autenticação correta)
   const { data: anamnesis, refetch: refetchAnamnesis } = trpc.studentPortal.anamnesis.useQuery(
