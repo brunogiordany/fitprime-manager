@@ -2679,3 +2679,7 @@
 - [x] Mostrar cálculo: Ganho mensal - 10% = Lucro líquido
 - [x] Mensagem: "Mesmo pagando X você ainda lucra Y"
 - [x] Reforçar: "Mas relaxa, você não vai pagar tudo isso"
+
+## Bug Fotos Repetidas Depoimentos v6.24
+- [x] Substituir fotos repetidas nos depoimentos por imagens únicas
+- [x] Rafael e Marcos estão com a mesma foto - corrigir
