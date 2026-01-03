@@ -2789,3 +2789,7 @@
 ## Melhoria Formatação Análise (v6.43)
 - [x] Remover caracteres markdown da análise de comparação de treinos
 - [x] Deixar texto mais limpo e profissional
+
+## Correção Página Planos (v6.44)
+- [x] Restaurar página de Planos do Personal (para cobrar alunos)
+- [x] Mover página de pricing para /planospersonal

@@ -72,7 +72,7 @@ function Router() {
       <Route path="/quiz-resultado" component={QuizResultPage} />
       <Route path="/quiz-resultado-plano" component={QuizResultPlan} />
       <Route path="/cadastro-trial" component={TrialSignupPage} />
-      <Route path="/planos" component={PricingPage} />
+      <Route path="/planospersonal" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login" component={LoginPage} />
       <Route path="/ativar-conta/:token" component={ActivateAccount} />
