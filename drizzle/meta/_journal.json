@@ -253,6 +253,13 @@
       "when": 1767413528295,
       "tag": "0035_careless_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1767416795587,
+      "tag": "0036_curly_paper_doll",
+      "breakpoints": true
     }
   ]
 }

@@ -182,7 +182,9 @@ export function processWebhookEvent(payload: CaktoWebhookPayload): {
   action: "activate" | "deactivate" | "renew" | "none";
   customerEmail: string;
   customerPhone: string;
+  customerName: string;
   productId: string;
+  productName: string;
   orderId: string;
   amount: number;
   subscriptionId?: string;
@@ -192,7 +194,9 @@ export function processWebhookEvent(payload: CaktoWebhookPayload): {
   const result = {
     customerEmail: data.customer.email,
     customerPhone: data.customer.phone,
+    customerName: data.customer.name,
     productId: data.product.id,
+    productName: data.product.name,
     orderId: data.id,
     amount: parseFloat(data.amount),
     subscriptionId: data.subscription?.id,

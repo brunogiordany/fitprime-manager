@@ -5,8 +5,20 @@
  */
 
 import type { Request, Response } from "express";
+import crypto from "crypto";
 import { CaktoWebhookPayload, processWebhookEvent } from "../cakto";
 import * as db from "../db";
+import { sendPurchaseActivationEmail } from "../email";
+
+// Map Cakto product ID to plan type
+function mapProductToPlanType(productId: string): "beginner" | "starter" | "pro" | "business" | "premium" | "enterprise" | null {
+  // TODO: Map actual Cakto product IDs to plan types
+  const productMap: Record<string, "beginner" | "starter" | "pro" | "business" | "premium" | "enterprise"> = {
+    // Add your Cakto product IDs here
+    // "prod_xxx": "starter",
+  };
+  return productMap[productId] || null;
+}
 
 /**
  * Handle incoming Cakto webhook
@@ -79,7 +91,9 @@ async function logWebhookEvent(
 async function handleActivation(result: {
   customerEmail: string;
   customerPhone: string;
+  customerName: string;
   productId: string;
+  productName: string;
   orderId: string;
   amount: number;
   subscriptionId?: string;
@@ -104,14 +118,38 @@ async function handleActivation(result: {
     console.log("[Cakto Webhook] User not found, storing pending activation:", result.customerEmail);
     
     // Store pending activation for when user registers
+    // Generate activation token
+    const activationToken = crypto.randomUUID();
+    const tokenExpiresAt = new Date();
+    tokenExpiresAt.setDate(tokenExpiresAt.getDate() + 7); // 7 days expiry
+    
     await db.createPendingActivation({
       email: result.customerEmail,
-      phone: result.customerPhone,
+      phone: result.customerPhone || null,
+      name: result.customerName || null,
       caktoOrderId: result.orderId,
-      caktoSubscriptionId: result.subscriptionId,
+      caktoSubscriptionId: result.subscriptionId || null,
       productId: result.productId,
-      amount: result.amount,
+      productName: result.productName || null,
+      amount: String(result.amount),
+      planType: mapProductToPlanType(result.productId),
+      activationToken,
+      tokenExpiresAt,
     });
+    
+    // Send welcome email with activation link
+    const baseUrl = process.env.VITE_APP_URL || 'https://fitprime.com.br';
+    const activationLink = `${baseUrl}/ativar-conta/${activationToken}`;
+    
+    await sendPurchaseActivationEmail(
+      result.customerEmail,
+      result.customerName || '',
+      result.productName || 'Plano FitPrime',
+      result.amount,
+      activationLink
+    );
+    
+    console.log("[Cakto Webhook] Activation email sent to:", result.customerEmail);
   }
 }
 

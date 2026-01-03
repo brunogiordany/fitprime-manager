@@ -58,6 +58,7 @@ import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import LoginPage from "./pages/LoginPage";
+import ActivateAccount from "./pages/ActivateAccount";
 
 function Router() {
   return (
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/ativar-conta/:token" component={ActivateAccount} />
       <Route path="/login-aluno" component={StudentLogin} />
       <Route path="/portal-aluno" component={StudentDashboard} />
       <Route path="/portal" component={StudentPortal} />

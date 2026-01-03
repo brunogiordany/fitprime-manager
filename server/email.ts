@@ -633,3 +633,206 @@ FitPrime - Seu parceiro de treinos 💪
     text,
   });
 }
+
+
+/**
+ * Send purchase confirmation and activation email to new customer
+ */
+export async function sendPurchaseActivationEmail(
+  customerEmail: string,
+  customerName: string,
+  planName: string,
+  amount: number,
+  activationLink: string
+): Promise<boolean> {
+  const subject = '🎉 Compra confirmada! Ative sua conta FitPrime';
+  
+  const formattedAmount = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount);
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 36px;">🎉</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Compra Confirmada!</h1>
+        <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">Bem-vindo ao FitPrime</p>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${customerName || 'Personal'}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Sua compra foi processada com sucesso! Agora você tem acesso completo ao FitPrime, 
+        a plataforma que vai revolucionar a forma como você gerencia seus alunos.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #10b981;">
+        <h3 style="color: #166534; margin: 0 0 12px; font-size: 18px;">📋 Detalhes da Compra</h3>
+        <p style="color: #166534; margin: 0; font-size: 16px;">
+          <strong>Plano:</strong> ${planName}<br>
+          <strong>Valor:</strong> ${formattedAmount}/mês
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 32px 0;">
+        <p style="color: #4b5563; font-size: 14px; margin-bottom: 16px;">
+          Clique no botão abaixo para ativar sua conta e começar a usar:
+        </p>
+        <a href="${activationLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+          🚀 Ativar Minha Conta
+        </a>
+      </div>
+      
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <p style="color: #92400e; font-size: 14px; margin: 0;">
+          <strong>⚠️ Importante:</strong> Este link expira em 7 dias. Se você já tem uma conta, 
+          basta fazer login normalmente que seu plano será ativado automaticamente.
+        </p>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+        <a href="${activationLink}" style="color: #10b981; word-break: break-all;">${activationLink}</a>
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <div style="text-align: center;">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px;">
+          Precisa de ajuda? Responda este email ou acesse nosso suporte.
+        </p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          FitPrime - Gestão inteligente para Personal Trainers 💪
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${customerName || 'Personal'},
+
+🎉 Sua compra foi confirmada!
+
+Detalhes da Compra:
+- Plano: ${planName}
+- Valor: ${formattedAmount}/mês
+
+Clique no link abaixo para ativar sua conta:
+${activationLink}
+
+⚠️ Este link expira em 7 dias.
+
+Se você já tem uma conta, basta fazer login normalmente que seu plano será ativado automaticamente.
+
+Precisa de ajuda? Responda este email.
+
+FitPrime - Gestão inteligente para Personal Trainers 💪
+  `;
+
+  return sendEmail({
+    to: customerEmail,
+    subject,
+    html,
+    text,
+  });
+}
+
+/**
+ * Send reminder email for pending activation
+ */
+export async function sendActivationReminderEmail(
+  customerEmail: string,
+  customerName: string,
+  planName: string,
+  activationLink: string,
+  daysRemaining: number
+): Promise<boolean> {
+  const subject = `⏰ Sua conta FitPrime ainda não foi ativada - ${daysRemaining} dias restantes`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 28px;">⏰</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Não esqueça de ativar sua conta!</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${customerName || 'Personal'}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Notamos que você ainda não ativou sua conta do FitPrime. Seu plano <strong>${planName}</strong> 
+        está pronto para uso - basta clicar no botão abaixo para começar!
+      </p>
+      
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+        <p style="color: #92400e; font-size: 16px; font-weight: 600; margin: 0;">
+          ⚠️ Seu link expira em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${activationLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Ativar Minha Conta Agora
+        </a>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Se você já ativou sua conta, ignore este email.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Olá ${customerName || 'Personal'},
+
+Notamos que você ainda não ativou sua conta do FitPrime.
+
+⚠️ Seu link expira em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}
+
+Clique no link abaixo para ativar:
+${activationLink}
+
+Se você já ativou sua conta, ignore este email.
+
+FitPrime - Gestão inteligente para Personal Trainers 💪
+  `;
+
+  return sendEmail({
+    to: customerEmail,
+    subject,
+    html,
+    text,
+  });
+}

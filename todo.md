@@ -2736,3 +2736,11 @@
 - [x] Histórico de convites enviados no perfil do aluno (data, status, ações)
 - [x] Notificação em tempo real para personal quando aluno aceitar convite
 - [x] Envio de convites em massa para múltiplos alunos selecionados
+
+
+## Fluxo Pós-Compra Cakto (v6.35)
+- [x] Criar tabela pending_activations no banco de dados
+- [x] Email automático para cliente após compra com link de cadastro
+- [x] Página de ativação de conta (/ativar-conta)
+- [x] Integrar webhook da Cakto com envio de email
+- [x] Testar fluxo completo de compra → email → cadastro → acesso

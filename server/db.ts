@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, gt, like, sql, or, isNull, isNotNull, not, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, gt, lt, like, sql, or, isNull, isNotNull, not, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users, User,
@@ -44,6 +44,8 @@ import {
   abTests, InsertAbTest, AbTest,
   abTestVariants, InsertAbTestVariant, AbTestVariant,
   trackingPixels, InsertTrackingPixel, TrackingPixel,
+  pendingActivations, InsertPendingActivation, PendingActivation,
+  caktoWebhookLogs, InsertCaktoWebhookLog, CaktoWebhookLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -3643,26 +3645,7 @@ export async function updateUserSubscription(userId: number, data: {
   console.log("[Cakto] Updated subscription for personal:", personal.id, updateData);
 }
 
-export async function createPendingActivation(data: {
-  email: string;
-  phone: string;
-  caktoOrderId: string;
-  caktoSubscriptionId?: string;
-  productId: string;
-  amount: number;
-}) {
-  // For now, just log the pending activation
-  // In the future, we can create a table to store these
-  console.log("[Cakto] Pending activation stored:", data);
-  
-  // TODO: Create cakto_pending_activations table and store this data
-  // When user registers with this email, automatically activate their subscription
-}
-
-export async function getPendingActivationByEmail(email: string) {
-  // TODO: Implement when we have the pending activations table
-  return null;
-}
+// Funções de pending activation movidas para o final do arquivo
 
 
 // ==================== SUPPORT CHAT FUNCTIONS ====================
@@ -4229,4 +4212,148 @@ export async function recordPageConversion(pageId: number): Promise<void> {
       .set({ totalConversions: (page.totalConversions || 0) + 1 })
       .where(eq(sitePages.id, pageId));
   }
+}
+
+
+// ==================== PENDING ACTIVATIONS (Cakto Purchase Flow) ====================
+
+// Criar ativação pendente após compra
+export async function createPendingActivation(data: InsertPendingActivation): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(pendingActivations).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar ativação pendente por token
+export async function getPendingActivationByToken(token: string): Promise<PendingActivation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(pendingActivations)
+    .where(eq(pendingActivations.activationToken, token))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Buscar ativação pendente por email
+export async function getPendingActivationByEmail(email: string): Promise<PendingActivation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(pendingActivations)
+    .where(and(
+      eq(pendingActivations.email, email),
+      eq(pendingActivations.status, 'pending')
+    ))
+    .orderBy(desc(pendingActivations.createdAt))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Buscar ativação pendente por order ID da Cakto
+export async function getPendingActivationByOrderId(orderId: string): Promise<PendingActivation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(pendingActivations)
+    .where(eq(pendingActivations.caktoOrderId, orderId))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Marcar ativação como concluída
+export async function markActivationAsCompleted(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(pendingActivations)
+    .set({
+      status: 'activated',
+      activatedAt: new Date(),
+      activatedUserId: userId,
+    })
+    .where(eq(pendingActivations.id, id));
+}
+
+// Marcar email de boas-vindas como enviado
+export async function markWelcomeEmailSent(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(pendingActivations)
+    .set({ welcomeEmailSentAt: new Date() })
+    .where(eq(pendingActivations.id, id));
+}
+
+// Marcar email de lembrete como enviado
+export async function markReminderEmailSent(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(pendingActivations)
+    .set({ reminderEmailSentAt: new Date() })
+    .where(eq(pendingActivations.id, id));
+}
+
+// Listar ativações pendentes (para admin)
+export async function listPendingActivations(status?: 'pending' | 'activated' | 'expired'): Promise<PendingActivation[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  if (status) {
+    return await db.select()
+      .from(pendingActivations)
+      .where(eq(pendingActivations.status, status))
+      .orderBy(desc(pendingActivations.createdAt));
+  }
+  
+  return await db.select()
+    .from(pendingActivations)
+    .orderBy(desc(pendingActivations.createdAt));
+}
+
+// Expirar ativações antigas
+export async function expireOldActivations(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db.update(pendingActivations)
+    .set({ status: 'expired' })
+    .where(and(
+      eq(pendingActivations.status, 'pending'),
+      lt(pendingActivations.tokenExpiresAt, new Date())
+    ));
+  
+  return result[0].affectedRows || 0;
+}
+
+
+// ==================== CAKTO WEBHOOK LOGS ====================
+
+// Registrar log de webhook
+export async function logCaktoWebhook(data: InsertCaktoWebhookLog): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(caktoWebhookLogs).values(data);
+  return result[0].insertId as number;
+}
+
+// Listar logs de webhook (para debug/admin)
+export async function listCaktoWebhookLogs(limit: number = 100): Promise<CaktoWebhookLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(caktoWebhookLogs)
+    .orderBy(desc(caktoWebhookLogs.createdAt))
+    .limit(limit);
 }

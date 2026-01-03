@@ -1287,3 +1287,75 @@ export const pageAssets = mysqlTable("page_assets", {
 
 export type PageAsset = typeof pageAssets.$inferSelect;
 export type InsertPageAsset = typeof pageAssets.$inferInsert;
+
+
+// ==================== PENDING ACTIVATIONS (Ativações Pendentes de Compra) ====================
+export const pendingActivations = mysqlTable("pending_activations", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Dados do cliente da Cakto
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 20 }),
+  name: varchar("name", { length: 255 }),
+  cpf: varchar("cpf", { length: 14 }),
+  
+  // Dados da compra
+  caktoOrderId: varchar("caktoOrderId", { length: 255 }).notNull().unique(),
+  caktoSubscriptionId: varchar("caktoSubscriptionId", { length: 255 }),
+  productId: varchar("productId", { length: 255 }),
+  productName: varchar("productName", { length: 255 }),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  
+  // Plano correspondente
+  planType: mysqlEnum("planType", ["beginner", "starter", "pro", "business", "premium", "enterprise"]),
+  
+  // Token de ativação
+  activationToken: varchar("activationToken", { length: 255 }).notNull().unique(),
+  tokenExpiresAt: timestamp("tokenExpiresAt").notNull(),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "activated", "expired"]).default("pending").notNull(),
+  activatedAt: timestamp("activatedAt"),
+  activatedUserId: int("activatedUserId").references(() => users.id),
+  
+  // Email enviado
+  welcomeEmailSentAt: timestamp("welcomeEmailSentAt"),
+  reminderEmailSentAt: timestamp("reminderEmailSentAt"),
+  
+  // Timestamps
+  purchasedAt: timestamp("purchasedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PendingActivation = typeof pendingActivations.$inferSelect;
+export type InsertPendingActivation = typeof pendingActivations.$inferInsert;
+
+// ==================== CAKTO WEBHOOK LOGS (Logs de Webhooks da Cakto) ====================
+export const caktoWebhookLogs = mysqlTable("cakto_webhook_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Dados do evento
+  event: varchar("event", { length: 100 }).notNull(),
+  orderId: varchar("orderId", { length: 255 }),
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerPhone: varchar("customerPhone", { length: 20 }),
+  productId: varchar("productId", { length: 255 }),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  
+  // Ação tomada
+  action: varchar("action", { length: 50 }).notNull(),
+  actionResult: mysqlEnum("actionResult", ["success", "failed", "skipped"]).default("success"),
+  actionDetails: text("actionDetails"),
+  
+  // Payload completo
+  rawPayload: text("rawPayload"),
+  
+  // Timestamps
+  processedAt: timestamp("processedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CaktoWebhookLog = typeof caktoWebhookLogs.$inferSelect;
+export type InsertCaktoWebhookLog = typeof caktoWebhookLogs.$inferInsert;

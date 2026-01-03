@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `cakto_webhook_logs` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `event` varchar(100) NOT NULL,\n  `orderId` varchar(255),\n  `customerEmail` varchar(320),\n  `customerPhone` varchar(20),\n  `productId` varchar(255),\n  `amount` decimal(10, 2),\n  `action` varchar(50) NOT NULL,\n  `actionResult` enum('success', 'failed', 'skipped') DEFAULT 'success',\n  `actionDetails` text,\n  `rawPayload` text,\n  `processedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `cakto_webhook_logs_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS `cakto_webhook_logs` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `event` varchar(100) NOT NULL,\n  `orderId` varchar(255),\n  `customerEmail` varchar(320),\n  `customerPhone` varchar(20),\n  `productId` varchar(255),\n  `amount` decimal(10, 2),\n  `action` varchar(50) NOT NULL,\n  `actionResult` enum('success', 'failed', 'skipped') DEFAULT 'success',\n  `actionDetails` text,\n  `rawPayload` text,\n  `processedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `cakto_webhook_logs_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 239
+}

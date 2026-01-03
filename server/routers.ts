@@ -17,6 +17,7 @@ import { adminExtraChargesRouter } from "./routers/adminExtraChargesRouter";
 import { quizRouter } from "./routers/quizRouter";
 import { trialRouter } from "./routers/trialRouter";
 import { sitePagesRouter, trackingPixelsRouter, abTestsRouter, pageBlocksRouter, pageAssetsRouter, pageVersionsRouter } from "./routers/sitePagesRouter";
+import { activationRouter } from "./routers/activationRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -158,6 +159,7 @@ export const appRouter = router({
   extraCharges: extraChargesRouter,
   quiz: quizRouter,
   trial: trialRouter,
+  activation: activationRouter,
   sitePages: sitePagesRouter,
   trackingPixels: trackingPixelsRouter,
   abTests: abTestsRouter,
