@@ -738,6 +738,101 @@ export default function LandingPagePro() {
                 </div>
               </div>
 
+              {/* DEPOIMENTOS ESTRATÉGICOS */}
+              <div className="mt-10 mb-8">
+                <p className="text-center text-purple-300 text-sm mb-6 uppercase tracking-wider">Quem já elevou o nível</p>
+                
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Depoimento 1 - Fisiculturista */}
+                  <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">RF</div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Rafael Mendes</p>
+                        <p className="text-purple-400 text-xs">Atleta Fisiculturista</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm italic">
+                      "Meu personal agora me mostra <span className="text-purple-400 font-semibold">gráficos de evolução, BF%, massa magra</span>... Tudo que eu precisava pra competir. Pago o dobro e acho barato."
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                  </div>
+
+                  {/* Depoimento 2 - Amante do esporte */}
+                  <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">CS</div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Carla Santos</p>
+                        <p className="text-indigo-400 text-xs">Empresária, 42 anos</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm italic">
+                      "Sou viciada em dados! Ver minha evolução semana a semana me motiva demais. <span className="text-indigo-400 font-semibold">Indiquei meu personal pra 5 amigas</span> que também querem isso."
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                  </div>
+
+                  {/* Depoimento 3 - Personal que triplicou */}
+                  <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm">MT</div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Marcos Tavares</p>
+                        <p className="text-emerald-400 text-xs">Personal Trainer</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm italic">
+                      "Comecei a mostrar métricas pros alunos e <span className="text-emerald-400 font-semibold">dobrei o valor da aula</span>. Hoje atendo fisiculturistas e empresários. <span className="text-emerald-400 font-semibold">Minha renda triplicou</span>."
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Segundo row de depoimentos */}
+                <div className="grid md:grid-cols-2 gap-4 mt-4">
+                  {/* Depoimento 4 - Personal com clientes dados */}
+                  <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold text-sm">JL</div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Juliana Lima</p>
+                        <p className="text-pink-400 text-xs">Personal Trainer</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm italic">
+                      "Antes eu cobrava R$80 a aula. Depois que comecei a oferecer <span className="text-pink-400 font-semibold">análises de composição corporal e gráficos de evolução</span>, passei a cobrar R$150. Os alunos que amam dados <span className="text-pink-400 font-semibold">pagam sem reclamar</span> porque vêem valor."
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                  </div>
+
+                  {/* Depoimento 5 - Aluno maromba */}
+                  <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">PH</div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Pedro Henrique</p>
+                        <p className="text-amber-400 text-xs">Maromba, 28 anos</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm italic">
+                      "Treino há 8 anos e nunca tive um acompanhamento tão profissional. <span className="text-amber-400 font-semibold">Ver meus dados em tempo real</span> mudou meu jogo. Meu personal virou meu parceiro de evolução."
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* CTA */}
               <div className="text-center">
                 <p className="text-gray-300 mb-4">

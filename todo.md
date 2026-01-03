@@ -2624,3 +2624,10 @@
 - [x] Sempre mostrar 3x o valor real do plano
 - [x] Garantir mínimo de R$ 291 (3x R$ 97 do plano Beginner)
 - [x] Nunca revelar o valor real do plano na ancoragem
+
+## Depoimentos Seção Premium v6.13
+- [x] Depoimentos de fisiculturistas que adoram métricas e dados
+- [x] Depoimentos de alunos amantes do esporte que buscam shape e adoram dados
+- [x] Depoimentos de personais que triplicaram ganhos atendendo esse público
+- [x] Histórias de personais que dobraram valor da aula com ferramentas profissionais
+- [x] Depoimentos de personais que conquistaram clientes que amam dados na ponta dos dedos
