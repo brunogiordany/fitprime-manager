@@ -2653,3 +2653,13 @@
 - [x] Tabela de comparação com concorrentes quebra no mobile (precisa scroll lateral)
 - [x] Redesenhar para layout responsivo sem scroll horizontal
 - [x] Considerar layout de cards ou colunas empilhadas no mobile
+
+## Remoção Seção Plano Ideal v6.18
+- [x] Remover seção "Não sabe qual plano é o melhor para você?" com 3 cards
+- [x] Remover banner verde "Tudo isso em um só lugar"
+- [x] Ajustar botões para não quebrar navegação
+
+## Ajuste Comunicação Seção Atletas v6.19
+- [x] Mudar comunicação de "você atleta" para "você personal que atende atletas"
+- [x] Focar em como o personal pode elevar o nível dele com essas ferramentas
+- [x] Ajustar textos dos benefícios para perspectiva do personal

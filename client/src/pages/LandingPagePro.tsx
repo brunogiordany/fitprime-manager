@@ -1106,133 +1106,14 @@ export default function LandingPagePro() {
             <Button 
               size="lg" 
               onClick={() => {
-                const quizSection = document.getElementById('quiz');
-                if (quizSection) quizSection.scrollIntoView({ behavior: 'smooth' });
+                const atletasSection = document.getElementById('atletas');
+                if (atletasSection) atletasSection.scrollIntoView({ behavior: 'smooth' });
               }}
               className="bg-white text-emerald-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 w-full sm:w-auto"
             >
-              Quais São os Benefícios Exclusivos?
+              Funcionalidades para Atletas e Fisiculturistas
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Seção de Benefícios com Quiz */}
-      <section className="py-20 px-4 bg-white" id="quiz">
-        <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
-              <Target className="h-3 w-3 mr-1" />
-              Descubra Seu Plano Ideal
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Não sabe qual plano é o <span className="text-emerald-600">melhor para você</span>?
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Responda algumas perguntas rápidas e descubra o plano perfeito para seu momento profissional.
-            </p>
-          </div>
-
-          {/* Cards de Benefícios */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-200">
-              <div className="h-14 w-14 bg-emerald-100 rounded-xl flex items-center justify-center mb-6">
-                <Clock className="h-7 w-7 text-emerald-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Economize 10+ horas/semana</h3>
-              <p className="text-gray-600 mb-4">
-                Automatize cobranças, agenda e comunicação. Foque no que importa: treinar seus alunos.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  Cobranças 100% automáticas
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  Agenda inteligente
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  Lembretes automáticos
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200">
-              <div className="h-14 w-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-                <Sparkles className="h-7 w-7 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Treinos com IA em segundos</h3>
-              <p className="text-gray-600 mb-4">
-                Crie treinos personalizados instantâneamente com nossa IA treinada por especialistas.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  Baseado na anamnese
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  Adaptação automática
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  Progressão inteligente
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
-              <div className="h-14 w-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
-                <TrendingUp className="h-7 w-7 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Cresça seu negócio</h3>
-              <p className="text-gray-600 mb-4">
-                Relatórios, métricas e insights para escalar sua carreira como personal trainer.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
-                  Dashboard completo
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
-                  Análise de retenção
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="h-4 w-4 text-purple-600" />
-                  Previsão de receita
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* CTA Principal - Quiz */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-10 text-center text-white">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Tudo isso em um só lugar
-            </h3>
-            <p className="text-emerald-100 mb-8 text-lg max-w-2xl mx-auto">
-              Economize tempo, ganhe mais dinheiro e tenha controle total do seu negócio.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                onClick={() => {
-                  const atletasSection = document.getElementById('atletas');
-                  if (atletasSection) atletasSection.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-6"
-              >
-                E Para Atletas e Fisiculturistas?
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-            <p className="text-emerald-200 text-sm mt-6">
-              Funcionalidades avançadas para quem leva a sério
-            </p>
           </div>
         </div>
       </section>
@@ -1244,13 +1125,13 @@ export default function LandingPagePro() {
             <div>
               <Badge className="mb-4 bg-purple-100 text-purple-700">
                 <Trophy className="h-3 w-3 mr-1" />
-                Para Fisiculturistas e Atletas
+                Atenda Atletas e Fisiculturistas
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Leve seu treinamento para o <span className="text-purple-600">próximo nível</span>
+                Eleve seu nível como <span className="text-purple-600">Personal Premium</span>
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Se você é um atleta sério ou fisiculturista, o FitPrime foi feito para você. Acompanhe cada detalhe da sua evolução com precisão.
+                Quer atender atletas sérios e fisiculturistas? Com o FitPrime, você oferece análises profissionais que justificam cobrar <strong>o dobro</strong> por aula.
               </p>
 
               <div className="space-y-4">
@@ -1258,7 +1139,7 @@ export default function LandingPagePro() {
                   <Flame className="h-6 w-6 text-purple-600 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Análise de Composição Corporal</h3>
-                    <p className="text-gray-600">Bioimpedância, adipômetro, fotos guiadas - veja exatamente onde você está ganhando músculo e perdendo gordura</p>
+                    <p className="text-gray-600">Mostre ao seu aluno exatamente onde ele está ganhando músculo e perdendo gordura com bioimpedância e fotos guiadas</p>
                   </div>
                 </div>
 
@@ -1266,7 +1147,7 @@ export default function LandingPagePro() {
                   <LineChart className="h-6 w-6 text-purple-600 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Progressão de Carga Detalhada</h3>
-                    <p className="text-gray-600">Gráficos mostrando a evolução de cada exercício, séries, reps e descanso. Identifique plateaus e ajuste</p>
+                    <p className="text-gray-600">Apresente gráficos profissionais de evolução. Seus alunos vão amar ver o progresso em números</p>
                   </div>
                 </div>
 
@@ -1274,7 +1155,7 @@ export default function LandingPagePro() {
                   <Brain className="h-6 w-6 text-purple-600 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Treinos Adaptados por IA</h3>
-                    <p className="text-gray-600">A IA analisa seus dados e sugere ajustes no treino para maximizar ganhos e evitar overtraining</p>
+                    <p className="text-gray-600">A IA te ajuda a ajustar treinos para maximizar resultados e evitar overtraining nos seus atletas</p>
                   </div>
                 </div>
 
@@ -1282,7 +1163,7 @@ export default function LandingPagePro() {
                   <Eye className="h-6 w-6 text-purple-600 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Comparação Antes/Depois</h3>
-                    <p className="text-gray-600">Veja sua transformação lado a lado com análise de postura, simetria e proporções</p>
+                    <p className="text-gray-600">Crie relatórios visuais de transformação para seus alunos compartilharem - marketing gratuito pra você</p>
                   </div>
                 </div>
               </div>
@@ -1290,7 +1171,7 @@ export default function LandingPagePro() {
 
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
               <div className="bg-white rounded-xl p-6 mb-6 border border-purple-200">
-                <h3 className="font-semibold text-gray-900 mb-4">Exemplo de Evolução Rastreada:</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Relatório que você envia pro aluno:</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Peso:</span>
@@ -1312,7 +1193,7 @@ export default function LandingPagePro() {
               </div>
 
               <p className="text-gray-600 mb-6">
-                Tudo rastreado automaticamente. Você só se preocupa em treinar pesado e comer bem.
+                <strong className="text-purple-700">Imagine seu aluno recebendo isso.</strong> Ele vai indicar você pra todo mundo e nunca mais trocar de personal.
               </p>
 
               <Button 
