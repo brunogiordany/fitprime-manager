@@ -487,6 +487,8 @@ export const automations = mysqlTable("automations", {
     "mens_day",
     "customer_day",
     "reengagement_30days",
+    "invite_reminder_3days",
+    "invite_reminder_7days",
     "custom"
   ]).notNull(),
   // Filtros para datas comemorativas

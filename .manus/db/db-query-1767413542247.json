@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE automations MODIFY COLUMN `trigger` ENUM(\n  'session_reminder',\n  'session_confirmation',\n  'payment_reminder',\n  'payment_reminder_2days',\n  'payment_reminder_dueday',\n  'payment_overdue',\n  'birthday',\n  'inactive_student',\n  'welcome',\n  'mothers_day',\n  'fathers_day',\n  'christmas',\n  'new_year',\n  'womens_day',\n  'mens_day',\n  'customer_day',\n  'reengagement_30days',\n  'invite_reminder_3days',\n  'invite_reminder_7days',\n  'custom'\n) NOT NULL",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE automations MODIFY COLUMN `trigger` ENUM(\n  'session_reminder',\n  'session_confirmation',\n  'payment_reminder',\n  'payment_reminder_2days',\n  'payment_reminder_dueday',\n  'payment_overdue',\n  'birthday',\n  'inactive_student',\n  'welcome',\n  'mothers_day',\n  'fathers_day',\n  'christmas',\n  'new_year',\n  'womens_day',\n  'mens_day',\n  'customer_day',\n  'reengagement_30days',\n  'invite_reminder_3days',\n  'invite_reminder_7days',\n  'custom'\n) NOT NULL",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 514
+}
