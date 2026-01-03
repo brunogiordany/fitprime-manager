@@ -1446,6 +1446,7 @@ export const aiAssistantConfig = mysqlTable("ai_assistant_config", {
   isEnabled: boolean("isEnabled").default(true),
   enabledForLeads: boolean("enabledForLeads").default(true),
   enabledForStudents: boolean("enabledForStudents").default(true),
+  enabledForInternalChat: boolean("enabledForInternalChat").default(false), // IA responde no Chat Interno do FitPrime
   
   // Horário de atendimento automático
   autoReplyEnabled: boolean("autoReplyEnabled").default(true),

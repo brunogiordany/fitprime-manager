@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE ai_assistant_config ADD COLUMN enabledForInternalChat BOOLEAN DEFAULT FALSE;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE ai_assistant_config ADD COLUMN enabledForInternalChat BOOLEAN DEFAULT FALSE;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 478
+}

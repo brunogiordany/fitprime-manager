@@ -132,10 +132,48 @@ export default function Messages() {
   const [newWhatsAppMessage, setNewWhatsAppMessage] = useState("");
   const whatsappMessagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Estado para envio de mensagem manual no WhatsApp
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+
   // WhatsApp messages log (histórico de envios)
   const { data: whatsappMessagesLog, isLoading: isLoadingWhatsapp, refetch: refetchWhatsapp } = trpc.messages.log.useQuery({
     limit: 100,
   });
+  
+  // Mutation para enviar mensagem manual via WhatsApp
+  const sendWhatsAppManual = trpc.chat.send.useMutation({
+    onSuccess: (data) => {
+      setNewWhatsAppMessage("");
+      refetchWhatsAppChat();
+      if (data.whatsappSent) {
+        toast.success("Mensagem enviada via WhatsApp!", { icon: "📤" });
+      } else if (data.whatsappError) {
+        toast.warning(`Mensagem salva, mas não enviada via WhatsApp: ${data.whatsappError}`);
+      }
+      setIsSendingWhatsApp(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao enviar mensagem");
+      setIsSendingWhatsApp(false);
+    },
+  });
+  
+  const handleSendWhatsAppManual = () => {
+    if (!newWhatsAppMessage.trim() || !selectedWhatsAppStudent) return;
+    setIsSendingWhatsApp(true);
+    sendWhatsAppManual.mutate({
+      studentId: selectedWhatsAppStudent.studentId,
+      message: newWhatsAppMessage.trim(),
+      sendViaWhatsApp: true,
+    });
+  };
+  
+  const handleWhatsAppKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendWhatsAppManual();
+    }
+  };
   
   // WhatsApp chat messages do aluno selecionado (apenas mensagens do WhatsApp)
   const { data: whatsappChatMessages, refetch: refetchWhatsAppChat, isLoading: isLoadingWhatsAppChat } = trpc.chat.messages.useQuery(
@@ -999,11 +1037,32 @@ export default function Messages() {
                       )}
                     </div>
 
-                    {/* Aviso de somente leitura */}
-                    <div className="flex-shrink-0 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-t text-center">
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        📱 As mensagens do WhatsApp são gerenciadas pela IA automática
+                    {/* Campo de resposta manual */}
+                    <div className="flex-shrink-0 p-3 bg-green-50 dark:bg-green-900/20 border-t">
+                      <p className="text-xs text-green-700 dark:text-green-300 mb-2 text-center">
+                        📝 Responda manualmente quando a IA não conseguir resolver
                       </p>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="Digite sua mensagem..."
+                          value={newWhatsAppMessage}
+                          onChange={(e) => setNewWhatsAppMessage(e.target.value)}
+                          onKeyDown={handleWhatsAppKeyPress}
+                          className="flex-1 bg-white dark:bg-gray-800"
+                          disabled={isSendingWhatsApp}
+                        />
+                        <Button
+                          onClick={handleSendWhatsAppManual}
+                          disabled={!newWhatsAppMessage.trim() || isSendingWhatsApp}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {isSendingWhatsApp ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </>
                 ) : (

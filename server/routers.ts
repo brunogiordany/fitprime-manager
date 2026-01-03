@@ -313,6 +313,7 @@ Retorne APENAS as instruções, sem explicações.`,
       isEnabled: z.boolean().default(true),
       enabledForLeads: z.boolean().default(true),
       enabledForStudents: z.boolean().default(true),
+      enabledForInternalChat: z.boolean().default(false),
       autoReplyEnabled: z.boolean().default(true),
       autoReplyStartHour: z.number().min(0).max(23).default(8),
       autoReplyEndHour: z.number().min(0).max(23).default(22),
@@ -6491,6 +6492,50 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
           linkPreviewImage: input.linkPreviewImage,
         });
         
+        // Verificar se a IA está habilitada para chat interno
+        let aiResponse = null;
+        try {
+          const aiAssistant = await import('./aiAssistant');
+          const aiConfig = await aiAssistant.default.getAiConfig(ctx.student.personalId);
+          
+          if (aiConfig && aiConfig.isEnabled && (aiConfig as any).enabledForInternalChat && input.messageType === 'text' && input.message) {
+            // Verificar horário de atendimento
+            const now = new Date();
+            const currentHour = now.getHours();
+            const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+            
+            const isWithinWorkingHours = 
+              currentHour >= (aiConfig.autoReplyStartHour || 8) && 
+              currentHour < (aiConfig.autoReplyEndHour || 22) &&
+              (aiConfig.autoReplyWeekends || !isWeekend);
+            
+            if (isWithinWorkingHours && aiConfig.autoReplyEnabled) {
+              // Processar mensagem com IA
+              const response = await aiAssistant.default.processMessage({
+                personalId: ctx.student.personalId,
+                phone: ctx.student.phone || '',
+                message: input.message,
+                messageType: 'text',
+              });
+              
+              if (response.message && !response.shouldEscalate) {
+                // Salvar resposta da IA como mensagem do personal
+                await db.createChatMessage({
+                  personalId: ctx.student.personalId,
+                  studentId: ctx.student.id,
+                  senderType: 'personal',
+                  message: response.message,
+                  messageType: 'text',
+                  source: 'internal',
+                });
+                aiResponse = response.message;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao processar IA no chat interno:', error);
+        }
+        
         // Notificar o personal
         const { notifyOwner } = await import('./_core/notification');
         const notificationContent = input.messageType === 'text' 
@@ -6507,7 +6552,7 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
           content: notificationContent,
         });
         
-        return { success: true, messageId };
+        return { success: true, messageId, aiResponse };
       }),
     
     // Editar mensagem

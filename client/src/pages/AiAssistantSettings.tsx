@@ -144,6 +144,7 @@ export default function AiAssistantSettings() {
     isEnabled: true,
     enabledForLeads: true,
     enabledForStudents: true,
+    enabledForInternalChat: false,
     
     // Horário de atendimento
     autoReplyEnabled: true,
@@ -192,6 +193,7 @@ export default function AiAssistantSettings() {
         isEnabled: config.isEnabled ?? true,
         enabledForLeads: config.enabledForLeads ?? true,
         enabledForStudents: config.enabledForStudents ?? true,
+        enabledForInternalChat: (config as any).enabledForInternalChat ?? false,
         autoReplyEnabled: config.autoReplyEnabled ?? true,
         autoReplyStartHour: config.autoReplyStartHour ?? 8,
         autoReplyEndHour: config.autoReplyEndHour ?? 22,
@@ -905,14 +907,29 @@ export default function AiAssistantSettings() {
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Atender Alunos</Label>
+                    <Label>Atender Alunos (WhatsApp)</Label>
                     <p className="text-xs text-muted-foreground">
-                      A IA conversa com alunos cadastrados no sistema
+                      A IA conversa com alunos via WhatsApp
                     </p>
                   </div>
                   <Switch
                     checked={formData.enabledForStudents}
                     onCheckedChange={(v) => updateField("enabledForStudents", v)}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Atender no Chat Interno</Label>
+                    <p className="text-xs text-muted-foreground">
+                      A IA responde automaticamente no Chat FitPrime (Portal do Aluno)
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.enabledForInternalChat}
+                    onCheckedChange={(v) => updateField("enabledForInternalChat", v)}
                   />
                 </div>
               </CardContent>

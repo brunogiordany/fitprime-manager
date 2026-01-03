@@ -2989,3 +2989,7 @@
 - [ ] IA demora muito para responder no WhatsApp
 - [ ] Interferência entre Chat Interno (FitPrime) e Chat WhatsApp
 - [ ] Separar Chat Interno do Chat WhatsApp - mensagens do WhatsApp não devem aparecer no Chat Interno
+
+## Chat e WhatsApp v5.1
+- [x] Opção de ativar IA no Chat Interno do FitPrime
+- [x] Resposta manual no WhatsApp (campo de texto para personal responder)

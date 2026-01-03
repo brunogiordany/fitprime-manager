@@ -1,0 +1,1 @@
+ALTER TABLE `ai_assistant_config` ADD `enabledForInternalChat` boolean DEFAULT false;
