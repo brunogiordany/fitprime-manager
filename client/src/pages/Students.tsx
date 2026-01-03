@@ -113,6 +113,20 @@ export default function Students() {
     },
   });
 
+  // Mutation para enviar lembretes de convites pendentes
+  const sendRemindersMutation = trpc.students.sendInviteReminders.useMutation({
+    onSuccess: (data) => {
+      if (data.sent > 0) {
+        toast.success(data.message);
+      } else {
+        toast.info('Nenhum convite pendente encontrado para enviar lembrete');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao enviar lembretes');
+    },
+  });
+
   // Função para enviar convites em massa
   const handleBulkSendInvites = async () => {
     if (selectedStudents.length === 0) {
@@ -346,8 +360,24 @@ export default function Students() {
                   <SelectItem value="active">Ativos</SelectItem>
                   <SelectItem value="inactive">Inativos</SelectItem>
                   <SelectItem value="pending">Pendentes</SelectItem>
+                  <SelectItem value="no_account">Sem conta criada</SelectItem>
+                  <SelectItem value="with_account">Com conta ativa</SelectItem>
                 </SelectContent>
               </Select>
+              {statusFilter === 'no_account' && (
+                <Button
+                  variant="outline"
+                  onClick={() => sendRemindersMutation.mutate({ daysAfterSent: 3 })}
+                  disabled={sendRemindersMutation.isPending}
+                  className="whitespace-nowrap"
+                >
+                  {sendRemindersMutation.isPending ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Send className="h-4 w-4 mr-2" /> Enviar Lembretes</>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

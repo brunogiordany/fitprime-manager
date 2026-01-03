@@ -1082,6 +1082,73 @@ export const appRouter = router({
         return await db.getStudentInvitesByStudentId(input.studentId);
       }),
     
+    // Buscar convites pendentes que precisam de lembrete
+    getPendingInvitesForReminder: personalProcedure
+      .input(z.object({ daysAfterSent: z.number().default(3) }))
+      .query(async ({ ctx, input }) => {
+        return await db.getPendingInvitesForReminder(ctx.personal.id, input.daysAfterSent);
+      }),
+    
+    // Enviar lembrete de convite em massa
+    sendInviteReminders: personalProcedure
+      .input(z.object({
+        daysAfterSent: z.number().default(3),
+        sendVia: z.enum(['email', 'whatsapp', 'both']).default('email'),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pendingInvites = await db.getPendingInvitesForReminder(ctx.personal.id, input.daysAfterSent);
+        
+        if (pendingInvites.length === 0) {
+          return { sent: 0, message: 'Nenhum convite pendente encontrado' };
+        }
+        
+        let sentCount = 0;
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+        
+        for (const invite of pendingInvites) {
+          try {
+            const inviteLink = `${baseUrl}/convite/${invite.inviteToken}`;
+            
+            // Enviar email de lembrete
+            if (input.sendVia === 'email' || input.sendVia === 'both') {
+              if (invite.studentEmail) {
+                const { sendEmail } = await import('./email');
+                await sendEmail({
+                  to: invite.studentEmail,
+                  subject: `🔔 Lembrete: Crie sua conta no FitPrime`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <div style="background: linear-gradient(to right, #10b981, #14b8a6); padding: 20px; border-radius: 8px 8px 0 0;">
+                        <h2 style="color: white; margin: 0;">🔔 Lembrete de Convite</h2>
+                      </div>
+                      <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                        <p style="font-size: 16px;">Olá <strong>${invite.studentName}</strong>!</p>
+                        <p>Você recebeu um convite para acessar o portal do aluno, mas ainda não criou sua conta.</p>
+                        <p>Com o portal você pode:</p>
+                        <ul>
+                          <li>📊 Ver seus treinos personalizados</li>
+                          <li>📈 Acompanhar sua evolução</li>
+                          <li>📅 Receber lembretes das sessões</li>
+                          <li>💬 Comunicar-se com seu personal</li>
+                        </ul>
+                        <a href="${inviteLink}" style="display: inline-block; background: linear-gradient(to right, #10b981, #14b8a6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 15px;">Criar Minha Conta</a>
+                        <p style="color: #666; margin-top: 20px; font-size: 14px;">Este link expira em ${Math.ceil((new Date(invite.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} dias.</p>
+                      </div>
+                    </div>
+                  `,
+                  text: `Olá ${invite.studentName}! Você recebeu um convite para acessar o portal do aluno. Crie sua conta em: ${inviteLink}`,
+                });
+                sentCount++;
+              }
+            }
+          } catch (error) {
+            console.error('Erro ao enviar lembrete:', error);
+          }
+        }
+        
+        return { sent: sentCount, total: pendingInvites.length, message: `${sentCount} lembrete(s) enviado(s)` };
+      }),
+    
     // Validar convite (público - para página de convite)
     validateInvite: publicProcedure
       .input(z.object({ token: z.string() }))

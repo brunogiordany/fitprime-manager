@@ -214,7 +214,12 @@ export async function getStudentsByPersonalId(personalId: number, filters?: { st
   
   const conditions = [eq(students.personalId, personalId)];
   
-  if (filters?.status) {
+  // Filtros especiais para conta criada/não criada
+  if (filters?.status === 'no_account') {
+    conditions.push(isNull(students.userId));
+  } else if (filters?.status === 'with_account') {
+    conditions.push(isNotNull(students.userId));
+  } else if (filters?.status) {
     conditions.push(eq(students.status, filters.status as any));
   }
   
@@ -1616,6 +1621,33 @@ export async function createDefaultAutomations(personalId: number) {
       sendWindowEnd: "18:00",
       maxMessagesPerDay: 10,
     },
+    // Lembrete de convite não aceito
+    {
+      personalId,
+      name: "Lembrete de convite - 3 dias",
+      trigger: "invite_reminder_3days" as const,
+      messageTemplate: "Olá {nome}! 👋\n\nVocê recebeu um convite para acessar o portal do aluno, mas ainda não criou sua conta.\n\n📱 Acesse o link enviado por email e crie sua conta para:\n• Ver seus treinos personalizados\n• Acompanhar sua evolução\n• Receber lembretes das sessões\n\nQualquer dúvida, estou à disposição! 💪",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      triggerDaysAfter: 3,
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 10,
+    },
+    {
+      personalId,
+      name: "Lembrete de convite - 7 dias",
+      trigger: "invite_reminder_7days" as const,
+      messageTemplate: "Olá {nome}! 👋\n\nNotei que você ainda não criou sua conta no portal do aluno.\n\n✨ Com o portal você pode:\n• Acessar seus treinos a qualquer momento\n• Registrar seu progresso\n• Comunicar-se comigo diretamente\n\n🔗 Verifique seu email e clique no link de convite para começar!\n\nPrecisa de ajuda? É só me chamar! 💪",
+      isActive: true,
+      targetGender: "all" as const,
+      requiresChildren: false,
+      triggerDaysAfter: 7,
+      sendWindowStart: "09:00",
+      sendWindowEnd: "18:00",
+      maxMessagesPerDay: 10,
+    },
   ];
   
   for (const automation of defaultAutomations) {
@@ -1657,6 +1689,37 @@ export async function getStudentInvitesByStudentId(studentId: number) {
   return await db.select().from(studentInvites)
     .where(eq(studentInvites.studentId, studentId))
     .orderBy(desc(studentInvites.createdAt));
+}
+
+// Buscar convites pendentes que precisam de lembrete (não aceitos após X dias)
+export async function getPendingInvitesForReminder(personalId: number, daysAfterSent: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysAfterSent);
+  
+  // Buscar convites pendentes enviados há mais de X dias
+  const invites = await db.select({
+    invite: studentInvites,
+    student: students,
+  })
+    .from(studentInvites)
+    .innerJoin(students, eq(studentInvites.studentId, students.id))
+    .where(and(
+      eq(studentInvites.personalId, personalId),
+      eq(studentInvites.status, 'pending'),
+      lte(studentInvites.createdAt, cutoffDate),
+      gt(studentInvites.expiresAt, new Date()), // Ainda não expirou
+      isNull(students.userId) // Aluno ainda não criou conta
+    ));
+  
+  return invites.map(row => ({
+    ...row.invite,
+    studentName: row.student.name,
+    studentEmail: row.student.email,
+    studentPhone: row.student.phone,
+  }));
 }
 
 export async function updateStudentInvite(id: number, data: Partial<InsertStudentInvite>) {
