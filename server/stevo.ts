@@ -18,6 +18,7 @@ import { ENV } from './_core/env';
 interface StevoConfig {
   apiKey: string;      // Token da instância Stevo
   instanceName: string; // Instance ID da Stevo
+  server?: string;     // Servidor da instância (ex: sm15, sm12) - padrão: sm15
 }
 
 interface SendMessageParams {
@@ -32,8 +33,14 @@ interface SendMessageResult {
   error?: string;
 }
 
-// URL base da API Stevo
-const STEVO_BASE_URL = 'https://api.stevo.chat';
+// URL base da API Stevo - cada instância pode ter um servidor diferente (sm12, sm15, sm16, etc.)
+// O servidor padrão é sm15, mas pode ser configurado por personal
+const DEFAULT_STEVO_SERVER = 'sm15';
+
+function getStevoBaseUrl(server?: string): string {
+  const serverName = server || DEFAULT_STEVO_SERVER;
+  return `https://${serverName}.stevo.chat`;
+}
 
 /**
  * Formata o número de telefone para o padrão internacional
@@ -70,7 +77,8 @@ export async function sendWhatsAppMessage(params: SendMessageParams): Promise<Se
   
   try {
     // Endpoint correto conforme documentação Stevo
-    const endpoint = `${STEVO_BASE_URL}/chat/send/text`;
+    const baseUrl = getStevoBaseUrl(config.server);
+    const endpoint = `${baseUrl}/chat/send/text`;
     
     console.log('[Stevo] Enviando mensagem para:', formattedPhone);
     console.log('[Stevo] Endpoint:', endpoint);
@@ -132,7 +140,8 @@ export async function getWebhook(config: StevoConfig): Promise<{ webhook: string
   }
   
   try {
-    const endpoint = `${STEVO_BASE_URL}/webhook`;
+    const baseUrl = getStevoBaseUrl(config.server);
+    const endpoint = `${baseUrl}/webhook`;
     
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -173,7 +182,8 @@ export async function setWebhook(config: StevoConfig, webhookUrl: string, events
   }
   
   try {
-    const endpoint = `${STEVO_BASE_URL}/webhook`;
+    const baseUrl = getStevoBaseUrl(config.server);
+    const endpoint = `${baseUrl}/webhook`;
     
     const response = await fetch(endpoint, {
       method: 'POST',

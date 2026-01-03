@@ -50,6 +50,7 @@ export default function Settings() {
   const [whatsappConfig, setWhatsappConfig] = useState({
     evolutionApiKey: "",  // Token do Stevo
     instanceName: "",     // Instance ID do Stevo
+    stevoServer: "sm15",  // Servidor Stevo (sm12, sm15, sm16, etc.)
     enabled: false,
   });
 
@@ -141,6 +142,7 @@ export default function Settings() {
       setWhatsappConfig({
         evolutionApiKey: personalData.evolutionApiKey || "",
         instanceName: personalData.evolutionInstance || "",
+        stevoServer: (personalData as any).stevoServer || "sm15",
         enabled: !!personalData.evolutionApiKey,
       });
       setLogoUrl(personalData.logoUrl || null);
@@ -161,6 +163,7 @@ export default function Settings() {
     updateMutation.mutate({
       evolutionApiKey: whatsappConfig.evolutionApiKey || undefined,
       evolutionInstance: whatsappConfig.instanceName || undefined,
+      stevoServer: whatsappConfig.stevoServer || "sm15",
     });
   };
 
@@ -432,7 +435,19 @@ export default function Settings() {
             
             <Separator />
             
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-2">
+                <Label>Servidor</Label>
+                <Input
+                  placeholder="Ex: sm15"
+                  value={whatsappConfig.stevoServer}
+                  onChange={(e) => setWhatsappConfig({ ...whatsappConfig, stevoServer: e.target.value })}
+                  disabled={!whatsappConfig.enabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Servidor da instância (sm12, sm15, etc.)
+                </p>
+              </div>
               <div className="grid gap-2">
                 <Label>Token</Label>
                 <Input
@@ -512,13 +527,18 @@ export default function Settings() {
                   <strong>Como obter suas credenciais:</strong>
                 </p>
                 <ol className="text-sm text-blue-700 list-decimal list-inside mt-2 space-y-1">
-                  <li>Acesse o painel do Stevo e faça login</li>
+                  <li>Acesse o painel do Stevo (<a href="https://stevo.chat" target="_blank" rel="noopener noreferrer" className="underline">stevo.chat</a>) e faça login</li>
+                  <li>Clique na sua instância (ex: fitprime)</li>
                   <li>Na tela principal, você verá o <strong>Instance ID</strong> e o <strong>Token</strong></li>
+                  <li>Para encontrar o <strong>Servidor</strong>: olhe a URL do navegador, procure por <code className="bg-blue-100 px-1 rounded">sm15</code>, <code className="bg-blue-100 px-1 rounded">sm12</code>, etc.</li>
                   <li>Copie e cole os valores nos campos acima</li>
                   <li>Clique em "Salvar Configurações"</li>
                 </ol>
+                <p className="text-xs text-blue-600 mt-2">
+                  <strong>Dica:</strong> O servidor aparece na URL assim: <code className="bg-blue-100 px-1 rounded">https://sm15.stevo.chat/...</code>
+                </p>
                 <a 
-                  href="https://app.stevo.chat" 
+                  href="https://stevo.chat" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-2"

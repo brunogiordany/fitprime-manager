@@ -570,6 +570,7 @@ export const appRouter = router({
         whatsappNumber: z.string().optional(),
         evolutionApiKey: z.string().optional(),
         evolutionInstance: z.string().optional(),
+        stevoServer: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Atualizar personal
@@ -5099,6 +5100,7 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
           config: {
             apiKey: personal.evolutionApiKey,
             instanceName: personal.evolutionInstance,
+            server: (personal as any).stevoServer || 'sm15',
           },
         });
         
@@ -5150,6 +5152,7 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
           config: {
             apiKey: personal.evolutionApiKey,
             instanceName: personal.evolutionInstance,
+            server: (personal as any).stevoServer || 'sm15',
           },
         });
         
@@ -7346,6 +7349,7 @@ Seja motivador mas realista e profissional.`;
               config: {
                 apiKey: personal.evolutionApiKey,
                 instanceName: personal.evolutionInstance,
+                server: (personal as any).stevoServer || 'sm15',
               },
             });
           }
@@ -7382,6 +7386,7 @@ Seja motivador mas realista e profissional.`;
               config: {
                 apiKey: personal.evolutionApiKey,
                 instanceName: personal.evolutionInstance,
+                server: (personal as any).stevoServer || 'sm15',
               },
             });
           }

@@ -1,0 +1,1 @@
+ALTER TABLE `personals` ADD `stevoServer` varchar(50) DEFAULT 'sm15';

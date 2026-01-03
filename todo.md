@@ -2874,3 +2874,20 @@
 - [x] Adicionar instruções de configuração do webhook na página Settings
 - [x] Criar testes unitários para detecção de pagamento
 - [x] Atualizar logomarca do FitPrime em todo o sistema
+
+
+## Atualização Stevo - URL Dinâmica (v4.3)
+- [ ] Adicionar campo servidor no schema (stevoServer)
+- [ ] Adicionar campo servidor na página de Configurações
+- [ ] Atualizar stevo.ts para usar URL dinâmica baseada no servidor
+- [ ] Testar envio de mensagem com nova configuração
+
+
+## Correção Integração Stevo (v4.6)
+- [x] Corrigir URL base da API Stevo (usar servidor dinâmico: sm12, sm15, sm16, etc.)
+- [x] Adicionar campo "Servidor" na página de Configurações
+- [x] Atualizar instruções de como encontrar o servidor na URL do Stevo
+- [x] Atualizar stevo.ts para usar URL dinâmica baseada no servidor
+- [x] Adicionar campo stevoServer no schema do banco
+- [x] Criar testes unitários para configuração de URL
+- [x] Testar envio de mensagem via API (funcionando com sm15)
