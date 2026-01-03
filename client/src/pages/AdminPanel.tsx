@@ -70,6 +70,7 @@ import {
   X,
   Copy,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -699,6 +700,7 @@ export default function AdminPanel() {
   const [activateDays, setActivateDays] = useState(30);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showContactsDialog, setShowContactsDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Verificar se é owner
   const { data: ownerCheck, isLoading: ownerLoading } = trpc.admin.isOwner.useQuery(undefined, {
@@ -797,6 +799,18 @@ export default function AdminPanel() {
     },
   });
   
+  const deletePersonalMutation = trpc.admin.deletePersonal.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setShowDeleteDialog(false);
+      setSelectedPersonalId(null);
+      refetchPersonals();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
   // Filtrar personais
   const filteredPersonals = useMemo(() => {
     if (!personals) return [];
@@ -807,7 +821,8 @@ export default function AdminPanel() {
       p.userName?.toLowerCase().includes(term) ||
       p.userEmail?.toLowerCase().includes(term) ||
       p.businessName?.toLowerCase().includes(term) ||
-      p.whatsappNumber?.includes(term)
+      p.whatsappNumber?.includes(term) ||
+      (p as any).userCpf?.includes(term)
     );
   }, [personals, searchTerm]);
   
@@ -1333,7 +1348,7 @@ export default function AdminPanel() {
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nome, email, empresa ou WhatsApp..."
+                    placeholder="Buscar por nome, email, empresa, WhatsApp ou CPF..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -1347,6 +1362,7 @@ export default function AdminPanel() {
                       <TableRow>
                         <TableHead>Personal</TableHead>
                         <TableHead>Contato</TableHead>
+                        <TableHead>CPF</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Alunos</TableHead>
                         <TableHead>Cadastro</TableHead>
@@ -1373,6 +1389,11 @@ export default function AdminPanel() {
                                 {personal.whatsappNumber || "-"}
                               </p>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm font-mono">
+                              {(personal as any).userCpf || "-"}
+                            </span>
                           </TableCell>
                           <TableCell>
                             {getStatusBadge(personal)}
@@ -1440,13 +1461,26 @@ export default function AdminPanel() {
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Ativar
                               </Button>
+                              
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  setSelectedPersonalId(personal.id);
+                                  setShowDeleteDialog(true);
+                                }}
+                                title="Excluir cadastro"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
                       ))}
                       {filteredPersonals.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                             Nenhum personal encontrado
                           </TableCell>
                         </TableRow>
@@ -1837,6 +1871,48 @@ export default function AdminPanel() {
             <Button onClick={exportContactsCSV}>
               <Download className="h-4 w-4 mr-2" />
               Baixar CSV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de Confirmação de Exclusão */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Excluir Cadastro
+            </DialogTitle>
+            <DialogDescription>
+              Esta ação é irreversível. O cadastro do personal será removido permanentemente, incluindo:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li>Dados do perfil e configurações</li>
+              <li>Todos os alunos cadastrados</li>
+              <li>Treinos e sessões</li>
+              <li>Histórico de cobranças</li>
+            </ul>
+            <p className="text-sm font-medium mt-4 text-destructive">
+              O CPF ficará liberado para novo cadastro.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                if (selectedPersonalId) {
+                  deletePersonalMutation.mutate({ personalId: selectedPersonalId });
+                }
+              }}
+              disabled={deletePersonalMutation.isPending}
+            >
+              {deletePersonalMutation.isPending ? "Excluindo..." : "Excluir Permanentemente"}
             </Button>
           </DialogFooter>
         </DialogContent>

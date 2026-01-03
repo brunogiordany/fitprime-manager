@@ -180,6 +180,7 @@ export async function getAllPersonals() {
       createdAt: personals.createdAt,
       userName: users.name,
       userEmail: users.email,
+      userCpf: users.cpf,
     })
     .from(personals)
     .leftJoin(users, eq(personals.userId, users.id))
@@ -207,6 +208,34 @@ export async function updatePersonalSubscription(personalId: number, data: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(personals).set(data).where(eq(personals.id, personalId));
+}
+
+// Excluir cadastro de personal completamente (para admin)
+export async function deletePersonalCompletely(personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar o personal para obter o userId
+  const personal = await db.select({ userId: personals.userId })
+    .from(personals)
+    .where(eq(personals.id, personalId))
+    .limit(1);
+  
+  if (!personal[0]) {
+    throw new Error("Personal não encontrado");
+  }
+  
+  // Excluir todos os dados relacionados ao personal
+  // 1. Excluir alunos do personal
+  await db.delete(students).where(eq(students.personalId, personalId));
+  
+  // 2. Excluir o personal
+  await db.delete(personals).where(eq(personals.id, personalId));
+  
+  // 3. Se houver userId, excluir o usuário também
+  if (personal[0].userId) {
+    await db.delete(users).where(eq(users.id, personal[0].userId));
+  }
 }
 
 // ==================== STUDENT FUNCTIONS ====================

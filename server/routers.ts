@@ -255,6 +255,20 @@ export const appRouter = router({
         };
       }),
     
+    // Excluir cadastro de personal permanentemente
+    deletePersonal: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deletePersonalCompletely(input.personalId);
+        
+        return {
+          success: true,
+          message: 'Cadastro excluído permanentemente',
+        };
+      }),
+    
     // Verificar se o usuário atual é o owner
     // Aceita: OWNER_OPEN_ID do ambiente OU usuário com role "admin" no banco
     isOwner: protectedProcedure.query(async ({ ctx }) => {

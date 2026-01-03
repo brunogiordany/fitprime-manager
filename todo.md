@@ -2756,3 +2756,9 @@
 - [x] Corrigir erro de cadastro com senha (adicionar colunas passwordHash e loginMethod na tabela users)
 - [x] Popup de CREF na geração de IA (ao invés de redirecionar para configurações)
 - [x] Salvar CREF diretamente do popup e liberar geração
+
+
+## Painel Admin - CPF e Exclusão (v6.38)
+- [x] Adicionar coluna de CPF na tabela de personais
+- [x] Adicionar pesquisa por CPF no campo de busca
+- [x] Adicionar botão de excluir cadastro para limpar CPFs
