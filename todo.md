@@ -2768,3 +2768,7 @@
 - [x] Corrigir bug do popup de CREF que não reconhece após salvar
 - [x] Implementar soft delete ao invés de exclusão permanente
 - [x] Criar aba de lixeira no admin para recuperar cadastros
+
+## Correção UX Modal de Análise (v6.40)
+- [x] Corrigir layout do modal de Análise do Aluno no mobile
+- [x] Remover scroll horizontal e melhorar responsividade
