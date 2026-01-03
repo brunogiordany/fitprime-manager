@@ -67,6 +67,7 @@ interface StudentData {
   status: string;
   createdAt: number;
   goal?: string | null;
+  gender?: string | null;
 }
 
 interface AnamnesisData {
@@ -656,6 +657,9 @@ export default function StudentPortalPage() {
               sessions={sessions || []}
               canEditMeasurements={editPermissions?.canEditMeasurements || false}
               onMeasurementsUpdate={() => refetchMeasurements()}
+              studentName={studentData?.name}
+              studentGender={studentData?.gender || 'male'}
+              studentHeight={measurements?.[0]?.height || undefined}
             />
           </TabsContent>
 

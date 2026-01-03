@@ -41,6 +41,7 @@ import {
   Clipboard,
   Upload,
   FileCheck,
+  Calculator,
 } from "lucide-react";
 import ShareProgressCard from "@/components/ShareProgressCard";
 
@@ -91,12 +92,16 @@ interface StudentMeasurementFormProps {
   measurements: Measurement[];
   onUpdate: () => void;
   studentName?: string;
+  studentGender?: string;
+  studentHeight?: string;
 }
 
 export default function StudentMeasurementForm({
   measurements,
   onUpdate,
   studentName = "Aluno",
+  studentGender = "male",
+  studentHeight,
 }: StudentMeasurementFormProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -330,9 +335,6 @@ export default function StudentMeasurementForm({
           type="date"
           value={formData.measureDate}
           onChange={(e) => setFormData({ ...formData, measureDate: e.target.value })}
-          tabIndex={-1}
-          autoFocus={false}
-          onFocus={(e) => e.target.blur()}
         />
       </div>
 
@@ -864,6 +866,104 @@ export default function StudentMeasurementForm({
         </Button>
       </div>
 
+      {/* Card de Cálculos Automáticos - visível fora do modal */}
+      {sortedMeasurements.length > 0 && (() => {
+        const latest = sortedMeasurements[0];
+        const weight = latest.weight ? parseFloat(latest.weight) : null;
+        const height = latest.height ? parseFloat(latest.height) : (studentHeight ? parseFloat(studentHeight) : null);
+        const waist = latest.waist ? parseFloat(latest.waist) : null;
+        const neck = latest.neck ? parseFloat(latest.neck) : null;
+        const hip = latest.hip ? parseFloat(latest.hip) : null;
+        
+        // Cálculo do IMC
+        const imc = weight && height ? (weight / Math.pow(height / 100, 2)).toFixed(1) : null;
+        const imcCategory = imc ? (
+          parseFloat(imc) < 18.5 ? 'Abaixo do peso' :
+          parseFloat(imc) < 25 ? 'Peso normal' :
+          parseFloat(imc) < 30 ? 'Sobrepeso' :
+          parseFloat(imc) < 35 ? 'Obesidade I' :
+          parseFloat(imc) < 40 ? 'Obesidade II' : 'Obesidade III'
+        ) : null;
+        
+        // Cálculo do BF estimado (Fórmula da Marinha dos EUA)
+        let estimatedBF: string | null = null;
+        if (height && waist && neck) {
+          if (studentGender === 'female' && hip) {
+            const bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            estimatedBF = Math.max(0, bf).toFixed(1);
+          } else if (studentGender === 'male') {
+            const bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            estimatedBF = Math.max(0, bf).toFixed(1);
+          }
+        }
+        
+        // Usar BF da medição ou estimado
+        const bodyFat = latest.bodyFat ? parseFloat(latest.bodyFat) : (estimatedBF ? parseFloat(estimatedBF) : null);
+        const fatMass = weight && bodyFat ? ((weight * bodyFat) / 100).toFixed(1) : null;
+        const leanMass = weight && bodyFat ? (weight - (weight * bodyFat) / 100).toFixed(1) : null;
+        
+        // Só mostrar se tiver pelo menos IMC ou BF
+        if (!imc && !bodyFat) return null;
+        
+        return (
+          <Card className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 border-emerald-200 dark:border-emerald-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                <Calculator className="h-5 w-5" />
+                Cálculos Automáticos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {imc && (
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
+                    <p className={`text-2xl font-bold ${parseFloat(imc) >= 25 ? 'text-orange-500' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
+                      {imc}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">IMC</p>
+                    <p className={`text-xs font-medium ${parseFloat(imc) >= 25 ? 'text-orange-500' : parseFloat(imc) < 18.5 ? 'text-blue-500' : 'text-emerald-600'}`}>
+                      {imcCategory}
+                    </p>
+                  </div>
+                )}
+                {bodyFat && (
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
+                    <p className="text-2xl font-bold text-emerald-600">
+                      {bodyFat.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">BF {estimatedBF && !latest.bodyFat ? 'Estimado' : ''}</p>
+                    {estimatedBF && !latest.bodyFat && (
+                      <p className="text-xs text-emerald-600">Fórmula Marinha EUA</p>
+                    )}
+                  </div>
+                )}
+                {fatMass && (
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
+                    <p className="text-2xl font-bold text-orange-500">
+                      {fatMass} kg
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Massa Gorda Est.</p>
+                  </div>
+                )}
+                {leanMass && (
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-3 text-center shadow-sm">
+                    <p className="text-2xl font-bold text-blue-500">
+                      {leanMass} kg
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Massa Magra Est.</p>
+                  </div>
+                )}
+              </div>
+              {estimatedBF && !latest.bodyFat && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                  * BF estimado requer: altura, pescoço, cintura{studentGender === 'female' ? ', quadril' : ''}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {/* Lista de Medidas */}
       <Card>
         <CardHeader>
@@ -955,6 +1055,8 @@ export default function StudentMeasurementForm({
         <DialogContent 
           className="max-w-md h-[85vh] flex flex-col p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
@@ -993,6 +1095,8 @@ export default function StudentMeasurementForm({
         <DialogContent 
           className="max-w-md h-[85vh] flex flex-col p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">

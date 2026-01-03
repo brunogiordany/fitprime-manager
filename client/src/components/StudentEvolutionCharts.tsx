@@ -66,6 +66,9 @@ interface StudentEvolutionChartsProps {
   sessions: Session[];
   canEditMeasurements?: boolean;
   onMeasurementsUpdate?: () => void;
+  studentName?: string;
+  studentGender?: string;
+  studentHeight?: string;
 }
 
 export default function StudentEvolutionCharts({
@@ -73,6 +76,9 @@ export default function StudentEvolutionCharts({
   sessions,
   canEditMeasurements = false,
   onMeasurementsUpdate,
+  studentName,
+  studentGender,
+  studentHeight,
 }: StudentEvolutionChartsProps) {
   // Função auxiliar para criar data válida
   const parseDate = (dateValue: string | Date | number | null | undefined): Date | null => {
@@ -313,6 +319,9 @@ export default function StudentEvolutionCharts({
         <StudentMeasurementForm
           measurements={measurements}
           onUpdate={onMeasurementsUpdate || (() => {})}
+          studentName={studentName}
+          studentGender={studentGender}
+          studentHeight={studentHeight}
         />
       ) : (
         <Card className="border-amber-200 bg-amber-50">

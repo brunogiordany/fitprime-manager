@@ -1552,7 +1552,7 @@ export default function StudentProfile() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => setLocation(`/medidas/${studentId}?edit=${m.id}`)}
+                            onClick={() => setLocation(`/alunos/${studentId}/medidas?edit=${m.id}`)}
                             title="Editar medida"
                           >
                             <Edit className="h-4 w-4" />

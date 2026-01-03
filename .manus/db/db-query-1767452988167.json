@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, name, email, passwordHash FROM students WHERE email = 'brunogiordany@gmail.com' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, passwordHash FROM students WHERE email = 'brunogiordany@gmail.com' LIMIT 1",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com",
+      "passwordHash": "$2b$10$yJV5/rU0LG8ws6zYvs8mUeRJF603rYU4Q0VmuWPyM2ICa9ugcafIq"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tpasswordHash\n1\tBruno\tbrunogiordany@gmail.com\t$2b$10$yJV5/rU0LG8ws6zYvs8mUeRJF603rYU4Q0VmuWPyM2ICa9ugcafIq\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

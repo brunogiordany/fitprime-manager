@@ -46,8 +46,8 @@ import {
   Sparkles,
   Brain,
 } from "lucide-react";
-import { useLocation, useParams } from "wouter";
-import { useState } from "react";
+import { useLocation, useParams, useSearch } from "wouter";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -67,7 +67,12 @@ import {
 export default function Measurements() {
   const [, setLocation] = useLocation();
   const params = useParams<{ studentId: string }>();
+  const searchParams = useSearch();
   const studentId = parseInt(params.studentId || "0");
+  
+  // Verificar se há parâmetro edit na URL
+  const editParam = searchParams ? new URLSearchParams(searchParams).get('edit') : null;
+  const editMeasurementId = editParam ? parseInt(editParam) : null;
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -179,6 +184,18 @@ export default function Measurements() {
     { studentId },
     { enabled: studentId > 0 }
   );
+
+  // Abrir modal de edição automaticamente se parâmetro edit estiver presente
+  useEffect(() => {
+    if (editMeasurementId && measurements) {
+      const measurementToEdit = measurements.find(m => m.id === editMeasurementId);
+      if (measurementToEdit) {
+        handleEdit(measurementToEdit);
+        // Limpar o parâmetro da URL após abrir
+        setLocation(`/alunos/${studentId}/medidas`, { replace: true });
+      }
+    }
+  }, [editMeasurementId, measurements]);
 
   // Valores calculados em tempo real
   const calculatedIMC = calculateIMC(formData.weight, formData.height);

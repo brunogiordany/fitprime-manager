@@ -2799,3 +2799,17 @@
 - [ ] Configurar links de checkout corretos
 - [x] Indicador visual do plano atual no dashboard
 - [x] Funcionalidade de upgrade de plano pela plataforma
+
+## Bugs Portal do Aluno e Evolução v6.46
+- [x] Modal de edição de medidas no portal do aluno - calendário e campos fechando automaticamente
+- [x] Erro 404 ao clicar no lápis para editar medidas no lado do personal
+- [x] Adicionar gráfico de Cálculos Automáticos visível fora do modal de edição
+- [ ] Ajustar UX da tela de medidas corporais
+- [ ] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros modais
+
+
+## Bugs Portal do Aluno e Evolução (v4.4)
+- [x] Modal de edição de medidas no portal do aluno - calendário e campos fechando automaticamente
+- [x] Erro 404 ao editar medidas no lado do personal (botão de lápis)
+- [x] Adicionar gráfico de Cálculos Automáticos visível fora do modal (para aluno e personal)
+- [ ] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros (PENDENTE - próxima tarefa)
