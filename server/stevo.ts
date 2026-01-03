@@ -786,9 +786,113 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     
     console.log('[Stevo Webhook] Análise de pagamento:', analysis);
     
-    // Se não for relacionada a pagamento, já salvamos no chat, então retornar sucesso
+    // Se não for relacionada a pagamento, tentar responder com IA
     if (!analysis.isPaymentRelated) {
-      console.log('[Stevo Webhook] Mensagem não relacionada a pagamento, mas salva no chat');
+      console.log('[Stevo Webhook] Mensagem não relacionada a pagamento, tentando responder com IA');
+      
+      // Tentar responder com IA de atendimento
+      try {
+        const aiAssistant = await import('./aiAssistant');
+        const aiConfig = await aiAssistant.default.getAiConfig(student.personalId);
+        
+        // Verificar se a IA está habilitada para alunos
+        if (aiConfig && aiConfig.isEnabled && aiConfig.enabledForStudents) {
+          console.log('[Stevo Webhook] IA habilitada, processando mensagem...');
+          
+          // Verificar horário de atendimento
+          const now = new Date();
+          const currentHour = now.getHours();
+          const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+          
+          const isWithinWorkingHours = 
+            currentHour >= aiConfig.autoReplyStartHour && 
+            currentHour < aiConfig.autoReplyEndHour &&
+            (aiConfig.autoReplyWeekends || !isWeekend);
+          
+          if (isWithinWorkingHours && aiConfig.autoReplyEnabled) {
+            // Processar mensagem com IA
+            const aiResponse = await aiAssistant.default.processMessage({
+              personalId: student.personalId,
+              phone: student.phone || '',
+              message: messageText || '[Mídia recebida]',
+              messageType: messageType,
+            });
+            
+            if (aiResponse.message && !aiResponse.shouldEscalate) {
+              // Buscar configurações do Stevo do personal
+              const personal = await db.getPersonalByUserId(student.personalId);
+              
+              if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+                // Aplicar delay humanizado
+                const delay = Math.floor(
+                  Math.random() * (aiConfig.maxResponseDelay - aiConfig.minResponseDelay) + 
+                  aiConfig.minResponseDelay
+                ) * 1000;
+                
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                // Enviar resposta via WhatsApp
+                await sendWhatsAppMessage({
+                  phone: student.phone || '',
+                  message: aiResponse.message,
+                  config: {
+                    apiKey: personal.evolutionApiKey,
+                    instanceName: personal.evolutionInstance,
+                    server: (personal as any).evolutionServer || undefined,
+                  },
+                });
+                
+                // Salvar resposta da IA no chat
+                await db.createChatMessage({
+                  personalId: student.personalId,
+                  studentId: student.id,
+                  senderType: 'personal',
+                  message: aiResponse.message,
+                  messageType: 'text',
+                  isRead: true,
+                  source: 'whatsapp',
+                });
+                
+                console.log('[Stevo Webhook] Resposta da IA enviada com sucesso');
+                
+                // Verificar se precisa escalar para humano
+                if (aiResponse.shouldEscalate) {
+                  const { notifyOwner } = await import('./_core/notification');
+                  await notifyOwner({
+                    title: `🚨 Escalação - ${student.name}`,
+                    content: `A IA detectou que a conversa com ${student.name} precisa de atenção humana.\n\nMotivo: ${aiResponse.escalationReason || 'Não especificado'}\n\nÚltima mensagem: "${messageText}"`,
+                  });
+                }
+                
+                return { success: true, processed: true, action: 'ai_response_sent' };
+              }
+            }
+          } else {
+            // Fora do horário, enviar mensagem de ausência se configurada
+            if (aiConfig.awayMessage) {
+              const personal = await db.getPersonalByUserId(student.personalId);
+              
+              if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+                await sendWhatsAppMessage({
+                  phone: student.phone || '',
+                  message: aiConfig.awayMessage.replace('{nome}', student.name),
+                  config: {
+                    apiKey: personal.evolutionApiKey,
+                    instanceName: personal.evolutionInstance,
+                    server: (personal as any).evolutionServer || undefined,
+                  },
+                });
+                
+                console.log('[Stevo Webhook] Mensagem de ausência enviada');
+                return { success: true, processed: true, action: 'away_message_sent' };
+              }
+            }
+          }
+        }
+      } catch (aiError) {
+        console.error('[Stevo Webhook] Erro ao processar com IA:', aiError);
+      }
+      
       return { success: true, processed: true, action: 'saved_to_chat' };
     }
     

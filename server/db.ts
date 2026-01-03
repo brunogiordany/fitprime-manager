@@ -4592,3 +4592,258 @@ export async function getAiAnalysesByPersonalId(
     .orderBy(desc(aiAnalysisHistory.createdAt))
     .limit(filters?.limit || 50);
 }
+
+
+// ==================== AI ASSISTANT CONFIG ====================
+import {
+  aiAssistantConfig, InsertAiAssistantConfig, AiAssistantConfig,
+  leads, InsertLead, Lead,
+  aiConversations, InsertAiConversation, AiConversation,
+  aiMessages, InsertAiMessage, AiMessage,
+  aiMemory, InsertAiMemory, AiMemory
+} from "../drizzle/schema";
+
+// Buscar configuração da IA do personal
+export async function getAiAssistantConfig(personalId: number): Promise<AiAssistantConfig | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(aiAssistantConfig)
+    .where(eq(aiAssistantConfig.personalId, personalId))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Criar ou atualizar configuração da IA
+export async function upsertAiAssistantConfig(personalId: number, data: Partial<InsertAiAssistantConfig>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getAiAssistantConfig(personalId);
+  
+  if (existing) {
+    await db.update(aiAssistantConfig)
+      .set(data)
+      .where(eq(aiAssistantConfig.personalId, personalId));
+  } else {
+    await db.insert(aiAssistantConfig).values({
+      personalId,
+      ...data
+    });
+  }
+}
+
+// ==================== LEADS ====================
+
+// Criar lead
+export async function createLead(data: InsertLead): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(leads).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar lead por ID
+export async function getLeadById(id: number): Promise<Lead | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(leads)
+    .where(eq(leads.id, id))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Buscar lead por telefone
+export async function getLeadByPhone(personalId: number, phone: string): Promise<Lead | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(leads)
+    .where(and(
+      eq(leads.personalId, personalId),
+      eq(leads.phone, phone)
+    ))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Listar leads do personal
+export async function getLeadsByPersonalId(
+  personalId: number,
+  filters?: { status?: string; temperature?: string; limit?: number }
+): Promise<Lead[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(leads.personalId, personalId)];
+  
+  if (filters?.status) {
+    conditions.push(eq(leads.status, filters.status as any));
+  }
+  if (filters?.temperature) {
+    conditions.push(eq(leads.temperature, filters.temperature as any));
+  }
+  
+  return await db.select()
+    .from(leads)
+    .where(and(...conditions))
+    .orderBy(desc(leads.createdAt))
+    .limit(filters?.limit || 100);
+}
+
+// Atualizar lead
+export async function updateLead(id: number, data: Partial<InsertLead>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(leads)
+    .set(data)
+    .where(eq(leads.id, id));
+}
+
+// ==================== AI CONVERSATIONS ====================
+
+// Criar conversa
+export async function createAiConversation(data: InsertAiConversation): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(aiConversations).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar conversa por ID
+export async function getAiConversationById(id: number): Promise<AiConversation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(aiConversations)
+    .where(eq(aiConversations.id, id))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Buscar conversa ativa por telefone
+export async function getActiveAiConversation(personalId: number, phone: string): Promise<AiConversation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(aiConversations)
+    .where(and(
+      eq(aiConversations.personalId, personalId),
+      eq(aiConversations.whatsappPhone, phone),
+      eq(aiConversations.status, "active")
+    ))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Listar conversas do personal
+export async function getAiConversationsByPersonalId(
+  personalId: number,
+  filters?: { status?: string; conversationType?: string; limit?: number }
+): Promise<AiConversation[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(aiConversations.personalId, personalId)];
+  
+  if (filters?.status) {
+    conditions.push(eq(aiConversations.status, filters.status as any));
+  }
+  if (filters?.conversationType) {
+    conditions.push(eq(aiConversations.conversationType, filters.conversationType as any));
+  }
+  
+  return await db.select()
+    .from(aiConversations)
+    .where(and(...conditions))
+    .orderBy(desc(aiConversations.lastMessageAt))
+    .limit(filters?.limit || 50);
+}
+
+// Atualizar conversa
+export async function updateAiConversation(id: number, data: Partial<InsertAiConversation>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(aiConversations)
+    .set(data)
+    .where(eq(aiConversations.id, id));
+}
+
+// ==================== AI MESSAGES ====================
+
+// Criar mensagem
+export async function createAiMessage(data: InsertAiMessage): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(aiMessages).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar mensagens de uma conversa
+export async function getAiMessagesByConversation(conversationId: number, limit: number = 50): Promise<AiMessage[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(aiMessages)
+    .where(eq(aiMessages.conversationId, conversationId))
+    .orderBy(aiMessages.createdAt)
+    .limit(limit);
+}
+
+// ==================== AI MEMORY ====================
+
+// Criar memória
+export async function createAiMemory(data: InsertAiMemory): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(aiMemory).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar memórias de um aluno
+export async function getAiMemoriesByStudent(personalId: number, studentId: number): Promise<AiMemory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(aiMemory)
+    .where(and(
+      eq(aiMemory.personalId, personalId),
+      eq(aiMemory.studentId, studentId)
+    ))
+    .orderBy(desc(aiMemory.createdAt));
+}
+
+// Buscar memórias de um lead
+export async function getAiMemoriesByLead(personalId: number, leadId: number): Promise<AiMemory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(aiMemory)
+    .where(and(
+      eq(aiMemory.personalId, personalId),
+      eq(aiMemory.leadId, leadId)
+    ))
+    .orderBy(desc(aiMemory.createdAt));
+}
+
+

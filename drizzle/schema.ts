@@ -1414,3 +1414,238 @@ export const aiAnalysisHistory = mysqlTable("ai_analysis_history", {
 
 export type AiAnalysisHistory = typeof aiAnalysisHistory.$inferSelect;
 export type InsertAiAnalysisHistory = typeof aiAnalysisHistory.$inferInsert;
+
+
+// ==================== AI ASSISTANT CONFIG (Configuração da IA de Atendimento) ====================
+export const aiAssistantConfig = mysqlTable("ai_assistant_config", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id).unique(),
+  
+  // Identidade da IA
+  assistantName: varchar("assistantName", { length: 100 }).default("Assistente").notNull(),
+  assistantGender: mysqlEnum("assistantGender", ["male", "female", "neutral"]).default("female"),
+  
+  // Tom e Personalidade
+  communicationTone: mysqlEnum("communicationTone", ["formal", "casual", "motivational", "friendly"]).default("friendly"),
+  useEmojis: boolean("useEmojis").default(true),
+  emojiFrequency: mysqlEnum("emojiFrequency", ["low", "medium", "high"]).default("medium"),
+  
+  // Personalidade customizada (prompt adicional)
+  customPersonality: text("customPersonality"), // Instruções extras para a IA
+  
+  // Informações do Personal (para a IA usar)
+  personalBio: text("personalBio"), // Bio do personal para a IA apresentar
+  servicesOffered: text("servicesOffered"), // JSON array de serviços oferecidos
+  workingHoursDescription: text("workingHoursDescription"), // Descrição dos horários
+  locationDescription: text("locationDescription"), // Onde atende (academia, domicílio, online)
+  priceRange: varchar("priceRange", { length: 255 }), // Faixa de preço (ex: "R$ 150-300/sessão")
+  
+  // Configurações de Atendimento
+  isEnabled: boolean("isEnabled").default(true),
+  enabledForLeads: boolean("enabledForLeads").default(true),
+  enabledForStudents: boolean("enabledForStudents").default(true),
+  
+  // Horário de atendimento automático
+  autoReplyEnabled: boolean("autoReplyEnabled").default(true),
+  autoReplyStartHour: int("autoReplyStartHour").default(8), // 8h
+  autoReplyEndHour: int("autoReplyEndHour").default(22), // 22h
+  autoReplyWeekends: boolean("autoReplyWeekends").default(true),
+  
+  // Mensagens personalizadas
+  welcomeMessageLead: text("welcomeMessageLead"), // Mensagem de boas-vindas para leads
+  welcomeMessageStudent: text("welcomeMessageStudent"), // Mensagem de boas-vindas para alunos
+  awayMessage: text("awayMessage"), // Mensagem fora do horário
+  
+  // Regras de Escalação
+  escalateOnKeywords: text("escalateOnKeywords"), // JSON array de palavras que escalam para humano
+  escalateAfterMessages: int("escalateAfterMessages").default(10), // Escalar após X mensagens sem resolução
+  escalateOnSentiment: boolean("escalateOnSentiment").default(true), // Escalar se detectar frustração
+  
+  // Funcionalidades habilitadas
+  canScheduleEvaluation: boolean("canScheduleEvaluation").default(true), // Pode agendar avaliação
+  canScheduleSession: boolean("canScheduleSession").default(true), // Pode agendar sessão
+  canAnswerWorkoutQuestions: boolean("canAnswerWorkoutQuestions").default(true), // Pode responder sobre treinos
+  canAnswerDietQuestions: boolean("canAnswerDietQuestions").default(true), // Pode responder sobre dieta
+  canSendMotivation: boolean("canSendMotivation").default(true), // Pode enviar motivação
+  canHandlePayments: boolean("canHandlePayments").default(false), // Pode falar sobre pagamentos
+  
+  // Delay humanizado (em segundos)
+  minResponseDelay: int("minResponseDelay").default(2),
+  maxResponseDelay: int("maxResponseDelay").default(8),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiAssistantConfig = typeof aiAssistantConfig.$inferSelect;
+export type InsertAiAssistantConfig = typeof aiAssistantConfig.$inferInsert;
+
+// ==================== LEADS (Visitantes/Potenciais Clientes) ====================
+export const leads = mysqlTable("leads", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Identificação
+  phone: varchar("phone", { length: 20 }).notNull(), // Telefone do WhatsApp
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  
+  // Informações coletadas pela IA
+  mainGoal: varchar("mainGoal", { length: 255 }), // Objetivo principal
+  currentActivity: varchar("currentActivity", { length: 255 }), // Atividade atual
+  availability: text("availability"), // Disponibilidade de horários
+  budget: varchar("budget", { length: 100 }), // Orçamento
+  urgency: mysqlEnum("urgency", ["low", "medium", "high"]).default("medium"), // Urgência
+  notes: text("notes"), // Notas adicionais coletadas
+  
+  // Qualificação
+  temperature: mysqlEnum("temperature", ["cold", "warm", "hot"]).default("warm"),
+  score: int("score").default(0), // Score de 0-100
+  
+  // Status
+  status: mysqlEnum("status", ["new", "contacted", "qualified", "scheduled", "converted", "lost"]).default("new"),
+  lostReason: varchar("lostReason", { length: 255 }), // Motivo da perda
+  
+  // Agendamento
+  evaluationScheduledAt: timestamp("evaluationScheduledAt"),
+  evaluationNotes: text("evaluationNotes"),
+  
+  // Conversão
+  convertedToStudentId: int("convertedToStudentId").references(() => students.id),
+  convertedAt: timestamp("convertedAt"),
+  
+  // Origem
+  source: mysqlEnum("source", ["whatsapp", "instagram", "website", "referral", "other"]).default("whatsapp"),
+  sourceDetails: varchar("sourceDetails", { length: 255 }), // Detalhes da origem
+  
+  // Follow-up
+  lastContactAt: timestamp("lastContactAt"),
+  nextFollowUpAt: timestamp("nextFollowUpAt"),
+  followUpCount: int("followUpCount").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = typeof leads.$inferInsert;
+
+// ==================== AI CONVERSATIONS (Conversas da IA) ====================
+export const aiConversations = mysqlTable("ai_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Tipo de conversa
+  conversationType: mysqlEnum("conversationType", ["lead", "student"]).notNull(),
+  
+  // Referência (lead ou aluno)
+  leadId: int("leadId").references(() => leads.id),
+  studentId: int("studentId").references(() => students.id),
+  
+  // Identificação WhatsApp
+  whatsappPhone: varchar("whatsappPhone", { length: 20 }).notNull(),
+  
+  // Status da conversa
+  status: mysqlEnum("status", ["active", "paused", "escalated", "closed"]).default("active"),
+  escalatedAt: timestamp("escalatedAt"),
+  escalationReason: varchar("escalationReason", { length: 255 }),
+  
+  // Contexto da conversa (memória de curto prazo)
+  currentContext: text("currentContext"), // JSON com contexto atual
+  currentIntent: varchar("currentIntent", { length: 100 }), // Intenção atual detectada
+  
+  // Métricas
+  messageCount: int("messageCount").default(0),
+  aiMessageCount: int("aiMessageCount").default(0),
+  humanMessageCount: int("humanMessageCount").default(0),
+  
+  // Satisfação
+  satisfactionRating: int("satisfactionRating"), // 1-5
+  satisfactionFeedback: text("satisfactionFeedback"),
+  
+  lastMessageAt: timestamp("lastMessageAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiConversation = typeof aiConversations.$inferSelect;
+export type InsertAiConversation = typeof aiConversations.$inferInsert;
+
+// ==================== AI MESSAGES (Mensagens da IA) ====================
+export const aiMessages = mysqlTable("ai_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull().references(() => aiConversations.id),
+  
+  // Remetente
+  sender: mysqlEnum("sender", ["user", "ai", "personal"]).notNull(),
+  
+  // Conteúdo
+  message: text("message").notNull(),
+  messageType: mysqlEnum("messageType", ["text", "audio", "image", "video", "file"]).default("text"),
+  mediaUrl: text("mediaUrl"),
+  
+  // Metadados da IA (quando sender = 'ai')
+  aiModel: varchar("aiModel", { length: 100 }), // Modelo usado
+  aiPromptTokens: int("aiPromptTokens"), // Tokens do prompt
+  aiCompletionTokens: int("aiCompletionTokens"), // Tokens da resposta
+  aiLatencyMs: int("aiLatencyMs"), // Latência em ms
+  
+  // Análise da mensagem do usuário (quando sender = 'user')
+  detectedIntent: varchar("detectedIntent", { length: 100 }), // Intenção detectada
+  detectedSentiment: mysqlEnum("detectedSentiment", ["positive", "neutral", "negative"]),
+  detectedUrgency: mysqlEnum("detectedUrgency", ["low", "medium", "high"]),
+  
+  // Ações tomadas pela IA
+  actionsTaken: text("actionsTaken"), // JSON array de ações (ex: ["scheduled_evaluation", "sent_workout_info"])
+  
+  // Status de entrega (WhatsApp)
+  deliveryStatus: mysqlEnum("deliveryStatus", ["pending", "sent", "delivered", "read", "failed"]).default("pending"),
+  deliveredAt: timestamp("deliveredAt"),
+  readAt: timestamp("readAt"),
+  failureReason: varchar("failureReason", { length: 255 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AiMessage = typeof aiMessages.$inferSelect;
+export type InsertAiMessage = typeof aiMessages.$inferInsert;
+
+// ==================== AI MEMORY (Memória de Longo Prazo da IA) ====================
+export const aiMemory = mysqlTable("ai_memory", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Referência (lead ou aluno)
+  leadId: int("leadId").references(() => leads.id),
+  studentId: int("studentId").references(() => students.id),
+  
+  // Tipo de memória
+  memoryType: mysqlEnum("memoryType", [
+    "preference", // Preferência do usuário
+    "fact", // Fato sobre o usuário
+    "goal", // Objetivo mencionado
+    "concern", // Preocupação/problema
+    "feedback", // Feedback dado
+    "interaction", // Interação importante
+    "context" // Contexto geral
+  ]).notNull(),
+  
+  // Conteúdo
+  key: varchar("key", { length: 255 }).notNull(), // Chave identificadora (ex: "preferred_time", "injury_history")
+  value: text("value").notNull(), // Valor da memória
+  
+  // Importância
+  importance: mysqlEnum("importance", ["low", "medium", "high", "critical"]).default("medium"),
+  
+  // Validade
+  expiresAt: timestamp("expiresAt"), // Algumas memórias podem expirar
+  
+  // Origem
+  sourceMessageId: int("sourceMessageId").references(() => aiMessages.id), // Mensagem que originou a memória
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiMemory = typeof aiMemory.$inferSelect;
+export type InsertAiMemory = typeof aiMemory.$inferInsert;

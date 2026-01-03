@@ -58,6 +58,7 @@ import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import LoginPage from "./pages/LoginPage";
+import AiAssistantSettings from "./pages/AiAssistantSettings";
 import ActivateAccount from "./pages/ActivateAccount";
 
 function Router() {
@@ -99,6 +100,7 @@ function Router() {
       <Route path="/cobrancas" component={Charges} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />
+      <Route path="/ia-atendimento" component={AiAssistantSettings} />
       <Route path="/mensagens" component={Messages} />
       <Route path="/configuracoes" component={Settings} />
       <Route path="/lixeira" component={Trash} />

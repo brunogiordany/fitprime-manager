@@ -42,7 +42,8 @@ import {
   BookOpen,
   TrendingUp,
   HelpCircle,
-  UserCircle
+  UserCircle,
+  Bot
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -65,6 +66,7 @@ const menuItems = [
   { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
+  { icon: Bot, label: "IA de Atendimento", path: "/ia-atendimento" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
   
   { icon: Shield, label: "Acessos do Aluno", path: "/acessos-aluno" },

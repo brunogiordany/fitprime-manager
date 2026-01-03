@@ -2919,3 +2919,42 @@
 - [x] Suporte a mídia (imagens, áudios, documentos) (já existia)
 - [x] Campo 'source' para identificar origem da mensagem (whatsapp/internal)
 - [x] Indicador visual de WhatsApp nas mensagens
+
+## IA de Atendimento Super Humanizada (v5.0)
+### Infraestrutura
+- [x] Schema de configuração da IA (nome, tom, personalidade)
+- [x] Tabela de histórico de conversas da IA
+- [x] Tabela de leads (visitantes não cadastrados)
+- [x] Sistema de memória de longo prazo
+### Engine de IA
+- [x] Prompt system super humanizado e contextual
+- [x] Contexto rico do aluno (treinos, medidas, anamnese, sessões, pagamentos)
+- [x] Contexto de lead (informações coletadas, interesse, histórico)
+- [x] Detecção de intenção (dúvida, agendamento, reclamação, etc)
+- [x] Escalação automática para o personal
+- [x] Delay humanizado nas respostas
+### Modo Lead (Conversão)
+- [x] Apresentação do personal e serviços
+- [x] Coleta inteligente de informações
+- [x] Agendamento de avaliação gratuita
+- [x] Follow-up automático de leads não convertidos
+- [x] Qualificação de leads (quente/morno/frio)
+### Modo Aluno (Atendimento)
+- [x] Respostas sobre treinos e exercícios
+- [x] Dúvidas sobre dieta e suplementação
+- [x] Agendamento/reagendamento de sessões
+- [x] Motivação personalizada baseada no progresso
+- [x] Lembretes inteligentes
+- [x] Suporte a cobranças e pagamentos
+### Configurações do Personal
+- [x] Nome da IA
+- [x] Tom de comunicação (formal/casual/motivacional)
+- [x] Horário de atendimento automático
+- [x] Mensagens personalizadas (boas-vindas, despedida)
+- [x] Regras de escalação para humano
+- [x] Ativar/desativar IA por aluno
+### Integração WhatsApp
+- [x] Resposta automática via webhook do Stevo
+- [x] Identificação automática de lead vs aluno
+- [x] Transição suave IA -> Personal
+- [x] Menu lateral com link para IA de Atendimento

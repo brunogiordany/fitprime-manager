@@ -18,6 +18,7 @@ import { quizRouter } from "./routers/quizRouter";
 import { trialRouter } from "./routers/trialRouter";
 import { sitePagesRouter, trackingPixelsRouter, abTestsRouter, pageBlocksRouter, pageAssetsRouter, pageVersionsRouter } from "./routers/sitePagesRouter";
 import { activationRouter } from "./routers/activationRouter";
+import aiAssistant from "./aiAssistant";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -153,8 +154,61 @@ const studentProcedure = publicProcedure.use(async ({ ctx, next }) => {
   return next({ ctx: { ...ctx, student } });
 });
 
+// ==================== AI ASSISTANT ROUTER ====================
+const aiAssistantRouter = router({
+  getConfig: protectedProcedure.query(async ({ ctx }) => {
+    const personal = await getOrCreatePersonal(ctx.user.id);
+    if (!personal) throw new TRPCError({ code: 'NOT_FOUND', message: 'Personal não encontrado' });
+    const config = await db.getAiAssistantConfig(personal.id);
+    return config;
+  }),
+  
+  saveConfig: protectedProcedure
+    .input(z.object({
+      assistantName: z.string().default("Assistente"),
+      assistantGender: z.enum(["male", "female", "neutral"]).default("female"),
+      communicationTone: z.enum(["formal", "casual", "motivational", "friendly"]).default("friendly"),
+      useEmojis: z.boolean().default(true),
+      emojiFrequency: z.enum(["low", "medium", "high"]).default("medium"),
+      customPersonality: z.string().optional(),
+      personalBio: z.string().optional(),
+      servicesOffered: z.string().optional(),
+      workingHoursDescription: z.string().optional(),
+      locationDescription: z.string().optional(),
+      priceRange: z.string().optional(),
+      isEnabled: z.boolean().default(true),
+      enabledForLeads: z.boolean().default(true),
+      enabledForStudents: z.boolean().default(true),
+      autoReplyEnabled: z.boolean().default(true),
+      autoReplyStartHour: z.number().min(0).max(23).default(8),
+      autoReplyEndHour: z.number().min(0).max(23).default(22),
+      autoReplyWeekends: z.boolean().default(true),
+      welcomeMessageLead: z.string().optional(),
+      welcomeMessageStudent: z.string().optional(),
+      awayMessage: z.string().optional(),
+      escalateOnKeywords: z.string().optional(),
+      escalateAfterMessages: z.number().default(10),
+      escalateOnSentiment: z.boolean().default(true),
+      canScheduleEvaluation: z.boolean().default(true),
+      canScheduleSession: z.boolean().default(true),
+      canAnswerWorkoutQuestions: z.boolean().default(true),
+      canAnswerDietQuestions: z.boolean().default(true),
+      canSendMotivation: z.boolean().default(true),
+      canHandlePayments: z.boolean().default(false),
+      minResponseDelay: z.number().default(2),
+      maxResponseDelay: z.number().default(8),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const personal = await getOrCreatePersonal(ctx.user.id);
+      if (!personal) throw new TRPCError({ code: 'NOT_FOUND', message: 'Personal não encontrado' });
+      await db.upsertAiAssistantConfig(personal.id, input as any);
+      return { success: true };
+    }),
+});
+
 export const appRouter = router({
   system: systemRouter,
+  aiAssistant: aiAssistantRouter,
   supportChat: supportChatRouter,
   extraCharges: extraChargesRouter,
   quiz: quizRouter,
