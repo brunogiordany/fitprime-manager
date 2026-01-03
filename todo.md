@@ -2663,3 +2663,9 @@
 - [x] Mudar comunicação de "você atleta" para "você personal que atende atletas"
 - [x] Focar em como o personal pode elevar o nível dele com essas ferramentas
 - [x] Ajustar textos dos benefícios para perspectiva do personal
+
+## Bug Fotos Depoimentos v6.20
+- [x] Adicionar fotos redondas em todos os depoimentos que estão sem
+
+## Remoção Funcionalidade Inexistente v6.21
+- [x] Remover "Gestão de múltiplos personais" da tabela de comparação (não existe no FitPrime)

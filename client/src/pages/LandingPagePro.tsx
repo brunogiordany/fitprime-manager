@@ -731,7 +731,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 1 - Fisiculturista */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">RF</div>
+                      <img src="/testimonials-premium/rafael.jpg" alt="Rafael Mendes" className="h-10 w-10 rounded-full object-cover border-2 border-purple-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Rafael Mendes</p>
                         <p className="text-purple-400 text-xs">Atleta Fisiculturista</p>
@@ -748,7 +748,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 2 - Amante do esporte */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">CS</div>
+                      <img src="/testimonials-premium/carla.jpg" alt="Carla Santos" className="h-10 w-10 rounded-full object-cover border-2 border-indigo-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Carla Santos</p>
                         <p className="text-indigo-400 text-xs">Empresária, 42 anos</p>
@@ -765,7 +765,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 3 - Personal que triplicou */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm">MT</div>
+                      <img src="/testimonials-premium/marcos.jpg" alt="Marcos Tavares" className="h-10 w-10 rounded-full object-cover border-2 border-emerald-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Marcos Tavares</p>
                         <p className="text-emerald-400 text-xs">Personal Trainer</p>
@@ -785,7 +785,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 4 - Personal com clientes dados */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold text-sm">JL</div>
+                      <img src="/testimonials-premium/juliana.jpg" alt="Juliana Lima" className="h-10 w-10 rounded-full object-cover border-2 border-pink-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Juliana Lima</p>
                         <p className="text-pink-400 text-xs">Personal Trainer</p>
@@ -802,7 +802,7 @@ export default function LandingPagePro() {
                   {/* Depoimento 5 - Aluno maromba */}
                   <div className="bg-white/5 backdrop-blur border border-purple-500/20 rounded-xl p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">PH</div>
+                      <img src="/testimonials-premium/pedro.jpg" alt="Pedro Henrique" className="h-10 w-10 rounded-full object-cover border-2 border-amber-400" />
                       <div>
                         <p className="text-white font-semibold text-sm">Pedro Henrique</p>
                         <p className="text-amber-400 text-xs">Maromba, 28 anos</p>
@@ -1443,7 +1443,6 @@ export default function LandingPagePro() {
                   { feature: "Relatórios de negócio avançados", a: false, b: false, c: "partial" },
                   { feature: "Análise de composição corporal", a: false, b: false, c: "partial" },
                   { feature: "Periodização de treinos", a: "partial", b: "partial", c: true },
-                  { feature: "Gestão de múltiplos personais", a: false, b: false, c: "partial" },
                   { feature: "Suporte em português 24/7", a: true, b: true, c: "partial" },
                   { feature: "Automações personalizadas", a: false, b: false, c: false },
                   { feature: "Lixeira com recuperação de dados", a: false, b: false, c: false },
@@ -1490,7 +1489,6 @@ export default function LandingPagePro() {
               { feature: "Relatórios de negócio", others: 0 },
               { feature: "Análise de composição corporal", others: 0 },
               { feature: "Periodização de treinos", others: 2 },
-              { feature: "Gestão de múltiplos personais", others: 0 },
               { feature: "Suporte em português 24/7", others: 2 },
               { feature: "Automações personalizadas", others: 0 },
               { feature: "Lixeira com recuperação", others: 0 },
