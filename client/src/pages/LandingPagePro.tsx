@@ -708,16 +708,29 @@ export default function LandingPagePro() {
                     </div>
 
                     <div className="text-center bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6">
-                      <p className="text-gray-400 text-sm mb-2">10% de R$ {impactoTotal.toLocaleString('pt-BR')} seria:</p>
-                      <p className="text-5xl md:text-6xl font-black text-emerald-400 mb-3">
-                        R$ {valorAncoragem.toLocaleString('pt-BR')}<span className="text-2xl">/mês</span>
+                      <p className="text-gray-400 text-sm mb-2">Você vai ganhar <span className="text-emerald-400 font-semibold">R$ {impactoTotal.toLocaleString('pt-BR')}/mês</span></p>
+                      <p className="text-gray-400 text-sm mb-4">Se o FitPrime custasse 10% disso:</p>
+                      
+                      <div className="flex items-center justify-center gap-3 mb-4 flex-wrap">
+                        <span className="text-2xl md:text-3xl font-bold text-emerald-400">R$ {impactoTotal.toLocaleString('pt-BR')}</span>
+                        <span className="text-gray-500 text-xl">-</span>
+                        <span className="text-2xl md:text-3xl font-bold text-red-400">R$ {valorAncoragem.toLocaleString('pt-BR')}</span>
+                        <span className="text-gray-500 text-xl">=</span>
+                        <span className="text-2xl md:text-3xl font-black text-white">R$ {(impactoTotal - valorAncoragem).toLocaleString('pt-BR')}</span>
+                      </div>
+                      
+                      <p className="text-lg text-white mb-2">
+                        <span className="text-emerald-400 font-semibold">Mesmo pagando R$ {valorAncoragem.toLocaleString('pt-BR')}/mês</span>, você ainda <span className="text-emerald-400 font-bold">lucra R$ {(impactoTotal - valorAncoragem).toLocaleString('pt-BR')}</span>
                       </p>
-                      <p className="text-xl text-white font-semibold mb-2">
-                        Mas relaxa... o FitPrime <span className="text-emerald-400">não custa nem perto disso</span>
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        Você vai se surpreender com o preço. Continue descobrindo tudo que o FitPrime faz por você.
-                      </p>
+                      
+                      <div className="mt-4 pt-4 border-t border-emerald-500/20">
+                        <p className="text-xl text-white font-semibold mb-2">
+                          Mas relaxa... o FitPrime <span className="text-emerald-400">não custa nem perto disso</span>
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                          Você vai se surpreender com o preço real. Continue descobrindo tudo que o FitPrime faz por você.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );

@@ -2674,3 +2674,8 @@
 - [x] Botão "Ver Jornada do Personal Premium" está pulando a seção
 - [x] Ajustar scroll para ir ao quadro roxo "Divisor de Águas"
 - [x] Ajustar texto do botão para combinar com a seção de destino
+
+## Melhoria Ancoragem Lucro v6.23
+- [x] Mostrar cálculo: Ganho mensal - 10% = Lucro líquido
+- [x] Mensagem: "Mesmo pagando X você ainda lucra Y"
+- [x] Reforçar: "Mas relaxa, você não vai pagar tudo isso"
