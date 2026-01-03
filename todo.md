@@ -2780,3 +2780,8 @@
 - [x] Compartilhar análise via WhatsApp
 - [x] Histórico de análises de IA - salvar e acompanhar evolução
 - [x] Exportar análise em PDF com UX elaborada
+
+## Correção Modal Análise (v6.42)
+- [x] Corrigir layout do modal de Análise - texto cortado no mobile
+- [x] Remover botão de WhatsApp do modal de análise
+- [x] Corrigir erro ao comparar treinos

@@ -1469,22 +1469,28 @@ export default function Workouts() {
                     }
                     setIsComparing(true);
                     try {
-                      const response = await fetch('/api/trpc/workouts.compareWorkoutEfficiency', {
+                      const response = await fetch('/api/trpc/workouts.compareWorkoutEfficiency?batch=1', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         credentials: 'include',
                         body: JSON.stringify({
-                          studentId: parseInt(selectedStudent),
-                          workoutId1: parseInt(compareWorkout1),
-                          workoutId2: parseInt(compareWorkout2),
+                          "0": {
+                            json: {
+                              studentId: parseInt(selectedStudent),
+                              workoutId1: parseInt(compareWorkout1),
+                              workoutId2: parseInt(compareWorkout2),
+                            }
+                          }
                         }),
                       });
                       const result = await response.json();
-                      if (result.result?.data) {
-                        setComparisonResult(result.result.data);
+                      if (result[0]?.result?.data?.json) {
+                        setComparisonResult(result[0].result.data.json);
                         toast.success('Comparação realizada!');
-                      } else if (result.error) {
-                        toast.error(result.error.message || 'Erro ao comparar treinos');
+                      } else if (result[0]?.error) {
+                        toast.error(result[0].error.message || 'Erro ao comparar treinos');
+                      } else {
+                        toast.error('Erro ao comparar treinos');
                       }
                     } catch (error) {
                       console.error('Erro ao comparar:', error);
@@ -1581,7 +1587,7 @@ export default function Workouts() {
             setStudentAnalysis(null);
           }
         }}>
-          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto overflow-x-hidden p-3 sm:p-4">
             <DialogHeader className="pr-8">
               <DialogTitle className="flex items-center gap-2 flex-wrap text-base sm:text-lg">
                 <Brain className="h-5 w-5 text-cyan-600 shrink-0" />
@@ -1593,11 +1599,11 @@ export default function Workouts() {
             </DialogHeader>
             
             {studentAnalysis && (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3 w-full">
                 {/* Resumo */}
                 <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50">
-                  <CardContent className="p-3 sm:pt-4">
-                    <p className="text-xs sm:text-sm leading-relaxed">{studentAnalysis.analysis.summary}</p>
+                  <CardContent className="p-3">
+                    <p className="text-xs sm:text-sm leading-relaxed break-words" style={{ wordBreak: 'break-word' }}>{studentAnalysis.analysis.summary}</p>
                   </CardContent>
                 </Card>
                 
@@ -1692,7 +1698,7 @@ export default function Workouts() {
                           {studentAnalysis.analysis.strengths.map((s: string, i: number) => (
                             <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
                               <span className="text-green-500 mt-0.5 shrink-0">•</span>
-                              <span className="break-words">{s}</span>
+                              <span className="break-words" style={{ wordBreak: 'break-word' }}>{s}</span>
                             </li>
                           ))}
                         </ul>
@@ -1713,7 +1719,7 @@ export default function Workouts() {
                           {studentAnalysis.analysis.deficits.map((d: string, i: number) => (
                             <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
                               <span className="text-red-500 mt-0.5 shrink-0">•</span>
-                              <span className="break-words">{d}</span>
+                              <span className="break-words" style={{ wordBreak: 'break-word' }}>{d}</span>
                             </li>
                           ))}
                         </ul>
@@ -1761,7 +1767,7 @@ export default function Workouts() {
                         {studentAnalysis.analysis.recommendations.map((r: string, i: number) => (
                           <li key={i} className="text-xs sm:text-sm text-blue-700 flex items-start gap-2">
                             <span className="mt-0.5 shrink-0">{i + 1}.</span>
-                            <span className="break-words">{r}</span>
+                            <span className="break-words" style={{ wordBreak: 'break-word' }}>{r}</span>
                           </li>
                         ))}
                       </ul>
@@ -1793,7 +1799,7 @@ export default function Workouts() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground break-words">
+                        <p className="text-xs text-muted-foreground break-words" style={{ wordBreak: 'break-word' }}>
                           {studentAnalysis.analysis.adaptationReason}
                         </p>
                       </div>
@@ -1827,49 +1833,13 @@ export default function Workouts() {
                 )}
                 
                 {/* Botões de Ações */}
-                <div className="border-t pt-4 mt-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-3">Ações da Análise</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {/* Compartilhar WhatsApp */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs flex items-center gap-2 border-green-200 text-green-700 hover:bg-green-50"
-                      onClick={() => {
-                        const student = students?.find(s => s.id === parseInt(selectedStudent));
-                        if (!student?.phone) {
-                          toast.error("Aluno não tem telefone cadastrado");
-                          return;
-                        }
-                        
-                        // Formatar mensagem para WhatsApp
-                        const message = `📊 *Análise de Evolução - ${studentAnalysis.studentName}*\n\n` +
-                          `📝 *Resumo:*\n${studentAnalysis.analysis.summary}\n\n` +
-                          `✅ *Pontos Fortes:*\n${studentAnalysis.analysis.strengths?.map((s: string) => `• ${s}`).join('\n') || 'Nenhum identificado'}\n\n` +
-                          `⚠️ *Pontos de Atenção:*\n${studentAnalysis.analysis.deficits?.map((d: string) => `• ${d}`).join('\n') || 'Nenhum identificado'}\n\n` +
-                          `💡 *Recomendações:*\n${studentAnalysis.analysis.recommendations?.map((r: string, i: number) => `${i+1}. ${r}`).join('\n') || 'Nenhuma'}\n\n` +
-                          `_Gerado por FitPrime_`;
-                        
-                        const phone = student.phone.replace(/\D/g, '');
-                        const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-                        window.open(whatsappUrl, '_blank');
-                        
-                        // Marcar como compartilhado
-                        if (studentAnalysis.analysisId) {
-                          markAnalysisSharedMutation.mutate({ id: studentAnalysis.analysisId });
-                        }
-                        toast.success("Abrindo WhatsApp...");
-                      }}
-                    >
-                      <MessageCircle className="h-3 w-3" />
-                      WhatsApp
-                    </Button>
-                    
+                <div className="border-t pt-3 mt-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {/* Exportar PDF */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex items-center gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                      className="text-xs flex items-center justify-center gap-2 border-red-200 text-red-700 hover:bg-red-50"
                       onClick={() => {
                         setShowPdfExportModal(true);
                       }}
@@ -1882,7 +1852,7 @@ export default function Workouts() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                      className="text-xs flex items-center justify-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
                       onClick={() => {
                         setShowAnalysisHistoryModal(true);
                       }}
