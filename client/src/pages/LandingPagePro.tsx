@@ -549,24 +549,24 @@ export default function LandingPagePro() {
               <Button 
                 size="lg" 
                 onClick={() => {
-                  const featuresSection = document.getElementById('features');
-                  if (featuresSection) {
-                    const yOffset = -80; // Offset para mostrar o título da seção
-                    const y = featuresSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                  const divisorSection = document.getElementById('divisor-aguas');
+                  if (divisorSection) {
+                    const yOffset = -20; // Offset para mostrar o início da seção
+                    const y = divisorSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
                     window.scrollTo({ top: y, behavior: 'smooth' });
                   }
                 }}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-lg py-6"
               >
-                Ver Jornada do Personal Premium
+                E Se Você Cobrasse 25% a Mais?
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-center text-sm text-gray-500 mt-3">Descubra como se tornar um personal de elite</p>
+              <p className="text-center text-sm text-gray-500 mt-3">Descubra como atrair alunos premium que pagam mais</p>
             </div>
           </div>
 
           {/* SEÇÃO DIVISOR DE ÁGUAS - ALUNOS PREMIUM */}
-          <div className="mt-12 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+          <div id="divisor-aguas" className="mt-12 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
             {/* Efeitos visuais */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>

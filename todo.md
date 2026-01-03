@@ -2669,3 +2669,8 @@
 
 ## Remoção Funcionalidade Inexistente v6.21
 - [x] Remover "Gestão de múltiplos personais" da tabela de comparação (não existe no FitPrime)
+
+## Bug Botão Calculadora v6.22
+- [x] Botão "Ver Jornada do Personal Premium" está pulando a seção
+- [x] Ajustar scroll para ir ao quadro roxo "Divisor de Águas"
+- [x] Ajustar texto do botão para combinar com a seção de destino
