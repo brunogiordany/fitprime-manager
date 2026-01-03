@@ -157,6 +157,11 @@ export default function StudentProfile() {
     { enabled: studentId > 0 }
   );
 
+  const { data: inviteHistory } = trpc.students.getInvites.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+
   const { data: studentSessions } = trpc.sessions.listByStudent.useQuery(
     { studentId },
     { enabled: studentId > 0 }
@@ -225,6 +230,16 @@ export default function StudentProfile() {
     },
     onError: (error: any) => {
       toast.error("Erro ao resetar acesso: " + error.message);
+    },
+  });
+
+  const cancelInviteMutation = trpc.students.cancelInvite.useMutation({
+    onSuccess: () => {
+      toast.success("Convite cancelado!");
+      utils.students.getInvites.invalidate({ studentId });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao cancelar convite: " + error.message);
     },
   });
 
@@ -842,6 +857,10 @@ export default function StudentProfile() {
               <TabsTrigger value="materials" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
                 <FolderOpen className="h-4 w-4 hidden sm:block" />
                 Materiais
+              </TabsTrigger>
+              <TabsTrigger value="invites" className="gap-2 px-3 py-2 text-sm whitespace-nowrap">
+                <Send className="h-4 w-4 hidden sm:block" />
+                Convites
               </TabsTrigger>
             </TabsList>
           </div>
@@ -2059,6 +2078,148 @@ export default function StudentProfile() {
                   <div className="text-center py-8">
                     <FolderOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                     <p className="text-muted-foreground">Nenhum material cadastrado</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Invites Tab */}
+          <TabsContent value="invites">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Histórico de Convites</CardTitle>
+                  <CardDescription>Convites enviados para este aluno</CardDescription>
+                </div>
+                <Button 
+                  onClick={() => {
+                    if (student?.userId) {
+                      resendInviteMutation.mutate({ studentId, sendVia: 'email' });
+                    } else {
+                      sendInviteMutation.mutate({ studentId, sendVia: 'both' });
+                    }
+                  }}
+                  disabled={sendInviteMutation.isPending || resendInviteMutation.isPending}
+                >
+                  {(sendInviteMutation.isPending || resendInviteMutation.isPending) ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Send className="h-4 w-4 mr-2" /> {student?.userId ? 'Reenviar Acesso' : 'Novo Convite'}</>
+                  )}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {/* Status atual do acesso */}
+                <div className="mb-6 p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    {student?.userId ? (
+                      <>
+                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-green-700">Acesso Ativo</p>
+                          <p className="text-sm text-muted-foreground">O aluno já criou sua conta e pode acessar o portal</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                          <Clock className="h-5 w-5 text-amber-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-amber-700">Aguardando Cadastro</p>
+                          <p className="text-sm text-muted-foreground">O aluno ainda não criou sua conta no portal</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Lista de convites */}
+                {inviteHistory && inviteHistory.length > 0 ? (
+                  <div className="space-y-3">
+                    {inviteHistory.map((invite: any) => (
+                      <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                            invite.status === 'accepted' ? 'bg-green-100' :
+                            invite.status === 'pending' ? 'bg-blue-100' :
+                            invite.status === 'expired' ? 'bg-gray-100' :
+                            'bg-red-100'
+                          }`}>
+                            {invite.status === 'accepted' ? (
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                            ) : invite.status === 'pending' ? (
+                              <Clock className="h-5 w-5 text-blue-600" />
+                            ) : invite.status === 'expired' ? (
+                              <Clock className="h-5 w-5 text-gray-500" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-red-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {invite.status === 'accepted' ? 'Aceito' :
+                               invite.status === 'pending' ? 'Pendente' :
+                               invite.status === 'expired' ? 'Expirado' :
+                               'Cancelado'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Enviado em {new Date(invite.createdAt).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                            {invite.status === 'pending' && (
+                              <p className="text-xs text-muted-foreground">
+                                Expira em {new Date(invite.expiresAt).toLocaleDateString('pt-BR')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {invite.status === 'pending' && new Date(invite.expiresAt) > new Date() && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  const fullLink = `${window.location.origin}/convite/${invite.inviteToken}`;
+                                  navigator.clipboard.writeText(fullLink);
+                                  toast.success('Link copiado!');
+                                }}
+                              >
+                                <Copy className="h-4 w-4 mr-1" />
+                                Copiar
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => {
+                                  if (confirm('Cancelar este convite?')) {
+                                    cancelInviteMutation.mutate({ inviteId: invite.id });
+                                  }
+                                }}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Send className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Nenhum convite enviado ainda</p>
+                    <p className="text-sm text-muted-foreground mt-1">Clique em "Novo Convite" para enviar o primeiro</p>
                   </div>
                 )}
               </CardContent>

@@ -1175,10 +1175,44 @@ export const appRouter = router({
         
         // Notificar o personal que o aluno se cadastrou
         const { notifyOwner } = await import('./_core/notification');
+        
+        // Buscar dados do personal para enviar email
+        const personal = await db.getPersonalSubscription(invite.personalId);
+        const personalData = personal ? await db.getPersonalByUserId(personal.personalId) : null;
+        
         await notifyOwner({
           title: `🎉 Novo Cadastro - ${input.name}`,
           content: `O aluno ${input.name} aceitou o convite e criou sua conta!\n\n📧 Email: ${input.email}\n📱 Telefone: ${input.phone}\n\nO aluno agora pode acessar o portal e preencher sua anamnese.`,
         });
+        
+        // Enviar email para o personal avisando que o aluno aceitou
+        if (personalData) {
+          const personalUser = await db.getUserById(personalData.userId);
+          if (personalUser?.email) {
+            const { sendEmail } = await import('./email');
+            await sendEmail({
+              to: personalUser.email,
+              subject: `🎉 ${input.name} aceitou seu convite!`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background: linear-gradient(to right, #10b981, #14b8a6); padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="color: white; margin: 0;">🎉 Novo Aluno Cadastrado!</h2>
+                  </div>
+                  <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                    <p style="font-size: 16px;">Parabéns! <strong>${input.name}</strong> aceitou seu convite e criou uma conta no FitPrime.</p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${input.email}</p>
+                      <p style="margin: 5px 0;"><strong>📱 Telefone:</strong> ${input.phone}</p>
+                    </div>
+                    <p style="color: #666;">O aluno já pode acessar o portal e preencher sua anamnese. Você pode acompanhar o progresso dele no seu dashboard.</p>
+                    <a href="${process.env.VITE_APP_URL || 'https://fitprimemanager.com'}/alunos/${invite.studentId}" style="display: inline-block; background: linear-gradient(to right, #10b981, #14b8a6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 15px;">Ver Perfil do Aluno</a>
+                  </div>
+                </div>
+              `,
+              text: `Parabéns! ${input.name} aceitou seu convite e criou uma conta no FitPrime. Email: ${input.email}, Telefone: ${input.phone}`,
+            });
+          }
+        }
         
         // Enviar email de boas-vindas ao aluno
         const { sendWelcomeEmail } = await import('./email');

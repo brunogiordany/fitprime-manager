@@ -41,8 +41,10 @@ import {
   Trash2,
   Users,
   Send,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -80,6 +82,8 @@ export default function Students() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [selectedStudentForInvite, setSelectedStudentForInvite] = useState<any>(null);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [isBulkSending, setIsBulkSending] = useState(false);
 
   const sendInviteMutation = trpc.students.sendInvite.useMutation({
     onSuccess: (data) => {
@@ -108,6 +112,62 @@ export default function Students() {
       toast.error(error.message || "Erro ao reenviar convite");
     },
   });
+
+  // Função para enviar convites em massa
+  const handleBulkSendInvites = async () => {
+    if (selectedStudents.length === 0) {
+      toast.error("Selecione pelo menos um aluno");
+      return;
+    }
+    
+    setIsBulkSending(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const studentId of selectedStudents) {
+      const student = students?.find(s => s.id === studentId);
+      try {
+        if (student?.userId) {
+          await resendInviteMutation.mutateAsync({ studentId, sendVia: 'email' });
+        } else {
+          await sendInviteMutation.mutateAsync({ studentId, sendVia: 'both' });
+        }
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+    
+    setIsBulkSending(false);
+    setSelectedStudents([]);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} convite(s) enviado(s) com sucesso!`);
+    }
+    if (errorCount > 0) {
+      toast.error(`${errorCount} convite(s) falharam`);
+    }
+  };
+
+  // Toggle seleção de aluno
+  const toggleStudentSelection = (studentId: number) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  // Selecionar/deselecionar todos
+  const toggleSelectAll = () => {
+    if (students) {
+      if (selectedStudents.length === students.length) {
+        setSelectedStudents([]);
+      } else {
+        setSelectedStudents(students.map(s => s.id));
+      }
+    }
+  };
 
   const createMutation = trpc.students.create.useMutation({
     onSuccess: () => {
@@ -292,6 +352,43 @@ export default function Students() {
           </CardContent>
         </Card>
 
+        {/* Barra de ações em massa */}
+        {selectedStudents.length > 0 && (
+          <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
+            <CardContent className="py-3">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                    {selectedStudents.length} aluno(s) selecionado(s)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedStudents([])}
+                  >
+                    Limpar seleção
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleBulkSendInvites}
+                    disabled={isBulkSending}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {isBulkSending ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+                    ) : (
+                      <><Send className="h-4 w-4 mr-2" /> Enviar Convites em Massa</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Students Table */}
         <Card>
           <CardHeader>
@@ -301,6 +398,7 @@ export default function Students() {
             </CardTitle>
             <CardDescription>
               {students?.length || 0} alunos encontrados
+              {selectedStudents.length > 0 && ` • ${selectedStudents.length} selecionado(s)`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -322,6 +420,13 @@ export default function Students() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox 
+                          checked={students.length > 0 && selectedStudents.length === students.length}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Selecionar todos"
+                        />
+                      </TableHead>
                       <TableHead>Aluno</TableHead>
                       <TableHead className="hidden md:table-cell">Contato</TableHead>
                       <TableHead className="hidden sm:table-cell">Status</TableHead>
@@ -332,9 +437,16 @@ export default function Students() {
                     {students.map((student) => (
                       <TableRow 
                         key={student.id}
-                        className="cursor-pointer hover:bg-accent/50"
+                        className={`cursor-pointer hover:bg-accent/50 ${selectedStudents.includes(student.id) ? 'bg-emerald-50 dark:bg-emerald-950/20' : ''}`}
                         onClick={() => setLocation(`/alunos/${student.id}`)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox 
+                            checked={selectedStudents.includes(student.id)}
+                            onCheckedChange={() => toggleStudentSelection(student.id)}
+                            aria-label={`Selecionar ${student.name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold">

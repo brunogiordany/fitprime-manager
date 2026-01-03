@@ -2731,3 +2731,8 @@
 - [x] Adicionar botão de reenvio na lista de alunos
 - [x] Adicionar botão de reenvio no perfil do aluno
 - [x] Enviar email/WhatsApp com novo link
+
+## Melhorias no Sistema de Convites v6.33
+- [x] Histórico de convites enviados no perfil do aluno (data, status, ações)
+- [x] Notificação em tempo real para personal quando aluno aceitar convite
+- [x] Envio de convites em massa para múltiplos alunos selecionados
