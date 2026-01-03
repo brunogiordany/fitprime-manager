@@ -3885,6 +3885,27 @@ export async function createPersonalSubscription(data: InsertPersonalSubscriptio
   return result[0].insertId as number;
 }
 
+export async function updatePersonalSubscriptionFull(
+  personalId: number,
+  data: {
+    planId?: string;
+    planName?: string;
+    studentLimit?: number;
+    planPrice?: string;
+    extraStudentPrice?: string;
+    status?: 'active' | 'trial' | 'past_due' | 'cancelled' | 'expired';
+    currentPeriodStart?: Date;
+    currentPeriodEnd?: Date;
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(personalSubscriptions)
+    .set(data)
+    .where(eq(personalSubscriptions.personalId, personalId));
+}
+
 export async function updatePersonalSubscriptionExtra(
   personalId: number,
   data: {

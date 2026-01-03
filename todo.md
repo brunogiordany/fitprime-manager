@@ -2829,7 +2829,22 @@
 
 
 ## Correções v6.49
-- [ ] Links dos planos anuais não funcionam (botão "Ver plano anual" na página de planos)
-- [ ] Corrigir modal Comparar Treinos - palavras encavalando
-- [ ] Ajustar UX da tela de medidas corporais - card de cálculos automáticos visível
+- [x] Links dos planos anuais não funcionam (botão "Ver plano anual" na página de planos)
+- [x] Corrigir modal Comparar Treinos - palavras encavalando
+- [x] Ajustar UX da tela de medidas corporais - card de cálculos automáticos visível
 - [x] Upgrade de plano deve cobrar apenas a diferença (proration), não o valor cheio do novo plano
+
+
+## Integração Cakto Completa (v6.50)
+- [x] Webhook do Cakto para atualizar personal_subscriptions
+- [x] Configurar URLs dos planos anuais no Cakto
+- [x] Testar fluxo completo de upgrade com proration
+
+## Planos Anuais e Upgrades (v6.51)
+- [x] Criar estrutura de planos anuais completos
+- [x] Criar variáveis de upgrade para todas as combinações (mensal → mensal, mensal → anual, anual → anual)
+- [x] Atualizar interface para mostrar opções de upgrade anual
+- [x] Criar ofertas anuais no Cakto via API (IDs: 38m8qgq, 3bz5zr8, q6oeohx, 32e6rsr, ndnczxn)
+- [x] Toggle Mensal/Anual na seção de upgrade
+- [x] Mostrar economia anual em cada card de plano
+- [x] Botões de checkout funcionando para planos anuais

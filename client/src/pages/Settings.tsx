@@ -67,6 +67,7 @@ export default function Settings() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<string | null>(null);
+  const [showAnnualUpgrades, setShowAnnualUpgrades] = useState(false);
 
   const { data: personalData, isLoading } = trpc.personal.get.useQuery();
   const { data: subscription } = trpc.subscription.info.useQuery();
@@ -672,7 +673,30 @@ export default function Settings() {
             
             {/* Opções de Upgrade */}
             <div>
-              <h4 className="font-medium mb-4">Fazer upgrade</h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Fazer upgrade</h4>
+                
+                {/* Toggle Mensal/Anual */}
+                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                  <button
+                    className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                      !showAnnualUpgrades ? 'bg-white shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setShowAnnualUpgrades(false)}
+                  >
+                    Mensal
+                  </button>
+                  <button
+                    className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 ${
+                      showAnnualUpgrades ? 'bg-white shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setShowAnnualUpgrades(true)}
+                  >
+                    Anual
+                    <Badge className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5">-20%</Badge>
+                  </button>
+                </div>
+              </div>
               
               {/* Informação sobre proration */}
               {currentPlanDetails && currentPlanDetails.daysRemaining > 0 && (
@@ -685,57 +709,37 @@ export default function Settings() {
               )}
               
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {availableUpgrades && availableUpgrades.length > 0 ? (
-                  availableUpgrades.slice(0, 3).map((upgrade) => (
-                    <div 
-                      key={upgrade.planId}
-                      className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        setSelectedUpgradePlan(upgrade.planId);
-                        setUpgradeModalOpen(true);
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold">{upgrade.planName}</h5>
-                        {upgrade.planId === 'business' && (
-                          <Badge className="bg-blue-100 text-blue-700 text-xs">
-                            <Star className="h-3 w-3 mr-1" />
-                            Popular
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-2xl font-bold">R$ {upgrade.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                      <p className="text-sm text-muted-foreground mt-1">Até {upgrade.studentLimit} alunos</p>
-                      
-                      {upgrade.isProrated && upgrade.prorationAmount > 0 ? (
-                        <div className="mt-2 p-2 bg-emerald-50 rounded-lg">
-                          <p className="text-xs text-emerald-700 font-medium">Pague agora apenas:</p>
-                          <p className="text-lg font-bold text-emerald-600">R$ {upgrade.prorationAmount.toFixed(2)}</p>
-                          <p className="text-xs text-emerald-600">({upgrade.daysRemaining} dias restantes)</p>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-emerald-600 mt-2">+{upgrade.additionalStudents} alunos</p>
-                      )}
-                      
-                      <Button size="sm" className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
-                        <ArrowUpRight className="h-4 w-4 mr-1" />
-                        Fazer Upgrade
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  plansArray
-                    .filter(plan => plan.price > currentPlan.price)
-                    .slice(0, 3)
-                    .map((plan) => (
+                {plansArray
+                  .filter(plan => plan.price > currentPlan.price)
+                  .slice(0, 3)
+                  .map((plan) => {
+                    const upgrade = availableUpgrades?.find(u => u.planId === plan.id);
+                    const displayPrice = showAnnualUpgrades ? plan.annualMonthlyPrice : plan.price;
+                    const displayLimit = showAnnualUpgrades ? plan.annualStudentLimit : plan.studentLimit;
+                    const currentLimit = showAnnualUpgrades ? currentPlan.annualStudentLimit : currentPlan.studentLimit;
+                    const additionalStudents = displayLimit - currentLimit;
+                    const annualSavings = (plan.price * 12) - plan.annualPrice;
+                    
+                    return (
                       <div 
                         key={plan.id}
-                        className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
+                        className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer relative"
                         onClick={() => {
-                          setSelectedUpgradePlan(plan.id);
-                          setUpgradeModalOpen(true);
+                          if (showAnnualUpgrades) {
+                            window.open(plan.annualCheckoutUrl, '_blank');
+                            toast.info("Após o pagamento, seu plano será atualizado automaticamente.");
+                          } else {
+                            setSelectedUpgradePlan(plan.id);
+                            setUpgradeModalOpen(true);
+                          }
                         }}
                       >
+                        {showAnnualUpgrades && (
+                          <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+                            Economize R$ {annualSavings.toFixed(0)}/ano
+                          </div>
+                        )}
+                        
                         <div className="flex items-center justify-between mb-2">
                           <h5 className="font-semibold">{plan.name}</h5>
                           {plan.id === 'business' && (
@@ -745,15 +749,38 @@ export default function Settings() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-2xl font-bold">R$ {plan.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                        <p className="text-sm text-muted-foreground mt-1">Até {plan.studentLimit} alunos</p>
+                        
+                        <div className="mb-1">
+                          <span className="text-2xl font-bold">R$ {displayPrice.toFixed(2)}</span>
+                          <span className="text-sm font-normal text-muted-foreground">/mês</span>
+                        </div>
+                        
+                        {showAnnualUpgrades && (
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Cobrado R$ {plan.annualPrice.toFixed(2)}/ano
+                          </p>
+                        )}
+                        
+                        <p className="text-sm text-muted-foreground">Até {displayLimit} alunos</p>
+                        
+                        {!showAnnualUpgrades && upgrade?.isProrated && upgrade.prorationAmount > 0 ? (
+                          <div className="mt-2 p-2 bg-emerald-50 rounded-lg">
+                            <p className="text-xs text-emerald-700 font-medium">Pague agora apenas:</p>
+                            <p className="text-lg font-bold text-emerald-600">R$ {upgrade.prorationAmount.toFixed(2)}</p>
+                            <p className="text-xs text-emerald-600">({upgrade.daysRemaining} dias restantes)</p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-emerald-600 mt-2">+{additionalStudents} alunos</p>
+                        )}
+                        
                         <Button size="sm" className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
                           <ArrowUpRight className="h-4 w-4 mr-1" />
-                          Fazer Upgrade
+                          {showAnnualUpgrades ? 'Assinar Anual' : 'Fazer Upgrade'}
                         </Button>
                       </div>
-                    ))
-                )}
+                    );
+                  })
+                }
               </div>
               
               {!isAnnualPlan && (
@@ -770,10 +797,11 @@ export default function Settings() {
                     size="sm"
                     className="border-blue-300 text-blue-700 hover:bg-blue-100"
                     onClick={() => {
-                      toast.info("Planos anuais em breve! Entre em contato para mais informações.");
+                      window.open(currentPlan.annualCheckoutUrl, '_blank');
+                      toast.info("Após o pagamento, seu plano será atualizado automaticamente.");
                     }}
                   >
-                    Ver plano anual - R$ {currentPlan.annualMonthlyPrice}/mês
+                    Ver plano anual - R$ {currentPlan.annualMonthlyPrice.toFixed(2)}/mês
                   </Button>
                 </div>
               )}

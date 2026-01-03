@@ -2,6 +2,7 @@
  * Cakto Webhook Handler
  * 
  * Processes webhook events from Cakto payment platform.
+ * Atualiza personal_subscriptions com datas de período para proration.
  */
 
 import type { Request, Response } from "express";
@@ -9,15 +10,53 @@ import crypto from "crypto";
 import { CaktoWebhookPayload, processWebhookEvent } from "../cakto";
 import * as db from "../db";
 import { sendPurchaseActivationEmail } from "../email";
+import { PLANS } from "../../shared/plans";
 
-// Map Cakto product ID to plan type
+// Map Cakto offer ID to plan type
+const CAKTO_OFFER_TO_PLAN: Record<string, { planId: string; isAnnual: boolean }> = {
+  // Planos mensais
+  "32rof96": { planId: "starter", isAnnual: false },
+  "onb2wr2": { planId: "pro", isAnnual: false },
+  "zh3rnh6": { planId: "business", isAnnual: false },
+  "kbevbfw": { planId: "premium", isAnnual: false },
+  "apzipd3": { planId: "enterprise", isAnnual: false },
+  "75u9x53": { planId: "beginner", isAnnual: false },
+  // Planos anuais (IDs reais do Cakto)
+  "38m8qgq": { planId: "starter", isAnnual: true },
+  "3bz5zr8": { planId: "pro", isAnnual: true },
+  "q6oeohx": { planId: "business", isAnnual: true },
+  "32e6rsr": { planId: "premium", isAnnual: true },
+  "ndnczxn": { planId: "enterprise", isAnnual: true },
+};
+
+// Map Cakto product ID to plan type (legacy)
 function mapProductToPlanType(productId: string): "beginner" | "starter" | "pro" | "business" | "premium" | "enterprise" | null {
-  // TODO: Map actual Cakto product IDs to plan types
-  const productMap: Record<string, "beginner" | "starter" | "pro" | "business" | "premium" | "enterprise"> = {
-    // Add your Cakto product IDs here
-    // "prod_xxx": "starter",
-  };
-  return productMap[productId] || null;
+  const mapping = CAKTO_OFFER_TO_PLAN[productId];
+  if (mapping) {
+    return mapping.planId as "starter" | "pro" | "business" | "premium" | "enterprise";
+  }
+  return null;
+}
+
+// Determinar se é plano anual baseado no offerId ou productId
+function isAnnualPlan(offerId: string): boolean {
+  const mapping = CAKTO_OFFER_TO_PLAN[offerId];
+  return mapping?.isAnnual || offerId.includes('anual');
+}
+
+// Calcular datas de período baseado no tipo de plano
+function calculatePeriodDates(isAnnual: boolean): { start: Date; end: Date } {
+  const now = new Date();
+  const start = new Date(now);
+  const end = new Date(now);
+  
+  if (isAnnual) {
+    end.setFullYear(end.getFullYear() + 1);
+  } else {
+    end.setMonth(end.getMonth() + 1);
+  }
+  
+  return { start, end };
 }
 
 /**
@@ -97,8 +136,21 @@ async function handleActivation(result: {
   orderId: string;
   amount: number;
   subscriptionId?: string;
+  offerId?: string;
 }) {
   console.log("[Cakto Webhook] Activating access for:", result.customerEmail);
+  console.log("[Cakto Webhook] Product/Offer ID:", result.productId, result.offerId);
+  
+  // Determinar plano e período
+  const offerId = result.offerId || result.productId;
+  const planMapping = CAKTO_OFFER_TO_PLAN[offerId];
+  const planId = planMapping?.planId || mapProductToPlanType(result.productId) || 'starter';
+  const isAnnual = isAnnualPlan(offerId);
+  const plan = PLANS[planId];
+  const { start: periodStart, end: periodEnd } = calculatePeriodDates(isAnnual);
+  
+  console.log("[Cakto Webhook] Plan:", planId, "Annual:", isAnnual);
+  console.log("[Cakto Webhook] Period:", periodStart, "to", periodEnd);
   
   // Find user by email
   const user = await db.getUserByEmail(result.customerEmail);
@@ -112,6 +164,29 @@ async function handleActivation(result: {
       paidAt: new Date(),
       amount: result.amount,
     });
+    
+    // Buscar personal associado ao usuário
+    const personal = await db.getPersonalByUserId(user.id);
+    
+    if (personal) {
+      // Criar ou atualizar personal_subscription com datas de período
+      await createOrUpdatePersonalSubscription({
+        personalId: personal.id,
+        planId: `fitprime_br_${planId}`,
+        planName: plan?.name || 'Starter',
+        studentLimit: isAnnual ? (plan?.annualStudentLimit || 15) : (plan?.studentLimit || 15),
+        planPrice: isAnnual ? (plan?.annualPrice || 932) : (plan?.price || 97),
+        extraStudentPrice: plan?.extraStudentPrice || 6.47,
+        status: 'active',
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+        billingPeriod: isAnnual ? 'annual' : 'monthly',
+        caktoOrderId: result.orderId,
+        caktoSubscriptionId: result.subscriptionId,
+      });
+      
+      console.log("[Cakto Webhook] Personal subscription updated for:", personal.id);
+    }
     
     console.log("[Cakto Webhook] Access activated for user:", user.id);
   } else {
@@ -209,5 +284,66 @@ async function handleRenewal(result: {
     console.log("[Cakto Webhook] Subscription renewed for user:", user.id);
   } else {
     console.log("[Cakto Webhook] User not found for renewal:", result.customerEmail);
+  }
+}
+
+
+/**
+ * Criar ou atualizar personal_subscription com datas de período
+ */
+async function createOrUpdatePersonalSubscription(data: {
+  personalId: number;
+  planId: string;
+  planName: string;
+  studentLimit: number;
+  planPrice: number;
+  extraStudentPrice: number;
+  status: 'active' | 'trial' | 'past_due' | 'cancelled' | 'expired';
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  billingPeriod: 'monthly' | 'annual';
+  caktoOrderId?: string;
+  caktoSubscriptionId?: string;
+}) {
+  try {
+    // Verificar se já existe subscription para este personal
+    const existingSubscription = await db.getPersonalSubscription(data.personalId);
+    
+    if (existingSubscription) {
+      // Atualizar subscription existente usando a função correta
+      await db.updatePersonalSubscriptionFull(data.personalId, {
+        planId: data.planId,
+        planName: data.planName,
+        studentLimit: data.studentLimit,
+        planPrice: String(data.planPrice),
+        extraStudentPrice: String(data.extraStudentPrice),
+        status: data.status,
+        currentPeriodStart: data.currentPeriodStart,
+        currentPeriodEnd: data.currentPeriodEnd,
+      });
+      
+      console.log("[Cakto Webhook] Updated personal subscription:", data.personalId);
+    } else {
+      // Criar nova subscription
+      await db.createPersonalSubscription({
+        personalId: data.personalId,
+        planId: data.planId,
+        planName: data.planName,
+        country: 'BR',
+        studentLimit: data.studentLimit,
+        currentStudents: 0,
+        extraStudents: 0,
+        planPrice: String(data.planPrice),
+        extraStudentPrice: String(data.extraStudentPrice),
+        currency: 'BRL',
+        status: data.status,
+        currentPeriodStart: data.currentPeriodStart,
+        currentPeriodEnd: data.currentPeriodEnd,
+      });
+      
+      console.log("[Cakto Webhook] Created personal subscription:", data.personalId);
+    }
+  } catch (error) {
+    console.error("[Cakto Webhook] Error creating/updating personal subscription:", error);
   }
 }

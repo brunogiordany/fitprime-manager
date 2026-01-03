@@ -201,3 +201,133 @@ export function getAvailableUpgrades(
   // Ordenar por preço
   return upgrades.sort((a, b) => a.newPlan.price - b.newPlan.price);
 }
+
+/**
+ * Interface para opções de upgrade completas (mensal e anual)
+ */
+export interface UpgradeOption {
+  planId: string;
+  planName: string;
+  
+  // Opção mensal
+  monthly: {
+    price: number;
+    checkoutUrl: string;
+    studentLimit: number;
+    prorationAmount: number;
+    priceDifference: number;
+  };
+  
+  // Opção anual
+  annual: {
+    price: number;
+    monthlyEquivalent: number;
+    checkoutUrl: string;
+    studentLimit: number;
+    prorationAmount: number;
+    priceDifference: number;
+    savings: number; // Economia comparado ao mensal
+  };
+  
+  additionalStudentsMonthly: number;
+  additionalStudentsAnnual: number;
+}
+
+/**
+ * Calcula todas as opções de upgrade disponíveis (mensal e anual)
+ */
+export function getAllUpgradeOptions(
+  currentPlanId: string,
+  currentBillingPeriod: BillingPeriod,
+  subscriptionStartDate: Date,
+  currentPeriodEnd?: Date
+): UpgradeOption[] {
+  const currentPlan = PLANS[currentPlanId];
+  if (!currentPlan) return [];
+  
+  const options: UpgradeOption[] = [];
+  const planOrder = ['starter', 'pro', 'business', 'premium', 'enterprise'];
+  const currentIndex = planOrder.indexOf(currentPlanId);
+  
+  // Pegar apenas planos superiores ao atual
+  const availablePlans = planOrder.slice(currentIndex + 1);
+  
+  for (const planId of availablePlans) {
+    const plan = PLANS[planId];
+    if (!plan) continue;
+    
+    // Calcular proration para mensal
+    const monthlyProration = calculateProration(
+      currentPlanId,
+      planId,
+      'monthly',
+      subscriptionStartDate,
+      currentPeriodEnd
+    );
+    
+    // Calcular proration para anual
+    const annualProration = calculateProration(
+      currentPlanId,
+      planId,
+      'annual',
+      subscriptionStartDate,
+      currentPeriodEnd
+    );
+    
+    // Calcular economia anual
+    const monthlyTotal = plan.price * 12;
+    const annualSavings = monthlyTotal - plan.annualPrice;
+    
+    // Limites de alunos baseados no plano atual
+    const currentMonthlyLimit = currentPlan.studentLimit;
+    const currentAnnualLimit = currentPlan.annualStudentLimit;
+    
+    options.push({
+      planId,
+      planName: plan.name,
+      monthly: {
+        price: plan.price,
+        checkoutUrl: plan.checkoutUrl,
+        studentLimit: plan.studentLimit,
+        prorationAmount: monthlyProration?.prorationAmount || 0,
+        priceDifference: plan.price - currentPlan.price,
+      },
+      annual: {
+        price: plan.annualPrice,
+        monthlyEquivalent: plan.annualMonthlyPrice,
+        checkoutUrl: plan.annualCheckoutUrl,
+        studentLimit: plan.annualStudentLimit,
+        prorationAmount: annualProration?.prorationAmount || 0,
+        priceDifference: plan.annualPrice - currentPlan.annualPrice,
+        savings: annualSavings,
+      },
+      additionalStudentsMonthly: plan.studentLimit - currentMonthlyLimit,
+      additionalStudentsAnnual: plan.annualStudentLimit - currentAnnualLimit,
+    });
+  }
+  
+  return options;
+}
+
+/**
+ * Gera URL de checkout do Cakto com parâmetros de upgrade
+ */
+export function generateUpgradeCheckoutUrl(
+  plan: Plan,
+  isAnnual: boolean,
+  customerEmail?: string,
+  customerName?: string
+): string {
+  const baseUrl = isAnnual ? plan.annualCheckoutUrl : plan.checkoutUrl;
+  const params = new URLSearchParams();
+  
+  if (customerEmail) {
+    params.set('email', customerEmail);
+  }
+  if (customerName) {
+    params.set('name', customerName);
+  }
+  
+  const queryString = params.toString();
+  return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+}
