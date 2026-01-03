@@ -2631,3 +2631,15 @@
 - [x] Depoimentos de personais que triplicaram ganhos atendendo esse público
 - [x] Histórias de personais que dobraram valor da aula com ferramentas profissionais
 - [x] Depoimentos de personais que conquistaram clientes que amam dados na ponta dos dedos
+
+## Jornada Personal Premium v6.14
+- [x] Mudar "Jornada do Personal" para "Jornada do Personal Premium"
+- [x] Ajustar comunicação da jornada para foco em alunos premium
+- [x] Adicionar números financeiros concretos nos depoimentos
+- [x] Exemplo: "Fechei 3 alunos premium = R$ 4.500/mês em aulas"
+- [x] Exemplo: "FitPrime se pagou por anos em um único mês"
+
+## Bug Botão Calculadora v6.15
+- [x] Botão "Como o FitPrime Faz Isso?" pula a seção ao invés de mostrar o início
+- [x] Ajustar texto do botão para combinar com próxima seção (Jornada do Personal Premium)
+- [x] Ajustar scroll para mostrar o início da próxima seção

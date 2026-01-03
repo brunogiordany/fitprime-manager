@@ -550,14 +550,18 @@ export default function LandingPagePro() {
                 size="lg" 
                 onClick={() => {
                   const featuresSection = document.getElementById('features');
-                  if (featuresSection) featuresSection.scrollIntoView({ behavior: 'smooth' });
+                  if (featuresSection) {
+                    const yOffset = -80; // Offset para mostrar o título da seção
+                    const y = featuresSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                  }
                 }}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg py-6"
               >
-                Como o FitPrime Faz Isso?
+                Ver Jornada do Personal Premium
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <p className="text-center text-sm text-gray-500 mt-3">Veja o passo a passo completo</p>
+              <p className="text-center text-sm text-gray-500 mt-3">Descubra como se tornar um personal de elite</p>
             </div>
           </div>
 
@@ -787,7 +791,7 @@ export default function LandingPagePro() {
                       </div>
                     </div>
                     <p className="text-gray-300 text-sm italic">
-                      "Comecei a mostrar métricas pros alunos e <span className="text-emerald-400 font-semibold">dobrei o valor da aula</span>. Hoje atendo fisiculturistas e empresários. <span className="text-emerald-400 font-semibold">Minha renda triplicou</span>."
+                      "Fechei com <span className="text-emerald-400 font-semibold">3 alunos premium em 2 meses</span>: 2 empresários que adoram métricas e 1 fisiculturista. Só com esses 3, <span className="text-emerald-400 font-semibold">fecho R$ 4.500/mês</span>. O FitPrime se pagou por anos em um único mês."
                     </p>
                     <div className="flex gap-1 mt-3">
                       {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
@@ -807,7 +811,7 @@ export default function LandingPagePro() {
                       </div>
                     </div>
                     <p className="text-gray-300 text-sm italic">
-                      "Antes eu cobrava R$80 a aula. Depois que comecei a oferecer <span className="text-pink-400 font-semibold">análises de composição corporal e gráficos de evolução</span>, passei a cobrar R$150. Os alunos que amam dados <span className="text-pink-400 font-semibold">pagam sem reclamar</span> porque vêem valor."
+                      "Antes eu cobrava R$80 a aula. Com as métricas do FitPrime, <span className="text-pink-400 font-semibold">passei a cobrar R$180</span>. Em 3 meses conquistei <span className="text-pink-400 font-semibold">8 novos alunos premium</span> que vieram por indicação. Minha renda saltou de R$ 3.200 pra <span className="text-pink-400 font-semibold">R$ 11.500/mês</span>."
                     </p>
                     <div className="flex gap-1 mt-3">
                       {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
@@ -856,26 +860,26 @@ export default function LandingPagePro() {
         </div>
       </section>
 
-      {/* Jornada do Personal Trainer */}
+      {/* Jornada do Personal Premium */}
       <section className="py-20 px-4 bg-gray-50" id="features">
         <div className="container max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-emerald-100 text-emerald-700">
-              <Rocket className="h-3 w-3 mr-1" />
-              Jornada do Personal Trainer
+            <Badge className="mb-4 bg-gradient-to-r from-purple-100 to-emerald-100 text-purple-700 border-purple-200">
+              <Crown className="h-3 w-3 mr-1" />
+              Jornada do Personal Premium
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Como o FitPrime <span className="text-emerald-600">transforma sua rotina</span>
+              Como se tornar um <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-emerald-600">Personal Premium</span>
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Veja passo a passo como você vai organizar sua vida profissional e ganhar tempo para o que realmente importa
+              O caminho para atrair alunos que pagam mais, oferecer um serviço de elite e <strong>triplicar sua renda</strong> com menos esforço
             </p>
           </div>
 
-          {/* Jornada do Personal */}
+          {/* Jornada do Personal Premium */}
           <div className="mb-16">
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-              <span className="text-emerald-600">Sua</span> Jornada como Personal
+              <span className="text-purple-600">Sua</span> Transformação em 4 Passos
             </h3>
             <div className="grid md:grid-cols-3 gap-6">
               {/* Passo 1 */}
