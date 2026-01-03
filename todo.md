@@ -2643,3 +2643,8 @@
 - [x] Botão "Como o FitPrime Faz Isso?" pula a seção ao invés de mostrar o início
 - [x] Ajustar texto do botão para combinar com próxima seção (Jornada do Personal Premium)
 - [x] Ajustar scroll para mostrar o início da próxima seção
+
+## Reorganização Ancoragem v6.16
+- [x] Mover seção de ancoragem 10% para depois da seção 25% a mais
+- [x] Somar tudo na mega ancoragem: perda + ganho potencial + ganho 25%
+- [x] Criar impacto visual maior com valor total

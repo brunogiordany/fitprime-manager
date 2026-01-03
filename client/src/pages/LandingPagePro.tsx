@@ -565,89 +565,6 @@ export default function LandingPagePro() {
             </div>
           </div>
 
-          {/* MEGA ANCORAGEM DE PREÇO */}
-          <div className="mt-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
-            {/* Efeito de brilho */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"></div>
-            
-            <div className="relative z-10">
-              {/* Headline */}
-              <div className="text-center mb-8">
-                <Badge className="mb-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  Reflexão importante
-                </Badge>
-                <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                  Se o FitPrime custasse <span className="text-emerald-400">apenas 10%</span> do que você perde...
-                </h3>
-                <p className="text-gray-400 text-lg">
-                  Ainda assim seria um ótimo investimento, certo?
-                </p>
-              </div>
-
-              {/* Cálculos - Ancoragem inteligente: perda + ganho, sempre 3x o valor real, mínimo R$ 291 */}
-              {(() => {
-                // Valor total de impacto = perda mensal + ganho potencial
-                const impactoTotal = displayPerdaMensal + displayGanhoExtra;
-                // 10% do impacto total
-                const dezPorcentoImpacto = Math.round(impactoTotal * 0.1);
-                // Garantir mínimo de R$ 291 (3x o plano Beginner de R$ 97)
-                const valorAncoragemMinimo = 291;
-                // Valor final da ancoragem: sempre o maior entre 10% do impacto ou R$ 291
-                const valorAncoragem = Math.max(dezPorcentoImpacto, valorAncoragemMinimo);
-                
-                return (
-                  <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
-                      <p className="text-red-400 text-sm mb-2">Você perde por mês:</p>
-                      <p className="text-3xl font-bold text-red-400">
-                        R$ {displayPerdaMensal.toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 text-center">
-                      <p className="text-amber-400 text-sm mb-2">Deixa de ganhar:</p>
-                      <p className="text-3xl font-bold text-amber-400">
-                        +R$ {displayGanhoExtra.toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                    <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 rounded-xl p-6 text-center">
-                      <p className="text-emerald-400 text-sm mb-2">10% disso seria:</p>
-                      <p className="text-4xl font-black text-emerald-400">
-                        R$ {valorAncoragem.toLocaleString('pt-BR')}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">por mês</p>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Mensagem de tranquilidade */}
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center mb-8">
-                <p className="text-xl text-white font-semibold mb-2">
-                  Mas relaxa... o FitPrime <span className="text-emerald-400">não custa nem perto disso</span>
-                </p>
-                <p className="text-gray-400">
-                  Você vai se surpreender com o preço quando chegar lá. Por enquanto, continue descobrindo tudo que o FitPrime faz por você.
-                </p>
-              </div>
-
-              {/* CTA */}
-              <div className="text-center">
-                <Button 
-                  size="lg" 
-                  onClick={() => {
-                    const featuresSection = document.getElementById('features');
-                    if (featuresSection) featuresSection.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-lg px-8 py-6"
-                >
-                  Ver Como Funciona
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
           {/* SEÇÃO DIVISOR DE ÁGUAS - ALUNOS PREMIUM */}
           <div className="mt-12 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
             {/* Efeitos visuais */}
@@ -741,6 +658,70 @@ export default function LandingPagePro() {
                   </p>
                 </div>
               </div>
+
+              {/* MEGA ANCORAGEM TOTAL - Somando TUDO */}
+              {(() => {
+                // Perda mensal
+                const perda = displayPerdaMensal;
+                // Ganho potencial com FitPrime (tempo economizado)
+                const ganhoFitPrime = displayGanhoExtra;
+                // Ganho extra cobrando 25% a mais
+                const ganho25Porcento = Math.round(valorAula * 0.25 * horasBurocracia * 4);
+                // IMPACTO TOTAL = tudo somado
+                const impactoTotal = perda + ganhoFitPrime + ganho25Porcento;
+                // 10% do impacto total
+                const dezPorcentoImpacto = Math.round(impactoTotal * 0.1);
+                // Garantir mínimo de R$ 291 (3x o plano Beginner de R$ 97)
+                const valorAncoragemMinimo = 291;
+                // Valor final da ancoragem: sempre o maior entre 10% do impacto ou R$ 291
+                const valorAncoragem = Math.max(dezPorcentoImpacto, valorAncoragemMinimo);
+                
+                return (
+                  <div className="mt-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 md:p-8 border border-emerald-500/30">
+                    <div className="text-center mb-6">
+                      <Badge className="mb-3 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Reflexão Final
+                      </Badge>
+                      <h4 className="text-xl md:text-2xl font-bold text-white">
+                        Se o FitPrime custasse <span className="text-emerald-400">apenas 10%</span> de tudo isso...
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center">
+                        <p className="text-red-400 text-xs mb-1">Você perde:</p>
+                        <p className="text-xl font-bold text-red-400">R$ {perda.toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
+                        <p className="text-amber-400 text-xs mb-1">Deixa de ganhar:</p>
+                        <p className="text-xl font-bold text-amber-400">+R$ {ganhoFitPrime.toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 text-center">
+                        <p className="text-purple-400 text-xs mb-1">Cobrando +25%:</p>
+                        <p className="text-xl font-bold text-purple-400">+R$ {ganho25Porcento.toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 rounded-xl p-4 text-center">
+                        <p className="text-emerald-400 text-xs mb-1">IMPACTO TOTAL:</p>
+                        <p className="text-xl font-black text-emerald-400">R$ {impactoTotal.toLocaleString('pt-BR')}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-center bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6">
+                      <p className="text-gray-400 text-sm mb-2">10% de R$ {impactoTotal.toLocaleString('pt-BR')} seria:</p>
+                      <p className="text-5xl md:text-6xl font-black text-emerald-400 mb-3">
+                        R$ {valorAncoragem.toLocaleString('pt-BR')}<span className="text-2xl">/mês</span>
+                      </p>
+                      <p className="text-xl text-white font-semibold mb-2">
+                        Mas relaxa... o FitPrime <span className="text-emerald-400">não custa nem perto disso</span>
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Você vai se surpreender com o preço. Continue descobrindo tudo que o FitPrime faz por você.
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* DEPOIMENTOS ESTRATÉGICOS */}
               <div className="mt-10 mb-8">
