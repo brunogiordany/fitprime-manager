@@ -14,7 +14,7 @@ import {
   TrendingUp
 } from "lucide-react";
 
-// Definição dos planos
+// Definição dos planos com URLs reais do Cakto
 const PLANS = {
   beginner: {
     name: "Beginner",
@@ -22,7 +22,7 @@ const PLANS = {
     maxStudents: 5,
     extraPerStudent: 7.98,
     color: "emerald",
-    caktoUrl: "https://pay.cakto.com.br/beginner-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/75u9x53",
     features: [
       "Até 5 alunos",
       "Treinos com IA",
@@ -39,7 +39,7 @@ const PLANS = {
     maxStudents: 15,
     extraPerStudent: 6.47,
     color: "blue",
-    caktoUrl: "https://pay.cakto.com.br/starter-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/y9iqj9q_706332",
     features: [
       "Até 15 alunos",
       "Treinos com IA",
@@ -57,7 +57,7 @@ const PLANS = {
     maxStudents: 30,
     extraPerStudent: 4.90,
     color: "purple",
-    caktoUrl: "https://pay.cakto.com.br/pro-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/onb2wr2",
     features: [
       "Até 30 alunos",
       "Treinos com IA ilimitados",
@@ -76,7 +76,7 @@ const PLANS = {
     maxStudents: 50,
     extraPerStudent: 3.94,
     color: "orange",
-    caktoUrl: "https://pay.cakto.com.br/business-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/zh3rnh6",
     features: [
       "Até 50 alunos",
       "Treinos com IA ilimitados",
@@ -96,7 +96,7 @@ const PLANS = {
     maxStudents: 100,
     extraPerStudent: 2.97,
     color: "amber",
-    caktoUrl: "https://pay.cakto.com.br/premium-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/kbevbfw",
     features: [
       "Até 100 alunos",
       "Treinos com IA ilimitados",
@@ -117,7 +117,7 @@ const PLANS = {
     maxStudents: 999,
     extraPerStudent: 0,
     color: "rose",
-    caktoUrl: "https://pay.cakto.com.br/enterprise-fitprime",
+    caktoUrl: "https://pay.cakto.com.br/apzipd3",
     features: [
       "Alunos ilimitados",
       "Treinos com IA ilimitados",

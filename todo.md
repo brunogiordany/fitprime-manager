@@ -2712,3 +2712,4 @@
 - [x] IA deve calcular preço baseado na quantidade de alunos
 - [x] IA deve ser conversacional e útil como um vendedor
 - [x] Substituir respostas automáticas por respostas inteligentes da IA
+- [x] Corrigir links de checkout nos botões do quiz (URLs Cakto reais)
