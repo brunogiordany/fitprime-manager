@@ -5029,6 +5029,152 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
         await db.deleteAutomation(input.id);
         return { success: true };
       }),
+    
+    // Disparar automação manualmente para todos os alunos elegíveis
+    triggerManual: personalProcedure
+      .input(z.object({ 
+        automationId: z.number(),
+        studentId: z.number().optional(), // Se informado, envia só para esse aluno
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const automation = await db.getAutomationById(input.automationId);
+        if (!automation || automation.personalId !== ctx.personal.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Automação não encontrada' });
+        }
+        
+        const personal = ctx.personal;
+        if (!personal.evolutionApiKey || !personal.evolutionInstance) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'WhatsApp não configurado. Configure nas Configurações.' });
+        }
+        
+        // Buscar alunos elegíveis
+        let students;
+        if (input.studentId) {
+          const student = await db.getStudentById(input.studentId, ctx.personal.id);
+          if (!student) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+          }
+          students = [student];
+        } else {
+          // Buscar todos os alunos ativos com telefone e opt-in
+          const allStudents = await db.getStudentsByPersonalId(ctx.personal.id);
+          students = allStudents.filter(s => s.phone && s.whatsappOptIn && s.status === 'active');
+        }
+        
+        if (students.length === 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Nenhum aluno elegível encontrado' });
+        }
+        
+        const { sendWhatsAppMessage } = await import('./stevo');
+        const results = { sent: 0, failed: 0, errors: [] as string[] };
+        
+        for (const student of students) {
+          try {
+            // Substituir variáveis na mensagem
+            let message = automation.messageTemplate
+              .replace(/{nome}/g, student.name)
+              .replace(/{telefone}/g, student.phone || '')
+              .replace(/{email}/g, student.email || '');
+            
+            // Adicionar variáveis específicas por tipo de automação
+            if (automation.trigger === 'birthday') {
+              message = message.replace(/{data_aniversario}/g, student.birthDate ? new Date(student.birthDate).toLocaleDateString('pt-BR') : '');
+            }
+            
+            const result = await sendWhatsAppMessage({
+              phone: student.phone!,
+              message,
+              config: {
+                apiKey: personal.evolutionApiKey,
+                instanceName: personal.evolutionInstance,
+                server: (personal as any).stevoServer || 'sm15',
+              },
+            });
+            
+            // Registrar no log
+            await db.createMessageLog({
+              personalId: ctx.personal.id,
+              studentId: student.id,
+              phone: student.phone!,
+              message,
+              direction: 'outbound',
+              status: result.success ? 'sent' : 'failed',
+            });
+            
+            if (result.success) {
+              results.sent++;
+            } else {
+              results.failed++;
+              results.errors.push(`${student.name}: ${result.error}`);
+            }
+          } catch (error: any) {
+            results.failed++;
+            results.errors.push(`${student.name}: ${error.message}`);
+          }
+        }
+        
+        return results;
+      }),
+    
+    // Disparar automação para um aluno específico
+    sendToStudent: personalProcedure
+      .input(z.object({ 
+        automationId: z.number(),
+        studentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const automation = await db.getAutomationById(input.automationId);
+        if (!automation || automation.personalId !== ctx.personal.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Automação não encontrada' });
+        }
+        
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        if (!student.phone) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aluno não possui telefone cadastrado' });
+        }
+        
+        const personal = ctx.personal;
+        if (!personal.evolutionApiKey || !personal.evolutionInstance) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'WhatsApp não configurado. Configure nas Configurações.' });
+        }
+        
+        // Substituir variáveis na mensagem
+        let message = automation.messageTemplate
+          .replace(/{nome}/g, student.name)
+          .replace(/{telefone}/g, student.phone || '')
+          .replace(/{email}/g, student.email || '');
+        
+        const { sendWhatsAppMessage } = await import('./stevo');
+        const result = await sendWhatsAppMessage({
+          phone: student.phone,
+          message,
+          config: {
+            apiKey: personal.evolutionApiKey,
+            instanceName: personal.evolutionInstance,
+            server: (personal as any).stevoServer || 'sm15',
+          },
+        });
+        
+        // Registrar no log
+        await db.createMessageLog({
+          personalId: ctx.personal.id,
+          studentId: student.id,
+          phone: student.phone,
+          message,
+          direction: 'outbound',
+          status: result.success ? 'sent' : 'failed',
+        });
+        
+        if (!result.success) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: result.error || 'Erro ao enviar mensagem' });
+        }
+        
+        return { success: true, message: 'Mensagem enviada com sucesso!' };
+      }),
   }),
 
   // ==================== MESSAGE QUEUE ====================

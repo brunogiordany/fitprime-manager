@@ -1276,6 +1276,13 @@ export async function deleteAutomation(id: number) {
   await db.delete(automations).where(eq(automations.id, id));
 }
 
+export async function getAutomationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(automations).where(eq(automations.id, id)).limit(1);
+  return result[0] || null;
+}
+
 // ==================== MESSAGE QUEUE FUNCTIONS ====================
 export async function getPendingMessages(limit: number = 10) {
   const db = await getDb();

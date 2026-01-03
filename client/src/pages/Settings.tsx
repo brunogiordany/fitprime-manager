@@ -483,41 +483,31 @@ export default function Settings() {
             
             <Separator />
             
-            {/* Status de Conexão e Botão Conectar */}
+            {/* Status da Integração */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${whatsappStatus === 'connected' ? 'bg-green-100' : whatsappStatus === 'connecting' ? 'bg-yellow-100' : 'bg-gray-100'}`}>
-                    <Smartphone className={`h-5 w-5 ${whatsappStatus === 'connected' ? 'text-green-600' : whatsappStatus === 'connecting' ? 'text-yellow-600' : 'text-gray-500'}`} />
+                  <div className={`p-2 rounded-full ${whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? 'bg-green-100' : 'bg-gray-100'}`}>
+                    <Smartphone className={`h-5 w-5 ${whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? 'text-green-600' : 'text-gray-500'}`} />
                   </div>
                   <div>
-                    <p className="font-medium">Status da Conexão</p>
-                    <p className={`text-sm ${whatsappStatus === 'connected' ? 'text-green-600' : whatsappStatus === 'connecting' ? 'text-yellow-600' : 'text-muted-foreground'}`}>
-                      {whatsappStatus === 'connected' ? 'Conectado' : whatsappStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
+                    <p className="font-medium">Status da Integração</p>
+                    <p className={`text-sm ${whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? 'text-green-600' : 'text-muted-foreground'}`}>
+                      {whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? 'Configurado' : 'Não configurado'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {whatsappStatus === 'connected' ? (
+                  {whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? (
                     <>
                       <CheckCircle className="h-5 w-5 text-green-500" />
-                      <Button variant="outline" size="sm" onClick={handleDisconnectWhatsApp}>
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Desconectar
-                      </Button>
+                      <span className="text-sm text-green-600 font-medium">Pronto para enviar</span>
                     </>
                   ) : (
-                    <Button 
-                      onClick={handleConnectWhatsApp} 
-                      disabled={isLoadingQR || !whatsappConfig.enabled}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {isLoadingQR ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Conectando...</>
-                      ) : (
-                        <><QrCode className="h-4 w-4 mr-2" /> Conectar WhatsApp</>
-                      )}
-                    </Button>
+                    <>
+                      <XCircle className="h-5 w-5 text-gray-400" />
+                      <span className="text-sm text-muted-foreground">Preencha as credenciais</span>
+                    </>
                   )}
                 </div>
               </div>

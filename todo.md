@@ -2891,3 +2891,12 @@
 - [x] Adicionar campo stevoServer no schema do banco
 - [x] Criar testes unitários para configuração de URL
 - [x] Testar envio de mensagem via API (funcionando com sm15)
+
+## Melhorias WhatsApp/Stevo (v4.7)
+- [x] Remover/renomear botão "Conectar WhatsApp" que causa confusão
+- [x] Melhorar status da conexão (mostrar se está funcionando)
+- [x] Criar painel de mensagens do WhatsApp para ver conversas dos alunos (já existia)
+- [x] Armazenar mensagens recebidas via webhook no banco de dados (já existia)
+- [x] Interface para visualizar histórico de mensagens por aluno (já existia)
+- [x] Adicionar botão de envio manual nas automações
+- [x] Permitir disparar automação manualmente para um aluno específico

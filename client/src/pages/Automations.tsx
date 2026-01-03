@@ -31,7 +31,10 @@ import {
   MoreHorizontal,
   Clock,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Send,
+  Users,
+  Loader2
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -93,6 +96,25 @@ export default function Automations() {
       toast.error("Erro ao remover: " + error.message);
     },
   });
+
+  const triggerManualMutation = trpc.automations.triggerManual.useMutation({
+    onSuccess: (result) => {
+      if (result.sent > 0) {
+        toast.success(`Mensagens enviadas: ${result.sent} sucesso, ${result.failed} falhas`);
+      } else {
+        toast.error("Nenhuma mensagem foi enviada");
+      }
+      if (result.errors.length > 0) {
+        console.error("Erros:", result.errors);
+      }
+    },
+    onError: (error) => {
+      toast.error("Erro ao disparar: " + error.message);
+    },
+  });
+
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [selectedAutomation, setSelectedAutomation] = useState<any>(null);
 
   const resetForm = () => {
     setNewAutomation({
@@ -357,6 +379,15 @@ export default function Automations() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setSelectedAutomation(automation);
+                              setSendDialogOpen(true);
+                            }}
+                          >
+                            <Send className="h-4 w-4 mr-2" />
+                            Enviar Agora
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditAutomation(automation)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
@@ -538,6 +569,65 @@ export default function Automations() {
                 {createMutation.isPending || updateMutation.isPending 
                   ? "Salvando..." 
                   : editingAutomation ? "Atualizar" : "Criar Automação"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Send Automation Dialog */}
+        <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Enviar Automação Manualmente</DialogTitle>
+              <DialogDescription>
+                Dispare a automação "{selectedAutomation?.name}" para todos os alunos elegíveis.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium">Alunos elegíveis:</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  A mensagem será enviada para todos os alunos <strong>ativos</strong> que possuem:
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Telefone cadastrado</li>
+                  <li>Opt-in de WhatsApp ativado</li>
+                </ul>
+              </div>
+              <div className="mt-4 p-4 border rounded-lg">
+                <p className="text-sm font-medium mb-2">Prévia da mensagem:</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedAutomation?.messageTemplate}
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSendDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedAutomation) {
+                    triggerManualMutation.mutate({ automationId: selectedAutomation.id });
+                    setSendDialogOpen(false);
+                  }
+                }}
+                disabled={triggerManualMutation.isPending}
+              >
+                {triggerManualMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar para Todos
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
