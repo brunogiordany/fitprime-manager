@@ -2317,7 +2317,7 @@ export default function StudentProfile() {
 
         {/* Modal de Análise por IA */}
         <Dialog open={showAIAnalysisModal} onOpenChange={setShowAIAnalysisModal}>
-          <DialogContent className="w-[95vw] max-w-[700px] h-[90vh] max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-[700px] max-h-[90vh] flex flex-col p-0 overflow-hidden overflow-x-hidden">
             <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0">
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
@@ -2325,7 +2325,7 @@ export default function StudentProfile() {
               </DialogTitle>
             </DialogHeader>
             
-            <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 sm:px-6">
               {aiAnalysisMutation.isPending ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="relative">
@@ -2336,13 +2336,13 @@ export default function StudentProfile() {
                   <p className="text-xs sm:text-sm text-muted-foreground">Isso pode levar alguns segundos</p>
                 </div>
               ) : aiAnalysis ? (
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0 w-full">
                   {/* Resumo Geral */}
                   <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-purple-200">
                     <h3 className="font-semibold text-purple-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
                       <Activity className="h-4 w-4 flex-shrink-0" /> Resumo Geral
                     </h3>
-                    <p className="text-gray-700 text-xs sm:text-sm break-words">{aiAnalysis.analysis.resumoGeral}</p>
+                    <p className="text-gray-700 text-xs sm:text-sm break-words whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{aiAnalysis.analysis.resumoGeral}</p>
                   </div>
                   
                   {/* Alerta (se houver) */}
@@ -2351,7 +2351,7 @@ export default function StudentProfile() {
                       <h3 className="font-semibold text-red-800 flex items-center gap-2 mb-2 text-sm sm:text-base">
                         <AlertCircle className="h-4 w-4 flex-shrink-0" /> Alerta
                       </h3>
-                      <p className="text-red-700 text-xs sm:text-sm break-words">{aiAnalysis.analysis.alerta}</p>
+                      <p className="text-red-700 text-xs sm:text-sm break-words whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{aiAnalysis.analysis.alerta}</p>
                     </div>
                   )}
                   
@@ -2364,7 +2364,7 @@ export default function StudentProfile() {
                       {aiAnalysis.analysis.pontosFortes.map((ponto: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-green-700">
                           <span className="text-green-500 mt-0.5 flex-shrink-0">•</span>
-                          <span className="break-words">{ponto}</span>
+                          <span className="break-words" style={{ wordBreak: 'break-word' }}>{ponto}</span>
                         </li>
                       ))}
                     </ul>
@@ -2379,7 +2379,7 @@ export default function StudentProfile() {
                       {aiAnalysis.analysis.pontosAtencao.map((ponto: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-amber-700">
                           <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
-                          <span className="break-words">{ponto}</span>
+                          <span className="break-words" style={{ wordBreak: 'break-word' }}>{ponto}</span>
                         </li>
                       ))}
                     </ul>
@@ -2395,7 +2395,7 @@ export default function StudentProfile() {
                         {aiAnalysis.analysis.desequilibriosMusculares.map((item: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-blue-700">
                             <span className="text-blue-500 mt-0.5 flex-shrink-0">•</span>
-                            <span className="break-words">{item}</span>
+                            <span className="break-words" style={{ wordBreak: 'break-word' }}>{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -2413,7 +2413,7 @@ export default function StudentProfile() {
                           <span className="bg-indigo-200 text-indigo-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0">
                             {i + 1}
                           </span>
-                          <span className="break-words">{rec}</span>
+                          <span className="break-words" style={{ wordBreak: 'break-word' }}>{rec}</span>
                         </li>
                       ))}
                     </ul>
