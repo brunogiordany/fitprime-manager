@@ -2683,3 +2683,9 @@
 ## Bug Fotos Repetidas Depoimentos v6.24
 - [x] Substituir fotos repetidas nos depoimentos por imagens únicas
 - [x] Rafael e Marcos estão com a mesma foto - corrigir
+
+## Melhoria Seção Comparação Anual v6.25
+- [x] Mudar valores de mensal para anual na seção de comparação
+- [x] Mostrar lucro anual mesmo pagando R$ 291/mês (R$ 3.492/ano)
+- [x] Adicionar CTA: "Descubra se o FitPrime é pra você e quanto vai te custar"
+- [x] Reforçar: "Mas lembre-se, você não vai pagar R$ 291"

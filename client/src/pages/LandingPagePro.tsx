@@ -1624,27 +1624,28 @@ export default function LandingPagePro() {
       {/* CTA Final - Agressivo e Persuasivo */}
       <section className="py-24 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="container max-w-4xl mx-auto text-center">
-          {/* Headline Agressiva */}
+          {/* Headline Agressiva - ANUAL */}
           <div className="mb-8">
             <p className="text-emerald-400 font-semibold mb-4 text-lg">Chegou a hora de decidir</p>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Você vai continuar perdendo<br/>
-              <span className="text-red-400">R$ {displayPerdaMensal.toLocaleString('pt-BR')}/mês</span> em burocracia?
+              <span className="text-red-400">R$ {(displayPerdaMensal * 12).toLocaleString('pt-BR')}/ano</span> em burocracia?
             </h2>
+            <p className="text-gray-400 text-lg">São <span className="text-red-400 font-semibold">R$ {displayPerdaMensal.toLocaleString('pt-BR')}/mês</span> que você joga fora</p>
           </div>
 
-          {/* Contraste */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
+          {/* Contraste - ANUAL */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-red-900/30 border border-red-500/30 rounded-2xl p-6 text-left">
-              <h3 className="text-red-400 font-bold text-xl mb-4">Continuar como está:</h3>
+              <h3 className="text-red-400 font-bold text-xl mb-4">Continuar como está (por ano):</h3>
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-2">
                   <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  <span>Perder {horasBurocracia * 4}h/mês com WhatsApp e planilhas</span>
+                  <span>Perder <span className="text-red-400 font-semibold">{horasBurocracia * 4 * 12}h/ano</span> com WhatsApp e planilhas</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  <span>Deixar de ganhar R$ {displayPerdaMensal.toLocaleString('pt-BR')}/mês</span>
+                  <span>Deixar de ganhar <span className="text-red-400 font-semibold">R$ {(displayPerdaMensal * 12).toLocaleString('pt-BR')}/ano</span></span>
                 </li>
                 <li className="flex items-start gap-2">
                   <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -1657,15 +1658,15 @@ export default function LandingPagePro() {
               </ul>
             </div>
             <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl p-6 text-left">
-              <h3 className="text-emerald-400 font-bold text-xl mb-4">Usar o FitPrime:</h3>
+              <h3 className="text-emerald-400 font-bold text-xl mb-4">Usar o FitPrime (por ano):</h3>
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>Recuperar {horasBurocracia * 4}h/mês pra treinar ou descansar</span>
+                  <span>Recuperar <span className="text-emerald-400 font-semibold">{horasBurocracia * 4 * 12}h/ano</span> pra treinar ou descansar</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>Potencial de ganhar R$ {displayGanhoExtra.toLocaleString('pt-BR')}/mês a mais</span>
+                  <span>Potencial de ganhar <span className="text-emerald-400 font-semibold">R$ {(displayGanhoExtra * 12).toLocaleString('pt-BR')}/ano</span> a mais</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -1678,6 +1679,45 @@ export default function LandingPagePro() {
               </ul>
             </div>
           </div>
+
+          {/* ANCORAGEM ANUAL - Lucro mesmo pagando R$ 291/mês */}
+          {(() => {
+            const impactoAnual = (displayPerdaMensal + displayGanhoExtra) * 12;
+            const custoAncoragemAnual = 291 * 12; // R$ 3.492/ano
+            const lucroAnual = impactoAnual - custoAncoragemAnual;
+            
+            return (
+              <div className="bg-gradient-to-r from-emerald-900/50 via-teal-900/50 to-emerald-900/50 border border-emerald-500/30 rounded-2xl p-6 md:p-8 mb-12">
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-6">Mesmo que o FitPrime custasse R$ 291/mês...</h4>
+                
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-1">Seu ganho anual</p>
+                    <p className="text-2xl md:text-3xl font-bold text-emerald-400">R$ {impactoAnual.toLocaleString('pt-BR')}</p>
+                  </div>
+                  <span className="text-gray-500 text-2xl">-</span>
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-1">Custo anual (R$ 291/mês)</p>
+                    <p className="text-2xl md:text-3xl font-bold text-red-400">R$ {custoAncoragemAnual.toLocaleString('pt-BR')}</p>
+                  </div>
+                  <span className="text-gray-500 text-2xl">=</span>
+                  <div className="text-center bg-emerald-500/20 px-6 py-3 rounded-xl">
+                    <p className="text-gray-300 text-sm mb-1">SEU LUCRO ANUAL</p>
+                    <p className="text-3xl md:text-4xl font-black text-emerald-400">R$ {lucroAnual.toLocaleString('pt-BR')}</p>
+                  </div>
+                </div>
+                
+                <div className="border-t border-emerald-500/20 pt-6">
+                  <p className="text-xl text-white font-semibold mb-2">
+                    Mas lembre-se... <span className="text-emerald-400">você NÃO vai pagar R$ 291/mês</span>
+                  </p>
+                  <p className="text-gray-400">
+                    Clique no botão abaixo, descubra se o FitPrime é pra você e veja quanto realmente vai te custar.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* CTA Final - Impactante */}
           <div className="relative overflow-hidden">
