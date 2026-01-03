@@ -1531,8 +1531,8 @@ export default function LandingPagePro() {
             </p>
           </div>
 
-          {/* Tabela Comparativa */}
-          <div className="overflow-x-auto">
+          {/* Tabela Comparativa - Desktop */}
+          <div className="hidden md:block">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2 border-gray-200">
@@ -1593,8 +1593,53 @@ export default function LandingPagePro() {
             </table>
           </div>
 
-          {/* Legenda */}
-          <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
+          {/* Comparação Mobile - Layout de Cards */}
+          <div className="md:hidden space-y-3">
+            {([
+              { feature: "IA para gerar treinos personalizados", others: 0 },
+              { feature: "Agendamento automático com IA", others: 0 },
+              { feature: "Cobranças automáticas (PIX/Cartão)", others: 1 },
+              { feature: "Bloqueio para inadimplentes", others: 0 },
+              { feature: "WhatsApp integrado", others: 0 },
+              { feature: "Dashboard financeiro completo", others: 0 },
+              { feature: "Portal do aluno personalizado", others: 2 },
+              { feature: "Anamnese e avaliação física", others: 3 },
+              { feature: "Gráficos de evolução", others: 0 },
+              { feature: "Diário de treino detalhado", others: 0 },
+              { feature: "Relatórios de negócio", others: 0 },
+              { feature: "Análise de composição corporal", others: 0 },
+              { feature: "Periodização de treinos", others: 2 },
+              { feature: "Gestão de múltiplos personais", others: 0 },
+              { feature: "Suporte em português 24/7", others: 2 },
+              { feature: "Automações personalizadas", others: 0 },
+              { feature: "Lixeira com recuperação", others: 0 },
+            ]).map((item, i) => (
+              <div key={i} className="flex items-center justify-between bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 flex-1">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm font-medium">{item.feature}</span>
+                </div>
+                <div className="flex-shrink-0 ml-3">
+                  {item.others === 0 ? (
+                    <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">SÓ FITPRIME</span>
+                  ) : (
+                    <span className="text-gray-400 text-xs">{item.others}/3 apps</span>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {/* Resumo Mobile */}
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-4 mt-4">
+              <div className="text-center text-white">
+                <p className="text-2xl font-bold">17 funcionalidades</p>
+                <p className="text-emerald-100 text-sm">11 exclusivas do FitPrime</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Legenda - Só Desktop */}
+          <div className="hidden md:flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span>Incluso</span>

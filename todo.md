@@ -2648,3 +2648,8 @@
 - [x] Mover seção de ancoragem 10% para depois da seção 25% a mais
 - [x] Somar tudo na mega ancoragem: perda + ganho potencial + ganho 25%
 - [x] Criar impacto visual maior com valor total
+
+## Bug Tabela Comparação Mobile v6.17
+- [x] Tabela de comparação com concorrentes quebra no mobile (precisa scroll lateral)
+- [x] Redesenhar para layout responsivo sem scroll horizontal
+- [x] Considerar layout de cards ou colunas empilhadas no mobile
