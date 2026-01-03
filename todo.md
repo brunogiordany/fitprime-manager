@@ -2900,3 +2900,10 @@
 - [x] Interface para visualizar histórico de mensagens por aluno (já existia)
 - [x] Adicionar botão de envio manual nas automações
 - [x] Permitir disparar automação manualmente para um aluno específico
+
+## Melhorias WhatsApp/Stevo (v4.8)
+- [x] Adicionar filtro de alunos no modal de envio manual de automações
+- [x] Lista com checkboxes para selecionar alunos específicos
+- [x] Opção "Selecionar todos" / "Desmarcar todos"
+- [x] Melhorar integração WhatsApp na página de Mensagens
+- [x] Permitir conversar em tempo real via WhatsApp (mensagens enviadas no chat são enviadas via Stevo)

@@ -212,6 +212,95 @@ export async function setWebhook(config: StevoConfig, webhookUrl: string, events
 }
 
 /**
+ * Envia mídia via Stevo (imagem, vídeo, áudio, documento)
+ * 
+ * Endpoints:
+ * - Imagem: POST /chat/send/image
+ * - Vídeo: POST /chat/send/video
+ * - Áudio: POST /chat/send/audio
+ * - Documento: POST /chat/send/document
+ */
+export async function sendWhatsAppMedia(params: {
+  phone: string;
+  mediaUrl: string;
+  mediaType: 'image' | 'video' | 'audio' | 'file';
+  caption?: string;
+  config: StevoConfig;
+}): Promise<SendMessageResult> {
+  const { phone, mediaUrl, mediaType, caption, config } = params;
+  
+  if (!config.apiKey || !config.instanceName) {
+    console.log('[Stevo] API Key ou Instance não configurados');
+    return { success: false, error: 'Stevo não configurado' };
+  }
+  
+  const formattedPhone = formatPhoneNumber(phone);
+  
+  // Mapear tipo de mídia para endpoint
+  const endpointMap: Record<string, string> = {
+    'image': 'image',
+    'video': 'video',
+    'audio': 'audio',
+    'file': 'document',
+  };
+  
+  const endpoint = endpointMap[mediaType] || 'document';
+  
+  try {
+    const baseUrl = getStevoBaseUrl(config.server);
+    const url = `${baseUrl}/chat/send/${endpoint}`;
+    
+    console.log('[Stevo] Enviando mídia para:', formattedPhone);
+    console.log('[Stevo] Tipo:', mediaType);
+    console.log('[Stevo] URL:', mediaUrl);
+    console.log('[Stevo] Endpoint:', url);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'token': config.apiKey,
+      },
+      body: JSON.stringify({
+        Phone: formattedPhone,
+        Media: mediaUrl,
+        Caption: caption || '',
+      }),
+    });
+    
+    const responseText = await response.text();
+    console.log('[Stevo] Response status:', response.status);
+    console.log('[Stevo] Response body:', responseText);
+    
+    if (!response.ok) {
+      console.error('[Stevo] Erro na resposta:', response.status, responseText);
+      return { success: false, error: `HTTP ${response.status}: ${responseText}` };
+    }
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = { raw: responseText };
+    }
+    
+    console.log('[Stevo] Mídia enviada com sucesso:', result);
+    
+    return {
+      success: result.success || response.ok,
+      messageId: result.data?.Id || result.key?.id || result.messageId,
+    };
+  } catch (error) {
+    console.error('[Stevo] Erro ao enviar mídia:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    };
+  }
+}
+
+/**
  * Envia lembrete de sessão para o aluno
  */
 export async function sendSessionReminder(params: {

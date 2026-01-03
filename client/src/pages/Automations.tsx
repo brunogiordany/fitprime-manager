@@ -36,7 +36,7 @@ import {
   Users,
   Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -44,6 +44,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Automations() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
@@ -115,6 +118,23 @@ export default function Automations() {
 
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState<any>(null);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(true);
+
+  // Buscar alunos elegíveis (ativos, com telefone e opt-in)
+  const { data: eligibleStudents } = trpc.students.list.useQuery();
+  const filteredStudents = eligibleStudents?.filter(
+    (s: any) => s.phone && s.whatsappOptIn && s.status === 'active'
+  ) || [];
+
+  // Quando abre o modal, seleciona todos por padrão
+  useEffect(() => {
+    if (sendDialogOpen && filteredStudents.length > 0) {
+      if (selectAll) {
+        setSelectedStudents(filteredStudents.map((s: any) => s.id));
+      }
+    }
+  }, [sendDialogOpen, filteredStudents, selectAll]);
 
   const resetForm = () => {
     setNewAutomation({
@@ -575,47 +595,122 @@ export default function Automations() {
         </Dialog>
 
         {/* Send Automation Dialog */}
-        <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={sendDialogOpen} onOpenChange={(open) => {
+          setSendDialogOpen(open);
+          if (!open) {
+            setSelectedStudents([]);
+            setSelectAll(true);
+          }
+        }}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>Enviar Automação Manualmente</DialogTitle>
               <DialogDescription>
-                Dispare a automação "{selectedAutomation?.name}" para todos os alunos elegíveis.
+                Dispare a automação "{selectedAutomation?.name}" para os alunos selecionados.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Alunos elegíveis:</span>
+            <div className="py-4 space-y-4 flex-1 overflow-hidden flex flex-col">
+              {/* Seleção de Alunos */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">Selecionar Alunos</span>
+                    <Badge variant="secondary">{selectedStudents.length} de {filteredStudents.length}</Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedStudents.length === filteredStudents.length) {
+                        setSelectedStudents([]);
+                        setSelectAll(false);
+                      } else {
+                        setSelectedStudents(filteredStudents.map((s: any) => s.id));
+                        setSelectAll(true);
+                      }
+                    }}
+                  >
+                    {selectedStudents.length === filteredStudents.length ? 'Desmarcar todos' : 'Selecionar todos'}
+                  </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  A mensagem será enviada para todos os alunos <strong>ativos</strong> que possuem:
-                </p>
-                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>Telefone cadastrado</li>
-                  <li>Opt-in de WhatsApp ativado</li>
-                </ul>
+                
+                {filteredStudents.length === 0 ? (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <p className="text-sm text-yellow-700">
+                      Nenhum aluno elegível encontrado. Verifique se seus alunos possuem telefone cadastrado e opt-in de WhatsApp ativado.
+                    </p>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[200px] border rounded-lg">
+                    <div className="p-2 space-y-1">
+                      {filteredStudents.map((student: any) => (
+                        <div 
+                          key={student.id} 
+                          className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                          onClick={() => {
+                            if (selectedStudents.includes(student.id)) {
+                              setSelectedStudents(selectedStudents.filter(id => id !== student.id));
+                              setSelectAll(false);
+                            } else {
+                              setSelectedStudents([...selectedStudents, student.id]);
+                            }
+                          }}
+                        >
+                          <Checkbox
+                            id={`student-${student.id}`}
+                            checked={selectedStudents.includes(student.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedStudents([...selectedStudents, student.id]);
+                              } else {
+                                setSelectedStudents(selectedStudents.filter(id => id !== student.id));
+                                setSelectAll(false);
+                              }
+                            }}
+                          />
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs">
+                              {student.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{student.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{student.phone}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
               </div>
-              <div className="mt-4 p-4 border rounded-lg">
+              
+              {/* Prévia da Mensagem */}
+              <div className="p-4 border rounded-lg bg-muted/30">
                 <p className="text-sm font-medium mb-2">Prévia da mensagem:</p>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                   {selectedAutomation?.messageTemplate}
                 </p>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4">
               <Button variant="outline" onClick={() => setSendDialogOpen(false)}>
                 Cancelar
               </Button>
               <Button 
                 onClick={() => {
-                  if (selectedAutomation) {
-                    triggerManualMutation.mutate({ automationId: selectedAutomation.id });
+                  if (selectedAutomation && selectedStudents.length > 0) {
+                    // Enviar para alunos selecionados
+                    selectedStudents.forEach(studentId => {
+                      triggerManualMutation.mutate({ 
+                        automationId: selectedAutomation.id,
+                        studentId 
+                      });
+                    });
                     setSendDialogOpen(false);
                   }
                 }}
-                disabled={triggerManualMutation.isPending}
+                disabled={triggerManualMutation.isPending || selectedStudents.length === 0}
               >
                 {triggerManualMutation.isPending ? (
                   <>
@@ -625,7 +720,7 @@ export default function Automations() {
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Enviar para Todos
+                    Enviar para {selectedStudents.length} aluno{selectedStudents.length !== 1 ? 's' : ''}
                   </>
                 )}
               </Button>

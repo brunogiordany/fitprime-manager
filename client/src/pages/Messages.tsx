@@ -158,10 +158,16 @@ export default function Messages() {
 
   // Mutation para enviar mensagem
   const sendMessage = trpc.chat.send.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       setNewMessage("");
       refetchChat();
       refetchStudents();
+      // Mostrar feedback de WhatsApp
+      if (data.whatsappSent) {
+        toast.success("Mensagem enviada via WhatsApp!", { icon: "📤" });
+      } else if (data.whatsappError) {
+        toast.warning(`Mensagem salva, mas não enviada via WhatsApp: ${data.whatsappError}`);
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao enviar mensagem");

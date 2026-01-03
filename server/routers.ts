@@ -667,6 +667,7 @@ export const appRouter = router({
         mediaDuration: z.number().optional(),
         audioTranscription: z.string().optional(),
         linkPreview: z.string().optional(),
+        sendViaWhatsApp: z.boolean().default(true), // Enviar também via WhatsApp
       }))
       .mutation(async ({ ctx, input }) => {
         // Verificar se o aluno pertence ao personal
@@ -680,6 +681,7 @@ export const appRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
         }
         
+        // Salvar mensagem no banco de dados (chat interno)
         const messageId = await db.createChatMessage({
           personalId: ctx.personal.id,
           studentId: input.studentId,
@@ -695,7 +697,68 @@ export const appRouter = router({
           linkPreviewUrl: input.linkPreview,
         });
         
-        return { success: true, messageId };
+        // Enviar via WhatsApp/Stevo se habilitado e aluno tem telefone
+        let whatsappSent = false;
+        let whatsappError = null;
+        
+        if (input.sendViaWhatsApp && student.phone && student.whatsappOptIn) {
+          const personal = ctx.personal;
+          if (personal.evolutionApiKey && personal.evolutionInstance) {
+            try {
+              const { sendWhatsAppMessage, sendWhatsAppMedia } = await import('./stevo');
+              
+              if (input.messageType === 'text' && input.message) {
+                // Enviar mensagem de texto
+                const result = await sendWhatsAppMessage({
+                  phone: student.phone,
+                  message: input.message,
+                  config: {
+                    apiKey: personal.evolutionApiKey,
+                    instanceName: personal.evolutionInstance,
+                    server: (personal as any).stevoServer || 'sm15',
+                  },
+                });
+                whatsappSent = result.success;
+                if (!result.success) whatsappError = result.error;
+              } else if (input.mediaUrl) {
+                // Enviar mídia (imagem, vídeo, áudio, arquivo)
+                const result = await sendWhatsAppMedia({
+                  phone: student.phone,
+                  mediaUrl: input.mediaUrl,
+                  mediaType: input.messageType as 'image' | 'video' | 'audio' | 'file',
+                  caption: input.message || undefined,
+                  config: {
+                    apiKey: personal.evolutionApiKey,
+                    instanceName: personal.evolutionInstance,
+                    server: (personal as any).stevoServer || 'sm15',
+                  },
+                });
+                whatsappSent = result.success;
+                if (!result.success) whatsappError = result.error;
+              }
+              
+              // Registrar no log de mensagens
+              await db.createMessageLog({
+                personalId: ctx.personal.id,
+                studentId: input.studentId,
+                phone: student.phone,
+                message: input.message || 'Mídia enviada',
+                direction: 'outbound',
+                status: whatsappSent ? 'sent' : 'failed',
+              });
+            } catch (error: any) {
+              whatsappError = error.message;
+              console.error('Erro ao enviar WhatsApp:', error);
+            }
+          }
+        }
+        
+        return { 
+          success: true, 
+          messageId, 
+          whatsappSent,
+          whatsappError 
+        };
       }),
     
     // Editar mensagem
