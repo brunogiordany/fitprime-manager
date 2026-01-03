@@ -34,7 +34,8 @@ import {
   Lock,
   Smartphone as PhoneIcon,
   X,
-  Minus
+  Minus,
+  Crown
 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
@@ -624,6 +625,120 @@ export default function LandingPagePro() {
                 >
                   Ver Como Funciona
                   <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* SEÇÃO DIVISOR DE ÁGUAS - ALUNOS PREMIUM */}
+          <div className="mt-12 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+            {/* Efeitos visuais */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="text-center mb-10">
+                <Badge className="mb-4 bg-purple-500/20 text-purple-300 border-purple-500/30">
+                  <Crown className="h-3 w-3 mr-1" />
+                  Divisor de Águas
+                </Badge>
+                <h3 className="text-2xl md:text-4xl font-bold mb-4">
+                  E se você pudesse cobrar <span className="text-purple-400">25% a mais</span> por aula?
+                </h3>
+                <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+                  Com métricas profissionais, você atrai os alunos que <strong className="text-white">mais pagam</strong>: fisiculturistas, empresários e amantes do mundo fitness.
+                </p>
+              </div>
+
+              {/* Grid de benefícios */}
+              <div className="grid md:grid-cols-3 gap-6 mb-10">
+                <div className="bg-white/5 backdrop-blur border border-purple-500/30 rounded-xl p-6 text-center">
+                  <div className="h-14 w-14 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-7 w-7 text-purple-400" />
+                  </div>
+                  <h4 className="font-bold text-white mb-2">Métricas Profissionais</h4>
+                  <p className="text-gray-400 text-sm">
+                    Gráficos de evolução, BF%, massa magra, circunferências. Tudo que alunos exigentes amam.
+                  </p>
+                </div>
+                <div className="bg-white/5 backdrop-blur border border-purple-500/30 rounded-xl p-6 text-center">
+                  <div className="h-14 w-14 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Trophy className="h-7 w-7 text-purple-400" />
+                  </div>
+                  <h4 className="font-bold text-white mb-2">Alunos de Elite</h4>
+                  <p className="text-gray-400 text-sm">
+                    Fisiculturistas, atletas e empresários querem dados. Quem oferece, cobra mais.
+                  </p>
+                </div>
+                <div className="bg-white/5 backdrop-blur border border-purple-500/30 rounded-xl p-6 text-center">
+                  <div className="h-14 w-14 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-7 w-7 text-purple-400" />
+                  </div>
+                  <h4 className="font-bold text-white mb-2">Posicionamento Premium</h4>
+                  <p className="text-gray-400 text-sm">
+                    Saia do "personal comum" e entre no nível dos profissionais que cobram R$200+ por aula.
+                  </p>
+                </div>
+              </div>
+
+              {/* Cálculo do potencial */}
+              <div className="bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border border-purple-500/40 rounded-2xl p-6 md:p-8 mb-8">
+                <div className="text-center mb-6">
+                  <p className="text-purple-300 text-sm mb-2">BASEADO NOS SEUS NÚMEROS:</p>
+                  <p className="text-white text-lg">
+                    Você cobra <span className="text-purple-400 font-bold text-2xl">R$ {valorAula}</span> por aula
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-2">Se cobrasse 25% a mais:</p>
+                    <p className="text-3xl font-bold text-purple-400">
+                      R$ {Math.round(valorAula * 1.25)}/aula
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-2">Ganho extra por mês:</p>
+                    <p className="text-3xl font-bold text-indigo-400">
+                      +R$ {Math.round(valorAula * 0.25 * horasBurocracia * 4).toLocaleString('pt-BR')}
+                    </p>
+                    <p className="text-xs text-gray-500">({horasBurocracia * 4} aulas/mês)</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-2">+ Ganho com FitPrime:</p>
+                    <p className="text-3xl font-bold text-emerald-400">
+                      +R$ {displayGanhoExtra.toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-purple-500/30 text-center">
+                  <p className="text-gray-300 mb-2">POTENCIAL TOTAL:</p>
+                  <p className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-emerald-400">
+                    +R$ {(Math.round(valorAula * 0.25 * horasBurocracia * 4) + displayGanhoExtra).toLocaleString('pt-BR')}/mês
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Cobrando mais + economizando tempo com FitPrime
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="text-center">
+                <p className="text-gray-300 mb-4">
+                  Eleve seu nível e atraia os alunos que pagam o que você merece.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    const featuresSection = document.getElementById('features');
+                    if (featuresSection) featuresSection.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-lg px-8 py-6"
+                >
+                  Quero Ser um Personal Premium
+                  <Crown className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             </div>

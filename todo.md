@@ -2609,3 +2609,12 @@
 
 ## Bug Landing Page v6.10
 - [x] Corrigir botão "Quais São os Benefícios Exclusivos?" que está cortado/fora do container
+
+## Seção Divisor de Águas - Alunos Premium v6.11
+- [x] Criar seção "divisor de águas" com ângulo fisiculturista/alunos premium
+- [x] Comunicação: métricas, dados, gráficos profissionais
+- [x] Mostrar que pode cobrar mais com ferramentas profissionais
+- [x] Puxar valor da aula da calculadora
+- [x] Calcular: se cobrasse 25% a mais, ganharia X
+- [x] Somar com ganho do FitPrime para mostrar potencial total
+- [x] Público-alvo: fisiculturistas, empresários, amantes do mundo maromba
