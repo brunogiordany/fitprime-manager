@@ -2813,3 +2813,13 @@
 - [x] Erro 404 ao editar medidas no lado do personal (botão de lápis)
 - [x] Adicionar gráfico de Cálculos Automáticos visível fora do modal (para aluno e personal)
 - [ ] Modal de Análise do Aluno (lado do personal) - atualizar layout igual aos outros (PENDENTE - próxima tarefa)
+
+## Funcionalidade Logar como Aluno (v6.47)
+- [x] Botão "Logar como Aluno" no portal do personal (movido para dropdown do usuário)
+- [x] Removido "Portal do Aluno" do menu lateral esquerdo
+- [x] Personal pode acessar o portal do aluno como seu próprio aluno
+
+## Card Visual Cálculos Automáticos (v6.48)
+- [ ] Criar card visual com fundo verde claro igual à imagem de referência
+- [ ] 4 quadrantes: IMC + classificação, BF Estimado, Massa Gorda Est., Massa Magra Est.
+- [ ] Estilo visual igual ao print enviado (cores verde, laranja, azul)

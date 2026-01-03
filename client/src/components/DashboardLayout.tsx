@@ -38,11 +38,11 @@ import {
   Trash2,
   BarChart3,
   AlertTriangle,
-  Eye,
   Shield,
   BookOpen,
   TrendingUp,
-  HelpCircle
+  HelpCircle,
+  UserCircle
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -66,7 +66,7 @@ const menuItems = [
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Activity, label: "Mensagens", path: "/mensagens" },
-  { icon: Eye, label: "Portal do Aluno", path: "/portal-preview" },
+  
   { icon: Shield, label: "Acessos do Aluno", path: "/acessos-aluno" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
   { icon: Trash2, label: "Lixeira", path: "/lixeira" },
@@ -322,6 +322,13 @@ function DashboardLayoutContent({
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Configurações</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLocation('/portal-aluno')}
+                  className="cursor-pointer text-emerald-600 focus:text-emerald-600"
+                >
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  <span>Logar como Aluno</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
