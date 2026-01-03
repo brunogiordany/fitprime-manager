@@ -2744,3 +2744,9 @@
 - [x] Página de ativação de conta (/ativar-conta)
 - [x] Integrar webhook da Cakto com envio de email
 - [x] Testar fluxo completo de compra → email → cadastro → acesso
+
+
+## Cadastro Trial com Senha (v6.36)
+- [x] Adicionar campo de criação de senha nas páginas de teste de 24h
+- [x] Validar senha (mínimo 6 caracteres)
+- [x] Salvar senha criptografada no cadastro

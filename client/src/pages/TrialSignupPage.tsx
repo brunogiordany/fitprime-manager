@@ -22,7 +22,10 @@ import {
   Mail,
   User,
   CreditCard,
-  Loader2
+  Loader2,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 export default function TrialSignupPage() {
@@ -35,7 +38,11 @@ export default function TrialSignupPage() {
     phone: "",
     cpf: "",
     birthDate: "",
+    password: "",
+    confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createTrialMutation = trpc.trial.createTrial.useMutation();
@@ -137,6 +144,18 @@ export default function TrialSignupPage() {
       newErrors.birthDate = "Data inválida";
     }
     
+    if (!formData.password) {
+      newErrors.password = "Senha é obrigatória";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Confirme sua senha";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "As senhas não coincidem";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -158,6 +177,7 @@ export default function TrialSignupPage() {
         phone: formData.phone.replace(/\D/g, ""),
         cpf: formData.cpf.replace(/\D/g, ""),
         birthDate: formattedDate,
+        password: formData.password,
       });
       
       setIsSuccess(true);
@@ -377,6 +397,56 @@ export default function TrialSignupPage() {
                     />
                     {errors.birthDate && <p className="text-xs text-red-500 mt-1">{errors.birthDate}</p>}
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    Criar Senha
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Mínimo 6 caracteres"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword" className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    Confirmar Senha
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Digite a senha novamente"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className={errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword}</p>}
                 </div>
 
                 <Button 

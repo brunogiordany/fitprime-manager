@@ -3,6 +3,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import bcrypt from "bcryptjs";
 
 // Schema para criar trial
 const createTrialSchema = z.object({
@@ -11,6 +12,7 @@ const createTrialSchema = z.object({
   phone: z.string().min(10, "Telefone inválido"),
   cpf: z.string().min(11, "CPF inválido"),
   birthDate: z.string().min(10, "Data de nascimento inválida"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   cref: z.string().optional(),
 });
 
@@ -53,6 +55,9 @@ export const trialRouter = router({
       // Gerar openId único para usuários de trial (baseado no CPF + timestamp)
       const openId = `trial_${input.cpf.replace(/\D/g, '')}_${Date.now()}`;
       
+      // Hash da senha
+      const passwordHash = await bcrypt.hash(input.password, 10);
+      
       // Converter data de DD/MM/YYYY para YYYY-MM-DD
       let birthDateFormatted = input.birthDate;
       if (input.birthDate.includes('/')) {
@@ -61,8 +66,8 @@ export const trialRouter = router({
       }
 
       await db.execute(sql`
-        INSERT INTO users (openId, name, email, cpf, phone, birthDate, role, createdAt, updatedAt)
-        VALUES (${openId}, ${input.name}, ${input.email}, ${input.cpf.replace(/\D/g, '')}, ${input.phone.replace(/\D/g, '')}, ${birthDateFormatted}, 'user', NOW(), NOW())
+        INSERT INTO users (openId, name, email, cpf, phone, birthDate, role, passwordHash, loginMethod, createdAt, updatedAt)
+        VALUES (${openId}, ${input.name}, ${input.email}, ${input.cpf.replace(/\D/g, '')}, ${input.phone.replace(/\D/g, '')}, ${birthDateFormatted}, 'user', ${passwordHash}, 'password', NOW(), NOW())
       `);
 
       // Obter o ID do usuário criado

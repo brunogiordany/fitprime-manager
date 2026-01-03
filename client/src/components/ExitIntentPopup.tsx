@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, Clock, X, Loader2, CheckCircle2 } from "lucide-react";
+import { Gift, Clock, X, Loader2, CheckCircle2, Lock, Eye, EyeOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { trackExitIntentShown, trackExitIntentConverted, trackTrialFormSubmitted } from "@/lib/analytics";
 
@@ -23,7 +23,9 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
     phone: "",
     cpf: "",
     birthDate: "",
+    password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createTrialMutation = trpc.trial.createTrial.useMutation();
@@ -164,6 +166,12 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
       newErrors.birthDate = "Data inválida";
     }
     
+    if (!formData.password) {
+      newErrors.password = "Senha é obrigatória";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Mínimo 6 caracteres";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -184,6 +192,7 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
         phone: formData.phone.replace(/\D/g, ""),
         cpf: formData.cpf.replace(/\D/g, ""),
         birthDate: formattedDate,
+        password: formData.password,
       });
       
       setIsSuccess(true);
@@ -312,6 +321,31 @@ export default function ExitIntentPopup({ enabled = true, delay = 3000 }: ExitIn
                     />
                     {errors.birthDate && <p className="text-xs text-red-500 mt-1">{errors.birthDate}</p>}
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="password" className="flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Criar Senha
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Mínimo 6 caracteres"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
                 </div>
 
                 {errors.submit && (
