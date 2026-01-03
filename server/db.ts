@@ -138,6 +138,13 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// Atualizar CREF do usuário
+export async function updateUserCref(userId: number, cref: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ cref }).where(eq(users.id, userId));
+}
+
 // ==================== PERSONAL FUNCTIONS ====================
 export async function getPersonalByUserId(userId: number) {
   const db = await getDb();
@@ -159,7 +166,7 @@ export async function updatePersonal(id: number, data: Partial<InsertPersonal>) 
   await db.update(personals).set(data).where(eq(personals.id, id));
 }
 
-// Listar todos os personais (para administração)
+// Listar todos os personais (para administração) - exclui deletados
 export async function getAllPersonals() {
   const db = await getDb();
   if (!db) return [];
@@ -184,6 +191,7 @@ export async function getAllPersonals() {
     })
     .from(personals)
     .leftJoin(users, eq(personals.userId, users.id))
+    .where(isNull(personals.deletedAt))
     .orderBy(desc(personals.createdAt));
   
   return result;
@@ -210,8 +218,38 @@ export async function updatePersonalSubscription(personalId: number, data: {
   await db.update(personals).set(data).where(eq(personals.id, personalId));
 }
 
-// Excluir cadastro de personal completamente (para admin)
-export async function deletePersonalCompletely(personalId: number) {
+// Soft delete de personal (para admin) - marca como excluído mas mantém no banco
+export async function softDeletePersonal(personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const now = new Date();
+  
+  // Buscar o personal para obter o userId
+  const personal = await db.select({ userId: personals.userId })
+    .from(personals)
+    .where(eq(personals.id, personalId))
+    .limit(1);
+  
+  if (!personal[0]) {
+    throw new Error("Personal não encontrado");
+  }
+  
+  // Marcar personal como excluído
+  await db.update(personals)
+    .set({ deletedAt: now })
+    .where(eq(personals.id, personalId));
+  
+  // Marcar usuário como excluído
+  if (personal[0].userId) {
+    await db.update(users)
+      .set({ deletedAt: now })
+      .where(eq(users.id, personal[0].userId));
+  }
+}
+
+// Restaurar personal excluído
+export async function restorePersonal(personalId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
@@ -225,14 +263,68 @@ export async function deletePersonalCompletely(personalId: number) {
     throw new Error("Personal não encontrado");
   }
   
-  // Excluir todos os dados relacionados ao personal
-  // 1. Excluir alunos do personal
+  // Restaurar personal
+  await db.update(personals)
+    .set({ deletedAt: null })
+    .where(eq(personals.id, personalId));
+  
+  // Restaurar usuário
+  if (personal[0].userId) {
+    await db.update(users)
+      .set({ deletedAt: null })
+      .where(eq(users.id, personal[0].userId));
+  }
+}
+
+// Listar personais excluídos (lixeira)
+export async function getDeletedPersonals() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db
+    .select({
+      id: personals.id,
+      userId: personals.userId,
+      businessName: personals.businessName,
+      cref: personals.cref,
+      whatsappNumber: personals.whatsappNumber,
+      subscriptionStatus: personals.subscriptionStatus,
+      createdAt: personals.createdAt,
+      deletedAt: personals.deletedAt,
+      userName: users.name,
+      userEmail: users.email,
+      userCpf: users.cpf,
+    })
+    .from(personals)
+    .leftJoin(users, eq(personals.userId, users.id))
+    .where(isNotNull(personals.deletedAt))
+    .orderBy(desc(personals.deletedAt));
+  
+  return result;
+}
+
+// Excluir permanentemente (para limpar da lixeira)
+export async function deletePersonalPermanently(personalId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar o personal para obter o userId
+  const personal = await db.select({ userId: personals.userId })
+    .from(personals)
+    .where(eq(personals.id, personalId))
+    .limit(1);
+  
+  if (!personal[0]) {
+    throw new Error("Personal não encontrado");
+  }
+  
+  // Excluir alunos do personal
   await db.delete(students).where(eq(students.personalId, personalId));
   
-  // 2. Excluir o personal
+  // Excluir o personal
   await db.delete(personals).where(eq(personals.id, personalId));
   
-  // 3. Se houver userId, excluir o usuário também
+  // Excluir o usuário
   if (personal[0].userId) {
     await db.delete(users).where(eq(users.id, personal[0].userId));
   }

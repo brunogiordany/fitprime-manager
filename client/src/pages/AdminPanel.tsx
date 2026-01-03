@@ -71,6 +71,8 @@ import {
   Copy,
   ExternalLink,
   Trash2,
+  RotateCcw,
+  Trash,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -686,6 +688,121 @@ function PersonalDetailsSheet({
   );
 }
 
+// Componente da aba Lixeira
+function TrashTab() {
+  const { data: deletedPersonals, isLoading, refetch } = trpc.admin.getDeletedPersonals.useQuery();
+  
+  const restoreMutation = trpc.admin.restorePersonal.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const deletePermanentlyMutation = trpc.admin.deletePersonalPermanently.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  if (!deletedPersonals || deletedPersonals.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Trash className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>A lixeira está vazia</p>
+        <p className="text-sm">Cadastros excluídos aparecerão aqui</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground mb-4">
+        {deletedPersonals.length} cadastro(s) na lixeira. Você pode restaurar ou excluir permanentemente.
+      </p>
+      
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Personal</TableHead>
+            <TableHead>CPF</TableHead>
+            <TableHead>Excluído em</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {deletedPersonals.map((personal) => (
+            <TableRow key={personal.id}>
+              <TableCell>
+                <div>
+                  <p className="font-medium">{personal.userName || personal.businessName || "Sem nome"}</p>
+                  <p className="text-sm text-muted-foreground">{personal.userEmail || "-"}</p>
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="font-mono text-sm">{personal.userCpf || "-"}</span>
+              </TableCell>
+              <TableCell>
+                {personal.deletedAt
+                  ? new Date(personal.deletedAt).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-"}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => restoreMutation.mutate({ personalId: personal.id })}
+                    disabled={restoreMutation.isPending}
+                    className="text-green-600 hover:text-green-700"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" />
+                    Restaurar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("Tem certeza? Esta ação é IRREVERSÍVEL e excluirá todos os dados permanentemente.")) {
+                        deletePermanentlyMutation.mutate({ personalId: personal.id });
+                      }
+                    }}
+                    disabled={deletePermanentlyMutation.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 // Componente principal
 export default function AdminPanel() {
   const auth = useAuth();
@@ -954,7 +1071,7 @@ export default function AdminPanel() {
       {/* Content */}
       <div className="container py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -974,6 +1091,10 @@ export default function AdminPanel() {
             <TabsTrigger value="activity" className="gap-2">
               <Activity className="h-4 w-4" />
               Atividade
+            </TabsTrigger>
+            <TabsTrigger value="trash" className="gap-2">
+              <Trash className="h-4 w-4" />
+              Lixeira
             </TabsTrigger>
           </TabsList>
           
@@ -1722,6 +1843,24 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+          
+          {/* Lixeira */}
+          <TabsContent value="trash" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trash className="h-5 w-5" />
+                  Lixeira
+                </CardTitle>
+                <CardDescription>
+                  Cadastros excluídos que podem ser recuperados
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrashTab />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

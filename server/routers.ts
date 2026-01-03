@@ -255,13 +255,46 @@ export const appRouter = router({
         };
       }),
     
-    // Excluir cadastro de personal permanentemente
+    // Mover cadastro para lixeira (soft delete)
     deletePersonal: ownerProcedure
       .input(z.object({
         personalId: z.number(),
       }))
       .mutation(async ({ input }) => {
-        await db.deletePersonalCompletely(input.personalId);
+        await db.softDeletePersonal(input.personalId);
+        
+        return {
+          success: true,
+          message: 'Cadastro movido para lixeira',
+        };
+      }),
+    
+    // Restaurar cadastro da lixeira
+    restorePersonal: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.restorePersonal(input.personalId);
+        
+        return {
+          success: true,
+          message: 'Cadastro restaurado com sucesso',
+        };
+      }),
+    
+    // Listar personais na lixeira
+    getDeletedPersonals: ownerProcedure.query(async () => {
+      return await db.getDeletedPersonals();
+    }),
+    
+    // Excluir permanentemente da lixeira
+    deletePersonalPermanently: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deletePersonalPermanently(input.personalId);
         
         return {
           success: true,
@@ -539,7 +572,14 @@ export const appRouter = router({
         evolutionInstance: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Atualizar personal
         await db.updatePersonal(ctx.personal.id, input);
+        
+        // Se CREF foi atualizado, também atualizar na tabela users
+        if (input.cref) {
+          await db.updateUserCref(ctx.user.id, input.cref);
+        }
+        
         return { success: true };
       }),
     

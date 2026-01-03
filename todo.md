@@ -2762,3 +2762,9 @@
 - [x] Adicionar coluna de CPF na tabela de personais
 - [x] Adicionar pesquisa por CPF no campo de busca
 - [x] Adicionar botão de excluir cadastro para limpar CPFs
+
+
+## Bug CREF e Lixeira Admin (v6.39)
+- [x] Corrigir bug do popup de CREF que não reconhece após salvar
+- [x] Implementar soft delete ao invés de exclusão permanente
+- [x] Criar aba de lixeira no admin para recuperar cadastros

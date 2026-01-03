@@ -15,6 +15,7 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"), // Soft delete - data de exclusão
 });
 
 export type User = typeof users.$inferSelect;
@@ -42,6 +43,7 @@ export const personals = mysqlTable("personals", {
   testAccessGrantedAt: timestamp("testAccessGrantedAt"), // Data em que o acesso de teste foi liberado
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  deletedAt: timestamp("deletedAt"), // Soft delete - data de exclusão
 });
 
 export type Personal = typeof personals.$inferSelect;
