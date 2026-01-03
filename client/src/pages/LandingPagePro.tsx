@@ -294,10 +294,11 @@ export default function LandingPagePro() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <Dumbbell className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-gray-900">FitPrime</span>
+            <img 
+              src="/fitprime-logo.png" 
+              alt="FitPrime Manager" 
+              className="h-10 w-auto object-contain"
+            />
           </div>
 
         </div>

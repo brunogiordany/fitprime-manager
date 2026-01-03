@@ -103,13 +103,11 @@ export default function DashboardLayout({
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                <Dumbbell className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">FitPrime Manager</h1>
-                <p className="text-sm text-muted-foreground">Gestão para Personal Trainers</p>
-              </div>
+              <img 
+                src="/fitprime-logo.png" 
+                alt="FitPrime Manager" 
+                className="h-16 w-auto object-contain"
+              />
             </div>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
               Faça login para acessar seu painel de gestão de alunos, treinos e cobranças.
@@ -249,9 +247,11 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-bold tracking-tight truncate text-lg">
-                    FitPrime
-                  </span>
+                  <img 
+                    src="/fitprime-logo.png" 
+                    alt="FitPrime" 
+                    className="h-8 w-auto object-contain"
+                  />
                 </div>
               ) : null}
             </div>

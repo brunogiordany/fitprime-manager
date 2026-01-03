@@ -1,20 +1,23 @@
 /**
  * Integração com Stevo (https://stevo.chat/) para envio de mensagens WhatsApp
  * 
- * Documentação: https://stevo.chat/docs
+ * Documentação: https://documenter.getpostman.com/view/47159756/2sB3HqHJX2
  * 
  * O Stevo é uma plataforma de automação de WhatsApp que permite:
  * - Enviar mensagens de texto
  * - Enviar mídia (imagens, documentos)
  * - Gerenciar contatos
  * - Criar automações
+ * 
+ * Autenticação: Header 'token' com o token da instância
+ * Formato de número: DDI+DDD+número sem + (ex.: 5511999999999)
  */
 
 import { ENV } from './_core/env';
 
 interface StevoConfig {
-  apiKey: string;
-  instanceName: string;
+  apiKey: string;      // Token da instância Stevo
+  instanceName: string; // Instance ID da Stevo
 }
 
 interface SendMessageParams {
@@ -29,8 +32,12 @@ interface SendMessageResult {
   error?: string;
 }
 
+// URL base da API Stevo
+const STEVO_BASE_URL = 'https://api.stevo.chat';
+
 /**
  * Formata o número de telefone para o padrão internacional
+ * Formato: DDI+DDD+número sem + (ex.: 5511999999999)
  */
 function formatPhoneNumber(phone: string): string {
   // Remove caracteres não numéricos
@@ -46,6 +53,10 @@ function formatPhoneNumber(phone: string): string {
 
 /**
  * Envia uma mensagem de texto via Stevo
+ * 
+ * Endpoint: POST /chat/send/text
+ * Headers: token (API Key), Content-Type: application/json
+ * Body: { Phone: string, Body: string }
  */
 export async function sendWhatsAppMessage(params: SendMessageParams): Promise<SendMessageResult> {
   const { phone, message, config } = params;
@@ -58,36 +69,47 @@ export async function sendWhatsAppMessage(params: SendMessageParams): Promise<Se
   const formattedPhone = formatPhoneNumber(phone);
   
   try {
-    // URL da API do Stevo
-    const baseUrl = 'https://api.stevo.chat';
-    const endpoint = `${baseUrl}/message/sendText/${config.instanceName}`;
+    // Endpoint correto conforme documentação Stevo
+    const endpoint = `${STEVO_BASE_URL}/chat/send/text`;
+    
+    console.log('[Stevo] Enviando mensagem para:', formattedPhone);
+    console.log('[Stevo] Endpoint:', endpoint);
     
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': config.apiKey,
+        'Accept': 'application/json',
+        'token': config.apiKey, // Header 'token' conforme documentação
       },
       body: JSON.stringify({
-        number: formattedPhone,
-        textMessage: {
-          text: message,
-        },
+        Phone: formattedPhone, // Campo 'Phone' conforme documentação
+        Body: message,         // Campo 'Body' conforme documentação
       }),
     });
     
+    const responseText = await response.text();
+    console.log('[Stevo] Response status:', response.status);
+    console.log('[Stevo] Response body:', responseText);
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Stevo] Erro na resposta:', response.status, errorText);
-      return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+      console.error('[Stevo] Erro na resposta:', response.status, responseText);
+      return { success: false, error: `HTTP ${response.status}: ${responseText}` };
     }
     
-    const result = await response.json();
-    console.log('[Stevo] Mensagem enviada:', result);
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = { raw: responseText };
+    }
     
+    console.log('[Stevo] Mensagem enviada com sucesso:', result);
+    
+    // Resposta esperada: { code: 200, data: { Details: "Sent", Id: "...", Timestamp: "..." }, success: true }
     return {
-      success: true,
-      messageId: result.key?.id || result.messageId,
+      success: result.success || response.ok,
+      messageId: result.data?.Id || result.key?.id || result.messageId,
     };
   } catch (error) {
     console.error('[Stevo] Erro ao enviar mensagem:', error);
@@ -95,6 +117,87 @@ export async function sendWhatsAppMessage(params: SendMessageParams): Promise<Se
       success: false,
       error: error instanceof Error ? error.message : 'Erro desconhecido',
     };
+  }
+}
+
+/**
+ * Obtém o webhook configurado na instância Stevo
+ * 
+ * Endpoint: GET /webhook
+ * Headers: token (API Key)
+ */
+export async function getWebhook(config: StevoConfig): Promise<{ webhook: string | null; events: string[] }> {
+  if (!config.apiKey) {
+    return { webhook: null, events: [] };
+  }
+  
+  try {
+    const endpoint = `${STEVO_BASE_URL}/webhook`;
+    
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'token': config.apiKey,
+      },
+    });
+    
+    if (!response.ok) {
+      console.error('[Stevo] Erro ao obter webhook:', response.status);
+      return { webhook: null, events: [] };
+    }
+    
+    const result = await response.json();
+    // Resposta: { code: 200, data: { subscribe: ["Message", "ReadReceipt"], webhook: "https://..." }, success: true }
+    
+    return {
+      webhook: result.data?.webhook || null,
+      events: result.data?.subscribe || [],
+    };
+  } catch (error) {
+    console.error('[Stevo] Erro ao obter webhook:', error);
+    return { webhook: null, events: [] };
+  }
+}
+
+/**
+ * Configura o webhook na instância Stevo
+ * 
+ * Endpoint: POST /webhook
+ * Headers: token (API Key)
+ * Body: { webhook: string, subscribe: string[] }
+ */
+export async function setWebhook(config: StevoConfig, webhookUrl: string, events: string[] = ['All']): Promise<boolean> {
+  if (!config.apiKey) {
+    return false;
+  }
+  
+  try {
+    const endpoint = `${STEVO_BASE_URL}/webhook`;
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'token': config.apiKey,
+      },
+      body: JSON.stringify({
+        webhook: webhookUrl,
+        subscribe: events,
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('[Stevo] Erro ao configurar webhook:', response.status);
+      return false;
+    }
+    
+    console.log('[Stevo] Webhook configurado com sucesso:', webhookUrl);
+    return true;
+  } catch (error) {
+    console.error('[Stevo] Erro ao configurar webhook:', error);
+    return false;
   }
 }
 
@@ -261,6 +364,8 @@ export default {
   sendPaymentReminder,
   sendWelcomeMessage,
   sendBirthdayMessage,
+  getWebhook,
+  setWebhook,
 };
 
 

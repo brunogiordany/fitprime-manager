@@ -2848,3 +2848,10 @@
 - [x] Toggle Mensal/Anual na seção de upgrade
 - [x] Mostrar economia anual em cada card de plano
 - [x] Botões de checkout funcionando para planos anuais
+
+
+## Correção Integração Stevo (v4.5)
+- [x] Corrigir integração Stevo - usar endpoint /chat/send/text com header 'token'
+- [x] Atualizar formato do body para usar Phone e Body (não number/textMessage)
+- [x] Atualizar campos de configuração do Stevo na página Settings (Token e Instance ID)
+- [x] Atualizar logomarca do FitPrime em todo o sistema

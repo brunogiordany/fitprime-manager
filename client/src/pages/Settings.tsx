@@ -48,9 +48,8 @@ export default function Settings() {
   });
 
   const [whatsappConfig, setWhatsappConfig] = useState({
-    evolutionApiUrl: "",
-    evolutionApiKey: "",
-    instanceName: "",
+    evolutionApiKey: "",  // Token do Stevo
+    instanceName: "",     // Instance ID do Stevo
     enabled: false,
   });
 
@@ -140,7 +139,6 @@ export default function Settings() {
         cpf: (personalData as any).cpf || "",
       });
       setWhatsappConfig({
-        evolutionApiUrl: "",
         evolutionApiKey: personalData.evolutionApiKey || "",
         instanceName: personalData.evolutionInstance || "",
         enabled: !!personalData.evolutionApiKey,
@@ -167,8 +165,8 @@ export default function Settings() {
   };
 
   const handleConnectWhatsApp = async () => {
-    if (!whatsappConfig.evolutionApiUrl || !whatsappConfig.evolutionApiKey || !whatsappConfig.instanceName) {
-      toast.error("Preencha todos os campos de configuração do Stevo primeiro");
+    if (!whatsappConfig.evolutionApiKey || !whatsappConfig.instanceName) {
+      toast.error("Preencha o Token e Instance ID do Stevo primeiro");
       return;
     }
     
@@ -436,36 +434,30 @@ export default function Settings() {
             
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label>URL da API Stevo</Label>
+                <Label>Token</Label>
                 <Input
-                  placeholder="https://api.stevo.chat"
-                  value={whatsappConfig.evolutionApiUrl}
-                  onChange={(e) => setWhatsappConfig({ ...whatsappConfig, evolutionApiUrl: e.target.value })}
+                  type="password"
+                  placeholder="Ex: 1767462392574JpuVNfwwzstKdXX5"
+                  value={whatsappConfig.evolutionApiKey}
+                  onChange={(e) => setWhatsappConfig({ ...whatsappConfig, evolutionApiKey: e.target.value })}
                   disabled={!whatsappConfig.enabled}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Token de autenticação da sua instância Stevo
+                </p>
               </div>
               <div className="grid gap-2">
-                <Label>Nome da Instância Stevo</Label>
+                <Label>Instance ID</Label>
                 <Input
-                  placeholder="sua-instancia-stevo"
+                  placeholder="Ex: ea9857c453e5133e3a00045038a7b77e"
                   value={whatsappConfig.instanceName}
                   onChange={(e) => setWhatsappConfig({ ...whatsappConfig, instanceName: e.target.value })}
                   disabled={!whatsappConfig.enabled}
                 />
+                <p className="text-xs text-muted-foreground">
+                  ID da instância encontrado no painel Stevo
+                </p>
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>API Key</Label>
-              <Input
-                type="password"
-                placeholder="Sua chave de API"
-                value={whatsappConfig.evolutionApiKey}
-                onChange={(e) => setWhatsappConfig({ ...whatsappConfig, evolutionApiKey: e.target.value })}
-                disabled={!whatsappConfig.enabled}
-              />
-              <p className="text-xs text-muted-foreground">
-                A chave será armazenada de forma segura e criptografada
-              </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button onClick={handleSaveWhatsapp} disabled={updateMutation.isPending}>
@@ -517,17 +509,22 @@ export default function Settings() {
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-sm text-blue-700">
-                  <strong>Como conectar:</strong> Após salvar as configurações, clique em "Conectar WhatsApp" para abrir o painel do Stevo. 
-                  Lá você poderá escanear o QR Code com seu celular para conectar sua conta.
+                  <strong>Como obter suas credenciais:</strong>
                 </p>
+                <ol className="text-sm text-blue-700 list-decimal list-inside mt-2 space-y-1">
+                  <li>Acesse o painel do Stevo e faça login</li>
+                  <li>Na tela principal, você verá o <strong>Instance ID</strong> e o <strong>Token</strong></li>
+                  <li>Copie e cole os valores nos campos acima</li>
+                  <li>Clique em "Salvar Configurações"</li>
+                </ol>
                 <a 
-                  href="https://stevo.chat" 
+                  href="https://app.stevo.chat" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-2"
                 >
                   <ExternalLink className="h-3 w-3" />
-                  Acessar Stevo
+                  Acessar Painel Stevo
                 </a>
               </div>
             </div>
