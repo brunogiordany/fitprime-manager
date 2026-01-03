@@ -2982,3 +2982,10 @@
 - [x] Endpoint generateSuggestions no backend
 - [x] Teste unitário para geração de sugestões
 - [x] Testar preenchimento automático em produção
+
+## Bugs Reportados (03/01/2026 - 17:45)
+- [ ] IA parou de responder mensagens do WhatsApp
+- [ ] Usuário não encontrou botões de preenchimento automático
+- [ ] IA demora muito para responder no WhatsApp
+- [ ] Interferência entre Chat Interno (FitPrime) e Chat WhatsApp
+- [ ] Separar Chat Interno do Chat WhatsApp - mensagens do WhatsApp não devem aparecer no Chat Interno

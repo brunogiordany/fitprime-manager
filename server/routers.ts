@@ -834,9 +834,9 @@ export const appRouter = router({
   chat: router({
     // Listar mensagens com um aluno
     messages: personalProcedure
-      .input(z.object({ studentId: z.number(), limit: z.number().optional() }))
+      .input(z.object({ studentId: z.number(), limit: z.number().optional(), source: z.enum(['internal', 'whatsapp', 'all']).optional() }))
       .query(async ({ ctx, input }) => {
-        const messages = await db.getChatMessages(ctx.personal.id, input.studentId, input.limit || 50);
+        const messages = await db.getChatMessages(ctx.personal.id, input.studentId, input.limit || 50, input.source || 'all');
         // Marcar mensagens do aluno como lidas
         await db.markChatMessagesAsRead(ctx.personal.id, input.studentId, 'personal');
         return messages.reverse(); // Retornar em ordem cronológica

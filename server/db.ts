@@ -2314,14 +2314,23 @@ export async function deleteFutureCharges(params: {
 
 
 // ==================== CHAT MESSAGE FUNCTIONS ====================
-export async function getChatMessages(personalId: number, studentId: number, limit: number = 50) {
+export async function getChatMessages(personalId: number, studentId: number, limit: number = 50, source: 'internal' | 'whatsapp' | 'all' = 'all') {
   const db = await getDb();
   if (!db) return [];
+  
+  // Construir condições de filtro
+  const conditions = [
+    eq(chatMessages.personalId, personalId),
+    eq(chatMessages.studentId, studentId)
+  ];
+  
+  // Filtrar por source se especificado
+  if (source !== 'all') {
+    conditions.push(eq(chatMessages.source, source));
+  }
+  
   return await db.select().from(chatMessages)
-    .where(and(
-      eq(chatMessages.personalId, personalId),
-      eq(chatMessages.studentId, studentId)
-    ))
+    .where(and(...conditions))
     .orderBy(desc(chatMessages.createdAt))
     .limit(limit);
 }

@@ -1,0 +1,25 @@
+{
+  "query": "SELECT externalId, COUNT(*) as count, message FROM chat_messages WHERE studentId = (SELECT id FROM students WHERE phone LIKE '%15997612063%' LIMIT 1) AND createdAt > DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY externalId, message HAVING count > 1 LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT externalId, COUNT(*) as count, message FROM chat_messages WHERE studentId = (SELECT id FROM students WHERE phone LIKE '%15997612063%' LIMIT 1) AND createdAt > DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY externalId, message HAVING count > 1 LIMIT 10",
+  "rows": [
+    {
+      "externalId": "NULL",
+      "count": "2",
+      "message": "Teste IA"
+    },
+    {
+      "externalId": "NULL",
+      "count": "4",
+      "message": "Oi, qual meu treino de hoje?"
+    },
+    {
+      "externalId": "NULL",
+      "count": "2",
+      "message": "oi"
+    }
+  ],
+  "messages": [],
+  "stdout": "externalId\tcount\tmessage\nNULL\t2\tTeste IA\nNULL\t4\tOi, qual meu treino de hoje?\nNULL\t2\toi\n",
+  "stderr": "",
+  "execution_time_ms": 74
+}

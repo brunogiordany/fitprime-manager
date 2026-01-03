@@ -126,11 +126,25 @@ export default function Messages() {
   const [broadcastMessage, setBroadcastMessage] = useState("");
   const [selectedStudentsForBroadcast, setSelectedStudentsForBroadcast] = useState<number[]>([]);
   const [selectAllForBroadcast, setSelectAllForBroadcast] = useState(false);
+  
+  // Estados para WhatsApp chat separado
+  const [selectedWhatsAppStudent, setSelectedWhatsAppStudent] = useState<StudentWithUnread | null>(null);
+  const [newWhatsAppMessage, setNewWhatsAppMessage] = useState("");
+  const whatsappMessagesEndRef = useRef<HTMLDivElement>(null);
 
-  // WhatsApp messages
-  const { data: whatsappMessages, isLoading: isLoadingWhatsapp, refetch: refetchWhatsapp } = trpc.messages.log.useQuery({
+  // WhatsApp messages log (histórico de envios)
+  const { data: whatsappMessagesLog, isLoading: isLoadingWhatsapp, refetch: refetchWhatsapp } = trpc.messages.log.useQuery({
     limit: 100,
   });
+  
+  // WhatsApp chat messages do aluno selecionado (apenas mensagens do WhatsApp)
+  const { data: whatsappChatMessages, refetch: refetchWhatsAppChat, isLoading: isLoadingWhatsAppChat } = trpc.chat.messages.useQuery(
+    { studentId: selectedWhatsAppStudent?.studentId || 0, limit: 100, source: 'whatsapp' },
+    { 
+      enabled: !!selectedWhatsAppStudent,
+      refetchInterval: 5000
+    }
+  );
 
   // Chat - lista de alunos com mensagens não lidas
   const { data: studentsWithUnread, refetch: refetchStudents } = trpc.chat.studentsWithUnread.useQuery(
@@ -147,9 +161,9 @@ export default function Messages() {
   // Lista de todos os alunos para mostrar conversas
   const { data: allStudents } = trpc.students.list.useQuery({});
 
-  // Chat messages do aluno selecionado
+  // Chat messages do aluno selecionado (apenas mensagens internas do FitPrime)
   const { data: chatMessages, refetch: refetchChat, isLoading: isLoadingChat } = trpc.chat.messages.useQuery(
-    { studentId: selectedStudent?.studentId || 0, limit: 100 },
+    { studentId: selectedStudent?.studentId || 0, limit: 100, source: 'internal' },
     { 
       enabled: !!selectedStudent,
       refetchInterval: 5000
@@ -474,8 +488,8 @@ export default function Messages() {
     return a.studentName.localeCompare(b.studentName);
   });
 
-  // Filtrar mensagens WhatsApp
-  const displayWhatsappMessages = whatsappMessages?.filter((msg: any) => {
+  // Filtrar mensagens WhatsApp (histórico de envios)
+  const displayWhatsappMessages = whatsappMessagesLog?.filter((msg: any) => {
     if (statusFilter !== "all" && msg.status !== statusFilter) return false;
     if (searchTerm && !msg.phone?.includes(searchTerm) && !msg.message?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
@@ -483,10 +497,10 @@ export default function Messages() {
 
   // Estatísticas WhatsApp
   const whatsappStats = {
-    total: whatsappMessages?.length || 0,
-    sent: whatsappMessages?.filter((m: any) => m.status === "sent").length || 0,
-    pending: whatsappMessages?.filter((m: any) => m.status === "pending").length || 0,
-    failed: whatsappMessages?.filter((m: any) => m.status === "failed").length || 0,
+    total: whatsappMessagesLog?.length || 0,
+    sent: whatsappMessagesLog?.filter((m: any) => m.status === "sent").length || 0,
+    pending: whatsappMessagesLog?.filter((m: any) => m.status === "pending").length || 0,
+    failed: whatsappMessagesLog?.filter((m: any) => m.status === "failed").length || 0,
   };
 
   const getStatusBadge = (status: string) => {
@@ -827,147 +841,180 @@ export default function Messages() {
             </div>
           </TabsContent>
 
-          {/* WhatsApp Tab */}
-          <TabsContent value="whatsapp" className="flex-1 overflow-auto p-4 space-y-6">
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="text-2xl font-bold">{whatsappStats.total}</p>
-                    </div>
-                    <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
+          {/* WhatsApp Tab - Estilo Chat igual ao FitPrime */}
+          <TabsContent value="whatsapp" className="flex-1 m-0 overflow-hidden">
+            <div className="flex h-full bg-gray-100 dark:bg-gray-900">
+              {/* Lista de Conversas WhatsApp - Sidebar */}
+              <div className={`${selectedWhatsAppStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r`}>
+                {/* Header da lista */}
+                <div className="flex-shrink-0 p-4 border-b bg-green-600 text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      WhatsApp
+                    </h2>
                   </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Enviadas</p>
-                      <p className="text-2xl font-bold text-emerald-600">{whatsappStats.sent}</p>
-                    </div>
-                    <CheckCircle2 className="h-8 w-8 text-emerald-500/50" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Pendentes</p>
-                      <p className="text-2xl font-bold text-yellow-600">{whatsappStats.pending}</p>
-                    </div>
-                    <Clock className="h-8 w-8 text-yellow-500/50" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Falharam</p>
-                      <p className="text-2xl font-bold text-red-600">{whatsappStats.failed}</p>
-                    </div>
-                    <XCircle className="h-8 w-8 text-red-500/50" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Filters */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-200" />
                     <Input
-                      placeholder="Buscar por aluno ou telefone..."
+                      placeholder="Buscar aluno..."
+                      className="pl-10 bg-green-700 border-green-500 text-white placeholder:text-green-200 focus:bg-green-600"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
                     />
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="sent">Enviadas</SelectItem>
-                      <SelectItem value="pending">Pendentes</SelectItem>
-                      <SelectItem value="failed">Falharam</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={() => refetchWhatsapp()} variant="outline">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Atualizar
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Messages List */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Mensagens WhatsApp</CardTitle>
-                <CardDescription>
-                  {displayWhatsappMessages.length} mensagens encontradas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingWhatsapp ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Skeleton key={i} className="h-20 w-full" />
-                    ))}
-                  </div>
-                ) : displayWhatsappMessages.length === 0 ? (
-                  <div className="text-center py-12">
-                    <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-lg font-medium">Nenhuma mensagem encontrada</p>
-                    <p className="text-muted-foreground">
-                      As mensagens enviadas aparecerão aqui
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {displayWhatsappMessages.map((msg: any) => (
-                      <div
-                        key={msg.id}
-                        className="flex items-start gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                {/* Lista de conversas WhatsApp */}
+                <div className="flex-1 overflow-y-auto">
+                  {conversationsList
+                    .filter((conv) => 
+                      conv.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((conv) => (
+                      <button
+                        key={conv.studentId}
+                        onClick={() => setSelectedWhatsAppStudent(conv)}
+                        className={`w-full flex items-center gap-3 p-4 text-left transition-colors border-b border-gray-100 dark:border-gray-800 ${
+                          selectedWhatsAppStudent?.studentId === conv.studentId
+                            ? "bg-green-50 dark:bg-green-900/20"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-900"
+                        }`}
                       >
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shrink-0">
-                          <MessageSquare className="h-5 w-5" />
-                        </div>
+                        <Avatar className="h-12 w-12 flex-shrink-0">
+                          <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-600 text-white text-lg">
+                            {conv.studentName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium truncate">{msg.phone || 'Sem telefone'}</p>
-                            {getStatusBadge(msg.status)}
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold truncate">{conv.studentName}</p>
                           </div>
-                          <p className="text-sm line-clamp-2">{msg.message}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xs text-muted-foreground">
-                            {msg.scheduledAt 
-                              ? format(new Date(msg.scheduledAt), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                              : '-'}
+                          <p className="text-sm text-gray-500 truncate flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            Clique para ver conversa
                           </p>
-                          {msg.sentAt && (
-                            <p className="text-xs text-emerald-600">
-                              Enviada: {format(new Date(msg.sentAt), "HH:mm", { locale: ptBR })}
-                            </p>
-                          )}
                         </div>
-                      </div>
+                      </button>
                     ))}
+                  {conversationsList.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Phone className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                      <p className="font-medium">Nenhum aluno encontrado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Área de Chat WhatsApp */}
+              <div className={`${selectedWhatsAppStudent ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-[#e5ddd5] dark:bg-gray-800`}>
+                {selectedWhatsAppStudent ? (
+                  <>
+                    {/* Header do chat */}
+                    <div className="flex-shrink-0 flex items-center gap-3 p-3 bg-green-600 text-white">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedWhatsAppStudent(null)}
+                        className="md:hidden text-white hover:bg-green-700"
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </Button>
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-green-700 text-white">
+                          {selectedWhatsAppStudent.studentName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-semibold">{selectedWhatsAppStudent.studentName}</p>
+                        <p className="text-xs text-green-200 flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          WhatsApp
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Mensagens WhatsApp */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                      {isLoadingWhatsAppChat ? (
+                        <div className="flex items-center justify-center h-full">
+                          <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+                        </div>
+                      ) : whatsappChatMessages && whatsappChatMessages.length > 0 ? (
+                        <>
+                          {whatsappChatMessages.map((msg: any, index: number) => {
+                            const isPersonal = msg.senderType === 'personal';
+                            const showDateSeparator = index === 0 || !isSameDay(
+                              new Date(msg.createdAt),
+                              new Date(whatsappChatMessages[index - 1]?.createdAt)
+                            );
+                            
+                            return (
+                              <div key={msg.id}>
+                                {showDateSeparator && (
+                                  <div className="flex justify-center my-4">
+                                    <span className="bg-white/80 dark:bg-gray-700 px-3 py-1 rounded-full text-xs text-gray-500">
+                                      {isToday(new Date(msg.createdAt))
+                                        ? 'Hoje'
+                                        : isYesterday(new Date(msg.createdAt))
+                                        ? 'Ontem'
+                                        : format(new Date(msg.createdAt), "dd 'de' MMMM", { locale: ptBR })}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div className={`flex ${isPersonal ? 'justify-end' : 'justify-start'}`}>
+                                  <div
+                                    className={`max-w-[70%] rounded-lg px-3 py-2 shadow-sm ${
+                                      isPersonal
+                                        ? 'bg-green-100 dark:bg-green-900 text-gray-800 dark:text-gray-100 rounded-br-none'
+                                        : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'
+                                    }`}
+                                  >
+                                    {msg.message && (
+                                      <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                                    )}
+                                    
+                                    <div className={`flex items-center justify-end gap-1 mt-1 ${isPersonal ? "text-green-700 dark:text-green-300" : "text-gray-500"}`}>
+                                      <span className="text-[10px]">
+                                        {format(new Date(msg.createdAt), 'HH:mm')}
+                                      </span>
+                                      {isPersonal && (
+                                        <CheckCheck className="h-3 w-3 text-green-500" />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          <div ref={whatsappMessagesEndRef} />
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                          <Phone className="h-16 w-16 mb-4 text-gray-300" />
+                          <p className="font-medium">Nenhuma mensagem do WhatsApp</p>
+                          <p className="text-sm">As mensagens do WhatsApp aparecerão aqui</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Aviso de somente leitura */}
+                    <div className="flex-shrink-0 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-t text-center">
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        📱 As mensagens do WhatsApp são gerenciadas pela IA automática
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
+                    <Phone className="h-24 w-24 mb-4 text-gray-300" />
+                    <p className="text-xl font-medium">WhatsApp</p>
+                    <p className="text-sm">Selecione um aluno para ver as mensagens</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
