@@ -2713,3 +2713,9 @@
 - [x] IA deve ser conversacional e útil como um vendedor
 - [x] Substituir respostas automáticas por respostas inteligentes da IA
 - [x] Corrigir links de checkout nos botões do quiz (URLs Cakto reais)
+
+## Página de Login Unificada
+- [x] Criar página de login com seleção de tipo de usuário (Aluno/Personal)
+- [x] Fluxo "Sou Aluno" - redireciona para portal do aluno
+- [x] Fluxo "Sou Personal" - redireciona para dashboard do personal
+- [x] Design moderno e responsivo

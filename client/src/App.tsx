@@ -57,6 +57,7 @@ import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
 import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import QuizResultPlan from "./pages/QuizResultPlan";
+import LoginPage from "./pages/LoginPage";
 
 function Router() {
   return (
@@ -72,6 +73,7 @@ function Router() {
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/login-aluno" component={StudentLogin} />
       <Route path="/portal-aluno" component={StudentDashboard} />
       <Route path="/portal" component={StudentPortal} />
