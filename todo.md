@@ -2785,3 +2785,7 @@
 - [x] Corrigir layout do modal de Análise - texto cortado no mobile
 - [x] Remover botão de WhatsApp do modal de análise
 - [x] Corrigir erro ao comparar treinos
+
+## Melhoria Formatação Análise (v6.43)
+- [x] Remover caracteres markdown da análise de comparação de treinos
+- [x] Deixar texto mais limpo e profissional

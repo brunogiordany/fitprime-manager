@@ -3327,27 +3327,37 @@ Retorne APENAS o JSON.`;
           messages: [
             {
               role: 'system',
-              content: 'Você é um especialista em análise de desempenho esportivo. Compare a eficiência de dois treinos e forneça insights.'
+              content: `Você é um personal trainer especialista em análise de desempenho esportivo.
+
+REGRAS DE FORMATAÇÃO OBRIGATÓRIAS:
+- NÃO use markdown (**, ##, ---, |, etc)
+- NÃO use tabelas
+- Use emojis para deixar o texto mais visual e agradável
+- Escreva em parágrafos curtos e diretos
+- Use quebras de linha para separar seções
+- Seja objetivo e prático`
             },
             {
               role: 'user',
-              content: `Compare a eficiência destes dois treinos:
+              content: `Compare a eficiência destes dois treinos de forma clara e visual:
 
 TREINO 1: ${workout1.name}
-- Sessões realizadas: ${metrics1.totalSessions}
-- Duração média: ${metrics1.averageDuration.toFixed(0)} min
-- Criado em: ${workout1.createdAt}
+• Sessões realizadas: ${metrics1.totalSessions}
+• Duração média: ${metrics1.averageDuration.toFixed(0)} min
 
 TREINO 2: ${workout2.name}
-- Sessões realizadas: ${metrics2.totalSessions}
-- Duração média: ${metrics2.averageDuration.toFixed(0)} min
-- Criado em: ${workout2.createdAt}
+• Sessões realizadas: ${metrics2.totalSessions}
+• Duração média: ${metrics2.averageDuration.toFixed(0)} min
 
-Forneça:
-1. COMPARAÇÃO: Qual treino foi mais eficiente e por quê
-2. CONSISTÊNCIA: Análise da aderência do aluno
-3. RECOMENDAÇÕES: O que manter e o que mudar
-4. PERCENTUAL: Estime a eficiência relativa (ex: "Treino 2 foi 15% mais eficiente")`
+Escreva uma análise com estas seções (use emojis nos títulos):
+
+🎯 VEREDITO - Qual treino foi mais eficiente e por quê (2-3 frases)
+
+📊 CONSISTÊNCIA - Análise da aderência do aluno (2-3 frases)
+
+💡 RECOMENDAÇÕES - O que manter e o que mudar (lista com 3-4 pontos)
+
+Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
             }
           ]
         });
