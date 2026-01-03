@@ -2855,3 +2855,22 @@
 - [x] Atualizar formato do body para usar Phone e Body (não number/textMessage)
 - [x] Atualizar campos de configuração do Stevo na página Settings (Token e Instance ID)
 - [x] Atualizar logomarca do FitPrime em todo o sistema
+
+
+## Webhook Stevo
+- [ ] Criar endpoint público /api/webhook/stevo para receber mensagens
+- [ ] Processar mensagens recebidas e identificar alunos
+- [ ] Responder automaticamente confirmações de pagamento
+
+
+## Correção Integração Stevo (v4.3)
+- [x] Corrigir endpoint de envio de mensagem (/chat/send/text)
+- [x] Corrigir header de autenticação (token ao invés de apikey)
+- [x] Corrigir formato do body (Phone e Body ao invés de number/textMessage)
+- [x] Atualizar campos de configuração na página Settings (Token e Instance ID)
+- [x] Criar endpoint webhook /api/webhook/stevo para receber mensagens
+- [x] Implementar handler para processar mensagens recebidas
+- [x] Detectar confirmações de pagamento automaticamente
+- [x] Adicionar instruções de configuração do webhook na página Settings
+- [x] Criar testes unitários para detecção de pagamento
+- [x] Atualizar logomarca do FitPrime em todo o sistema

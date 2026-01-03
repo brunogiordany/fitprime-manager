@@ -505,3 +505,256 @@ Vou verificar e confirmar em breve. Obrigado! 🙏
 
 _FitPrime Manager_`;
 }
+
+
+/**
+ * Interface para o payload que o Stevo envia ao webhook
+ * Baseado na documentação: eventos Message, ReadReceipt, etc.
+ */
+export interface StevoWebhookPayload {
+  // Evento Message
+  event?: string;
+  instance?: string;
+  data?: {
+    key?: {
+      remoteJid?: string;
+      fromMe?: boolean;
+      id?: string;
+    };
+    pushName?: string;
+    message?: {
+      conversation?: string;
+      extendedTextMessage?: {
+        text?: string;
+      };
+      imageMessage?: {
+        url?: string;
+        mimetype?: string;
+        caption?: string;
+      };
+      documentMessage?: {
+        url?: string;
+        mimetype?: string;
+        fileName?: string;
+      };
+      audioMessage?: {
+        url?: string;
+        mimetype?: string;
+      };
+      videoMessage?: {
+        url?: string;
+        mimetype?: string;
+        caption?: string;
+      };
+    };
+    messageTimestamp?: number;
+  };
+  // Campos alternativos (formato simplificado)
+  from?: string;
+  body?: string;
+  type?: string;
+  mediaUrl?: string;
+  timestamp?: number;
+}
+
+/**
+ * Handler para processar webhooks recebidos do Stevo
+ * Este handler é chamado pelo endpoint /api/webhook/stevo
+ */
+export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<{
+  success: boolean;
+  processed: boolean;
+  action?: string;
+  error?: string;
+}> {
+  try {
+    console.log('[Stevo Webhook] Payload recebido:', JSON.stringify(payload, null, 2));
+    
+    // Extrair informações da mensagem
+    let from = '';
+    let messageText = '';
+    let messageType: 'text' | 'image' | 'document' | 'audio' | 'video' = 'text';
+    let mediaUrl: string | undefined;
+    let timestamp = Date.now();
+    
+    // Formato padrão do Stevo (evento Message)
+    if (payload.data?.key?.remoteJid) {
+      from = payload.data.key.remoteJid.replace('@s.whatsapp.net', '');
+      timestamp = (payload.data.messageTimestamp || Date.now() / 1000) * 1000;
+      
+      // Extrair texto da mensagem
+      if (payload.data.message?.conversation) {
+        messageText = payload.data.message.conversation;
+        messageType = 'text';
+      } else if (payload.data.message?.extendedTextMessage?.text) {
+        messageText = payload.data.message.extendedTextMessage.text;
+        messageType = 'text';
+      } else if (payload.data.message?.imageMessage) {
+        messageType = 'image';
+        mediaUrl = payload.data.message.imageMessage.url;
+        messageText = payload.data.message.imageMessage.caption || '';
+      } else if (payload.data.message?.documentMessage) {
+        messageType = 'document';
+        mediaUrl = payload.data.message.documentMessage.url;
+      } else if (payload.data.message?.audioMessage) {
+        messageType = 'audio';
+        mediaUrl = payload.data.message.audioMessage.url;
+      } else if (payload.data.message?.videoMessage) {
+        messageType = 'video';
+        mediaUrl = payload.data.message.videoMessage.url;
+        messageText = payload.data.message.videoMessage.caption || '';
+      }
+    }
+    // Formato simplificado (alternativo)
+    else if (payload.from) {
+      from = payload.from.replace('@s.whatsapp.net', '');
+      messageText = payload.body || '';
+      messageType = (payload.type as any) || 'text';
+      mediaUrl = payload.mediaUrl;
+      timestamp = payload.timestamp || Date.now();
+    }
+    
+    // Se não conseguiu extrair o remetente, ignorar
+    if (!from) {
+      console.log('[Stevo Webhook] Não foi possível extrair remetente');
+      return { success: true, processed: false, error: 'no_sender' };
+    }
+    
+    // Ignorar mensagens enviadas por nós mesmos
+    if (payload.data?.key?.fromMe) {
+      console.log('[Stevo Webhook] Ignorando mensagem enviada por nós');
+      return { success: true, processed: false, error: 'from_me' };
+    }
+    
+    // Normalizar número de telefone (remover 55 se presente)
+    let phone = from.replace(/\D/g, '');
+    if (phone.startsWith('55')) {
+      phone = phone.substring(2);
+    }
+    
+    console.log('[Stevo Webhook] Processando mensagem de:', phone);
+    console.log('[Stevo Webhook] Tipo:', messageType);
+    console.log('[Stevo Webhook] Texto:', messageText);
+    
+    // Importar db para buscar aluno
+    const db = await import('./db');
+    
+    // Buscar aluno pelo telefone
+    const student = await db.getStudentByPhone(phone);
+    
+    if (!student) {
+      console.log('[Stevo Webhook] Aluno não encontrado para telefone:', phone);
+      return { success: true, processed: false, error: 'student_not_found' };
+    }
+    
+    console.log('[Stevo Webhook] Aluno encontrado:', student.name);
+    
+    // Criar objeto de mensagem para análise
+    const webhookMessage: StevoWebhookMessage = {
+      instanceName: payload.instance || '',
+      from: from,
+      message: messageText,
+      messageType: messageType,
+      mediaUrl: mediaUrl,
+      timestamp: timestamp,
+    };
+    
+    // Analisar a mensagem
+    const analysis = analyzePaymentMessage(webhookMessage);
+    
+    console.log('[Stevo Webhook] Análise:', analysis);
+    
+    if (!analysis.isPaymentRelated) {
+      console.log('[Stevo Webhook] Mensagem não relacionada a pagamento');
+      return { success: true, processed: false, error: 'not_payment_related' };
+    }
+    
+    // Buscar cobrança pendente mais recente do aluno
+    const charges = await db.getChargesByStudentId(student.id);
+    const pendingCharge = charges.find((c: any) => c.status === 'pending' || c.status === 'overdue');
+    
+    if (!pendingCharge) {
+      console.log('[Stevo Webhook] Nenhuma cobrança pendente encontrada');
+      return { success: true, processed: false, error: 'no_pending_charge' };
+    }
+    
+    console.log('[Stevo Webhook] Cobrança pendente encontrada:', pendingCharge.id);
+    
+    // Buscar personal para enviar resposta
+    const personal = await db.getPersonalByUserId(student.personalId);
+    
+    // Se alta confiança (comprovante), confirmar automaticamente
+    if (analysis.suggestedAction === 'auto_confirm') {
+      await db.updateCharge(pendingCharge.id, {
+        status: 'paid',
+        paidAt: new Date(),
+        notes: (pendingCharge.notes || '') + '\n[Auto] Confirmado via WhatsApp em ' + new Date().toLocaleString('pt-BR'),
+      });
+      
+      // Enviar resposta ao aluno
+      if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+        await sendWhatsAppMessage({
+          phone: student.phone || '',
+          message: generatePaymentResponseMessage(student.name, 'confirmed'),
+          config: {
+            apiKey: personal.evolutionApiKey,
+            instanceName: personal.evolutionInstance,
+          },
+        });
+      }
+      
+      // Notificar o personal
+      const { notifyOwner } = await import('./_core/notification');
+      await notifyOwner({
+        title: `💳 Pagamento Confirmado - ${student.name}`,
+        content: `O aluno ${student.name} enviou comprovante de pagamento via WhatsApp.\n\nValor: R$ ${(Number(pendingCharge.amount) / 100).toFixed(2)}\nDescrição: ${pendingCharge.description}\n\nO pagamento foi confirmado automaticamente.`,
+      });
+      
+      console.log('[Stevo Webhook] Pagamento confirmado automaticamente');
+      
+      return { 
+        success: true, 
+        processed: true, 
+        action: 'auto_confirmed',
+      };
+    }
+    
+    // Se precisa revisão manual, notificar o personal
+    if (analysis.suggestedAction === 'manual_review') {
+      const { notifyOwner } = await import('./_core/notification');
+      await notifyOwner({
+        title: `💳 Possível Pagamento - ${student.name}`,
+        content: `O aluno ${student.name} enviou uma mensagem que pode ser confirmação de pagamento:\n\nMensagem: "${messageText || '[Mídia]'}"\nTipo: ${messageType}\n\nValor pendente: R$ ${(Number(pendingCharge.amount) / 100).toFixed(2)}\n\nPor favor, verifique e confirme manualmente se necessário.`,
+      });
+      
+      // Enviar resposta ao aluno
+      if (personal?.evolutionApiKey && personal?.evolutionInstance) {
+        await sendWhatsAppMessage({
+          phone: student.phone || '',
+          message: generatePaymentResponseMessage(student.name, 'pending_review'),
+          config: {
+            apiKey: personal.evolutionApiKey,
+            instanceName: personal.evolutionInstance,
+          },
+        });
+      }
+      
+      console.log('[Stevo Webhook] Mensagem enviada para revisão manual');
+      
+      return { 
+        success: true, 
+        processed: true, 
+        action: 'pending_review',
+      };
+    }
+    
+    return { success: true, processed: false, error: 'no_action_needed' };
+  } catch (error) {
+    console.error('[Stevo Webhook] Erro:', error);
+    return { 
+      success: false, 
+      processed: false, 
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}

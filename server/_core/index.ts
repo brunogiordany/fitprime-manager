@@ -43,6 +43,18 @@ async function startServer() {
   // Cakto webhook - receives payment events from Cakto platform
   app.post('/api/cakto/webhook', express.json(), handleCaktoWebhook);
   
+  // Stevo webhook - receives WhatsApp messages
+  app.post('/api/webhook/stevo', express.json(), async (req: any, res: any) => {
+    try {
+      const { handleStevoWebhook } = await import('../stevo');
+      const result = await handleStevoWebhook(req.body);
+      res.json(result);
+    } catch (error: any) {
+      console.error('[Stevo Webhook] Error:', error);
+      res.status(500).json({ error: error?.message || 'Internal error' });
+    }
+  });
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

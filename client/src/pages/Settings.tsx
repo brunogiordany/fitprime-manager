@@ -527,6 +527,31 @@ export default function Settings() {
                   Acessar Painel Stevo
                 </a>
               </div>
+              
+              {/* Webhook Configuration */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-4">
+                <p className="text-sm text-emerald-700">
+                  <strong>Configurar Webhook (Receber Mensagens):</strong>
+                </p>
+                <p className="text-sm text-emerald-600 mt-2">
+                  Para receber mensagens dos alunos automaticamente, configure o webhook no painel do Stevo:
+                </p>
+                <div className="mt-2 bg-white rounded border border-emerald-300 p-2">
+                  <p className="text-xs text-gray-500 mb-1">URL do Webhook:</p>
+                  <code className="text-sm text-emerald-700 break-all select-all">
+                    {window.location.origin}/api/webhook/stevo
+                  </code>
+                </div>
+                <ol className="text-sm text-emerald-600 list-decimal list-inside mt-2 space-y-1">
+                  <li>No painel do Stevo, vá em <strong>Webhook Events</strong></li>
+                  <li>Cole a URL acima no campo de webhook</li>
+                  <li>Selecione os eventos: <strong>Message</strong> (obrigatório)</li>
+                  <li>Salve as configurações</li>
+                </ol>
+                <p className="text-xs text-emerald-500 mt-2">
+                  Com o webhook configurado, quando um aluno enviar um comprovante de pagamento, o sistema confirmará automaticamente!
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
