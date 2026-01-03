@@ -55,7 +55,8 @@ import AdminAnalyticsDashboard from "@/pages/AdminAnalyticsDashboard";
 import AdminPagesManager from "@/pages/AdminPagesManager";
 import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
 import AdminPageEditor from "@/pages/AdminPageEditor";
-import AdminABTesting from "@/pages/AdminABTesting";
+import AdminABTesting from "./pages/AdminABTesting";
+import QuizResultPlan from "./pages/QuizResultPlan";
 
 function Router() {
   return (
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/pricing-complete" component={CompletePricingPage} />
       <Route path="/checkout" component={CheckoutPage} />
       <Route path="/quiz-resultado" component={QuizResultPage} />
+      <Route path="/quiz-resultado-plano" component={QuizResultPlan} />
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planos" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />

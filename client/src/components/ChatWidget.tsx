@@ -7,11 +7,11 @@ import {
   X,
   Send,
   Loader2,
-  AlertCircle,
-  CheckCircle2,
   Minimize2,
   Maximize2,
+  Sparkles,
 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface ChatMessage {
   id: string;
@@ -31,74 +31,6 @@ interface ChatConversation {
   createdAt: number;
 }
 
-const AI_RESPONSES = {
-  precos: "Oferecemos 5 planos: Starter (R$ 97/mês até 15 alunos), Pro (R$ 147/mês até 25 alunos), Business (R$ 197/mês até 40 alunos), Premium (R$ 297/mês até 70 alunos) e Enterprise (R$ 497/mês até 150 alunos). Qual se encaixa melhor no seu negócio?",
-  trial: "Sim! Você pode testar completamente grátis por 1 dia. Sem cartão de crédito, sem compromisso. Basta clicar em 'Testar Grátis' na página inicial.",
-  features: "O FitPrime oferece: Agenda inteligente, Geração de treinos com IA, Cobranças automáticas, Portal do aluno, Análise de evolução com gráficos, Integração com WhatsApp e muito mais!",
-  cancelamento: "Você pode cancelar sua assinatura a qualquer momento, sem multa ou contrato. Basta acessar as configurações da sua conta.",
-  pagamento: "Aceitamos cartão de crédito, Pix, boleto e mais. O pagamento é processado pela Cakto, plataforma segura e confiável.",
-  alunos: "Sim! Todos os planos permitem alunos ilimitados. Você paga apenas pelos alunos que excederem o limite do seu plano (preço por aluno extra varia conforme o plano).",
-  integracao: "Integramos com WhatsApp (para notificações automáticas), Google Calendar, Cakto (pagamentos) e temos API aberta para integrações customizadas.",
-  suporte: "Oferecemos suporte por email em todos os planos. Planos Pro+ têm suporte prioritário, e Enterprise tem suporte 24/7 dedicado.",
-  default: "Ótima pergunta! Você pode conferir mais detalhes na nossa página ou falar com um especialista. Como posso ajudar mais?",
-};
-
-function getAIResponse(message: string): string {
-  const lowerMessage = message.toLowerCase();
-
-  if (
-    lowerMessage.includes("preço") ||
-    lowerMessage.includes("plano") ||
-    lowerMessage.includes("custa")
-  ) {
-    return AI_RESPONSES.precos;
-  }
-  if (
-    lowerMessage.includes("teste") ||
-    lowerMessage.includes("trial") ||
-    lowerMessage.includes("grátis")
-  ) {
-    return AI_RESPONSES.trial;
-  }
-  if (
-    lowerMessage.includes("funcionalidade") ||
-    lowerMessage.includes("feature") ||
-    lowerMessage.includes("o que faz")
-  ) {
-    return AI_RESPONSES.features;
-  }
-  if (
-    lowerMessage.includes("cancelar") ||
-    lowerMessage.includes("contrato")
-  ) {
-    return AI_RESPONSES.cancelamento;
-  }
-  if (
-    lowerMessage.includes("pagamento") ||
-    lowerMessage.includes("pagar")
-  ) {
-    return AI_RESPONSES.pagamento;
-  }
-  if (lowerMessage.includes("aluno")) {
-    return AI_RESPONSES.alunos;
-  }
-  if (
-    lowerMessage.includes("integra") ||
-    lowerMessage.includes("whatsapp") ||
-    lowerMessage.includes("api")
-  ) {
-    return AI_RESPONSES.integracao;
-  }
-  if (
-    lowerMessage.includes("suporte") ||
-    lowerMessage.includes("ajuda")
-  ) {
-    return AI_RESPONSES.suporte;
-  }
-
-  return AI_RESPONSES.default;
-}
-
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -106,6 +38,7 @@ export default function ChatWidget() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [visitorId, setVisitorId] = useState<string>("");
+  const [conversationId, setConversationId] = useState<number | null>(null);
   const [visitorInfo, setVisitorInfo] = useState({
     name: "",
     email: "",
@@ -113,6 +46,10 @@ export default function ChatWidget() {
   });
   const [showForm, setShowForm] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // tRPC mutations
+  const createConversation = trpc.supportChat.getOrCreateConversation.useMutation();
+  const sendMessage = trpc.supportChat.sendMessage.useMutation();
 
   // Gerar ID único do visitante
   useEffect(() => {
@@ -126,13 +63,16 @@ export default function ChatWidget() {
     // Carregar histórico de conversas
     const savedConversation = localStorage.getItem(`chat_${id}`);
     if (savedConversation) {
-      const conversation = JSON.parse(savedConversation) as ChatConversation;
+      const conversation = JSON.parse(savedConversation) as ChatConversation & { conversationId?: number };
       setMessages(conversation.messages);
       setVisitorInfo({
         name: conversation.visitorName || "",
         email: conversation.visitorEmail || "",
         phone: conversation.visitorPhone || "",
       });
+      if (conversation.conversationId) {
+        setConversationId(conversation.conversationId);
+      }
       setShowForm(false);
     }
   }, []);
@@ -142,72 +82,136 @@ export default function ChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const saveConversation = (msgs: ChatMessage[]) => {
-    const conversation: ChatConversation = {
+  const saveConversation = (msgs: ChatMessage[], convId?: number) => {
+    const conversation = {
       visitorId,
       visitorName: visitorInfo.name,
       visitorEmail: visitorInfo.email,
       visitorPhone: visitorInfo.phone,
       messages: msgs,
-      status: "active",
+      status: "active" as const,
       createdAt: Date.now(),
+      conversationId: convId || conversationId,
     };
     localStorage.setItem(`chat_${visitorId}`, JSON.stringify(conversation));
   };
 
-  const handleStartChat = (e: React.FormEvent) => {
+  const handleStartChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (visitorInfo.name && visitorInfo.email) {
       setShowForm(false);
+      setIsLoading(true);
 
-      // Mensagem de boas-vindas
-      const welcomeMessage: ChatMessage = {
-        id: `msg_${Date.now()}`,
-        sender: "ai",
-        message: `Olá ${visitorInfo.name}! 👋 Bem-vindo ao FitPrime! Como posso ajudá-lo hoje?`,
-        timestamp: Date.now(),
-        isAutoReply: true,
-      };
+      try {
+        // Criar conversa no backend
+        const result = await createConversation.mutateAsync({
+          visitorId,
+          visitorName: visitorInfo.name,
+          visitorEmail: visitorInfo.email,
+          visitorPhone: visitorInfo.phone || undefined,
+        });
 
-      setMessages([welcomeMessage]);
-      saveConversation([welcomeMessage]);
+        if (result?.id) {
+          setConversationId(result.id);
+        }
+
+        // Mensagem de boas-vindas
+        const welcomeMessage: ChatMessage = {
+          id: `msg_${Date.now()}`,
+          sender: "ai",
+          message: `Olá ${visitorInfo.name}! 👋 Sou a assistente virtual do FitPrime. Posso te ajudar a encontrar o plano ideal para o seu negócio de personal trainer. Quantos alunos você atende hoje?`,
+          timestamp: Date.now(),
+          isAutoReply: true,
+        };
+
+        setMessages([welcomeMessage]);
+        saveConversation([welcomeMessage], result?.id);
+      } catch (error) {
+        console.error("Erro ao criar conversa:", error);
+        // Fallback para mensagem local
+        const welcomeMessage: ChatMessage = {
+          id: `msg_${Date.now()}`,
+          sender: "ai",
+          message: `Olá ${visitorInfo.name}! 👋 Bem-vindo ao FitPrime! Como posso ajudá-lo hoje?`,
+          timestamp: Date.now(),
+          isAutoReply: true,
+        };
+        setMessages([welcomeMessage]);
+        saveConversation([welcomeMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMessage = inputValue.trim();
+    setInputValue("");
 
     // Adicionar mensagem do visitante
     const visitorMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       sender: "visitor",
-      message: inputValue,
+      message: userMessage,
       timestamp: Date.now(),
     };
 
     const newMessages = [...messages, visitorMessage];
     setMessages(newMessages);
-    setInputValue("");
+    saveConversation(newMessages);
     setIsLoading(true);
 
-    // Simular delay de resposta da IA
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: `msg_${Date.now()}_ai`,
+    try {
+      if (conversationId) {
+        // Enviar para o backend com IA real
+        const result = await sendMessage.mutateAsync({
+          conversationId,
+          visitorId,
+          message: userMessage,
+        });
+
+        const aiResponse: ChatMessage = {
+          id: `msg_${Date.now()}_ai`,
+          sender: "ai",
+          message: result.aiResponse,
+          timestamp: Date.now(),
+          isAutoReply: true,
+        };
+
+        const messagesWithAI = [...newMessages, aiResponse];
+        setMessages(messagesWithAI);
+        saveConversation(messagesWithAI);
+      } else {
+        // Fallback se não tiver conversationId
+        const aiResponse: ChatMessage = {
+          id: `msg_${Date.now()}_ai`,
+          sender: "ai",
+          message: "Desculpe, houve um problema na conexão. Por favor, recarregue a página e tente novamente.",
+          timestamp: Date.now(),
+          isAutoReply: true,
+        };
+        const messagesWithAI = [...newMessages, aiResponse];
+        setMessages(messagesWithAI);
+        saveConversation(messagesWithAI);
+      }
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      const errorMessage: ChatMessage = {
+        id: `msg_${Date.now()}_error`,
         sender: "ai",
-        message: getAIResponse(inputValue),
+        message: "Desculpe, estou com dificuldades técnicas no momento. Tente novamente em alguns segundos! 🙏",
         timestamp: Date.now(),
         isAutoReply: true,
       };
-
-      const messagesWithAI = [...newMessages, aiResponse];
-      setMessages(messagesWithAI);
-      saveConversation(messagesWithAI);
+      const messagesWithError = [...newMessages, errorMessage];
+      setMessages(messagesWithError);
+      saveConversation(messagesWithError);
+    } finally {
       setIsLoading(false);
-    }, 800);
-
-    saveConversation(newMessages);
+    }
   };
 
   return (
@@ -225,12 +229,17 @@ export default function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 z-50 w-96 max-h-[600px] flex flex-col shadow-2xl border border-gray-200">
+        <Card className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] max-h-[600px] flex flex-col shadow-2xl border border-gray-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-t-lg flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">FitPrime Support</h3>
-              <p className="text-xs opacity-90">Responder em tempo real</p>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="font-semibold">FitPrime IA</h3>
+                <p className="text-xs opacity-90">Assistente inteligente</p>
+              </div>
             </div>
             <div className="flex gap-2">
               <button
@@ -255,18 +264,18 @@ export default function ChatWidget() {
           {!isMinimized && (
             <>
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 min-h-[300px] max-h-[400px]">
                 {showForm ? (
                   <div className="space-y-4">
                     <div className="text-center mb-4">
                       <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-2">
-                        <MessageCircle className="h-6 w-6 text-emerald-600" />
+                        <Sparkles className="h-6 w-6 text-emerald-600" />
                       </div>
                       <h4 className="font-semibold text-gray-900">
                         Olá! 👋
                       </h4>
                       <p className="text-sm text-gray-600 mt-1">
-                        Deixe seus dados para começarmos a conversa
+                        Sou a IA do FitPrime. Me conta um pouco sobre você!
                       </p>
                     </div>
 
@@ -330,44 +339,54 @@ export default function ChatWidget() {
                       <Button
                         type="submit"
                         className="w-full bg-emerald-600 hover:bg-emerald-700"
+                        disabled={isLoading}
                       >
-                        Começar Chat
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Iniciar Conversa
                       </Button>
                     </form>
                   </div>
                 ) : (
                   <>
-                    {messages.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
-                        <p className="text-sm">Nenhuma mensagem ainda</p>
-                      </div>
-                    ) : (
-                      messages.map((msg) => (
+                    {messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${
+                          msg.sender === "visitor"
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
                         <div
-                          key={msg.id}
-                          className={`flex ${
+                          className={`max-w-[80%] rounded-lg p-3 ${
                             msg.sender === "visitor"
-                              ? "justify-end"
-                              : "justify-start"
+                              ? "bg-emerald-600 text-white"
+                              : "bg-white border border-gray-200 text-gray-800"
                           }`}
                         >
-                          <div
-                            className={`max-w-xs px-4 py-2 rounded-lg text-sm ${
-                              msg.sender === "visitor"
-                                ? "bg-emerald-600 text-white rounded-br-none"
-                                : "bg-white border border-gray-200 text-gray-900 rounded-bl-none"
-                            }`}
-                          >
-                            <p className="break-words">{msg.message}</p>
-                            {msg.isAutoReply && msg.sender === "ai" && (
-                              <div className="flex items-center gap-1 mt-1 text-xs opacity-70">
-                                <Loader2 className="h-3 w-3" />
-                                Resposta automática
-                              </div>
-                            )}
+                          <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                          {msg.isAutoReply && msg.sender === "ai" && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                              <Sparkles className="h-3 w-3" />
+                              <span>IA</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-white border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                            <span className="text-sm text-gray-500">
+                              Pensando...
+                            </span>
                           </div>
                         </div>
-                      ))
+                      </div>
                     )}
                     <div ref={messagesEndRef} />
                   </>
@@ -378,28 +397,26 @@ export default function ChatWidget() {
               {!showForm && (
                 <form
                   onSubmit={handleSendMessage}
-                  className="border-t border-gray-200 p-4 bg-white rounded-b-lg flex gap-2"
+                  className="p-4 border-t bg-white rounded-b-lg"
                 >
-                  <Input
-                    type="text"
-                    placeholder="Digite sua mensagem..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    disabled={isLoading}
-                    className="text-sm"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !inputValue.trim()}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    size="sm"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Digite sua mensagem..."
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      disabled={isLoading}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      disabled={!inputValue.trim() || isLoading}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
                       <Send className="h-4 w-4" />
-                    )}
-                  </Button>
+                    </Button>
+                  </div>
                 </form>
               )}
             </>

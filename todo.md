@@ -2693,3 +2693,22 @@
 ## Bug Fotos Repetidas v6.26
 - [x] Identificar TODAS as fotos repetidas nos depoimentos
 - [x] Garantir que cada depoimento tenha uma foto ÚNICA
+
+## Quiz - Faixas de Alunos e Páginas por Plano (v6.27)
+- [x] Atualizar pergunta de quantidade de alunos com faixas estratégicas baseadas nos planos
+- [ ] Criar página de resultado para plano Beginner (até 5 alunos - R$ 39,90)
+- [ ] Criar página de resultado para plano Starter (6-15 alunos - R$ 97)
+- [ ] Criar página de resultado para plano Pro (16-30 alunos - R$ 147)
+- [ ] Criar página de resultado para plano Business (31-50 alunos - R$ 197)
+- [ ] Criar página de resultado para plano Premium (51-100 alunos - R$ 297)
+- [x] Implementar redirecionamento automático baseado na quantidade de alunos
+- [x] Cada página mostra 2 planos: Beginner (R$ 39,90) + plano ideal baseado na quantidade
+
+## Chat IA Inteligente (v6.28)
+- [x] Criar base de conhecimento do FitPrime (planos, preços, funcionalidades, FAQ)
+- [x] Implementar endpoint de chat com LLM real (usando invokeLLM)
+- [x] Alimentar IA com contexto completo do FitPrime
+- [x] IA deve saber responder sobre preços, planos, funcionalidades
+- [x] IA deve calcular preço baseado na quantidade de alunos
+- [x] IA deve ser conversacional e útil como um vendedor
+- [x] Substituir respostas automáticas por respostas inteligentes da IA

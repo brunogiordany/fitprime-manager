@@ -1680,44 +1680,7 @@ export default function LandingPagePro() {
             </div>
           </div>
 
-          {/* ANCORAGEM ANUAL - Lucro mesmo pagando R$ 291/mês */}
-          {(() => {
-            const impactoAnual = (displayPerdaMensal + displayGanhoExtra) * 12;
-            const custoAncoragemAnual = 291 * 12; // R$ 3.492/ano
-            const lucroAnual = impactoAnual - custoAncoragemAnual;
-            
-            return (
-              <div className="bg-gradient-to-r from-emerald-900/50 via-teal-900/50 to-emerald-900/50 border border-emerald-500/30 rounded-2xl p-6 md:p-8 mb-12">
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-6">Mesmo que o FitPrime custasse R$ 291/mês...</h4>
-                
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm mb-1">Seu ganho anual</p>
-                    <p className="text-2xl md:text-3xl font-bold text-emerald-400">R$ {impactoAnual.toLocaleString('pt-BR')}</p>
-                  </div>
-                  <span className="text-gray-500 text-2xl">-</span>
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm mb-1">Custo anual (R$ 291/mês)</p>
-                    <p className="text-2xl md:text-3xl font-bold text-red-400">R$ {custoAncoragemAnual.toLocaleString('pt-BR')}</p>
-                  </div>
-                  <span className="text-gray-500 text-2xl">=</span>
-                  <div className="text-center bg-emerald-500/20 px-6 py-3 rounded-xl">
-                    <p className="text-gray-300 text-sm mb-1">SEU LUCRO ANUAL</p>
-                    <p className="text-3xl md:text-4xl font-black text-emerald-400">R$ {lucroAnual.toLocaleString('pt-BR')}</p>
-                  </div>
-                </div>
-                
-                <div className="border-t border-emerald-500/20 pt-6">
-                  <p className="text-xl text-white font-semibold mb-2">
-                    Mas lembre-se... <span className="text-emerald-400">você NÃO vai pagar R$ 291/mês</span>
-                  </p>
-                  <p className="text-gray-400">
-                    Clique no botão abaixo, descubra se o FitPrime é pra você e veja quanto realmente vai te custar.
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
+
 
           {/* CTA Final - Impactante */}
           <div className="relative overflow-hidden">

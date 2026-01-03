@@ -27,6 +27,7 @@ interface QuizOption {
   emoji?: string;
   painLevel?: number; // 1-5 para perguntas de dor
   value?: string | number;
+  plan?: string; // plano recomendado para essa faixa de alunos
 }
 
 interface QuizQuestion {
@@ -145,10 +146,12 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     subtitle: "Contando todos os ativos",
     icon: <Users className="w-6 h-6 text-blue-500" />,
     options: [
-      { id: "1-5", text: "1 a 5 alunos", emoji: "🌱", value: 5 },
-      { id: "6-15", text: "6 a 15 alunos", emoji: "🌿", value: 15 },
-      { id: "16-30", text: "16 a 30 alunos", emoji: "🌳", value: 30 },
-      { id: "30+", text: "Mais de 30 alunos", emoji: "🏆", value: 40 },
+      { id: "1-5", text: "1 a 5 alunos", emoji: "🌱", value: 5, plan: "beginner" },
+      { id: "6-15", text: "6 a 15 alunos", emoji: "🌿", value: 15, plan: "starter" },
+      { id: "16-30", text: "16 a 30 alunos", emoji: "🌳", value: 30, plan: "pro" },
+      { id: "31-50", text: "31 a 50 alunos", emoji: "🌴", value: 50, plan: "business" },
+      { id: "51-100", text: "51 a 100 alunos", emoji: "🏆", value: 100, plan: "premium" },
+      { id: "100+", text: "Mais de 100 alunos", emoji: "👑", value: 150, plan: "enterprise" },
     ],
   },
   {
@@ -380,13 +383,13 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
       });
     });
 
-    // Determinar plano recomendado
+    // Determinar plano recomendado baseado na quantidade de alunos
     let recommendedPlan = "starter";
     if (currentStudents <= 5) recommendedPlan = "beginner";
     else if (currentStudents <= 15) recommendedPlan = "starter";
-    else if (currentStudents <= 25) recommendedPlan = "pro";
-    else if (currentStudents <= 40) recommendedPlan = "business";
-    else if (currentStudents <= 70) recommendedPlan = "premium";
+    else if (currentStudents <= 30) recommendedPlan = "pro";
+    else if (currentStudents <= 50) recommendedPlan = "business";
+    else if (currentStudents <= 100) recommendedPlan = "premium";
     else recommendedPlan = "enterprise";
 
     return {
@@ -540,7 +543,17 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
               <div className="space-y-3">
                 <Button 
                   className="w-full h-14 text-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 font-bold"
-                  onClick={() => window.location.href = "/quiz-resultado"}
+                  onClick={() => {
+                    // Salvar dados do quiz no localStorage para a página de resultado
+                    localStorage.setItem('quizResult', JSON.stringify({
+                      currentStudents: result.currentStudents,
+                      currentRevenue: result.currentRevenue,
+                      goalRevenue: result.goalRevenue,
+                      painScore: result.painScore,
+                      recommendedPlan: result.recommendedPlan
+                    }));
+                    window.location.href = "/quiz-resultado-plano";
+                  }}
                 >
                   QUERO PARAR DE PERDER DINHEIRO
                   <ArrowRight className="w-5 h-5 ml-2" />
