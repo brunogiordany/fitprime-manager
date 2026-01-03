@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE users \nADD COLUMN passwordHash VARCHAR(255) NULL,\nADD COLUMN loginMethod VARCHAR(50) DEFAULT 'oauth';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE users \nADD COLUMN passwordHash VARCHAR(255) NULL,\nADD COLUMN loginMethod VARCHAR(50) DEFAULT 'oauth';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1060 (42S21) at line 1: Duplicate column name 'loginMethod'"
+  ]
+}

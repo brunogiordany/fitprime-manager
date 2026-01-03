@@ -71,6 +71,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import CrefPopup from "@/components/CrefPopup";
 import { ptBR } from "date-fns/locale";
 
 export default function Workouts() {
@@ -95,6 +96,8 @@ export default function Workouts() {
   const [comparisonResult, setComparisonResult] = useState<any>(null);
   const [isComparing, setIsComparing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [showCrefPopup, setShowCrefPopup] = useState(false);
+  const [pendingAIAction, setPendingAIAction] = useState<'generate' | 'analysis' | null>(null);
   const [studentAnalysis, setStudentAnalysis] = useState<any>(null);
   const [newWorkout, setNewWorkout] = useState({
     name: "",
@@ -146,7 +149,13 @@ export default function Workouts() {
       toast.success("Treino gerado! Revise e salve.");
     },
     onError: (error) => {
-      toast.error("Erro ao gerar treino: " + error.message);
+      // Detectar erro de CREF e mostrar popup
+      if (error.message?.includes('CREF')) {
+        setPendingAIAction('generate');
+        setShowCrefPopup(true);
+      } else {
+        toast.error("Erro ao gerar treino: " + error.message);
+      }
     },
   });
 
@@ -170,7 +179,12 @@ export default function Workouts() {
       toast.success(`Treino ${data.version}.0 adaptado gerado! Revise e salve.`);
     },
     onError: (error) => {
-      toast.error("Erro ao gerar treino adaptado: " + error.message);
+      if (error.message?.includes('CREF')) {
+        setPendingAIAction('generate');
+        setShowCrefPopup(true);
+      } else {
+        toast.error("Erro ao gerar treino adaptado: " + error.message);
+      }
     },
   });
 
@@ -181,7 +195,12 @@ export default function Workouts() {
       toast.success("Análise gerada com sucesso!");
     },
     onError: (error) => {
-      toast.error("Erro ao gerar análise: " + error.message);
+      if (error.message?.includes('CREF')) {
+        setPendingAIAction('analysis');
+        setShowCrefPopup(true);
+      } else {
+        toast.error("Erro ao gerar análise: " + error.message);
+      }
     },
   });
 
@@ -1841,6 +1860,26 @@ export default function Workouts() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Popup de CREF */}
+        <CrefPopup
+          open={showCrefPopup}
+          onOpenChange={setShowCrefPopup}
+          onSuccess={() => {
+            // Após salvar CREF, tentar novamente a ação pendente
+            if (pendingAIAction === 'generate' && selectedStudent) {
+              generateAIMutation.mutate({
+                studentId: parseInt(selectedStudent),
+                customPrompt: customPrompt || undefined,
+              });
+            } else if (pendingAIAction === 'analysis' && selectedStudent) {
+              getAnalysisMutation.mutate({
+                studentId: parseInt(selectedStudent),
+              });
+            }
+            setPendingAIAction(null);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

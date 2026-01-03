@@ -2750,3 +2750,9 @@
 - [x] Adicionar campo de criação de senha nas páginas de teste de 24h
 - [x] Validar senha (mínimo 6 caracteres)
 - [x] Salvar senha criptografada no cadastro
+
+
+## Correções Urgentes (v6.37)
+- [x] Corrigir erro de cadastro com senha (adicionar colunas passwordHash e loginMethod na tabela users)
+- [x] Popup de CREF na geração de IA (ao invés de redirecionar para configurações)
+- [x] Salvar CREF diretamente do popup e liberar geração
