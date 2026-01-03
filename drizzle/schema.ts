@@ -1361,3 +1361,53 @@ export const caktoWebhookLogs = mysqlTable("cakto_webhook_logs", {
 
 export type CaktoWebhookLog = typeof caktoWebhookLogs.$inferSelect;
 export type InsertCaktoWebhookLog = typeof caktoWebhookLogs.$inferInsert;
+
+
+// ==================== AI ANALYSIS HISTORY (Histórico de Análises de IA) ====================
+export const aiAnalysisHistory = mysqlTable("ai_analysis_history", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Tipo de análise
+  analysisType: mysqlEnum("analysisType", ["complete", "workout_comparison", "progress", "recommendation"]).default("complete").notNull(),
+  
+  // Dados do aluno no momento da análise (snapshot)
+  studentName: varchar("studentName", { length: 255 }).notNull(),
+  
+  // Conteúdo da análise
+  summary: text("summary"), // Resumo geral
+  strengths: text("strengths"), // JSON array de pontos fortes
+  attentionPoints: text("attentionPoints"), // JSON array de pontos de atenção
+  muscleGroupsEvolving: text("muscleGroupsEvolving"), // JSON array de grupos musculares evoluindo
+  muscleGroupsToFocus: text("muscleGroupsToFocus"), // JSON array de grupos para focar
+  recommendations: text("recommendations"), // JSON array de recomendações
+  
+  // Dados de medidas no momento
+  measurementSnapshot: text("measurementSnapshot"), // JSON com medidas atuais
+  
+  // Dados de treino no momento
+  workoutSnapshot: text("workoutSnapshot"), // JSON com dados de treino
+  
+  // Recomendação principal
+  mainRecommendation: text("mainRecommendation"),
+  mainRecommendationPriority: mysqlEnum("mainRecommendationPriority", ["low", "medium", "high"]).default("medium"),
+  
+  // Métricas calculadas
+  consistencyScore: decimal("consistencyScore", { precision: 5, scale: 2 }), // Score de consistência 0-100
+  progressScore: decimal("progressScore", { precision: 5, scale: 2 }), // Score de progresso 0-100
+  
+  // Treino gerado (se houver)
+  generatedWorkoutId: int("generatedWorkoutId").references(() => workouts.id),
+  
+  // Compartilhamento
+  sharedViaWhatsapp: boolean("sharedViaWhatsapp").default(false),
+  sharedAt: timestamp("sharedAt"),
+  exportedAsPdf: boolean("exportedAsPdf").default(false),
+  pdfUrl: varchar("pdfUrl", { length: 500 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AiAnalysisHistory = typeof aiAnalysisHistory.$inferSelect;
+export type InsertAiAnalysisHistory = typeof aiAnalysisHistory.$inferInsert;

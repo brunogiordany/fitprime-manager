@@ -2977,7 +2977,35 @@ Retorne APENAS o JSON com a análise.`;
         
         const analysis = JSON.parse(content);
         
+        // Salvar análise no histórico
+        const analysisId = await db.createAiAnalysis({
+          studentId: input.studentId,
+          personalId: ctx.personal.id,
+          analysisType: 'complete',
+          studentName: student.name,
+          summary: analysis.summary,
+          strengths: JSON.stringify(analysis.strengths),
+          attentionPoints: JSON.stringify(analysis.deficits),
+          muscleGroupsEvolving: JSON.stringify(analysis.muscleGroupsProgressing),
+          muscleGroupsToFocus: JSON.stringify(analysis.muscleGroupsToFocus),
+          recommendations: JSON.stringify(analysis.recommendations),
+          measurementSnapshot: latestMeasurement ? JSON.stringify({
+            weight: latestMeasurement.weight,
+            bodyFat: latestMeasurement.bodyFat,
+            muscleMass: latestMeasurement.muscleMass,
+            date: latestMeasurement.measureDate,
+          }) : null,
+          workoutSnapshot: workoutPerformance ? JSON.stringify(workoutPerformance) : null,
+          mainRecommendation: analysis.adaptationReason,
+          mainRecommendationPriority: analysis.adaptationPriority as 'low' | 'medium' | 'high',
+          consistencyScore: workoutPerformance?.consistency ? workoutPerformance.consistency.replace('%', '') : null,
+        });
+        
+        // Atualizar lastAnalyzedAt do aluno
+        await db.updateStudentLastAnalyzedAt(input.studentId);
+        
         return {
+          analysisId,
           analysis,
           studentId: input.studentId,
           studentName: student.name,
@@ -3468,6 +3496,78 @@ Forneça:
         }
         
         return { id: newWorkoutId, name: input.customName || `${originalWorkout.name} (Cópia)` };
+      }),
+    
+    // Listar histórico de análises de um aluno
+    getAnalysisHistory: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        limit: z.number().optional().default(20),
+      }))
+      .query(async ({ ctx, input }) => {
+        const analyses = await db.getAiAnalysesByStudentId(input.studentId, input.limit);
+        return analyses.map(a => ({
+          ...a,
+          strengths: a.strengths ? JSON.parse(a.strengths) : [],
+          attentionPoints: a.attentionPoints ? JSON.parse(a.attentionPoints) : [],
+          muscleGroupsEvolving: a.muscleGroupsEvolving ? JSON.parse(a.muscleGroupsEvolving) : [],
+          muscleGroupsToFocus: a.muscleGroupsToFocus ? JSON.parse(a.muscleGroupsToFocus) : [],
+          recommendations: a.recommendations ? JSON.parse(a.recommendations) : [],
+          measurementSnapshot: a.measurementSnapshot ? JSON.parse(a.measurementSnapshot) : null,
+          workoutSnapshot: a.workoutSnapshot ? JSON.parse(a.workoutSnapshot) : null,
+        }));
+      }),
+    
+    // Buscar análise específica
+    getAnalysisById: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const analysis = await db.getAiAnalysisById(input.id);
+        if (!analysis) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Análise não encontrada' });
+        }
+        return {
+          ...analysis,
+          strengths: analysis.strengths ? JSON.parse(analysis.strengths) : [],
+          attentionPoints: analysis.attentionPoints ? JSON.parse(analysis.attentionPoints) : [],
+          muscleGroupsEvolving: analysis.muscleGroupsEvolving ? JSON.parse(analysis.muscleGroupsEvolving) : [],
+          muscleGroupsToFocus: analysis.muscleGroupsToFocus ? JSON.parse(analysis.muscleGroupsToFocus) : [],
+          recommendations: analysis.recommendations ? JSON.parse(analysis.recommendations) : [],
+          measurementSnapshot: analysis.measurementSnapshot ? JSON.parse(analysis.measurementSnapshot) : null,
+          workoutSnapshot: analysis.workoutSnapshot ? JSON.parse(analysis.workoutSnapshot) : null,
+        };
+      }),
+    
+    // Marcar análise como compartilhada via WhatsApp
+    markAnalysisShared: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateAiAnalysis(input.id, {
+          sharedViaWhatsapp: true,
+          sharedAt: new Date(),
+        });
+        return { success: true };
+      }),
+    
+    // Marcar análise como exportada em PDF
+    markAnalysisExported: personalProcedure
+      .input(z.object({ id: z.number(), pdfUrl: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateAiAnalysis(input.id, {
+          exportedAsPdf: true,
+          pdfUrl: input.pdfUrl,
+        });
+        return { success: true };
+      }),
+    
+    // Vincular treino gerado à análise
+    linkGeneratedWorkout: personalProcedure
+      .input(z.object({ analysisId: z.number(), workoutId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateAiAnalysis(input.analysisId, {
+          generatedWorkoutId: input.workoutId,
+        });
+        return { success: true };
       }),
   }),
 

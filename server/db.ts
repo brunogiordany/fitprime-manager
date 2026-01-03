@@ -46,6 +46,7 @@ import {
   trackingPixels, InsertTrackingPixel, TrackingPixel,
   pendingActivations, InsertPendingActivation, PendingActivation,
   caktoWebhookLogs, InsertCaktoWebhookLog, CaktoWebhookLog,
+  aiAnalysisHistory, InsertAiAnalysisHistory, AiAnalysisHistory,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -4477,4 +4478,89 @@ export async function listCaktoWebhookLogs(limit: number = 100): Promise<CaktoWe
     .from(caktoWebhookLogs)
     .orderBy(desc(caktoWebhookLogs.createdAt))
     .limit(limit);
+}
+
+
+// ==================== AI ANALYSIS HISTORY ====================
+
+// Criar análise de IA
+export async function createAiAnalysis(data: InsertAiAnalysisHistory): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(aiAnalysisHistory).values(data);
+  return result[0].insertId as number;
+}
+
+// Buscar análises de um aluno
+export async function getAiAnalysesByStudentId(
+  studentId: number,
+  limit: number = 20
+): Promise<AiAnalysisHistory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(aiAnalysisHistory)
+    .where(eq(aiAnalysisHistory.studentId, studentId))
+    .orderBy(desc(aiAnalysisHistory.createdAt))
+    .limit(limit);
+}
+
+// Buscar análise por ID
+export async function getAiAnalysisById(id: number): Promise<AiAnalysisHistory | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(aiAnalysisHistory)
+    .where(eq(aiAnalysisHistory.id, id))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Atualizar análise (para marcar como compartilhada ou exportada)
+export async function updateAiAnalysis(id: number, data: Partial<InsertAiAnalysisHistory>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(aiAnalysisHistory)
+    .set(data)
+    .where(eq(aiAnalysisHistory.id, id));
+}
+
+// Buscar última análise do aluno
+export async function getLatestAiAnalysis(studentId: number): Promise<AiAnalysisHistory | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select()
+    .from(aiAnalysisHistory)
+    .where(eq(aiAnalysisHistory.studentId, studentId))
+    .orderBy(desc(aiAnalysisHistory.createdAt))
+    .limit(1);
+  
+  return result[0];
+}
+
+// Buscar todas as análises de um personal
+export async function getAiAnalysesByPersonalId(
+  personalId: number,
+  filters?: { studentId?: number; analysisType?: string; limit?: number }
+): Promise<AiAnalysisHistory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(aiAnalysisHistory.personalId, personalId)];
+  
+  if (filters?.studentId) {
+    conditions.push(eq(aiAnalysisHistory.studentId, filters.studentId));
+  }
+  
+  return await db.select()
+    .from(aiAnalysisHistory)
+    .where(and(...conditions))
+    .orderBy(desc(aiAnalysisHistory.createdAt))
+    .limit(filters?.limit || 50);
 }

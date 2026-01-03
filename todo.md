@@ -2772,3 +2772,11 @@
 ## Correção UX Modal de Análise (v6.40)
 - [x] Corrigir layout do modal de Análise do Aluno no mobile
 - [x] Remover scroll horizontal e melhorar responsividade
+
+## Melhorias Análise IA e Comparar Treinos (v6.41)
+- [ ] Corrigir modal Comparar Treinos - palavras encavalando
+- [x] Corrigir botão Comparar Eficiência que não funciona
+- [x] Gerar Treino via IA - criar treino baseado nas recomendações
+- [x] Compartilhar análise via WhatsApp
+- [x] Histórico de análises de IA - salvar e acompanhar evolução
+- [x] Exportar análise em PDF com UX elaborada

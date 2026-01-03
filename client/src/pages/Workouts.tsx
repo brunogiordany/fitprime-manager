@@ -65,7 +65,12 @@ import {
   GitCompare,
   ArrowRight,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Share2,
+  MessageCircle,
+  Download,
+  History,
+  ExternalLink
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -99,6 +104,9 @@ export default function Workouts() {
   const [showCrefPopup, setShowCrefPopup] = useState(false);
   const [pendingAIAction, setPendingAIAction] = useState<'generate' | 'analysis' | null>(null);
   const [studentAnalysis, setStudentAnalysis] = useState<any>(null);
+  const [showPdfExportModal, setShowPdfExportModal] = useState(false);
+  const [showAnalysisHistoryModal, setShowAnalysisHistoryModal] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [newWorkout, setNewWorkout] = useState({
     name: "",
     description: "",
@@ -218,6 +226,19 @@ export default function Workouts() {
       toast.error("Erro ao salvar treino: " + error.message);
     },
   });
+
+  // Mutation para marcar análise como compartilhada
+  const markAnalysisSharedMutation = trpc.workouts.markAnalysisShared.useMutation({
+    onSuccess: () => {
+      // Silencioso - não precisa de feedback
+    },
+  });
+
+  // Query para histórico de análises
+  const { data: analysisHistory, refetch: refetchHistory } = trpc.workouts.getAnalysisHistory.useQuery(
+    { studentId: parseInt(selectedStudent), limit: 20 },
+    { enabled: !!selectedStudent && showAnalysisHistoryModal }
+  );
 
   const duplicateMutation = trpc.workouts.duplicate.useMutation({
     onSuccess: (data) => {
@@ -1392,45 +1413,45 @@ export default function Workouts() {
         
         {/* Modal de Comparação de Treinos */}
         <Dialog open={isCompareDialogOpen} onOpenChange={setIsCompareDialogOpen}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <GitCompare className="h-5 w-5 text-indigo-600" />
-                Comparar Treinos
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <GitCompare className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 flex-shrink-0" />
+                <span className="truncate">Comparar Treinos</span>
               </DialogTitle>
-              <DialogDescription>
-                Selecione dois treinos para comparar lado a lado
+              <DialogDescription className="text-xs sm:text-sm">
+                Selecione dois treinos para comparar
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-6 py-4">
+            <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
               {/* Seletores de Treino */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label>Treino 1 (Anterior)</Label>
+                  <Label className="text-xs sm:text-sm">Treino 1 (Anterior)</Label>
                   <Select value={compareWorkout1} onValueChange={setCompareWorkout1}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o treino" />
+                    <SelectTrigger className="w-full text-xs sm:text-sm">
+                      <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       {workouts?.map((w: any) => (
-                        <SelectItem key={w.id} value={w.id.toString()}>
-                          {w.name}
+                        <SelectItem key={w.id} value={w.id.toString()} className="text-xs sm:text-sm">
+                          <span className="truncate block max-w-[200px]">{w.name}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Treino 2 (Atual)</Label>
+                  <Label className="text-xs sm:text-sm">Treino 2 (Atual)</Label>
                   <Select value={compareWorkout2} onValueChange={setCompareWorkout2}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o treino" />
+                    <SelectTrigger className="w-full text-xs sm:text-sm">
+                      <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       {workouts?.filter((w: any) => w.id.toString() !== compareWorkout1).map((w: any) => (
-                        <SelectItem key={w.id} value={w.id.toString()}>
-                          {w.name}
+                        <SelectItem key={w.id} value={w.id.toString()} className="text-xs sm:text-sm">
+                          <span className="truncate block max-w-[200px]">{w.name}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1442,29 +1463,38 @@ export default function Workouts() {
               {compareWorkout1 && compareWorkout2 && (
                 <Button
                   onClick={async () => {
+                    if (!selectedStudent) {
+                      toast.error('Selecione um aluno primeiro');
+                      return;
+                    }
                     setIsComparing(true);
                     try {
                       const response = await fetch('/api/trpc/workouts.compareWorkoutEfficiency', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
                         body: JSON.stringify({
                           studentId: parseInt(selectedStudent),
-                          workout1Id: parseInt(compareWorkout1),
-                          workout2Id: parseInt(compareWorkout2),
+                          workoutId1: parseInt(compareWorkout1),
+                          workoutId2: parseInt(compareWorkout2),
                         }),
                       });
                       const result = await response.json();
                       if (result.result?.data) {
                         setComparisonResult(result.result.data);
+                        toast.success('Comparação realizada!');
+                      } else if (result.error) {
+                        toast.error(result.error.message || 'Erro ao comparar treinos');
                       }
                     } catch (error) {
+                      console.error('Erro ao comparar:', error);
                       toast.error('Erro ao comparar treinos');
                     } finally {
                       setIsComparing(false);
                     }
                   }}
-                  disabled={isComparing}
-                  className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
+                  disabled={isComparing || !selectedStudent}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-sm sm:text-base"
                 >
                   {isComparing ? (
                     <>
@@ -1484,118 +1514,57 @@ export default function Workouts() {
               {comparisonResult && (
                 <div className="space-y-4">
                   {/* Cards de Comparação */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* Treino 1 */}
                     <Card className="border-gray-200">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">
+                      <CardHeader className="pb-2 px-3 sm:px-6">
+                        <CardTitle className="text-sm sm:text-base truncate">
                           {comparisonResult.workout1?.name || 'Treino 1'}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-2">
-                        <div className="flex justify-between text-sm">
+                      <CardContent className="space-y-1.5 sm:space-y-2 px-3 sm:px-6">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-muted-foreground">Sessões</span>
-                          <span className="font-medium">{comparisonResult.workout1?.sessions || 0}</span>
+                          <span className="font-medium">{comparisonResult.workout1?.metrics?.totalSessions || 0}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-muted-foreground">Duração Média</span>
-                          <span className="font-medium">{comparisonResult.workout1?.avgDuration || 0} min</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Consistência</span>
-                          <span className="font-medium">{comparisonResult.workout1?.consistency || 0}%</span>
+                          <span className="font-medium">{Math.round(comparisonResult.workout1?.metrics?.averageDuration || 0)} min</span>
                         </div>
                       </CardContent>
                     </Card>
                     
                     {/* Treino 2 */}
                     <Card className="border-indigo-200 bg-indigo-50/50">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">
+                      <CardHeader className="pb-2 px-3 sm:px-6">
+                        <CardTitle className="text-sm sm:text-base truncate">
                           {comparisonResult.workout2?.name || 'Treino 2'}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-2">
-                        <div className="flex justify-between text-sm">
+                      <CardContent className="space-y-1.5 sm:space-y-2 px-3 sm:px-6">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-muted-foreground">Sessões</span>
-                          <span className="font-medium">{comparisonResult.workout2?.sessions || 0}</span>
+                          <span className="font-medium">{comparisonResult.workout2?.metrics?.totalSessions || 0}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs sm:text-sm">
                           <span className="text-muted-foreground">Duração Média</span>
-                          <span className="font-medium">{comparisonResult.workout2?.avgDuration || 0} min</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Consistência</span>
-                          <span className="font-medium">{comparisonResult.workout2?.consistency || 0}%</span>
+                          <span className="font-medium">{Math.round(comparisonResult.workout2?.metrics?.averageDuration || 0)} min</span>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                   
-                  {/* Resultado da Eficiência */}
-                  <Card className={`border-2 ${
-                    comparisonResult.efficiencyChange > 0 
-                      ? 'border-green-200 bg-green-50' 
-                      : comparisonResult.efficiencyChange < 0 
-                        ? 'border-red-200 bg-red-50' 
-                        : 'border-gray-200'
-                  }`}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-center gap-4">
-                        {comparisonResult.efficiencyChange > 0 ? (
-                          <TrendingUp className="h-8 w-8 text-green-600" />
-                        ) : comparisonResult.efficiencyChange < 0 ? (
-                          <TrendingDown className="h-8 w-8 text-red-600" />
-                        ) : (
-                          <ArrowRight className="h-8 w-8 text-gray-600" />
-                        )}
-                        <div className="text-center">
-                          <p className="text-2xl font-bold">
-                            {comparisonResult.efficiencyChange > 0 ? '+' : ''}
-                            {comparisonResult.efficiencyChange}%
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {comparisonResult.efficiencyChange > 0 
-                              ? 'Mais eficiente' 
-                              : comparisonResult.efficiencyChange < 0 
-                                ? 'Menos eficiente' 
-                                : 'Mesma eficiência'}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
                   {/* Análise da IA */}
                   {comparisonResult.analysis && (
                     <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Brain className="h-4 w-4 text-purple-600" />
+                      <CardHeader className="pb-2 px-3 sm:px-6">
+                        <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                          <Brain className="h-4 w-4 text-purple-600 flex-shrink-0" />
                           Análise da IA
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-sm whitespace-pre-wrap">{comparisonResult.analysis}</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  
-                  {/* Recomendações */}
-                  {comparisonResult.recommendations && comparisonResult.recommendations.length > 0 && (
-                    <Card className="border-blue-200 bg-blue-50">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base text-blue-700 flex items-center gap-2">
-                          <Sparkles className="h-4 w-4" />
-                          Recomendações
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="list-disc list-inside space-y-1">
-                          {comparisonResult.recommendations.map((r: string, i: number) => (
-                            <li key={i} className="text-sm text-blue-700">{r}</li>
-                          ))}
-                        </ul>
+                      <CardContent className="px-3 sm:px-6">
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>{comparisonResult.analysis}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -1856,6 +1825,73 @@ export default function Workouts() {
                     Treino atual: <strong>{studentAnalysis.currentWorkout.name}</strong> ({studentAnalysis.currentWorkout.daysCount} dias)
                   </p>
                 )}
+                
+                {/* Botões de Ações */}
+                <div className="border-t pt-4 mt-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Ações da Análise</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* Compartilhar WhatsApp */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex items-center gap-2 border-green-200 text-green-700 hover:bg-green-50"
+                      onClick={() => {
+                        const student = students?.find(s => s.id === parseInt(selectedStudent));
+                        if (!student?.phone) {
+                          toast.error("Aluno não tem telefone cadastrado");
+                          return;
+                        }
+                        
+                        // Formatar mensagem para WhatsApp
+                        const message = `📊 *Análise de Evolução - ${studentAnalysis.studentName}*\n\n` +
+                          `📝 *Resumo:*\n${studentAnalysis.analysis.summary}\n\n` +
+                          `✅ *Pontos Fortes:*\n${studentAnalysis.analysis.strengths?.map((s: string) => `• ${s}`).join('\n') || 'Nenhum identificado'}\n\n` +
+                          `⚠️ *Pontos de Atenção:*\n${studentAnalysis.analysis.deficits?.map((d: string) => `• ${d}`).join('\n') || 'Nenhum identificado'}\n\n` +
+                          `💡 *Recomendações:*\n${studentAnalysis.analysis.recommendations?.map((r: string, i: number) => `${i+1}. ${r}`).join('\n') || 'Nenhuma'}\n\n` +
+                          `_Gerado por FitPrime_`;
+                        
+                        const phone = student.phone.replace(/\D/g, '');
+                        const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                        
+                        // Marcar como compartilhado
+                        if (studentAnalysis.analysisId) {
+                          markAnalysisSharedMutation.mutate({ id: studentAnalysis.analysisId });
+                        }
+                        toast.success("Abrindo WhatsApp...");
+                      }}
+                    >
+                      <MessageCircle className="h-3 w-3" />
+                      WhatsApp
+                    </Button>
+                    
+                    {/* Exportar PDF */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex items-center gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => {
+                        setShowPdfExportModal(true);
+                      }}
+                    >
+                      <Download className="h-3 w-3" />
+                      Exportar PDF
+                    </Button>
+                    
+                    {/* Histórico */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                      onClick={() => {
+                        setShowAnalysisHistoryModal(true);
+                      }}
+                    >
+                      <History className="h-3 w-3" />
+                      Histórico
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </DialogContent>
@@ -1880,6 +1916,287 @@ export default function Workouts() {
             setPendingAIAction(null);
           }}
         />
+        
+        {/* Modal de Exportar PDF */}
+        <Dialog open={showPdfExportModal} onOpenChange={setShowPdfExportModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5 text-red-600" />
+                Exportar Análise em PDF
+              </DialogTitle>
+            </DialogHeader>
+            
+            {studentAnalysis && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm font-medium mb-2">Conteúdo do PDF:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li>• Resumo da análise</li>
+                    <li>• Pontos fortes e déficits</li>
+                    <li>• Evolução das medidas</li>
+                    <li>• Grupos musculares em foco</li>
+                    <li>• Recomendações personalizadas</li>
+                    <li>• Data e hora da análise</li>
+                  </ul>
+                </div>
+                
+                <Button
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+                  disabled={isGeneratingPdf}
+                  onClick={async () => {
+                    setIsGeneratingPdf(true);
+                    try {
+                      // Gerar HTML para PDF
+                      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 10px; }
+    h2 { color: #374151; margin-top: 30px; }
+    .summary { background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .section { margin: 20px 0; }
+    .badge { display: inline-block; background: #e5e7eb; padding: 4px 12px; border-radius: 20px; margin: 4px; font-size: 12px; }
+    .badge-green { background: #d1fae5; color: #047857; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+    ul { padding-left: 20px; }
+    li { margin: 8px 0; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; }
+    .metrics { display: flex; gap: 20px; flex-wrap: wrap; }
+    .metric { background: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center; min-width: 100px; }
+    .metric-value { font-size: 24px; font-weight: bold; color: #111827; }
+    .metric-label { font-size: 12px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>📊 Análise de Evolução</h1>
+  <p><strong>Aluno:</strong> ${studentAnalysis.studentName}</p>
+  <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+  
+  <div class="summary">
+    <h2 style="margin-top: 0;">📝 Resumo</h2>
+    <p>${studentAnalysis.analysis.summary}</p>
+  </div>
+  
+  ${studentAnalysis.latestMeasurement ? `
+  <div class="section">
+    <h2>📏 Métricas Atuais</h2>
+    <div class="metrics">
+      ${studentAnalysis.latestMeasurement.weight ? `<div class="metric"><div class="metric-value">${studentAnalysis.latestMeasurement.weight}</div><div class="metric-label">Peso (kg)</div></div>` : ''}
+      ${studentAnalysis.latestMeasurement.bodyFat ? `<div class="metric"><div class="metric-value">${studentAnalysis.latestMeasurement.bodyFat}%</div><div class="metric-label">Gordura</div></div>` : ''}
+      ${studentAnalysis.workoutPerformance?.totalWorkouts ? `<div class="metric"><div class="metric-value">${studentAnalysis.workoutPerformance.totalWorkouts}</div><div class="metric-label">Treinos (30d)</div></div>` : ''}
+      ${studentAnalysis.workoutPerformance?.consistency ? `<div class="metric"><div class="metric-value">${studentAnalysis.workoutPerformance.consistency}</div><div class="metric-label">Consistência</div></div>` : ''}
+    </div>
+  </div>
+  ` : ''}
+  
+  ${studentAnalysis.analysis.strengths?.length > 0 ? `
+  <div class="section">
+    <h2>✅ Pontos Fortes</h2>
+    <ul>
+      ${studentAnalysis.analysis.strengths.map((s: string) => `<li>${s}</li>`).join('')}
+    </ul>
+  </div>
+  ` : ''}
+  
+  ${studentAnalysis.analysis.deficits?.length > 0 ? `
+  <div class="section">
+    <h2>⚠️ Pontos de Atenção</h2>
+    <ul>
+      ${studentAnalysis.analysis.deficits.map((d: string) => `<li>${d}</li>`).join('')}
+    </ul>
+  </div>
+  ` : ''}
+  
+  ${studentAnalysis.analysis.muscleGroupsProgressing?.length > 0 ? `
+  <div class="section">
+    <h2>💪 Grupos Musculares Evoluindo</h2>
+    <div>
+      ${studentAnalysis.analysis.muscleGroupsProgressing.map((g: string) => `<span class="badge badge-green">${g}</span>`).join('')}
+    </div>
+  </div>
+  ` : ''}
+  
+  ${studentAnalysis.analysis.muscleGroupsToFocus?.length > 0 ? `
+  <div class="section">
+    <h2>🎯 Grupos para Focar</h2>
+    <div>
+      ${studentAnalysis.analysis.muscleGroupsToFocus.map((g: string) => `<span class="badge badge-orange">${g}</span>`).join('')}
+    </div>
+  </div>
+  ` : ''}
+  
+  ${studentAnalysis.analysis.recommendations?.length > 0 ? `
+  <div class="section">
+    <h2>💡 Recomendações</h2>
+    <ol>
+      ${studentAnalysis.analysis.recommendations.map((r: string) => `<li>${r}</li>`).join('')}
+    </ol>
+  </div>
+  ` : ''}
+  
+  <div class="section">
+    <h2>🏋️ Próximos Passos</h2>
+    <p><strong>Prioridade:</strong> ${{
+      high: '🔴 Alta - Ação imediata recomendada',
+      medium: '🟡 Média - Ajustes sugeridos',
+      low: '🟢 Baixa - Manter acompanhamento',
+      none: '✅ Nenhuma ação necessária'
+    }[studentAnalysis.analysis.adaptationPriority as string] || 'Não definida'}</p>
+    <p>${studentAnalysis.analysis.adaptationReason}</p>
+  </div>
+  
+  <div class="footer">
+    <p>Relatório gerado automaticamente por FitPrime</p>
+    <p>© ${new Date().getFullYear()} - Todos os direitos reservados</p>
+  </div>
+</body>
+</html>
+                      `;
+                      
+                      // Criar blob e download
+                      const blob = new Blob([htmlContent], { type: 'text/html' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `analise-${studentAnalysis.studentName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.html`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      
+                      toast.success("Relatório exportado! Abra o arquivo HTML no navegador e use Ctrl+P para salvar como PDF.");
+                      setShowPdfExportModal(false);
+                    } catch (error) {
+                      toast.error("Erro ao exportar relatório");
+                    } finally {
+                      setIsGeneratingPdf(false);
+                    }
+                  }}
+                >
+                  {isGeneratingPdf ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Baixar Relatório
+                </Button>
+                
+                <p className="text-xs text-muted-foreground text-center">
+                  O arquivo será baixado em HTML. Abra no navegador e use Ctrl+P (ou Cmd+P) para salvar como PDF.
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal de Histórico de Análises */}
+        <Dialog open={showAnalysisHistoryModal} onOpenChange={setShowAnalysisHistoryModal}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <History className="h-5 w-5 text-purple-600" />
+                Histórico de Análises
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-3">
+              {!analysisHistory || analysisHistory.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>Nenhuma análise anterior encontrada</p>
+                  <p className="text-xs mt-1">As análises serão salvas automaticamente</p>
+                </div>
+              ) : (
+                analysisHistory.map((analysis: any) => (
+                  <Card key={analysis.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              {format(new Date(analysis.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </Badge>
+                            {analysis.sharedViaWhatsapp && (
+                              <Badge className="bg-green-100 text-green-700 text-xs">
+                                <MessageCircle className="h-3 w-3 mr-1" />
+                                Compartilhado
+                              </Badge>
+                            )}
+                            {analysis.exportedAsPdf && (
+                              <Badge className="bg-red-100 text-red-700 text-xs">
+                                <Download className="h-3 w-3 mr-1" />
+                                PDF
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                            {analysis.summary}
+                          </p>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {analysis.mainRecommendationPriority && (
+                              <Badge className={`text-xs ${
+                                analysis.mainRecommendationPriority === 'high' ? 'bg-red-100 text-red-700' :
+                                analysis.mainRecommendationPriority === 'medium' ? 'bg-orange-100 text-orange-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                Prioridade: {{
+                                  high: 'Alta',
+                                  medium: 'Média',
+                                  low: 'Baixa'
+                                }[analysis.mainRecommendationPriority as string]}
+                              </Badge>
+                            )}
+                            {analysis.consistencyScore && (
+                              <Badge variant="outline" className="text-xs">
+                                Consistência: {analysis.consistencyScore}%
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => {
+                            // Carregar análise completa
+                            setStudentAnalysis({
+                              analysisId: analysis.id,
+                              studentName: analysis.studentName,
+                              analysis: {
+                                summary: analysis.summary,
+                                strengths: analysis.strengths,
+                                deficits: analysis.attentionPoints,
+                                recommendations: analysis.recommendations,
+                                muscleGroupsProgressing: analysis.muscleGroupsEvolving,
+                                muscleGroupsToFocus: analysis.muscleGroupsToFocus,
+                                adaptationPriority: analysis.mainRecommendationPriority,
+                                adaptationReason: analysis.mainRecommendation,
+                                shouldAdaptWorkout: analysis.mainRecommendationPriority !== 'low',
+                              },
+                              latestMeasurement: analysis.measurementSnapshot,
+                              workoutPerformance: analysis.workoutSnapshot,
+                            });
+                            setShowAnalysisHistoryModal(false);
+                            setIsAnalysisDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

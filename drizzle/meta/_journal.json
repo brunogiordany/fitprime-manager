@@ -267,6 +267,13 @@
       "when": 1767420790583,
       "tag": "0037_sudden_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1767422192047,
+      "tag": "0038_lean_scourge",
+      "breakpoints": true
     }
   ]
 }
