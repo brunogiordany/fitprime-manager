@@ -19,8 +19,12 @@ import {
   User,
   ChevronRight,
   Brain,
-  Sparkles
+  Sparkles,
+  Crown,
+  ArrowUpRight,
+  Zap
 } from "lucide-react";
+import { PLANS } from "@/../../shared/plans";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +47,35 @@ export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
   const { data: todaySessions, isLoading: sessionsLoading } = trpc.dashboard.todaySessions.useQuery();
   const { data: studentsNeedingAnalysis } = trpc.students.needsAnalysis.useQuery();
+  const { data: subscription } = trpc.subscription.info.useQuery();
   const utils = trpc.useUtils();
+  
+  // Determinar plano atual baseado na subscription ou número de alunos
+  const getPlanFromId = (planId: string | undefined) => {
+    if (!planId) return PLANS.starter;
+    // Mapear IDs antigos para novos
+    const planMap: Record<string, keyof typeof PLANS> = {
+      'fitprime_br_starter': 'starter',
+      'fitprime_br_pro': 'pro', 
+      'fitprime_br_business': 'business',
+      'fitprime_br_premium': 'premium',
+      'fitprime_br_enterprise': 'enterprise',
+      'starter': 'starter',
+      'pro': 'pro',
+      'business': 'business',
+      'premium': 'premium',
+      'enterprise': 'enterprise',
+    };
+    const mappedId = planMap[planId];
+    return mappedId ? PLANS[mappedId] : PLANS.starter;
+  };
+  
+  const currentPlan = getPlanFromId(subscription?.planId);
+  const isAnnualPlan = subscription?.planId?.includes('_anual') || false;
+  
+  const studentUsage = subscription?.currentStudents || stats?.totalStudents || 0;
+  const studentLimit = isAnnualPlan ? currentPlan.annualStudentLimit : (subscription?.studentLimit || currentPlan.studentLimit);
+  const usagePercent = Math.min(100, Math.round((studentUsage / studentLimit) * 100));
   
   // Estado para modal de edição de sessão
   const [editingSession, setEditingSession] = useState<any>(null);
@@ -203,6 +235,74 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Indicador de Plano Atual */}
+        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-lg">Plano {currentPlan.name}</h3>
+                    {isAnnualPlan && (
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                        <Zap className="h-3 w-3 mr-1" />
+                        Anual
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {studentUsage} de {studentLimit} alunos ({usagePercent}% usado)
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                {/* Barra de progresso */}
+                <div className="hidden sm:block w-32">
+                  <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        usagePercent >= 90 ? 'bg-red-500' : 
+                        usagePercent >= 70 ? 'bg-orange-500' : 
+                        'bg-emerald-500'
+                      }`}
+                      style={{ width: `${usagePercent}%` }}
+                    />
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                  onClick={() => setLocation('/configuracoes?tab=plano')}
+                >
+                  {usagePercent >= 80 ? (
+                    <>
+                      <ArrowUpRight className="h-4 w-4 mr-1" />
+                      Fazer Upgrade
+                    </>
+                  ) : (
+                    'Ver Plano'
+                  )}
+                </Button>
+              </div>
+            </div>
+            
+            {usagePercent >= 90 && (
+              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-700 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Você está perto do limite de alunos. Considere fazer upgrade para continuar crescendo!
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Alunos que Precisam de Análise */}
         {studentsNeedingAnalysis && studentsNeedingAnalysis.length > 0 && (

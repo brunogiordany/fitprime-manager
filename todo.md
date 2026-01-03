@@ -2793,3 +2793,9 @@
 ## Correção Página Planos (v6.44)
 - [x] Restaurar página de Planos do Personal (para cobrar alunos)
 - [x] Mover página de pricing para /planospersonal
+
+## Planos e Upgrade (v6.45)
+- [x] Criar preços na Cakto com desconto 20% anual
+- [ ] Configurar links de checkout corretos
+- [x] Indicador visual do plano atual no dashboard
+- [x] Funcionalidade de upgrade de plano pela plataforma

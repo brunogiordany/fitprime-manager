@@ -43,7 +43,7 @@ export default function PricingPage() {
                 : "bg-white text-slate-600 border border-slate-200"
             }`}
           >
-            Anual (20% off)
+            Anual (20% off + 20% alunos)
           </button>
         </div>
       </div>
@@ -53,8 +53,11 @@ export default function PricingPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
           {plansArray.map((plan, index) => {
             const isPopular = index === 2; // Business é o mais popular
-            const monthlyPrice = plan.price;
-            const annualPrice = Math.floor(monthlyPrice * 12 * 0.8); // 20% desconto
+            const isAnnual = billingPeriod === "annual";
+            const displayPrice = isAnnual ? Math.floor(plan.annualMonthlyPrice) : plan.price;
+            const studentLimit = isAnnual ? plan.annualStudentLimit : plan.studentLimit;
+            const checkoutUrl = isAnnual ? plan.annualCheckoutUrl : plan.checkoutUrl;
+            const annualSavings = Math.floor(plan.price * 12 - plan.annualPrice);
 
             return (
               <Card
@@ -80,13 +83,13 @@ export default function PricingPage() {
                   <div className="mt-4">
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold text-slate-900">
-                        R$ {billingPeriod === "monthly" ? monthlyPrice : Math.floor(annualPrice / 12)}
+                        R$ {displayPrice}
                       </span>
                       <span className="text-slate-600">/mês</span>
                     </div>
-                    {billingPeriod === "annual" && (
+                    {isAnnual && (
                       <p className="text-sm text-green-600 mt-2">
-                        R$ {annualPrice}/ano (economize R$ {Math.floor(monthlyPrice * 12 * 0.2)})
+                        R$ {plan.annualPrice}/ano (economize R$ {annualSavings})
                       </p>
                     )}
                   </div>
@@ -96,7 +99,12 @@ export default function PricingPage() {
                   {/* Student Limit */}
                   <div className="mb-6 p-3 bg-blue-50 rounded-lg">
                     <p className="text-sm text-slate-600">Limite de alunos</p>
-                    <p className="text-2xl font-bold text-blue-600">{plan.studentLimit}</p>
+                    <p className="text-2xl font-bold text-blue-600">{studentLimit}</p>
+                    {isAnnual && (
+                      <p className="text-xs text-green-600 mt-1">
+                        +{plan.annualStudentLimit - plan.studentLimit} alunos extras no anual!
+                      </p>
+                    )}
                     <p className="text-xs text-slate-500 mt-1">
                       Aluno extra: R$ {plan.extraStudentPrice.toFixed(2)}
                     </p>
@@ -114,7 +122,7 @@ export default function PricingPage() {
 
                   {/* CTA Button */}
                   <a
-                    href={plan.checkoutUrl}
+                    href={checkoutUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full"

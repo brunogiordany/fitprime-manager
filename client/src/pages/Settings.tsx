@@ -23,8 +23,15 @@ import {
   ExternalLink,
   Upload,
   Image,
-  Trash2
+  Trash2,
+  Crown,
+  Zap,
+  ArrowUpRight,
+  Check,
+  Star
 } from "lucide-react";
+import { PLANS } from "@/../../shared/plans";
+import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -59,6 +66,33 @@ export default function Settings() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const { data: personalData, isLoading } = trpc.personal.get.useQuery();
+  const { data: subscription } = trpc.subscription.info.useQuery();
+  
+  // Determinar plano atual
+  const getPlanFromId = (planId: string | undefined) => {
+    if (!planId) return PLANS.starter;
+    const planMap: Record<string, keyof typeof PLANS> = {
+      'fitprime_br_starter': 'starter',
+      'fitprime_br_pro': 'pro', 
+      'fitprime_br_business': 'business',
+      'fitprime_br_premium': 'premium',
+      'fitprime_br_enterprise': 'enterprise',
+      'starter': 'starter',
+      'pro': 'pro',
+      'business': 'business',
+      'premium': 'premium',
+      'enterprise': 'enterprise',
+    };
+    const mappedId = planMap[planId];
+    return mappedId ? PLANS[mappedId] : PLANS.starter;
+  };
+  
+  const currentPlan = getPlanFromId(subscription?.planId);
+  const isAnnualPlan = subscription?.planId?.includes('_anual') || false;
+  const studentUsage = subscription?.currentStudents || 0;
+  const studentLimit = isAnnualPlan ? currentPlan.annualStudentLimit : (subscription?.studentLimit || currentPlan.studentLimit);
+  const usagePercent = Math.min(100, Math.round((studentUsage / studentLimit) * 100));
+  const plansArray = Object.values(PLANS);
   const uploadLogoMutation = trpc.personal.uploadLogo.useMutation({
     onSuccess: (data: { logoUrl: string }) => {
       setLogoUrl(data.logoUrl);
@@ -543,6 +577,145 @@ export default function Settings() {
                 checked={notifications.paymentReminders}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, paymentReminders: checked })}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Plano e Assinatura */}
+        <Card className="border-emerald-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-emerald-600" />
+              Meu Plano
+            </CardTitle>
+            <CardDescription>
+              Gerencie sua assinatura e faça upgrade quando precisar
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Plano Atual */}
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                    <Crown className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-xl">Plano {currentPlan.name}</h3>
+                      {isAnnualPlan && (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                          <Zap className="h-3 w-3 mr-1" />
+                          Anual
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground">
+                      R$ {isAnnualPlan ? currentPlan.annualMonthlyPrice : currentPlan.price}/mês
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-emerald-600">{studentUsage}/{studentLimit}</p>
+                  <p className="text-sm text-muted-foreground">alunos</p>
+                </div>
+              </div>
+              
+              {/* Barra de progresso */}
+              <div className="mt-4">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-muted-foreground">Uso do plano</span>
+                  <span className={usagePercent >= 90 ? 'text-red-600 font-medium' : usagePercent >= 70 ? 'text-orange-600' : 'text-emerald-600'}>
+                    {usagePercent}%
+                  </span>
+                </div>
+                <div className="h-3 bg-emerald-100 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all ${
+                      usagePercent >= 90 ? 'bg-red-500' : 
+                      usagePercent >= 70 ? 'bg-orange-500' : 
+                      'bg-emerald-500'
+                    }`}
+                    style={{ width: `${usagePercent}%` }}
+                  />
+                </div>
+              </div>
+              
+              {usagePercent >= 80 && (
+                <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-sm text-orange-700">
+                    ⚠️ Você está usando {usagePercent}% do seu limite. Considere fazer upgrade!
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Features do Plano Atual */}
+            <div>
+              <h4 className="font-medium mb-3">Recursos incluídos no seu plano:</h4>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {currentPlan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <Separator />
+            
+            {/* Opções de Upgrade */}
+            <div>
+              <h4 className="font-medium mb-4">Fazer upgrade</h4>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {plansArray
+                  .filter(plan => plan.price > currentPlan.price)
+                  .slice(0, 3)
+                  .map((plan) => (
+                    <div 
+                      key={plan.id}
+                      className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
+                      onClick={() => window.open(plan.checkoutUrl, '_blank')}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-semibold">{plan.name}</h5>
+                        {plan.id === 'business' && (
+                          <Badge className="bg-blue-100 text-blue-700 text-xs">
+                            <Star className="h-3 w-3 mr-1" />
+                            Popular
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-2xl font-bold">R$ {plan.price}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                      <p className="text-sm text-muted-foreground mt-1">Até {plan.studentLimit} alunos</p>
+                      <Button size="sm" className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700">
+                        <ArrowUpRight className="h-4 w-4 mr-1" />
+                        Fazer Upgrade
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+              
+              {!isAnnualPlan && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-5 w-5 text-blue-600" />
+                    <span className="font-medium text-blue-700">Economize com o plano anual!</span>
+                  </div>
+                  <p className="text-sm text-blue-600 mb-3">
+                    Assine anualmente e ganhe 20% de desconto + 20% mais alunos no seu plano.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                    onClick={() => window.open(currentPlan.annualCheckoutUrl, '_blank')}
+                  >
+                    Ver plano anual - R$ {currentPlan.annualMonthlyPrice}/mês
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
