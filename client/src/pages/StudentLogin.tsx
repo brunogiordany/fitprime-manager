@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import { Dumbbell, Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, KeyRound, CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -33,6 +34,7 @@ export default function StudentLogin() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Verificar se já está logado
   useEffect(() => {
@@ -40,12 +42,31 @@ export default function StudentLogin() {
     if (token) {
       setLocation("/meu-portal");
     }
+    
+    // Carregar email salvo se "Lembrar de mim" estava ativo
+    const savedEmail = localStorage.getItem("studentRememberEmail");
+    if (savedEmail) {
+      setLoginForm(prev => ({ ...prev, email: savedEmail }));
+      setRememberMe(true);
+    }
   }, []);
 
   // Mutation para login
   const loginMutation = trpc.students.loginStudent.useMutation({
     onSuccess: (data) => {
       toast.success(`Bem-vindo, ${data.studentName}!`);
+      
+      // Salvar ou remover email baseado em "Lembrar de mim"
+      if (rememberMe) {
+        localStorage.setItem("studentRememberEmail", loginForm.email);
+        // Sessão persistente: 30 dias
+        localStorage.setItem("studentTokenExpiry", String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      } else {
+        localStorage.removeItem("studentRememberEmail");
+        // Sessão normal: 24 horas
+        localStorage.setItem("studentTokenExpiry", String(Date.now() + 24 * 60 * 60 * 1000));
+      }
+      
       localStorage.setItem("studentToken", data.token);
       localStorage.setItem("studentId", String(data.studentId));
       localStorage.setItem("studentData", JSON.stringify({
@@ -232,6 +253,21 @@ export default function StudentLogin() {
               </button>
             </div>
             {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
+          </div>
+
+          {/* Lembrar de mim */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="rememberMe"
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked === true)}
+            />
+            <label
+              htmlFor="rememberMe"
+              className="text-sm text-gray-600 cursor-pointer select-none"
+            >
+              Lembrar de mim
+            </label>
           </div>
 
           <Button 

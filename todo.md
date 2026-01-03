@@ -2719,3 +2719,9 @@
 - [x] Fluxo "Sou Aluno" - redireciona para portal do aluno
 - [x] Fluxo "Sou Personal" - redireciona para dashboard do personal
 - [x] Design moderno e responsivo
+
+## Controle de Acesso e Login
+- [x] Adicionar opção "Lembrar de mim" no login do aluno (sessão persistente)
+- [x] Validar login de personal: apenas personais com assinatura ativa podem acessar (já implementado via paidPersonalProcedure)
+- [x] Validar login de aluno: apenas alunos cadastrados por personais (via convite) (já implementado - alunos só existem se cadastrados)
+- [x] Mostrar mensagem apropriada para personais sem assinatura (SubscriptionBlocked)
