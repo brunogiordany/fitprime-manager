@@ -939,10 +939,30 @@ export const appRouter = router({
         // Buscar usuário pelo email
         const user = await db.getUserByEmailForLogin(input.email);
         if (!user) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado. Crie uma conta na aba "Criar Conta".' });
         }
         if (!user.passwordHash) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Conta não possui senha cadastrada. Use o link de ativação enviado por email.' });
+          // Conta criada via OAuth - precisa definir senha
+          // Gerar código de ativação e enviar por email
+          const code = Math.floor(100000 + Math.random() * 900000).toString();
+          const expiresAt = new Date();
+          expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+          await db.savePersonalPasswordResetCode(user.id, code, expiresAt);
+          
+          // Tentar enviar email
+          try {
+            const { sendPasswordResetEmail } = await import('./email');
+            await sendPasswordResetEmail(input.email, user.name || 'Personal', code);
+          } catch (error) {
+            console.error('[PersonalLogin] Erro ao enviar email de ativação:', error);
+          }
+          
+          console.log(`[PersonalLogin] Código de ativação gerado para ${input.email}: ${code}`);
+          throw new TRPCError({ 
+            code: 'PRECONDITION_FAILED', 
+            message: 'NEEDS_PASSWORD_SETUP',
+            cause: { email: input.email, needsPasswordSetup: true }
+          });
         }
         
         // Verificar senha

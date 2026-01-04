@@ -3261,3 +3261,9 @@
 - [x] Adicionar logo FitPrime nas páginas de login
 - [x] Ajustar cores conforme identidade visual (verde emerald/teal)
 - [x] Melhorar branding geral das páginas de autenticação
+
+
+## Bug Login Personal (v5.3)
+- [x] Permitir login de contas criadas via OAuth (sem senha cadastrada)
+- [x] Criar fluxo para definir senha em contas existentes
+- [x] Enviar código de ativação por email para definir senha

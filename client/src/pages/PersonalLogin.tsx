@@ -72,6 +72,15 @@ export default function PersonalLogin() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  
+  // Password setup states (para contas OAuth que precisam definir senha)
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
+  const [setupEmail, setSetupEmail] = useState("");
+  const [setupCode, setSetupCode] = useState("");
+  const [setupPassword, setSetupPassword] = useState("");
+  const [setupConfirmPassword, setSetupConfirmPassword] = useState("");
+  const [setupStep, setSetupStep] = useState<'code' | 'newPassword' | 'success'>('code');
+  const [showSetupPassword, setShowSetupPassword] = useState(false);
 
   // Check if already logged in - mas não redirecionar automaticamente
   // O usuário pode querer fazer login com outra conta
@@ -104,6 +113,14 @@ export default function PersonalLogin() {
       setLocation("/dashboard");
     },
     onError: (error: any) => {
+      // Verificar se precisa configurar senha (conta OAuth)
+      if (error.message === 'NEEDS_PASSWORD_SETUP') {
+        setSetupEmail(loginForm.email);
+        setShowPasswordSetup(true);
+        setSetupStep('code');
+        toast.info('Enviamos um código para seu email. Use-o para definir sua senha.');
+        return;
+      }
       toast.error(error.message || "Erro ao fazer login");
     },
   });
@@ -692,6 +709,154 @@ export default function PersonalLogin() {
                 <Button
                   className="w-full bg-emerald-600 hover:bg-purple-700"
                   onClick={closeForgotPasswordDialog}
+                >
+                  Fazer Login
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para configurar senha (contas OAuth) */}
+      <Dialog open={showPasswordSetup} onOpenChange={setShowPasswordSetup}>
+        <DialogContent className="bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-emerald-400" />
+              Configurar Senha
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {setupStep === 'code' && 'Digite o código de 6 dígitos enviado para seu email'}
+              {setupStep === 'newPassword' && 'Crie uma senha para acessar sua conta'}
+              {setupStep === 'success' && 'Senha configurada com sucesso!'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            {setupStep === 'code' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="setup-code" className="text-slate-300">Código de Verificação</Label>
+                  <Input
+                    id="setup-code"
+                    type="text"
+                    maxLength={6}
+                    value={setupCode}
+                    onChange={(e) => setSetupCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="000000"
+                    className="bg-slate-700/50 border-slate-600 text-white text-center text-2xl tracking-widest"
+                  />
+                </div>
+                <Button
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                  onClick={() => {
+                    if (setupCode.length !== 6) {
+                      toast.error('Digite o código de 6 dígitos');
+                      return;
+                    }
+                    verifyCodeMutation.mutate(
+                      { email: setupEmail, code: setupCode },
+                      {
+                        onSuccess: () => setSetupStep('newPassword'),
+                        onError: (err: any) => toast.error(err.message || 'Código inválido')
+                      }
+                    );
+                  }}
+                  disabled={verifyCodeMutation.isPending}
+                >
+                  {verifyCodeMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Verificar Código
+                </Button>
+                <p className="text-xs text-slate-500 text-center">
+                  Não recebeu? Verifique sua caixa de spam ou tente novamente.
+                </p>
+              </>
+            )}
+
+            {setupStep === 'newPassword' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="setup-password" className="text-slate-300">Nova Senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="setup-password"
+                      type={showSetupPassword ? "text" : "password"}
+                      value={setupPassword}
+                      onChange={(e) => setSetupPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="bg-slate-700/50 border-slate-600 text-white pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSetupPassword(!showSetupPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    >
+                      {showSetupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="setup-confirm-password" className="text-slate-300">Confirmar Senha</Label>
+                  <Input
+                    id="setup-confirm-password"
+                    type="password"
+                    value={setupConfirmPassword}
+                    onChange={(e) => setSetupConfirmPassword(e.target.value)}
+                    placeholder="Repita a senha"
+                    className="bg-slate-700/50 border-slate-600 text-white"
+                  />
+                </div>
+                <Button
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                  onClick={() => {
+                    if (setupPassword.length < 6) {
+                      toast.error('Senha deve ter pelo menos 6 caracteres');
+                      return;
+                    }
+                    if (setupPassword !== setupConfirmPassword) {
+                      toast.error('As senhas não coincidem');
+                      return;
+                    }
+                    resetPasswordMutation.mutate(
+                      { email: setupEmail, code: setupCode, newPassword: setupPassword },
+                      {
+                        onSuccess: () => setSetupStep('success'),
+                        onError: (err: any) => toast.error(err.message || 'Erro ao definir senha')
+                      }
+                    );
+                  }}
+                  disabled={resetPasswordMutation.isPending}
+                >
+                  {resetPasswordMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Definir Senha
+                </Button>
+              </>
+            )}
+
+            {setupStep === 'success' && (
+              <div className="text-center space-y-4">
+                <div className="mx-auto h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-400" />
+                </div>
+                <p className="text-slate-300">
+                  Sua senha foi configurada! Agora você pode fazer login.
+                </p>
+                <Button
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                  onClick={() => {
+                    setShowPasswordSetup(false);
+                    setSetupStep('code');
+                    setSetupCode('');
+                    setSetupPassword('');
+                    setSetupConfirmPassword('');
+                    // Preencher o email no form de login
+                    setLoginForm(prev => ({ ...prev, email: setupEmail, password: '' }));
+                  }}
                 >
                   Fazer Login
                 </Button>
