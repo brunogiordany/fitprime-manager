@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
-import { Dumbbell, Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, KeyRound, CheckCircle2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, KeyRound, CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -202,12 +202,14 @@ export default function StudentLogin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-xl border-emerald-100">
         <CardHeader className="text-center">
-          <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4">
-            <Dumbbell className="h-8 w-8 text-white" />
-          </div>
-          <CardTitle className="text-2xl">Portal do Aluno</CardTitle>
+          <img 
+            src="/fitprime-logo.png" 
+            alt="FitPrime Manager" 
+            className="h-16 mx-auto mb-4"
+          />
+          <CardTitle className="text-2xl text-emerald-800">Portal do Aluno</CardTitle>
           <CardDescription>
             Acesse sua conta para ver seus treinos e acompanhar sua evolução
           </CardDescription>

@@ -275,47 +275,46 @@ export default function PersonalLogin() {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
+        {/* Logo FitPrime */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Dumbbell className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">FitPrime</span>
-          </div>
+          <img 
+            src="/fitprime-logo.png" 
+            alt="FitPrime Manager" 
+            className="h-20 mx-auto mb-2"
+          />
         </div>
 
-        <Card className="border-0 shadow-2xl bg-gray-800/50 backdrop-blur">
+        <Card className="border-0 shadow-2xl bg-slate-800/50 backdrop-blur border border-emerald-500/20">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl text-white">
               Área do Personal
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-slate-400">
               Gerencie seus alunos e negócio
             </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-4">
             <Tabs value={authMode} onValueChange={(v) => { setAuthMode(v as AuthMode); setFormErrors({}); }}>
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-700/50">
-                <TabsTrigger value="login" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-700/50">
+                <TabsTrigger value="login" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white">
                   Entrar
                 </TabsTrigger>
-                <TabsTrigger value="register" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                <TabsTrigger value="register" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white">
                   Criar Conta
                 </TabsTrigger>
               </TabsList>
@@ -323,7 +322,7 @@ export default function PersonalLogin() {
               {/* Login Tab */}
               <TabsContent value="login" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email" className="flex items-center gap-2 text-gray-300">
+                  <Label htmlFor="login-email" className="flex items-center gap-2 text-slate-300">
                     <Mail className="h-4 w-4" />
                     Email
                   </Label>
@@ -334,21 +333,21 @@ export default function PersonalLogin() {
                     onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
                     onKeyPress={handleKeyPress}
                     placeholder="seu@email.com"
-                    className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${formErrors.email ? "border-red-500" : ""}`}
+                    className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 ${formErrors.email ? "border-red-500" : ""}`}
                   />
                   {formErrors.email && <p className="text-xs text-red-400">{formErrors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password" className="flex items-center gap-2 text-gray-300">
+                    <Label htmlFor="login-password" className="flex items-center gap-2 text-slate-300">
                       <Lock className="h-4 w-4" />
                       Senha
                     </Label>
                     <button
                       type="button"
                       onClick={openForgotPassword}
-                      className="text-xs text-purple-400 hover:text-purple-300 hover:underline"
+                      className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline"
                     >
                       Esqueci minha senha
                     </button>
@@ -361,12 +360,12 @@ export default function PersonalLogin() {
                       onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
                       onKeyPress={handleKeyPress}
                       placeholder="Sua senha"
-                      className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${formErrors.password ? "border-red-500" : ""}`}
+                      className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10 ${formErrors.password ? "border-red-500" : ""}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -379,18 +378,18 @@ export default function PersonalLogin() {
                     id="rememberMe"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked === true)}
-                    className="border-gray-600 data-[state=checked]:bg-purple-600"
+                    className="border-slate-600 data-[state=checked]:bg-emerald-600"
                   />
                   <label
                     htmlFor="rememberMe"
-                    className="text-sm text-gray-400 cursor-pointer select-none"
+                    className="text-sm text-slate-400 cursor-pointer select-none"
                   >
                     Lembrar de mim
                   </label>
                 </div>
 
                 <Button 
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
                   onClick={handleLogin}
                   disabled={loginMutation.isPending}
                 >
@@ -408,7 +407,7 @@ export default function PersonalLogin() {
               {/* Register Tab */}
               <TabsContent value="register" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="register-name" className="flex items-center gap-2 text-gray-300">
+                  <Label htmlFor="register-name" className="flex items-center gap-2 text-slate-300">
                     <User className="h-4 w-4" />
                     Nome Completo *
                   </Label>
@@ -419,13 +418,13 @@ export default function PersonalLogin() {
                     onChange={(e) => setRegisterForm(prev => ({ ...prev, name: e.target.value }))}
                     onKeyPress={handleKeyPress}
                     placeholder="Seu nome completo"
-                    className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${formErrors.name ? "border-red-500" : ""}`}
+                    className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 ${formErrors.name ? "border-red-500" : ""}`}
                   />
                   {formErrors.name && <p className="text-xs text-red-400">{formErrors.name}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="flex items-center gap-2 text-gray-300">
+                  <Label htmlFor="register-email" className="flex items-center gap-2 text-slate-300">
                     <Mail className="h-4 w-4" />
                     Email *
                   </Label>
@@ -436,14 +435,14 @@ export default function PersonalLogin() {
                     onChange={(e) => setRegisterForm(prev => ({ ...prev, email: e.target.value }))}
                     onKeyPress={handleKeyPress}
                     placeholder="seu@email.com"
-                    className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${formErrors.email ? "border-red-500" : ""}`}
+                    className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 ${formErrors.email ? "border-red-500" : ""}`}
                   />
                   {formErrors.email && <p className="text-xs text-red-400">{formErrors.email}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="register-password" className="flex items-center gap-2 text-gray-300">
+                    <Label htmlFor="register-password" className="flex items-center gap-2 text-slate-300">
                       <Lock className="h-4 w-4" />
                       Senha *
                     </Label>
@@ -455,12 +454,12 @@ export default function PersonalLogin() {
                         onChange={(e) => setRegisterForm(prev => ({ ...prev, password: e.target.value }))}
                         onKeyPress={handleKeyPress}
                         placeholder="Min. 6 caracteres"
-                        className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${formErrors.password ? "border-red-500" : ""}`}
+                        className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10 ${formErrors.password ? "border-red-500" : ""}`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -469,7 +468,7 @@ export default function PersonalLogin() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password" className="flex items-center gap-2 text-gray-300">
+                    <Label htmlFor="register-confirm-password" className="flex items-center gap-2 text-slate-300">
                       <Lock className="h-4 w-4" />
                       Confirmar *
                     </Label>
@@ -481,12 +480,12 @@ export default function PersonalLogin() {
                         onChange={(e) => setRegisterForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         onKeyPress={handleKeyPress}
                         placeholder="Repita a senha"
-                        className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${formErrors.confirmPassword ? "border-red-500" : ""}`}
+                        className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10 ${formErrors.confirmPassword ? "border-red-500" : ""}`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -497,7 +496,7 @@ export default function PersonalLogin() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="register-phone" className="flex items-center gap-2 text-gray-300">
+                    <Label htmlFor="register-phone" className="flex items-center gap-2 text-slate-300">
                       <Phone className="h-4 w-4" />
                       WhatsApp
                     </Label>
@@ -507,12 +506,12 @@ export default function PersonalLogin() {
                       value={registerForm.phone}
                       onChange={(e) => setRegisterForm(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="(11) 99999-9999"
-                      className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500"
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-cref" className="flex items-center gap-2 text-gray-300">
+                    <Label htmlFor="register-cref" className="flex items-center gap-2 text-slate-300">
                       <Award className="h-4 w-4" />
                       CREF
                     </Label>
@@ -522,13 +521,13 @@ export default function PersonalLogin() {
                       value={registerForm.cref}
                       onChange={(e) => setRegisterForm(prev => ({ ...prev, cref: e.target.value }))}
                       placeholder="000000-G/SP"
-                      className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500"
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                 </div>
 
                 <Button 
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
                   onClick={handleRegister}
                   disabled={registerMutation.isPending}
                 >
@@ -542,7 +541,7 @@ export default function PersonalLogin() {
                   )}
                 </Button>
 
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-slate-500 text-center">
                   Ao criar sua conta, você concorda com nossos Termos de Uso e Política de Privacidade.
                 </p>
               </TabsContent>
@@ -551,7 +550,7 @@ export default function PersonalLogin() {
             {/* Back button */}
             <Button
               variant="ghost"
-              className="w-full mt-4 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              className="w-full mt-4 text-slate-400 hover:text-white hover:bg-slate-700/50"
               onClick={() => setLocation("/login")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -561,7 +560,7 @@ export default function PersonalLogin() {
         </Card>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-500 mt-6">
+        <p className="text-center text-xs text-slate-500 mt-6">
           © {new Date().getFullYear()} FitPrime. Todos os direitos reservados.
         </p>
       </div>
@@ -571,10 +570,10 @@ export default function PersonalLogin() {
         <DialogContent className="bg-gray-800 border-gray-700 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-purple-400" />
+              <KeyRound className="h-5 w-5 text-emerald-400" />
               {forgotPasswordStep === 'success' ? 'Senha Redefinida!' : 'Recuperar Senha'}
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-slate-400">
               {forgotPasswordStep === 'email' && 'Digite seu email para receber o código de recuperação'}
               {forgotPasswordStep === 'code' && 'Digite o código de 6 dígitos enviado para seu email'}
               {forgotPasswordStep === 'newPassword' && 'Digite sua nova senha'}
@@ -586,18 +585,18 @@ export default function PersonalLogin() {
             {forgotPasswordStep === 'email' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="forgot-email" className="text-gray-300">Email</Label>
+                  <Label htmlFor="forgot-email" className="text-slate-300">Email</Label>
                   <Input
                     id="forgot-email"
                     type="email"
                     value={forgotPasswordEmail}
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
                     placeholder="seu@email.com"
-                    className="bg-gray-700/50 border-gray-600 text-white"
+                    className="bg-slate-700/50 border-slate-600 text-white"
                   />
                 </div>
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-emerald-600 hover:bg-purple-700"
                   onClick={handleRequestReset}
                   disabled={requestResetMutation.isPending}
                 >
@@ -612,7 +611,7 @@ export default function PersonalLogin() {
             {forgotPasswordStep === 'code' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="reset-code" className="text-gray-300">Código de Verificação</Label>
+                  <Label htmlFor="reset-code" className="text-slate-300">Código de Verificação</Label>
                   <Input
                     id="reset-code"
                     type="text"
@@ -620,11 +619,11 @@ export default function PersonalLogin() {
                     onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="000000"
                     maxLength={6}
-                    className="bg-gray-700/50 border-gray-600 text-white text-center text-2xl tracking-widest"
+                    className="bg-slate-700/50 border-slate-600 text-white text-center text-2xl tracking-widest"
                   />
                 </div>
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-emerald-600 hover:bg-purple-700"
                   onClick={handleVerifyCode}
                   disabled={verifyCodeMutation.isPending}
                 >
@@ -639,7 +638,7 @@ export default function PersonalLogin() {
             {forgotPasswordStep === 'newPassword' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="new-password" className="text-gray-300">Nova Senha</Label>
+                  <Label htmlFor="new-password" className="text-slate-300">Nova Senha</Label>
                   <div className="relative">
                     <Input
                       id="new-password"
@@ -647,30 +646,30 @@ export default function PersonalLogin() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Mínimo 6 caracteres"
-                      className="bg-gray-700/50 border-gray-600 text-white pr-10"
+                      className="bg-slate-700/50 border-slate-600 text-white pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
                     >
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-new-password" className="text-gray-300">Confirmar Nova Senha</Label>
+                  <Label htmlFor="confirm-new-password" className="text-slate-300">Confirmar Nova Senha</Label>
                   <Input
                     id="confirm-new-password"
                     type="password"
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                     placeholder="Repita a nova senha"
-                    className="bg-gray-700/50 border-gray-600 text-white"
+                    className="bg-slate-700/50 border-slate-600 text-white"
                   />
                 </div>
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-emerald-600 hover:bg-purple-700"
                   onClick={handleResetPassword}
                   disabled={resetPasswordMutation.isPending}
                 >
@@ -687,11 +686,11 @@ export default function PersonalLogin() {
                 <div className="mx-auto h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
                   <CheckCircle2 className="h-8 w-8 text-green-400" />
                 </div>
-                <p className="text-gray-300">
+                <p className="text-slate-300">
                   Você já pode fazer login com sua nova senha.
                 </p>
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-emerald-600 hover:bg-purple-700"
                   onClick={closeForgotPasswordDialog}
                 >
                   Fazer Login

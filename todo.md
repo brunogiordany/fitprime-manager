@@ -3255,3 +3255,9 @@
 - [x] Remover referências ao Manus no frontend
 - [x] Atualizar DashboardLayout para usar login próprio
 - [x] Atualizar useAuth para usar login próprio
+
+
+## Personalização de Login (v5.2)
+- [x] Adicionar logo FitPrime nas páginas de login
+- [x] Ajustar cores conforme identidade visual (verde emerald/teal)
+- [x] Melhorar branding geral das páginas de autenticação
