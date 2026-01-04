@@ -142,6 +142,19 @@ export default function StudentProfile() {
     { enabled: studentId > 0 }
   );
 
+  // Evolução de carga - exercícios únicos e progresso
+  const [selectedExerciseForProgress, setSelectedExerciseForProgress] = useState<string>('');
+  
+  const { data: uniqueExercises } = trpc.trainingDiary.uniqueExercises.useQuery(
+    { studentId },
+    { enabled: studentId > 0 }
+  );
+  
+  const { data: exerciseProgress } = trpc.trainingDiary.exerciseProgress.useQuery(
+    { studentId, exerciseName: selectedExerciseForProgress, limit: 20 },
+    { enabled: studentId > 0 && !!selectedExerciseForProgress }
+  );
+
   const { data: charges } = trpc.charges.listByStudent.useQuery(
     { studentId },
     { enabled: studentId > 0 }
@@ -1355,6 +1368,18 @@ export default function StudentProfile() {
 
           {/* Evolution Tab */}
           <TabsContent value="evolution" className="space-y-6">
+            {/* Botão de Acesso Rápido às Fotos */}
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setActiveTab('photos')}
+                className="gap-2"
+              >
+                <Camera className="h-4 w-4" />
+                Ver Fotos de Evolução
+              </Button>
+            </div>
+
             {/* KPIs de Frequência */}
             {sessionStats && (
               <div className="grid gap-4 md:grid-cols-4">
@@ -1577,6 +1602,79 @@ export default function StudentProfile() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Evolução de Carga - Métricas de Treino */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Dumbbell className="h-5 w-5 text-emerald-600" />
+                  Evolução de Carga nos Exercícios
+                </CardTitle>
+                <CardDescription>Progresso de força nos principais exercícios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {uniqueExercises && uniqueExercises.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueExercises.slice(0, 10).map((exercise: string) => (
+                        <Button
+                          key={exercise}
+                          variant={selectedExerciseForProgress === exercise ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setSelectedExerciseForProgress(exercise)}
+                          className={selectedExerciseForProgress === exercise ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                        >
+                          {exercise}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {selectedExerciseForProgress && exerciseProgress && exerciseProgress.length > 0 ? (
+                      <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={[...exerciseProgress].reverse()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="date" 
+                              tickFormatter={(date) => format(new Date(date), 'dd/MM', { locale: ptBR })}
+                            />
+                            <YAxis />
+                            <Tooltip 
+                              labelFormatter={(date) => format(new Date(date), "dd 'de' MMMM", { locale: ptBR })}
+                              formatter={(value: any) => [`${value} kg`, 'Carga']}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="weight" 
+                              stroke="#10b981" 
+                              strokeWidth={2}
+                              dot={{ fill: '#10b981' }}
+                              name="Carga (kg)"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : selectedExerciseForProgress ? (
+                      <div className="text-center py-6 text-muted-foreground">
+                        <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum registro de carga para este exercício</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-muted-foreground">
+                        <Dumbbell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Selecione um exercício acima para ver a evolução</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum exercício registrado no diário de treino</p>
+                    <p className="text-sm mt-1">Registre treinos no Diário de Treino para ver a evolução</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Photos Tab - Evolução Unificada */}
@@ -1635,6 +1733,77 @@ export default function StudentProfile() {
                   <div className="text-center py-8">
                     <Dumbbell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                     <p className="text-muted-foreground">Nenhum treino cadastrado</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            {/* Evolução de Carga por Exercício */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  Evolução de Carga
+                </CardTitle>
+                <CardDescription>Acompanhe o progresso de carga em cada exercício</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {uniqueExercises && uniqueExercises.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueExercises.slice(0, 15).map((exercise: string) => (
+                        <Button
+                          key={exercise}
+                          variant={selectedExerciseForProgress === exercise ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setSelectedExerciseForProgress(exercise)}
+                          className={selectedExerciseForProgress === exercise ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                        >
+                          {exercise}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {selectedExerciseForProgress && exerciseProgress && exerciseProgress.length > 0 ? (
+                      <div className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={[...exerciseProgress].reverse()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="date" 
+                              tickFormatter={(date) => format(new Date(date), 'dd/MM', { locale: ptBR })}
+                            />
+                            <YAxis />
+                            <Tooltip 
+                              labelFormatter={(date) => format(new Date(date), "dd 'de' MMMM", { locale: ptBR })}
+                              formatter={(value: any) => [`${value} kg`, 'Carga']}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="weight" 
+                              stroke="#10b981" 
+                              strokeWidth={2}
+                              dot={{ fill: '#10b981' }}
+                              name="Carga (kg)"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : selectedExerciseForProgress ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum registro de carga para este exercício</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Dumbbell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Selecione um exercício para ver a evolução</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum exercício registrado no diário de treino</p>
                   </div>
                 )}
               </CardContent>

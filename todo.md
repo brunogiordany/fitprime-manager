@@ -3063,3 +3063,8 @@
 - [x] Identificar funcionalidades únicas em cada subtópico
 - [x] Integrar funcionalidades únicas nas abas principais
 - [x] Remover subtópicos duplicados
+
+## Melhorias na Evolução e Treinos
+- [x] Adicionar gráfico de evolução de carga na aba Treinos do perfil do aluno
+- [x] Unificar aba Evolução com métricas de treino (progresso de cargas)
+- [x] Adicionar botão de acesso rápido às fotos na aba Evolução
