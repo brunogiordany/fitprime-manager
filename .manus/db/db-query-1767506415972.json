@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `admin_activity_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `adminUserId` int NOT NULL,\n  `action` varchar(100) NOT NULL,\n  `targetType` varchar(50),\n  `targetId` int,\n  `targetName` varchar(255),\n  `details` text,\n  `ipAddress` varchar(45),\n  `userAgent` text,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `admin_activity_log_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS `admin_activity_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `adminUserId` int NOT NULL,\n  `action` varchar(100) NOT NULL,\n  `targetType` varchar(50),\n  `targetId` int,\n  `targetName` varchar(255),\n  `details` text,\n  `ipAddress` varchar(45),\n  `userAgent` text,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `admin_activity_log_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 396
+}

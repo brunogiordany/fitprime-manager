@@ -47,6 +47,9 @@ import {
   pendingActivations, InsertPendingActivation, PendingActivation,
   caktoWebhookLogs, InsertCaktoWebhookLog, CaktoWebhookLog,
   aiAnalysisHistory, InsertAiAnalysisHistory, AiAnalysisHistory,
+  featureFlags, InsertFeatureFlag, FeatureFlag,
+  systemSettings, InsertSystemSetting, SystemSetting,
+  adminActivityLog, InsertAdminActivityLog, AdminActivityLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -4871,3 +4874,132 @@ export async function getAiMemoriesByLead(personalId: number, leadId: number): P
 }
 
 
+
+// ==================== FEATURE FLAGS ====================
+// Buscar feature flags de um personal
+export async function getFeatureFlagsByPersonalId(personalId: number): Promise<FeatureFlag | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select()
+    .from(featureFlags)
+    .where(eq(featureFlags.personalId, personalId))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
+// Criar ou atualizar feature flags
+export async function upsertFeatureFlags(personalId: number, data: Partial<InsertFeatureFlag>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getFeatureFlagsByPersonalId(personalId);
+  
+  if (existing) {
+    await db.update(featureFlags)
+      .set(data)
+      .where(eq(featureFlags.personalId, personalId));
+  } else {
+    await db.insert(featureFlags).values({
+      personalId,
+      ...data,
+    });
+  }
+}
+
+// Verificar se uma feature está habilitada para um personal
+export async function isFeatureEnabled(personalId: number, feature: keyof FeatureFlag): Promise<boolean> {
+  const flags = await getFeatureFlagsByPersonalId(personalId);
+  
+  // Se não existir registro, usar valores padrão
+  if (!flags) {
+    // IA de Atendimento é desabilitada por padrão
+    if (feature === 'aiAssistantEnabled') return false;
+    // Outras features são habilitadas por padrão
+    return true;
+  }
+  
+  return Boolean(flags[feature]);
+}
+
+// Listar todos os feature flags (para admin)
+export async function getAllFeatureFlags(): Promise<(FeatureFlag & { personalName?: string })[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    featureFlags: featureFlags,
+    personalName: personals.businessName,
+  })
+    .from(featureFlags)
+    .leftJoin(personals, eq(featureFlags.personalId, personals.id));
+  
+  return result.map(r => ({
+    ...r.featureFlags,
+    personalName: r.personalName || undefined,
+  }));
+}
+
+// ==================== SYSTEM SETTINGS ====================
+// Buscar configuração do sistema
+export async function getSystemSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select()
+    .from(systemSettings)
+    .where(eq(systemSettings.key, key))
+    .limit(1);
+  
+  return result[0]?.value || null;
+}
+
+// Criar ou atualizar configuração do sistema
+export async function upsertSystemSetting(key: string, value: string, description?: string, updatedBy?: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getSystemSetting(key);
+  
+  if (existing !== null) {
+    await db.update(systemSettings)
+      .set({ value, description, updatedBy })
+      .where(eq(systemSettings.key, key));
+  } else {
+    await db.insert(systemSettings).values({
+      key,
+      value,
+      description,
+      updatedBy,
+    });
+  }
+}
+
+// Listar todas as configurações do sistema
+export async function getAllSystemSettings(): Promise<SystemSetting[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(systemSettings);
+}
+
+// ==================== ADMIN ACTIVITY LOG ====================
+// Registrar atividade do admin
+export async function logAdminActivity(data: InsertAdminActivityLog): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.insert(adminActivityLog).values(data);
+}
+
+// Buscar atividades do admin
+export async function getAdminActivityLog(limit: number = 100): Promise<AdminActivityLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(adminActivityLog)
+    .orderBy(desc(adminActivityLog.createdAt))
+    .limit(limit);
+}

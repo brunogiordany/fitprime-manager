@@ -73,7 +73,14 @@ import {
   Trash2,
   RotateCcw,
   Trash,
+  Bot,
+  ToggleLeft,
+  ToggleRight,
+  Sparkles,
+  History,
+  Sliders,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Redirect, Link } from "wouter";
@@ -688,6 +695,319 @@ function PersonalDetailsSheet({
   );
 }
 
+// Componente da aba Feature Flags
+function FeatureFlagsTab({ personals }: { personals: any[] }) {
+  const utils = trpc.useUtils();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPersonalId, setSelectedPersonalId] = useState<number | null>(null);
+  
+  // Buscar feature flags de todos os personais
+  const { data: allFlags, isLoading: loadingFlags, refetch: refetchFlags } = trpc.admin.listFeatureFlags.useQuery();
+  
+  // Buscar flags do personal selecionado
+  const { data: selectedFlags } = trpc.admin.getPersonalFeatureFlags.useQuery(
+    { personalId: selectedPersonalId! },
+    { enabled: !!selectedPersonalId }
+  );
+  
+  // Mutation para toggle de feature
+  const toggleFeatureMutation = trpc.admin.toggleFeature.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetchFlags();
+      utils.admin.getPersonalFeatureFlags.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
+  // Mutation para toggle global
+  const toggleAllMutation = trpc.admin.toggleFeatureForAll.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetchFlags();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const featureLabels: Record<string, { label: string; description: string; icon: any }> = {
+    aiAssistantEnabled: { 
+      label: "IA de Atendimento", 
+      description: "Assistente virtual para atender leads e alunos via WhatsApp",
+      icon: Bot 
+    },
+    whatsappIntegrationEnabled: { 
+      label: "Integração WhatsApp", 
+      description: "Envio de mensagens automáticas via WhatsApp",
+      icon: MessageSquare 
+    },
+    stripePaymentsEnabled: { 
+      label: "Pagamentos Stripe", 
+      description: "Cobranças e assinaturas via Stripe",
+      icon: CreditCard 
+    },
+    advancedReportsEnabled: { 
+      label: "Relatórios Avançados", 
+      description: "Dashboards e análises detalhadas",
+      icon: BarChart3 
+    },
+    aiWorkoutGenerationEnabled: { 
+      label: "Geração de Treino IA", 
+      description: "Criação automática de treinos com IA",
+      icon: Sparkles 
+    },
+    aiAnalysisEnabled: { 
+      label: "Análise com IA", 
+      description: "Análise de evolução e fotos com IA",
+      icon: Sparkles 
+    },
+    bulkMessagingEnabled: { 
+      label: "Mensagens em Massa", 
+      description: "Envio de mensagens para múltiplos alunos",
+      icon: Users 
+    },
+    automationsEnabled: { 
+      label: "Automações", 
+      description: "Lembretes e mensagens automáticas",
+      icon: Zap 
+    },
+    studentPortalEnabled: { 
+      label: "Portal do Aluno", 
+      description: "Acesso do aluno ao app",
+      icon: User 
+    },
+  };
+  
+  const filteredPersonals = personals.filter(p => 
+    p.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.userEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  // Criar mapa de flags por personalId
+  const flagsMap = new Map<number, any>();
+  allFlags?.forEach((f: any) => flagsMap.set(f.personalId, f));
+  
+  return (
+    <div className="space-y-6">
+      {/* Controles Globais */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sliders className="h-5 w-5" />
+            Controle Global de Features
+          </CardTitle>
+          <CardDescription>
+            Habilite ou desabilite funcionalidades para todos os personais de uma vez
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(featureLabels).map(([key, { label, description, icon: Icon }]) => (
+              <div key={key} className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">{label}</p>
+                  <p className="text-xs text-muted-foreground truncate">{description}</p>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
+                      onClick={() => toggleAllMutation.mutate({ feature: key as any, enabled: true })}
+                      disabled={toggleAllMutation.isPending}
+                    >
+                      <ToggleRight className="h-3 w-3 mr-1" />
+                      Todos
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => toggleAllMutation.mutate({ feature: key as any, enabled: false })}
+                      disabled={toggleAllMutation.isPending}
+                    >
+                      <ToggleLeft className="h-3 w-3 mr-1" />
+                      Nenhum
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Lista de Personais com Features */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Features por Personal
+          </CardTitle>
+          <CardDescription>
+            Gerencie as funcionalidades habilitadas para cada personal individualmente
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar personal..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchFlags()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Atualizar
+            </Button>
+          </div>
+          
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Personal</TableHead>
+                  <TableHead className="text-center">IA Atend.</TableHead>
+                  <TableHead className="text-center">WhatsApp</TableHead>
+                  <TableHead className="text-center">Stripe</TableHead>
+                  <TableHead className="text-center">IA Treino</TableHead>
+                  <TableHead className="text-center">Automações</TableHead>
+                  <TableHead className="text-center">Portal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingFlags ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredPersonals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      Nenhum personal encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredPersonals.map((personal) => {
+                    const flags = flagsMap.get(personal.id);
+                    return (
+                      <TableRow key={personal.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{personal.userName || personal.businessName || "Sem nome"}</p>
+                            <p className="text-xs text-muted-foreground">{personal.userEmail}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.aiAssistantEnabled ?? false}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'aiAssistantEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.whatsappIntegrationEnabled ?? true}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'whatsappIntegrationEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.stripePaymentsEnabled ?? true}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'stripePaymentsEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.aiWorkoutGenerationEnabled ?? true}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'aiWorkoutGenerationEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.automationsEnabled ?? true}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'automationsEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.studentPortalEnabled ?? true}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'studentPortalEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Legenda */}
+          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+            <p className="text-xs text-muted-foreground">
+              <strong>Legenda:</strong> IA Atend. = IA de Atendimento (BETA) | WhatsApp = Integração WhatsApp | 
+              Stripe = Pagamentos | IA Treino = Geração de Treino com IA | Automações = Mensagens Automáticas | 
+              Portal = Portal do Aluno
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // Componente da aba Lixeira
 function TrashTab() {
   const { data: deletedPersonals, isLoading, refetch } = trpc.admin.getDeletedPersonals.useQuery();
@@ -1071,7 +1391,7 @@ export default function AdminPanel() {
       {/* Content */}
       <div className="container py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -1079,6 +1399,10 @@ export default function AdminPanel() {
             <TabsTrigger value="personals" className="gap-2">
               <Users className="h-4 w-4" />
               Personais
+            </TabsTrigger>
+            <TabsTrigger value="features" className="gap-2">
+              <Sliders className="h-4 w-4" />
+              Features
             </TabsTrigger>
             <TabsTrigger value="subscriptions" className="gap-2">
               <DollarSign className="h-4 w-4" />
@@ -1611,6 +1935,11 @@ export default function AdminPanel() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          {/* Feature Flags */}
+          <TabsContent value="features" className="space-y-6">
+            <FeatureFlagsTab personals={personals || []} />
           </TabsContent>
           
           {/* Assinaturas */}

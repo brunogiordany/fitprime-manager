@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `system_settings` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `key` varchar(100) NOT NULL UNIQUE,\n  `value` text NOT NULL,\n  `description` varchar(500),\n  `category` varchar(50) DEFAULT 'general',\n  `updatedBy` varchar(255),\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `system_settings_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute CREATE TABLE IF NOT EXISTS `system_settings` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `key` varchar(100) NOT NULL UNIQUE,\n  `value` text NOT NULL,\n  `description` varchar(500),\n  `category` varchar(50) DEFAULT 'general',\n  `updatedBy` varchar(255),\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  CONSTRAINT `system_settings_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 399
+}

@@ -1652,3 +1652,61 @@ export const aiMemory = mysqlTable("ai_memory", {
 
 export type AiMemory = typeof aiMemory.$inferSelect;
 export type InsertAiMemory = typeof aiMemory.$inferInsert;
+
+
+// ==================== FEATURE FLAGS (Controle de Funcionalidades) ====================
+export const featureFlags = mysqlTable("feature_flags", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Funcionalidades controladas pelo admin
+  aiAssistantEnabled: boolean("aiAssistantEnabled").default(false).notNull(), // IA de Atendimento
+  whatsappIntegrationEnabled: boolean("whatsappIntegrationEnabled").default(true).notNull(), // Integração WhatsApp
+  stripePaymentsEnabled: boolean("stripePaymentsEnabled").default(true).notNull(), // Pagamentos Stripe
+  advancedReportsEnabled: boolean("advancedReportsEnabled").default(true).notNull(), // Relatórios Avançados
+  aiWorkoutGenerationEnabled: boolean("aiWorkoutGenerationEnabled").default(true).notNull(), // Geração de Treino com IA
+  aiAnalysisEnabled: boolean("aiAnalysisEnabled").default(true).notNull(), // Análise de Aluno com IA
+  bulkMessagingEnabled: boolean("bulkMessagingEnabled").default(true).notNull(), // Envio em Massa
+  automationsEnabled: boolean("automationsEnabled").default(true).notNull(), // Automações
+  studentPortalEnabled: boolean("studentPortalEnabled").default(true).notNull(), // Portal do Aluno
+  
+  // Metadados
+  enabledBy: varchar("enabledBy", { length: 255 }), // Quem habilitou/desabilitou
+  enabledAt: timestamp("enabledAt"), // Quando foi habilitado
+  disabledReason: varchar("disabledReason", { length: 500 }), // Motivo da desabilitação
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type InsertFeatureFlag = typeof featureFlags.$inferInsert;
+
+// ==================== SYSTEM SETTINGS (Configurações Globais do Sistema) ====================
+export const systemSettings = mysqlTable("system_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  description: varchar("description", { length: 500 }),
+  category: varchar("category", { length: 50 }).default("general"),
+  updatedBy: varchar("updatedBy", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = typeof systemSettings.$inferInsert;
+
+// ==================== ADMIN ACTIVITY LOG (Log de Atividades do Admin) ====================
+export const adminActivityLog = mysqlTable("admin_activity_log", {
+  id: int("id").autoincrement().primaryKey(),
+  adminUserId: int("adminUserId").notNull().references(() => users.id),
+  action: varchar("action", { length: 100 }).notNull(), // Ex: "enable_feature", "disable_feature", "grant_access"
+  targetType: varchar("targetType", { length: 50 }), // Ex: "personal", "student", "feature"
+  targetId: int("targetId"), // ID do alvo
+  targetName: varchar("targetName", { length: 255 }), // Nome do alvo para fácil identificação
+  details: text("details"), // JSON com detalhes adicionais
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AdminActivityLog = typeof adminActivityLog.$inferSelect;
+export type InsertAdminActivityLog = typeof adminActivityLog.$inferInsert;

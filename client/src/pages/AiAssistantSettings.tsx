@@ -35,8 +35,13 @@ import {
 export default function AiAssistantSettings() {
   const utils = trpc.useUtils();
   
+  // Verificar se a feature está habilitada
+  const { data: featureFlags, isLoading: loadingFlags } = trpc.personal.featureFlags.useQuery();
+  
   // Buscar configuração atual
-  const { data: config, isLoading } = trpc.aiAssistant.getConfig.useQuery();
+  const { data: config, isLoading } = trpc.aiAssistant.getConfig.useQuery(undefined, {
+    enabled: featureFlags?.aiAssistantEnabled === true,
+  });
   
   // Mutation para salvar
   const saveConfig = trpc.aiAssistant.saveConfig.useMutation({
@@ -224,6 +229,53 @@ export default function AiAssistantSettings() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Tela de bloqueio quando feature não está habilitada
+  if (loadingFlags) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+            <p className="mt-2 text-muted-foreground">Carregando...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  if (!featureFlags?.aiAssistantEnabled) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-lg w-full">
+            <CardHeader className="text-center">
+              <div className="mx-auto p-4 bg-amber-100 dark:bg-amber-900/30 rounded-full w-fit mb-4">
+                <Shield className="h-12 w-12 text-amber-600" />
+              </div>
+              <CardTitle className="text-2xl">Funcionalidade em Beta</CardTitle>
+              <CardDescription className="text-base mt-2">
+                A IA de Atendimento está em fase de testes e ainda não está disponível para uso.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Esta funcionalidade precisa ser liberada pelo administrador do sistema.
+                  Quando estiver disponível, você poderá configurar sua assistente virtual
+                  para atender leads e alunos automaticamente via WhatsApp.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <span>Em breve disponível</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -234,7 +286,7 @@ export default function AiAssistantSettings() {
               <Bot className="h-7 w-7 text-emerald-600" />
               IA de Atendimento
               <Badge variant="outline" className="ml-2 text-amber-600 border-amber-400 bg-amber-50">
-                BETA - Não usar
+                BETA
               </Badge>
             </h1>
             <p className="text-muted-foreground mt-1">

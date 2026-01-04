@@ -704,6 +704,189 @@ export const appRouter = router({
         };
       }),
     extraCharges: adminExtraChargesRouter,
+    
+    // ==================== FEATURE FLAGS (Controle de Funcionalidades) ====================
+    
+    // Listar todas as feature flags
+    listFeatureFlags: ownerProcedure.query(async () => {
+      return await db.getAllFeatureFlags();
+    }),
+    
+    // Buscar feature flags de um personal
+    getPersonalFeatureFlags: ownerProcedure
+      .input(z.object({ personalId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFeatureFlagsByPersonalId(input.personalId);
+      }),
+    
+    // Atualizar feature flags de um personal
+    updateFeatureFlags: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+        flags: z.object({
+          aiAssistantEnabled: z.boolean().optional(),
+          whatsappIntegrationEnabled: z.boolean().optional(),
+          stripePaymentsEnabled: z.boolean().optional(),
+          advancedReportsEnabled: z.boolean().optional(),
+          aiWorkoutGenerationEnabled: z.boolean().optional(),
+          aiAnalysisEnabled: z.boolean().optional(),
+          bulkMessagingEnabled: z.boolean().optional(),
+          automationsEnabled: z.boolean().optional(),
+          studentPortalEnabled: z.boolean().optional(),
+        }),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.upsertFeatureFlags(input.personalId, {
+          ...input.flags,
+          enabledBy: ctx.user.name || 'Owner',
+          enabledAt: new Date(),
+          disabledReason: input.reason,
+        });
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: 'update_feature_flags',
+          targetType: 'personal',
+          targetId: input.personalId,
+          details: JSON.stringify(input.flags),
+        });
+        
+        return { success: true, message: 'Feature flags atualizadas' };
+      }),
+    
+    // Toggle rápido de uma feature para um personal
+    toggleFeature: ownerProcedure
+      .input(z.object({
+        personalId: z.number(),
+        feature: z.enum([
+          'aiAssistantEnabled',
+          'whatsappIntegrationEnabled',
+          'stripePaymentsEnabled',
+          'advancedReportsEnabled',
+          'aiWorkoutGenerationEnabled',
+          'aiAnalysisEnabled',
+          'bulkMessagingEnabled',
+          'automationsEnabled',
+          'studentPortalEnabled',
+        ]),
+        enabled: z.boolean(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const updateData: any = {
+          [input.feature]: input.enabled,
+          enabledBy: ctx.user.name || 'Owner',
+          enabledAt: new Date(),
+        };
+        
+        if (!input.enabled && input.reason) {
+          updateData.disabledReason = input.reason;
+        }
+        
+        await db.upsertFeatureFlags(input.personalId, updateData);
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: input.enabled ? 'enable_feature' : 'disable_feature',
+          targetType: 'feature',
+          targetId: input.personalId,
+          targetName: input.feature,
+          details: JSON.stringify({ enabled: input.enabled, reason: input.reason }),
+        });
+        
+        return { 
+          success: true, 
+          message: `${input.feature} ${input.enabled ? 'habilitada' : 'desabilitada'}` 
+        };
+      }),
+    
+    // Habilitar/desabilitar feature para todos os personais
+    toggleFeatureForAll: ownerProcedure
+      .input(z.object({
+        feature: z.enum([
+          'aiAssistantEnabled',
+          'whatsappIntegrationEnabled',
+          'stripePaymentsEnabled',
+          'advancedReportsEnabled',
+          'aiWorkoutGenerationEnabled',
+          'aiAnalysisEnabled',
+          'bulkMessagingEnabled',
+          'automationsEnabled',
+          'studentPortalEnabled',
+        ]),
+        enabled: z.boolean(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const personals = await db.getAllPersonals();
+        let updated = 0;
+        
+        for (const personal of personals) {
+          const updateData: any = {
+            [input.feature]: input.enabled,
+            enabledBy: ctx.user.name || 'Owner',
+            enabledAt: new Date(),
+          };
+          
+          if (!input.enabled && input.reason) {
+            updateData.disabledReason = input.reason;
+          }
+          
+          await db.upsertFeatureFlags(personal.id, updateData);
+          updated++;
+        }
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: input.enabled ? 'enable_feature_all' : 'disable_feature_all',
+          targetType: 'feature',
+          targetName: input.feature,
+          details: JSON.stringify({ enabled: input.enabled, reason: input.reason, count: updated }),
+        });
+        
+        return { 
+          success: true, 
+          message: `${input.feature} ${input.enabled ? 'habilitada' : 'desabilitada'} para ${updated} personais` 
+        };
+      }),
+    
+    // ==================== ADMIN ACTIVITY LOG ====================
+    
+    // Listar log de atividades do admin
+    activityLog: ownerProcedure
+      .input(z.object({ limit: z.number().default(100) }))
+      .query(async ({ input }) => {
+        return await db.getAdminActivityLog(input.limit);
+      }),
+    
+    // ==================== SYSTEM SETTINGS ====================
+    
+    // Listar configurações do sistema
+    listSystemSettings: ownerProcedure.query(async () => {
+      return await db.getAllSystemSettings();
+    }),
+    
+    // Atualizar configuração do sistema
+    updateSystemSetting: ownerProcedure
+      .input(z.object({
+        key: z.string(),
+        value: z.string(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.upsertSystemSetting(
+          input.key, 
+          input.value, 
+          input.description, 
+          ctx.user.name || 'Owner'
+        );
+        
+        return { success: true, message: 'Configuração atualizada' };
+      }),
   }),
   
   // ==================== SUPORTE COM IA ====================
@@ -819,6 +1002,38 @@ export const appRouter = router({
         await db.updatePersonal(ctx.personal.id, { logoUrl: null });
         return { success: true };
       }),
+    
+    // Buscar feature flags do personal logado
+    featureFlags: personalProcedure.query(async ({ ctx }) => {
+      const flags = await db.getFeatureFlagsByPersonalId(ctx.personal.id);
+      
+      // Se não existir registro, retornar valores padrão
+      if (!flags) {
+        return {
+          aiAssistantEnabled: false, // IA de Atendimento desabilitada por padrão
+          whatsappIntegrationEnabled: true,
+          stripePaymentsEnabled: true,
+          advancedReportsEnabled: true,
+          aiWorkoutGenerationEnabled: true,
+          aiAnalysisEnabled: true,
+          bulkMessagingEnabled: true,
+          automationsEnabled: true,
+          studentPortalEnabled: true,
+        };
+      }
+      
+      return {
+        aiAssistantEnabled: flags.aiAssistantEnabled,
+        whatsappIntegrationEnabled: flags.whatsappIntegrationEnabled,
+        stripePaymentsEnabled: flags.stripePaymentsEnabled,
+        advancedReportsEnabled: flags.advancedReportsEnabled,
+        aiWorkoutGenerationEnabled: flags.aiWorkoutGenerationEnabled,
+        aiAnalysisEnabled: flags.aiAnalysisEnabled,
+        bulkMessagingEnabled: flags.bulkMessagingEnabled,
+        automationsEnabled: flags.automationsEnabled,
+        studentPortalEnabled: flags.studentPortalEnabled,
+      };
+    }),
   }),
 
   // ==================== DASHBOARD ====================
