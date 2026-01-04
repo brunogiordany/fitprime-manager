@@ -890,10 +890,12 @@ export const appRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Mensagem ou mídia é obrigatória' });
         }
         
-        // Salvar mensagem no banco de dados
-        // TODAS as mensagens do Chat FitPrime são 'internal' - mesmo que também vão pro WhatsApp
+        // Determinar se vai enviar via WhatsApp
         const personal = ctx.personal;
+        const willSendViaWhatsApp = input.sendViaWhatsApp && student.phone && student.whatsappOptIn && personal.evolutionApiKey && personal.evolutionInstance;
         
+        // Salvar mensagem no banco de dados
+        // Se vai enviar via WhatsApp, source = 'whatsapp', senão 'internal'
         const messageId = await db.createChatMessage({
           personalId: ctx.personal.id,
           studentId: input.studentId,
@@ -907,27 +909,25 @@ export const appRouter = router({
           mediaDuration: input.mediaDuration,
           audioTranscription: input.audioTranscription,
           linkPreviewUrl: input.linkPreview,
-          source: 'internal', // Sempre internal - todas as conversas ficam no Chat FitPrime
+          source: willSendViaWhatsApp ? 'whatsapp' : 'internal',
         });
         
         // Enviar via WhatsApp/Stevo se habilitado e aluno tem telefone
         let whatsappSent = false;
         let whatsappError = null;
         
-        if (input.sendViaWhatsApp && student.phone && student.whatsappOptIn) {
-          const personal = ctx.personal;
-          if (personal.evolutionApiKey && personal.evolutionInstance) {
-            try {
+        if (willSendViaWhatsApp) {
+          try {
               const { sendWhatsAppMessage, sendWhatsAppMedia } = await import('./stevo');
               
               if (input.messageType === 'text' && input.message) {
                 // Enviar mensagem de texto
                 const result = await sendWhatsAppMessage({
-                  phone: student.phone,
+                  phone: student.phone!,
                   message: input.message,
                   config: {
-                    apiKey: personal.evolutionApiKey,
-                    instanceName: personal.evolutionInstance,
+                    apiKey: personal.evolutionApiKey!,
+                    instanceName: personal.evolutionInstance!,
                     server: (personal as any).stevoServer || 'sm15',
                   },
                 });
@@ -936,13 +936,13 @@ export const appRouter = router({
               } else if (input.mediaUrl) {
                 // Enviar mídia (imagem, vídeo, áudio, arquivo)
                 const result = await sendWhatsAppMedia({
-                  phone: student.phone,
+                  phone: student.phone!,
                   mediaUrl: input.mediaUrl,
                   mediaType: input.messageType as 'image' | 'video' | 'audio' | 'file',
                   caption: input.message || undefined,
                   config: {
-                    apiKey: personal.evolutionApiKey,
-                    instanceName: personal.evolutionInstance,
+                    apiKey: personal.evolutionApiKey!,
+                    instanceName: personal.evolutionInstance!,
                     server: (personal as any).stevoServer || 'sm15',
                   },
                 });
@@ -954,15 +954,14 @@ export const appRouter = router({
               await db.createMessageLog({
                 personalId: ctx.personal.id,
                 studentId: input.studentId,
-                phone: student.phone,
+                phone: student.phone!,
                 message: input.message || 'Mídia enviada',
                 direction: 'outbound',
                 status: whatsappSent ? 'sent' : 'failed',
               });
-            } catch (error: any) {
-              whatsappError = error.message;
-              console.error('Erro ao enviar WhatsApp:', error);
-            }
+          } catch (error: any) {
+            whatsappError = error.message;
+            console.error('Erro ao enviar WhatsApp:', error);
           }
         }
         

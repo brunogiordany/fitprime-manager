@@ -3034,3 +3034,8 @@
 - [x] Ajustar Chat FitPrime para ser apenas interno (removida aba WhatsApp duplicada)
 - [x] Testar todas as funcionalidades
 - [x] Reverter para Stevo (Evolution API não funcionou)
+
+
+## Bugs WhatsApp (v9.1)
+- [x] Mensagens enviadas via WhatsApp não aparecem na aba WhatsApp Mensagens (corrigido: source agora é 'whatsapp' quando envia via WhatsApp)
+- [ ] Respostas dos alunos via WhatsApp não são recebidas no sistema (webhook precisa estar configurado corretamente no domínio publicado)

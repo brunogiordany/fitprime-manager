@@ -844,8 +844,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       // Determinar senderType: se fromMe é true, é mensagem do personal enviada pelo WhatsApp
       const senderType = isFromMe ? 'personal' : 'student';
       
-      // Criar mensagem no chat - centralizado no FitPrime Chat
-      // Source 'internal' para aparecer no Chat FitPrime (todas as conversas ficam unificadas)
+      // Criar mensagem no chat - mensagens do WhatsApp ficam com source 'whatsapp'
       await db.createChatMessage({
         personalId: student.personalId,
         studentId: student.id,
@@ -855,7 +854,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
         mediaUrl: mediaUrl || null,
         mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
         isRead: isFromMe ? true : false, // Mensagens enviadas pelo personal já são lidas
-        source: 'internal', // Unificado no Chat FitPrime
+        source: 'whatsapp', // Mensagens do WhatsApp ficam com source 'whatsapp'
         externalId: finalMessageId, // Salvar ID externo para evitar duplicação
       });
       
