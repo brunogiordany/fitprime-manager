@@ -512,43 +512,6 @@ export function UnifiedEvolutionDashboard({
             </Card>
           </div>
 
-          {/* Resumo de Medidas */}
-          {measurementsDiff && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Scale className="h-4 w-4 text-blue-600" />
-                  Evolução das Medidas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {[
-                    { key: 'weight', label: 'Peso', unit: 'kg', invertGood: true },
-                    { key: 'bodyFat', label: 'Gordura', unit: '%', invertGood: true },
-                    { key: 'chest', label: 'Peito', unit: 'cm', invertGood: false },
-                    { key: 'waist', label: 'Cintura', unit: 'cm', invertGood: true },
-                    { key: 'arm', label: 'Braço', unit: 'cm', invertGood: false },
-                    { key: 'thigh', label: 'Coxa', unit: 'cm', invertGood: false },
-                  ].map(({ key, label, unit, invertGood }) => {
-                    const data = measurementsDiff[key as keyof typeof measurementsDiff];
-                    if (!data) return null;
-                    const isGood = invertGood ? data.change < 0 : data.change > 0;
-                    const isBad = invertGood ? data.change > 0 : data.change < 0;
-                    return (
-                      <div key={key} className="text-center p-2 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">{label}</p>
-                        <p className="text-sm font-semibold">{data.after}{unit}</p>
-                        <p className={`text-xs font-medium ${isGood ? 'text-emerald-600' : isBad ? 'text-red-500' : 'text-gray-500'}`}>
-                          {data.change > 0 ? '+' : ''}{data.change.toFixed(1)}{unit}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Distribuição por Grupo Muscular */}
           {muscleGroupData.length > 0 && (

@@ -3295,3 +3295,11 @@
 - [x] Exportar PDF funcional
   - [x] Funcionalidade de exportar relatório do aluno em PDF funcionando
   - [x] Inclui dados pessoais, anamnese, medidas, histórico de exercícios e treinos
+
+
+## Reorganização de Gráficos e Estatísticas (v3.9)
+- [x] Analisar estrutura atual das abas no Portal do Aluno
+- [x] Analisar estrutura atual das abas na área do Personal
+- [x] Mover "Evolução das Medidas" da aba Fotos para aba Evolução (Portal do Aluno)
+- [x] Verificar e corrigir posição de gráficos na área do Personal
+- [x] Garantir que cada aba tenha apenas conteúdo relevante
