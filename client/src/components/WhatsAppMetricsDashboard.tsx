@@ -1,5 +1,10 @@
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   LineChart,
   Line,
@@ -33,7 +38,7 @@ import {
   Phone,
   Calendar,
 } from "lucide-react";
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, isWithinInterval } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, isWithinInterval, subMonths, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface WhatsAppMessageLog {
@@ -56,14 +61,61 @@ interface WhatsAppMetricsDashboardProps {
   chatMessages?: any[];
 }
 
+type PeriodOption = '7d' | '15d' | '30d' | '90d' | 'custom';
+
 export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }: WhatsAppMetricsDashboardProps) {
-  // Calcular métricas
-  const totalMessages = messages.length;
-  const sentMessages = messages.filter(m => m.log.status === "sent" || m.log.status === "delivered" || m.log.status === "read").length;
-  const deliveredMessages = messages.filter(m => m.log.status === "delivered" || m.log.status === "read").length;
-  const readMessages = messages.filter(m => m.log.status === "read").length;
-  const failedMessages = messages.filter(m => m.log.status === "failed").length;
-  const pendingMessages = messages.filter(m => m.log.status === "pending").length;
+  // Estado para período
+  const [period, setPeriod] = useState<PeriodOption>('7d');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  // Calcular datas do período selecionado
+  const dateRange = useMemo(() => {
+    const today = new Date();
+    switch (period) {
+      case '7d':
+        return { start: subDays(today, 6), end: today };
+      case '15d':
+        return { start: subDays(today, 14), end: today };
+      case '30d':
+        return { start: subDays(today, 29), end: today };
+      case '90d':
+        return { start: subDays(today, 89), end: today };
+      case 'custom':
+        return {
+          start: customDateRange.from || subDays(today, 6),
+          end: customDateRange.to || today,
+        };
+      default:
+        return { start: subDays(today, 6), end: today };
+    }
+  }, [period, customDateRange]);
+
+  // Filtrar mensagens pelo período
+  const filteredMessages = useMemo(() => {
+    return messages.filter(m => {
+      const msgDate = new Date(m.log.createdAt || new Date());
+      return isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+    });
+  }, [messages, dateRange]);
+
+  const filteredChatMessages = useMemo(() => {
+    return chatMessages.filter((m: any) => {
+      const msgDate = new Date(m.createdAt);
+      return isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+    });
+  }, [chatMessages, dateRange]);
+
+  // Calcular métricas com mensagens filtradas
+  const totalMessages = filteredMessages.length;
+  const sentMessages = filteredMessages.filter(m => m.log.status === "sent" || m.log.status === "delivered" || m.log.status === "read").length;
+  const deliveredMessages = filteredMessages.filter(m => m.log.status === "delivered" || m.log.status === "read").length;
+  const readMessages = filteredMessages.filter(m => m.log.status === "read").length;
+  const failedMessages = filteredMessages.filter(m => m.log.status === "failed").length;
+  const pendingMessages = filteredMessages.filter(m => m.log.status === "pending").length;
 
   // Taxas
   const deliveryRate = totalMessages > 0 ? ((deliveredMessages / totalMessages) * 100).toFixed(1) : "0";
@@ -71,26 +123,26 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
   const failureRate = totalMessages > 0 ? ((failedMessages / totalMessages) * 100).toFixed(1) : "0";
 
   // Mensagens recebidas vs enviadas (do chat)
-  const receivedMessages = chatMessages.filter((m: any) => m.senderType === "student").length;
-  const sentChatMessages = chatMessages.filter((m: any) => m.senderType === "personal").length;
+  const receivedMessages = filteredChatMessages.filter((m: any) => m.senderType === "student").length;
+  const sentChatMessages = filteredChatMessages.filter((m: any) => m.senderType === "personal").length;
   const responseRate = receivedMessages > 0 ? ((sentChatMessages / receivedMessages) * 100).toFixed(1) : "0";
 
-  // Dados para gráfico de linha (últimos 7 dias)
-  const last7Days = eachDayOfInterval({
-    start: subDays(new Date(), 6),
-    end: new Date(),
+  // Dados para gráfico de linha (período selecionado)
+  const daysInPeriod = eachDayOfInterval({
+    start: dateRange.start,
+    end: dateRange.end,
   });
 
-  const dailyData = last7Days.map(day => {
+  const dailyData = daysInPeriod.map(day => {
     const dayStart = startOfDay(day);
     const dayEnd = endOfDay(day);
     
-    const dayMessages = messages.filter(m => {
+    const dayMessages = filteredMessages.filter(m => {
       const msgDate = new Date(m.log.createdAt || new Date());
       return isWithinInterval(msgDate, { start: dayStart, end: dayEnd });
     });
 
-    const dayChatMessages = chatMessages.filter((m: any) => {
+    const dayChatMessages = filteredChatMessages.filter((m: any) => {
       const msgDate = new Date(m.createdAt);
       return isWithinInterval(msgDate, { start: dayStart, end: dayEnd });
     });
@@ -115,7 +167,7 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
   ].filter(item => item.value > 0);
 
   // Dados para gráfico de tipos de mensagem (baseado na direção)
-  const messageTypes = messages.reduce((acc: Record<string, number>, msg) => {
+  const messageTypes = filteredMessages.reduce((acc: Record<string, number>, msg) => {
     const type = msg.log.direction === 'inbound' ? 'Recebida' : 'Enviada';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
@@ -127,7 +179,7 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
   }));
 
   // Horários mais ativos
-  const hourlyActivity = messages.reduce((acc: Record<number, number>, msg) => {
+  const hourlyActivity = filteredMessages.reduce((acc: Record<number, number>, msg) => {
     const hour = new Date(msg.log.createdAt || new Date()).getHours();
     acc[hour] = (acc[hour] || 0) + 1;
     return acc;
@@ -158,10 +210,52 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
             Análise de desempenho das mensagens
           </p>
         </div>
-        <Badge variant="outline" className="text-green-600 border-green-600">
-          <Calendar className="h-3 w-3 mr-1" />
-          Últimos 7 dias
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Select value={period} onValueChange={(value: PeriodOption) => setPeriod(value)}>
+            <SelectTrigger className="w-[160px]">
+              <Calendar className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Período" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Últimos 7 dias</SelectItem>
+              <SelectItem value="15d">Últimos 15 dias</SelectItem>
+              <SelectItem value="30d">Últimos 30 dias</SelectItem>
+              <SelectItem value="90d">Últimos 90 dias</SelectItem>
+              <SelectItem value="custom">Personalizado</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {period === 'custom' && (
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {customDateRange.from && customDateRange.to
+                    ? `${format(customDateRange.from, 'dd/MM')} - ${format(customDateRange.to, 'dd/MM')}`
+                    : 'Selecionar datas'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="range"
+                  selected={{ from: customDateRange.from, to: customDateRange.to }}
+                  onSelect={(range) => {
+                    setCustomDateRange({ from: range?.from, to: range?.to });
+                    if (range?.from && range?.to) {
+                      setIsCalendarOpen(false);
+                    }
+                  }}
+                  numberOfMonths={2}
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+
+          <Badge variant="outline" className="text-gray-500">
+            {differenceInDays(dateRange.end, dateRange.start) + 1} dias
+          </Badge>
+        </div>
       </div>
 
       {/* KPI Cards */}
