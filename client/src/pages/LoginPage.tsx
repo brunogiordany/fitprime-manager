@@ -10,8 +10,6 @@ import {
   ArrowLeft,
   Sparkles
 } from "lucide-react";
-import { getLoginUrl } from "@/const";
-
 type UserType = "select" | "student" | "personal";
 
 export default function LoginPage() {
@@ -19,8 +17,8 @@ export default function LoginPage() {
   const [userType, setUserType] = useState<UserType>("select");
 
   const handlePersonalLogin = () => {
-    // Redirecionar para o OAuth do Manus (login do personal)
-    window.location.href = getLoginUrl();
+    // Redirecionar para a página de login própria do personal
+    setLocation("/login-personal");
   };
 
   const handleStudentLogin = () => {

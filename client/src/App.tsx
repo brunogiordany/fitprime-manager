@@ -58,6 +58,7 @@ import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import LoginPage from "./pages/LoginPage";
+import PersonalLogin from "./pages/PersonalLogin";
 import AiAssistantSettings from "./pages/AiAssistantSettings";
 import ActivateAccount from "./pages/ActivateAccount";
 import WhatsAppMessages from "./pages/WhatsAppMessages";
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/planospersonal" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/login-personal" component={PersonalLogin} />
       <Route path="/ativar-conta/:token" component={ActivateAccount} />
       <Route path="/login-aluno" component={StudentLogin} />
       <Route path="/portal-aluno" component={StudentDashboard} />

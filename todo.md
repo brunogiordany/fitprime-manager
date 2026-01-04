@@ -3236,3 +3236,22 @@
 - [x] Documentação de bugs e problemas
 - [x] Correção: Redirect /students para /alunos
 - [x] Relatório final de auditoria (AUDIT_REPORT_FINAL.md)
+
+## Sistema de Login Próprio (v13.2)
+- [ ] Criar página de login própria para Personal Trainers (email/senha)
+- [ ] Ajustar página de login do Aluno (já existe parcialmente)
+- [ ] Remover referências ao Manus/OAuth externo
+- [ ] Esconder domínios do Manus na interface
+- [ ] Implementar autenticação JWT própria para personais
+- [ ] Testar fluxo completo de login (personal e aluno)
+
+
+## Sistema de Login Próprio (v5.1)
+- [x] Página de login própria para Personal Trainers (/login-personal)
+- [x] Formulário de cadastro de Personal com email/senha
+- [x] Recuperação de senha para Personal
+- [x] Página de login do Aluno já existente (/login-aluno)
+- [x] Remover redirecionamento para OAuth do Manus
+- [x] Remover referências ao Manus no frontend
+- [x] Atualizar DashboardLayout para usar login próprio
+- [x] Atualizar useAuth para usar login próprio

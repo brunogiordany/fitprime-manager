@@ -5,7 +5,7 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl } from "./const";
+
 import { OfflineProvider } from "./contexts/OfflineContext";
 import "./index.css";
 
@@ -51,7 +51,8 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
     return;
   }
 
-  window.location.href = getLoginUrl();
+  // Redirecionar para a página de login própria do FitPrime
+  window.location.href = '/login';
 };
 
 queryClient.getQueryCache().subscribe(event => {

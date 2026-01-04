@@ -5003,3 +5003,112 @@ export async function getAdminActivityLog(limit: number = 100): Promise<AdminAct
     .orderBy(desc(adminActivityLog.createdAt))
     .limit(limit);
 }
+
+
+// ==================== PERSONAL LOGIN FUNCTIONS ====================
+// Funções para login de personal com email/senha (sem OAuth externo)
+
+export async function getUserByEmailForLogin(email: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users)
+    .where(and(eq(users.email, email), isNull(users.deletedAt)))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function updateUserPassword(userId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
+}
+
+export async function createUserWithPassword(data: {
+  email: string;
+  name: string;
+  passwordHash: string;
+  phone?: string;
+  cpf?: string;
+  cref?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Gerar openId único para o usuário (necessário pelo schema)
+  const { nanoid } = await import('nanoid');
+  const openId = `local_${nanoid(16)}`;
+  
+  const result = await db.insert(users).values({
+    openId,
+    email: data.email,
+    name: data.name,
+    passwordHash: data.passwordHash,
+    phone: data.phone || null,
+    cpf: data.cpf || null,
+    cref: data.cref || null,
+    loginMethod: 'email',
+    role: 'personal',
+    lastSignedIn: new Date(),
+  });
+  
+  return result[0].insertId;
+}
+
+// Buscar personal pelo email do usuário
+export async function getPersonalByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select({
+    personal: personals,
+    user: users,
+  })
+  .from(personals)
+  .innerJoin(users, eq(personals.userId, users.id))
+  .where(and(eq(users.email, email), isNull(users.deletedAt), isNull(personals.deletedAt)))
+  .limit(1);
+  
+  if (result.length === 0) return null;
+  return { ...result[0].personal, user: result[0].user };
+}
+
+// Salvar código de reset de senha para personal
+export async function savePersonalPasswordResetCode(userId: number, code: string, expiresAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Usar a tabela de tokens de reset (userId é o campo correto)
+  await db.insert(passwordResetTokens).values({
+    userId: userId,
+    token: code,
+    expiresAt,
+  });
+}
+
+// Verificar código de reset de senha para personal
+export async function verifyPersonalResetCode(email: string, code: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const user = await getUserByEmailForLogin(email);
+  if (!user) return null;
+  
+  const result = await db.select()
+    .from(passwordResetTokens)
+    .where(and(
+      eq(passwordResetTokens.userId, user.id),
+      eq(passwordResetTokens.token, code),
+      isNull(passwordResetTokens.usedAt),
+      gte(passwordResetTokens.expiresAt, new Date())
+    ))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
+// Marcar código de reset como usado
+export async function markPersonalResetCodeUsed(tokenId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, tokenId));
+}

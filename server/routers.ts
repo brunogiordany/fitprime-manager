@@ -928,6 +928,182 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    
+    // Login de personal com email/senha (sem OAuth externo)
+    loginPersonal: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Buscar usuário pelo email
+        const user = await db.getUserByEmailForLogin(input.email);
+        if (!user) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
+        }
+        if (!user.passwordHash) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Conta não possui senha cadastrada. Use o link de ativação enviado por email.' });
+        }
+        
+        // Verificar senha
+        const bcrypt = await import('bcryptjs');
+        const valid = await bcrypt.compare(input.password, user.passwordHash);
+        if (!valid) {
+          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Senha incorreta' });
+        }
+        
+        // Atualizar último login
+        await db.upsertUser({ openId: user.openId, lastSignedIn: new Date() });
+        
+        // Gerar token JWT e setar cookie de sessão
+        const jwt = await import('jsonwebtoken');
+        const token = jwt.default.sign(
+          { userId: user.id, openId: user.openId, type: 'personal' },
+          process.env.JWT_SECRET || 'secret',
+          { expiresIn: '30d' }
+        );
+        
+        // Setar cookie de sessão (mesmo formato do OAuth)
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
+        
+        return { success: true, userId: user.id, userName: user.name };
+      }),
+    
+    // Cadastro de personal com email/senha
+    registerPersonal: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        name: z.string().min(2),
+        phone: z.string().optional(),
+        cpf: z.string().optional(),
+        cref: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se email já existe
+        const existingUser = await db.getUserByEmailForLogin(input.email);
+        if (existingUser) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'Este email já está cadastrado' });
+        }
+        
+        // Hash da senha
+        const bcrypt = await import('bcryptjs');
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        
+        // Criar usuário
+        const userId = await db.createUserWithPassword({
+          email: input.email,
+          name: input.name,
+          passwordHash,
+          phone: input.phone,
+          cpf: input.cpf,
+          cref: input.cref,
+        });
+        
+        // Criar perfil de personal
+        const personalId = await db.createPersonal({ userId });
+        
+        // Criar planos padrão
+        for (const plan of DEFAULT_PLANS) {
+          await db.createPlan({ ...plan, personalId, isActive: true });
+        }
+        
+        // Buscar usuário criado para pegar openId
+        const user = await db.getUserById(userId);
+        if (!user) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao criar conta' });
+        }
+        
+        // Gerar token JWT e setar cookie de sessão
+        const jwt = await import('jsonwebtoken');
+        const token = jwt.default.sign(
+          { userId: user.id, openId: user.openId, type: 'personal' },
+          process.env.JWT_SECRET || 'secret',
+          { expiresIn: '30d' }
+        );
+        
+        // Setar cookie de sessão
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
+        
+        return { success: true, userId: user.id, userName: user.name };
+      }),
+    
+    // Solicitar recuperação de senha para personal
+    requestPersonalPasswordReset: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const user = await db.getUserByEmailForLogin(input.email);
+        if (!user) {
+          // Por segurança, não revelar se o email existe
+          return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
+        }
+        
+        // Gerar código de 6 dígitos
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+        
+        // Salvar código
+        await db.savePersonalPasswordResetCode(user.id, code, expiresAt);
+        
+        // Enviar email
+        try {
+          const { sendPasswordResetEmail } = await import('./email');
+          await sendPasswordResetEmail(input.email, user.name || 'Personal', code);
+        } catch (error) {
+          console.error('[PersonalPasswordReset] Erro ao enviar email:', error);
+        }
+        
+        console.log(`[PersonalPasswordReset] Código gerado para ${input.email}: ${code}`);
+        return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
+      }),
+    
+    // Verificar código de reset para personal
+    verifyPersonalResetCode: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+      }))
+      .mutation(async ({ input }) => {
+        const token = await db.verifyPersonalResetCode(input.email, input.code);
+        if (!token) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Código inválido ou expirado' });
+        }
+        return { success: true };
+      }),
+    
+    // Redefinir senha do personal
+    resetPersonalPassword: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+        newPassword: z.string().min(6),
+      }))
+      .mutation(async ({ input }) => {
+        const token = await db.verifyPersonalResetCode(input.email, input.code);
+        if (!token) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Código inválido ou expirado' });
+        }
+        
+        const user = await db.getUserByEmailForLogin(input.email);
+        if (!user) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Usuário não encontrado' });
+        }
+        
+        // Hash da nova senha
+        const bcrypt = await import('bcryptjs');
+        const passwordHash = await bcrypt.hash(input.newPassword, 10);
+        
+        // Atualizar senha
+        await db.updateUserPassword(user.id, passwordHash);
+        
+        // Marcar código como usado
+        await db.markPersonalResetCodeUsed(token.id);
+        
+        return { success: true };
+      }),
   }),
 
   // ==================== PERSONAL PROFILE ====================

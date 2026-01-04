@@ -11,6 +11,7 @@ export const users = mysqlTable("users", {
   birthDate: date("birthDate"), // Data de nascimento
   cref: varchar("cref", { length: 50 }), // Registro profissional CREF
   loginMethod: varchar("loginMethod", { length: 64 }),
+  passwordHash: varchar("passwordHash", { length: 255 }), // Senha hash para login direto
   role: mysqlEnum("role", ["user", "admin", "personal", "student"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
