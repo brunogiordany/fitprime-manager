@@ -63,7 +63,7 @@ interface WhatsAppMetricsDashboardProps {
   chatMessages?: any[];
 }
 
-type PeriodOption = '7d' | '15d' | '30d' | '90d' | 'custom';
+type PeriodOption = 'today' | 'yesterday' | '7d' | '15d' | '30d' | '90d' | 'custom';
 
 export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }: WhatsAppMetricsDashboardProps) {
   // Estado para período
@@ -92,6 +92,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
   const dateRange = useMemo(() => {
     const today = new Date();
     switch (period) {
+      case 'today':
+        return { start: today, end: today };
+      case 'yesterday':
+        return { start: subDays(today, 1), end: subDays(today, 1) };
       case '7d':
         return { start: subDays(today, 6), end: today };
       case '15d':
@@ -257,6 +261,8 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
               <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="today">Hoje</SelectItem>
+              <SelectItem value="yesterday">Ontem</SelectItem>
               <SelectItem value="7d">Últimos 7 dias</SelectItem>
               <SelectItem value="15d">Últimos 15 dias</SelectItem>
               <SelectItem value="30d">Últimos 30 dias</SelectItem>
