@@ -56,7 +56,8 @@ import {
   AlertCircle,
   Lightbulb,
   Activity,
-  Loader2
+  Loader2,
+  BarChart3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -1520,6 +1521,127 @@ export default function StudentProfile() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Card de Comparativo de BF entre Métodos */}
+            {measurements && measurements.length > 0 && (() => {
+              const latestMeasurement = measurements[0];
+              const estimatedBF = latestMeasurement?.estimatedBodyFat ? parseFloat(latestMeasurement.estimatedBodyFat) : null;
+              const bioBF = latestMeasurement?.bioBodyFat ? parseFloat(latestMeasurement.bioBodyFat) : null;
+              const adipBF = latestMeasurement?.adipBodyFat ? parseFloat(latestMeasurement.adipBodyFat) : null;
+              
+              // Contar quantos métodos têm dados
+              const methodsWithData = [estimatedBF, bioBF, adipBF].filter(v => v !== null && v > 0).length;
+              
+              if (methodsWithData < 1) return null;
+              
+              // Calcular média dos métodos disponíveis
+              const validValues = [estimatedBF, bioBF, adipBF].filter(v => v !== null && v > 0) as number[];
+              const averageBF = validValues.length > 0 ? validValues.reduce((a, b) => a + b, 0) / validValues.length : 0;
+              
+              // Determinar classificação do BF
+              const getBFClassification = (bf: number, gender: string = 'male') => {
+                if (gender === 'female') {
+                  if (bf < 14) return { label: 'Essencial', color: 'text-blue-600', bg: 'bg-blue-50' };
+                  if (bf < 21) return { label: 'Atleta', color: 'text-emerald-600', bg: 'bg-emerald-50' };
+                  if (bf < 25) return { label: 'Fitness', color: 'text-green-600', bg: 'bg-green-50' };
+                  if (bf < 32) return { label: 'Aceitável', color: 'text-amber-600', bg: 'bg-amber-50' };
+                  return { label: 'Obesidade', color: 'text-red-600', bg: 'bg-red-50' };
+                } else {
+                  if (bf < 6) return { label: 'Essencial', color: 'text-blue-600', bg: 'bg-blue-50' };
+                  if (bf < 14) return { label: 'Atleta', color: 'text-emerald-600', bg: 'bg-emerald-50' };
+                  if (bf < 18) return { label: 'Fitness', color: 'text-green-600', bg: 'bg-green-50' };
+                  if (bf < 25) return { label: 'Aceitável', color: 'text-amber-600', bg: 'bg-amber-50' };
+                  return { label: 'Obesidade', color: 'text-red-600', bg: 'bg-red-50' };
+                }
+              };
+              
+              const classification = getBFClassification(averageBF, student?.gender || 'male');
+              
+              return (
+                <Card className="border-emerald-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-emerald-600" />
+                      Comparativo de % Gordura Corporal
+                    </CardTitle>
+                    <CardDescription>
+                      Comparação entre diferentes métodos de medição
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      {/* BF Estimado */}
+                      <div className={`p-4 rounded-lg border ${estimatedBF ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity className="h-4 w-4 text-amber-600" />
+                          <span className="text-sm font-medium text-amber-800">BF Estimado</span>
+                        </div>
+                        <p className={`text-2xl font-bold ${estimatedBF ? 'text-amber-700' : 'text-gray-400'}`}>
+                          {estimatedBF ? `${estimatedBF.toFixed(1)}%` : '-'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Fórmula Marinha EUA</p>
+                      </div>
+                      
+                      {/* Bioimpedância */}
+                      <div className={`p-4 rounded-lg border ${bioBF ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-800">Bioimpedância</span>
+                        </div>
+                        <p className={`text-2xl font-bold ${bioBF ? 'text-blue-700' : 'text-gray-400'}`}>
+                          {bioBF ? `${bioBF.toFixed(1)}%` : '-'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Balança/Aparelho</p>
+                      </div>
+                      
+                      {/* Adipômetro */}
+                      <div className={`p-4 rounded-lg border ${adipBF ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Ruler className="h-4 w-4 text-purple-600" />
+                          <span className="text-sm font-medium text-purple-800">Adipômetro</span>
+                        </div>
+                        <p className={`text-2xl font-bold ${adipBF ? 'text-purple-700' : 'text-gray-400'}`}>
+                          {adipBF ? `${adipBF.toFixed(1)}%` : '-'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Dobras Cutâneas</p>
+                      </div>
+                    </div>
+                    
+                    {/* Resumo */}
+                    {methodsWithData >= 1 && (
+                      <div className={`p-4 rounded-lg ${classification.bg} border`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Média dos Métodos Disponíveis</p>
+                            <p className={`text-3xl font-bold ${classification.color}`}>
+                              {averageBF.toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge className={`${classification.bg} ${classification.color} border-0`}>
+                              {classification.label}
+                            </Badge>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {methodsWithData} método{methodsWithData > 1 ? 's' : ''} utilizado{methodsWithData > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Dica sobre diferença entre métodos */}
+                        {methodsWithData >= 2 && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <p className="text-xs text-muted-foreground">
+                              <strong>Nota:</strong> É normal haver diferença de 2-5% entre os métodos. 
+                              A bioimpedância pode variar com hidratação, e o adipômetro depende da técnica do avaliador.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Gráfico de Circunferências */}
             {circumferenceData.length > 0 && circumferenceData.some(d => d.cintura > 0 || d.quadril > 0) && (

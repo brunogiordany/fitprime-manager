@@ -3285,3 +3285,13 @@
 - [x] Formulário de medidas perde foco e Accordion fecha ao digitar
   - Causa: MeasurementFormFields era uma função inline que recriava o componente a cada re-render
   - Solução: Convertido para variável JSX (measurementFormFieldsJSX) evitando re-criação
+
+
+## Novas Funcionalidades (v3.8)
+- [x] Comparativo entre métodos de BF
+  - [x] Visualização comparando BF estimado vs bioimpedância vs adipômetro
+  - [x] Card mostrando diferenças entre métodos com média
+  - [x] Classificação automática (Essencial, Atleta, Fitness, Aceitável, Obesidade)
+- [x] Exportar PDF funcional
+  - [x] Funcionalidade de exportar relatório do aluno em PDF funcionando
+  - [x] Inclui dados pessoais, anamnese, medidas, histórico de exercícios e treinos

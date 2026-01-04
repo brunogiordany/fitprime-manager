@@ -42,6 +42,9 @@ import {
   Upload,
   FileCheck,
   Calculator,
+  BarChart3,
+  Percent,
+  Dumbbell,
 } from "lucide-react";
 import ShareProgressCard from "@/components/ShareProgressCard";
 
@@ -965,6 +968,148 @@ export default function StudentMeasurementForm({
                   * BF estimado requer: altura, pescoço, cintura{studentGender === 'female' ? ', quadril' : ''}
                 </p>
               )}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {/* Card de Comparativo de Métodos de BF */}
+      {sortedMeasurements.length > 0 && (() => {
+        const latest = sortedMeasurements[0];
+        const weight = latest.weight ? parseFloat(latest.weight) : null;
+        const height = latest.height ? parseFloat(latest.height) : (studentHeight ? parseFloat(studentHeight) : null);
+        const waist = latest.waist ? parseFloat(latest.waist) : null;
+        const neck = latest.neck ? parseFloat(latest.neck) : null;
+        const hip = latest.hip ? parseFloat(latest.hip) : null;
+        
+        // Cálculo do BF estimado (Fórmula da Marinha dos EUA)
+        let estimatedBF: number | null = null;
+        if (height && waist && neck) {
+          if (studentGender === 'female' && hip) {
+            const bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            estimatedBF = Math.max(0, bf);
+          } else if (studentGender === 'male') {
+            const bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            estimatedBF = Math.max(0, bf);
+          }
+        }
+        
+        // BF da Bioimpedância
+        const bioBF = latest.bioBodyFat ? parseFloat(latest.bioBodyFat) : null;
+        
+        // BF do Adipômetro
+        const adipBF = latest.adipBodyFat ? parseFloat(latest.adipBodyFat) : null;
+        
+        // Só mostrar se tiver pelo menos 2 métodos
+        const methods = [estimatedBF, bioBF, adipBF].filter(v => v !== null);
+        if (methods.length < 2) return null;
+        
+        // Calcular média e variação
+        const avgBF = methods.reduce((a, b) => a! + b!, 0)! / methods.length;
+        const maxBF = Math.max(...methods.filter((v): v is number => v !== null));
+        const minBF = Math.min(...methods.filter((v): v is number => v !== null));
+        const variation = maxBF - minBF;
+        
+        // Calcular massas com base na média
+        const avgFatMass = weight ? ((weight * avgBF) / 100) : null;
+        const avgLeanMass = weight && avgFatMass ? (weight - avgFatMass) : null;
+        
+        return (
+          <Card className="bg-gradient-to-br from-purple-50/80 to-indigo-100/80 dark:from-purple-950/30 dark:to-indigo-950/30 border-2 border-purple-200 dark:border-purple-800 rounded-2xl overflow-hidden">
+            <CardHeader className="pb-3 pt-4">
+              <CardTitle className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-lg">
+                <BarChart3 className="h-5 w-5" />
+                Comparativo de Métodos de BF
+              </CardTitle>
+              <CardDescription>
+                Comparação entre diferentes métodos de medição de gordura corporal
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pb-4">
+              {/* Gráfico de Barras Visual */}
+              <div className="space-y-3 mb-4">
+                {estimatedBF !== null && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-28 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <Calculator className="h-3.5 w-3.5 text-emerald-500" />
+                      Estimado
+                    </div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                        style={{ width: `${Math.min(estimatedBF * 2, 100)}%` }}
+                      >
+                        <span className="text-xs font-bold text-white drop-shadow">{estimatedBF.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {bioBF !== null && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-28 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <Heart className="h-3.5 w-3.5 text-red-500" />
+                      Bioimpedância
+                    </div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-red-400 to-red-600 h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                        style={{ width: `${Math.min(bioBF * 2, 100)}%` }}
+                      >
+                        <span className="text-xs font-bold text-white drop-shadow">{bioBF.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {adipBF !== null && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-28 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <Clipboard className="h-3.5 w-3.5 text-amber-500" />
+                      Adipômetro
+                    </div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                        style={{ width: `${Math.min(adipBF * 2, 100)}%` }}
+                      >
+                        <span className="text-xs font-bold text-white drop-shadow">{adipBF.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Resumo Estatístico */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-3 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                  <p className="text-2xl font-bold text-purple-600">{avgBF.toFixed(1)}%</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Média BF</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-3 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                  <p className="text-2xl font-bold text-orange-500">±{(variation / 2).toFixed(1)}%</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Variação</p>
+                </div>
+                {avgFatMass && (
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-3 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className="text-2xl font-bold text-red-500">{avgFatMass.toFixed(1)}kg</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Massa Gorda</p>
+                  </div>
+                )}
+                {avgLeanMass && (
+                  <div className="bg-white dark:bg-gray-900 rounded-xl p-3 text-center shadow-sm border border-gray-100 dark:border-gray-800">
+                    <p className="text-2xl font-bold text-blue-500">{avgLeanMass.toFixed(1)}kg</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Massa Magra</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Legenda */}
+              <div className="mt-4 p-3 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg">
+                <p className="text-xs text-purple-700 dark:text-purple-300">
+                  <strong>Nota:</strong> Diferenças de até 3% entre métodos são normais. 
+                  A bioimpedância é mais precisa quando feita em jejum e bem hidratado. 
+                  O adipômetro depende da técnica do avaliador.
+                </p>
+              </div>
             </CardContent>
           </Card>
         );
