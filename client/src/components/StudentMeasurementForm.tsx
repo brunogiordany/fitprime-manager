@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MeasurementPhotos } from "@/components/GuidedPhotos";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -327,7 +327,8 @@ export default function StudentMeasurementForm({
     return <Minus className="h-3 w-3 text-gray-400" />;
   };
 
-  const MeasurementFormFields = () => (
+  // JSX do formulário - definido como variável para evitar re-criação a cada render
+  const measurementFormFieldsJSX = (
     <div className="space-y-6">
       {/* Data */}
       <div className="space-y-2">
@@ -1073,7 +1074,7 @@ export default function StudentMeasurementForm({
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 pb-4">
-            <MeasurementFormFields />
+            {measurementFormFieldsJSX}
           </div>
           <div className="flex-shrink-0 border-t bg-background px-6 py-4 space-y-2">
             <Button
@@ -1113,7 +1114,7 @@ export default function StudentMeasurementForm({
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 pb-4">
-            <MeasurementFormFields />
+            {measurementFormFieldsJSX}
           </div>
           <div className="flex-shrink-0 border-t bg-background px-6 py-4 space-y-2">
             <Button

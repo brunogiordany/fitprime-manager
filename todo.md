@@ -3279,3 +3279,9 @@
 - [ ] Modal de Nova Medição fecha automaticamente ao digitar
 - [ ] Corrigir na área do aluno (StudentEvolution)
 - [ ] Corrigir na área do personal (StudentProfile/Evolution)
+
+
+## Bug Crítico Corrigido (v3.7)
+- [x] Formulário de medidas perde foco e Accordion fecha ao digitar
+  - Causa: MeasurementFormFields era uma função inline que recriava o componente a cada re-render
+  - Solução: Convertido para variável JSX (measurementFormFieldsJSX) evitando re-criação
