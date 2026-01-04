@@ -80,9 +80,12 @@ FUNCIONALIDADES DO SISTEMA:
 - Ver treinos e registrar execução
 - Ver agenda de sessões
 - Ver histórico de pagamentos
-- Ver evolução (medidas e fotos)
+- Ver evolução (medidas, fotos e estatísticas)
 - Calculadoras fitness (1RM, TDEE, IMC, BF%, Zona FC)
 - Sistema de conquistas/gamificação
+- Estatísticas de frequência: taxa de presença, sessões realizadas, faltas
+- Dashboard de treino: volume total, séries, reps, evolução de carga
+- Gráficos de frequência mensal e composição corporal
 
 7. RELATÓRIOS:
 - Gráficos de evolução dos alunos
@@ -90,6 +93,9 @@ FUNCIONALIDADES DO SISTEMA:
 - Análise de receita
 - Taxa de presença
 - Exportar PDF
+- Estatísticas de sessão: presenças, faltas, este mês, mês passado
+- Comparativo mensal de frequência
+- Gráfico de frequência mensal (presenças vs faltas)
 
 8. DIFERENCIAIS EXCLUSIVOS:
 - IA para análise de aluno (identifica déficits e pontos fortes)
@@ -302,14 +308,16 @@ const features = [
       "Ver treinos e registrar execução no Diário",
       "Ver agenda de sessões",
       "Ver histórico de pagamentos",
-      "Ver evolução (medidas e fotos)",
+      "Ver evolução (medidas, fotos e estatísticas)",
       "Calculadoras fitness: 1RM, TDEE, IMC, BF%, Zona FC",
+      "Estatísticas de frequência: presenças, faltas, taxa de presença",
+      "Dashboard de treino: volume, séries, evolução de carga",
     ],
   },
   {
     title: "Evolução e Medidas",
     icon: BarChart3,
-    description: "Acompanhe a evolução do aluno com gráficos e fotos.",
+    description: "Acompanhe a evolução do aluno com gráficos, estatísticas e fotos.",
     tips: [
       "Registre peso, gordura corporal e medidas",
       "Gráficos de evolução ao longo do tempo",
@@ -317,6 +325,9 @@ const features = [
       "Exportar relatório de evolução em PDF",
       "Histórico completo de todas as medições",
       "Dados usados pela IA para análise",
+      "Estatísticas de frequência: taxa de presença, sessões realizadas, faltas",
+      "Comparativo mensal: este mês vs mês anterior",
+      "Gráfico de frequência mensal (presenças vs faltas)",
     ],
   },
   {

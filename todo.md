@@ -3078,3 +3078,9 @@
 - [x] Adicionar gráfico de composição corporal no Portal do Aluno (já existia)
 - [x] Adicionar gráfico de circunferências no Portal do Aluno (já existia)
 - [x] Adicionar gráfico de evolução de carga por exercício no Portal do Aluno (já existia no StudentTrainingDashboard)
+
+
+## Atualização Central de Ajuda e Aba Fotos (v12.1)
+- [x] Atualizar Central de Ajuda do Personal com novidades das estatísticas de sessão
+- [x] Atualizar Central de Ajuda do Aluno com novidades das estatísticas de sessão
+- [x] Ajustar aba Fotos no Portal do Aluno para ter mesmo layout do Personal (abas Visão Geral e Fotos)

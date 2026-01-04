@@ -91,7 +91,7 @@ interface StudentEvolutionDashboardProps {
 }
 
 export function StudentEvolutionDashboard({ studentId, measurements = [] }: StudentEvolutionDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "photos" | "measurements" | "training">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "photos">("overview");
   
   // Estados para comparação de fotos
   const [compareMode, setCompareMode] = useState(false);
@@ -306,22 +306,14 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
     <div className="space-y-4">
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Geral</span>
+            <span className="hidden sm:inline">Visão Geral</span>
           </TabsTrigger>
           <TabsTrigger value="photos" className="flex items-center gap-1">
             <Camera className="h-4 w-4" />
             <span className="hidden sm:inline">Fotos</span>
-          </TabsTrigger>
-          <TabsTrigger value="measurements" className="flex items-center gap-1">
-            <Scale className="h-4 w-4" />
-            <span className="hidden sm:inline">Medidas</span>
-          </TabsTrigger>
-          <TabsTrigger value="training" className="flex items-center gap-1">
-            <Dumbbell className="h-4 w-4" />
-            <span className="hidden sm:inline">Treinos</span>
           </TabsTrigger>
         </TabsList>
 
@@ -655,233 +647,6 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
               )}
             </>
           )}
-        </TabsContent>
-
-        {/* Medidas */}
-        <TabsContent value="measurements" className="space-y-4">
-          {/* Botões de ação */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowNewMeasurementModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Medida
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowAnalysisHistoryModal(true)}>
-              <History className="h-4 w-4 mr-2" />
-              Histórico de Análises
-            </Button>
-          </div>
-          
-          {measurements.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Scale className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhuma medição registrada</h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  Registre suas medidas corporais para acompanhar sua evolução.
-                </p>
-                <Button onClick={() => setShowNewMeasurementModal(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Registrar Primeira Medida
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {/* Resumo de Medidas */}
-              {measurementsDiff && (
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Scale className="h-4 w-4 text-blue-600" />
-                      Evolução das Medidas
-                    </CardTitle>
-                    <CardDescription>
-                      Comparação entre primeira e última medição
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                      {[
-                        { key: 'weight', label: 'Peso', unit: 'kg', invertGood: true },
-                        { key: 'bodyFat', label: 'Gordura', unit: '%', invertGood: true },
-                        { key: 'chest', label: 'Peito', unit: 'cm', invertGood: false },
-                        { key: 'waist', label: 'Cintura', unit: 'cm', invertGood: true },
-                        { key: 'arm', label: 'Braço', unit: 'cm', invertGood: false },
-                        { key: 'thigh', label: 'Coxa', unit: 'cm', invertGood: false },
-                      ].map(({ key, label, unit, invertGood }) => {
-                        const data = measurementsDiff[key as keyof typeof measurementsDiff];
-                        if (!data) return null;
-                        const isGood = invertGood ? data.change < 0 : data.change > 0;
-                        const isBad = invertGood ? data.change > 0 : data.change < 0;
-                        return (
-                          <div key={key} className="text-center p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-500 mb-1">{label}</p>
-                            <p className="text-lg font-semibold">{data.after}{unit}</p>
-                            <p className={`text-sm font-medium ${isGood ? 'text-emerald-600' : isBad ? 'text-red-500' : 'text-gray-500'}`}>
-                              {data.change > 0 ? '+' : ''}{data.change.toFixed(1)}{unit}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Gráfico de Peso */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Scale className="h-4 w-4" />
-                    Evolução do Peso
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={measurementsChartData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="date" className="text-xs" />
-                      <YAxis className="text-xs" domain={['dataMin - 2', 'dataMax + 2']} />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                      <Line type="monotone" dataKey="peso" name="Peso (kg)" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6' }} connectNulls />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Gráfico de Circunferências */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Ruler className="h-4 w-4" />
-                    Evolução das Circunferências
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={measurementsChartData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="date" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                      <Legend />
-                      <Line type="monotone" dataKey="peito" name="Peito" stroke="#22c55e" strokeWidth={2} connectNulls />
-                      <Line type="monotone" dataKey="cintura" name="Cintura" stroke="#ef4444" strokeWidth={2} connectNulls />
-                      <Line type="monotone" dataKey="braco" name="Braço" stroke="#8b5cf6" strokeWidth={2} connectNulls />
-                      <Line type="monotone" dataKey="coxa" name="Coxa" stroke="#f59e0b" strokeWidth={2} connectNulls />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </TabsContent>
-
-        {/* Treinos */}
-        <TabsContent value="training" className="space-y-4">
-          {/* Seletor de exercício */}
-          <Card>
-            <CardContent className="pt-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Selecione um exercício para ver sua evolução:</p>
-                <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
-                  {uniqueExercises?.map((name: string) => (
-                    <Button 
-                      key={name} 
-                      variant={selectedExercise === name ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => setSelectedExercise(name)}
-                    >
-                      {name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Estatísticas */}
-          {trainingStats && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <div className="flex items-center justify-center gap-1 text-xl font-bold text-primary">
-                    {trainingStats.maxWeight}kg
-                    <Target className="h-4 w-4" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Recorde</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-xl font-bold">{trainingStats.avgWeight.toFixed(1)}kg</p>
-                  <p className="text-xs text-muted-foreground">Média</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-xl font-bold">{trainingStats.minWeight}kg</p>
-                  <p className="text-xs text-muted-foreground">Mínimo</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-xl font-bold">{trainingStats.totalVolume.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Volume Total</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-xl font-bold">{trainingStats.totalReps}</p>
-                  <p className="text-xs text-muted-foreground">Reps Totais</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <div className="flex items-center justify-center gap-1 text-xl font-bold">
-                    {trainingStats.trend === 'up' && <ArrowUp className="h-4 w-4 text-green-500" />}
-                    {trainingStats.trend === 'down' && <ArrowDown className="h-4 w-4 text-red-500" />}
-                    {trainingStats.trend === 'stable' && <Minus className="h-4 w-4 text-yellow-500" />}
-                    {trainingStats.count}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Treinos</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Gráfico de Evolução de Carga */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Evolução de Carga
-                {selectedExercise && <span className="text-primary">- {selectedExercise}</span>}
-              </CardTitle>
-              <CardDescription>
-                Visualize sua progressão ao longo do tempo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {trainingChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={trainingChartData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                    <Legend />
-                    <Line type="monotone" dataKey="carga" name="Carga (kg)" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e' }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
-                  <TrendingUp className="h-12 w-12 mb-2 opacity-50" />
-                  <p>Selecione um exercício para ver a evolução</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
 

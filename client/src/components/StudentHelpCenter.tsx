@@ -36,6 +36,7 @@ interface Message {
 const quickQuestions = [
   "Como registro meu treino?",
   "Como vejo minha evolução?",
+  "Como vejo minhas estatísticas de frequência?",
   "Como uso as calculadoras?",
   "Como vejo minha agenda?",
   "Como pago meu plano?",
@@ -67,12 +68,16 @@ const studentFeatures = [
   {
     title: "Minha Evolução",
     icon: TrendingUp,
-    description: "Acompanhe seu progresso com gráficos e fotos.",
+    description: "Acompanhe seu progresso com gráficos, estatísticas e fotos.",
     tips: [
       "Clique em 'Evolução' para ver gráficos",
       "Veja evolução de peso, gordura e medidas",
       "Compare fotos de antes e depois",
       "Dados atualizados pelo seu personal",
+      "Estatísticas de frequência: taxa de presença, sessões realizadas, faltas",
+      "Comparativo mensal: este mês vs mês anterior",
+      "Gráfico de frequência mensal (presenças vs faltas)",
+      "Dashboard de treino: volume, séries, evolução de carga",
     ],
   },
   {
@@ -181,11 +186,13 @@ const studentJourney = [
     step: 6,
     title: "Acompanhe sua Evolução",
     icon: TrendingUp,
-    description: "Veja seu progresso ao longo do tempo.",
+    description: "Veja seu progresso ao longo do tempo com gráficos e estatísticas.",
     actions: [
-      "Acesse 'Evolução' para ver gráficos",
+      "Acesse 'Evolução' para ver gráficos e estatísticas",
       "Acompanhe peso, medidas e % de gordura",
+      "Veja sua taxa de presença e frequência mensal",
       "Compare fotos de antes e depois",
+      "Acompanhe evolução de carga por exercício",
       "Celebre cada conquista!",
     ],
     tip: "Dica: Tire fotos de progresso mensalmente - a mudança visual motiva!",
