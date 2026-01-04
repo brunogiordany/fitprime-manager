@@ -3303,3 +3303,14 @@
 - [x] Mover "Evolução das Medidas" da aba Fotos para aba Evolução (Portal do Aluno)
 - [x] Verificar e corrigir posição de gráficos na área do Personal
 - [x] Garantir que cada aba tenha apenas conteúdo relevante
+
+
+## Melhorias nos Gráficos de Evolução (v4.0)
+- [x] Filtros de período (Hoje, Ontem, 1 semana, 15 dias, 30 dias, 3 meses, 6 meses, 1 ano, todo período)
+- [x] Dados individuais detalhados de cada medida (aba Detalhes com histórico completo)
+- [x] Cards de resumo com variação por medida (Peso, % Gordura, Cintura)
+- [x] Gráficos separados por categoria (peso, circunferências, composição)
+- [x] Tooltips mais informativos (data e valores)
+- [ ] Indicadores de tendência (subindo, descendo, estável)
+- [ ] Comparativo primeira vs última medição
+- [ ] Metas e objetivos nos gráficos

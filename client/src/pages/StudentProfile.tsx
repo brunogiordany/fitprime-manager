@@ -88,6 +88,7 @@ import {
   Cell,
 } from "recharts";
 import { UnifiedEvolutionDashboard } from "@/components/UnifiedEvolutionDashboard";
+import { EvolutionCharts } from "@/components/EvolutionCharts";
 
 export default function StudentProfile() {
   const [, setLocation] = useLocation();
@@ -1444,83 +1445,13 @@ export default function StudentProfile() {
               </Card>
             )}
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Evolução de Peso</CardTitle>
-                  <CardDescription>Acompanhamento das medidas ao longo do tempo</CardDescription>
-                </div>
-                <Button onClick={() => setLocation(`/alunos/${studentId}/medidas`)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Medida
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {weightData.length > 0 ? (
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={weightData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis domain={['auto', 'auto']} />
-                        <Tooltip />
-                        <Line 
-                          type="monotone" 
-                          dataKey="weight" 
-                          stroke="oklch(0.55 0.18 160)" 
-                          strokeWidth={2}
-                          dot={{ fill: "oklch(0.55 0.18 160)" }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <TrendingUp className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Nenhuma medida registrada</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Novo Componente de Evolução com Filtros */}
+            <EvolutionCharts 
+              measurements={measurements || []} 
+              onNewMeasure={() => setLocation(`/alunos/${studentId}/medidas`)}
+            />
 
-            {/* Gráfico de Composição Corporal */}
-            {bodyCompositionData.length > 0 && bodyCompositionData.some(d => d.gordura > 0 || d.musculo > 0) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Composição Corporal</CardTitle>
-                  <CardDescription>Evolução de % gordura e massa muscular</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={bodyCompositionData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="gordura" 
-                          name="% Gordura"
-                          stroke="oklch(0.7 0.15 60)" 
-                          strokeWidth={2}
-                          dot={{ fill: "oklch(0.7 0.15 60)" }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="musculo" 
-                          name="Massa Muscular (kg)"
-                          stroke="oklch(0.55 0.18 160)" 
-                          strokeWidth={2}
-                          dot={{ fill: "oklch(0.55 0.18 160)" }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
 
             {/* Card de Comparativo de BF entre Métodos */}
             {measurements && measurements.length > 0 && (() => {
@@ -1643,87 +1574,7 @@ export default function StudentProfile() {
               );
             })()}
 
-            {/* Gráfico de Circunferências */}
-            {circumferenceData.length > 0 && circumferenceData.some(d => d.cintura > 0 || d.quadril > 0) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Evolução das Circunferências</CardTitle>
-                  <CardDescription>Medidas em centímetros ao longo do tempo</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={circumferenceData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="cintura" name="Cintura" stroke="#82ca9d" strokeWidth={2} />
-                        <Line type="monotone" dataKey="quadril" name="Quadril" stroke="#ffc658" strokeWidth={2} />
-                        <Line type="monotone" dataKey="peito" name="Peito" stroke="#8884d8" strokeWidth={2} />
-                        <Line type="monotone" dataKey="bracoDireito" name="Braço D" stroke="#ff7300" strokeWidth={2} />
-                        <Line type="monotone" dataKey="coxaDireita" name="Coxa D" stroke="#00C49F" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {measurements && measurements.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Histórico de Medidas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {measurements.slice(0, 5).map((m) => (
-                      <div key={m.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">
-                            {m.measureDate && !isNaN(new Date(m.measureDate).getTime())
-                              ? format(new Date(m.measureDate), "dd/MM/yyyy", { locale: ptBR })
-                              : '--/--/----'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Peso: {m.weight || '-'} kg | IMC: {m.bmi || '-'}
-                          </p>
-                        </div>
-                        <div className="text-right text-sm hidden sm:block">
-                          <p>Cintura: {m.waist || '-'} cm</p>
-                          <p>Quadril: {m.hip || '-'} cm</p>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setLocation(`/alunos/${studentId}/medidas?edit=${m.id}`)}
-                            title="Editar medida"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => {
-                              if (confirm('Enviar esta medida para a lixeira?')) {
-                                deleteMeasurementMutation.mutate({ id: m.id });
-                              }
-                            }}
-                            title="Excluir medida"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Evolução de Carga - Métricas de Treino */}
             <Card>
