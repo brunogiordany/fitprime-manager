@@ -3273,3 +3273,9 @@
 - [x] Após definir senha, fazer login automático
 - [x] Redirecionar diretamente para o dashboard (não para tela intermediária)
 - [x] Remover tela intermediária desnecessária
+
+
+## Bug Modal Nova Medição Fechando (v5.5)
+- [ ] Modal de Nova Medição fecha automaticamente ao digitar
+- [ ] Corrigir na área do aluno (StudentEvolution)
+- [ ] Corrigir na área do personal (StudentProfile/Evolution)

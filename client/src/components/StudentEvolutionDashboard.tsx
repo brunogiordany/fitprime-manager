@@ -757,7 +757,11 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
 
       {/* Modal de Nova Medida */}
       <Dialog open={showNewMeasurementModal} onOpenChange={setShowNewMeasurementModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent 
+          className="max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Scale className="h-5 w-5 text-blue-600" />
