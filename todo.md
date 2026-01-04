@@ -3004,3 +3004,33 @@
 - [x] Processar mensagens enviadas pelo personal via WhatsApp (fromMe: true)
 - [x] Processar mensagens recebidas do aluno via WhatsApp
 - [ ] Publicar para ativar webhook em produção
+
+
+## Separação de Chats - WhatsApp vs Interno (v9.1)
+- [ ] Criar página "WhatsApp Mensagens" - chat dedicado para WhatsApp
+  - [ ] Lista de conversas WhatsApp (alunos com telefone)
+  - [ ] Envio e recebimento de mensagens via Stevo
+  - [ ] Indicador de mensagens não lidas
+  - [ ] Histórico de conversas WhatsApp
+- [ ] Renomear "WhatsApp" atual para "WhatsApp Estatísticas"
+  - [ ] Dashboard de métricas de mensagens
+  - [ ] Total enviadas/recebidas
+  - [ ] Taxa de entrega
+  - [ ] Gráficos de uso
+- [ ] Ajustar "Chat FitPrime" para ser apenas interno
+  - [ ] Remover opção de enviar via WhatsApp
+  - [ ] Comunicação apenas dentro do app
+  - [ ] Notificações internas
+- [ ] Atualizar navegação do menu lateral
+  - [ ] Chat FitPrime (interno)
+  - [ ] WhatsApp Mensagens (chat WhatsApp)
+  - [ ] WhatsApp Estatísticas (métricas)
+
+
+## Separação de Chats - WhatsApp vs Interno (v9.0)
+- [x] Criar página WhatsApp Mensagens (chat dedicado WhatsApp)
+- [x] Criar página WhatsApp Estatísticas (métricas e análises)
+- [x] Atualizar menu lateral com as novas opções
+- [ ] Ajustar Chat FitPrime para ser apenas interno (mantido com aba WhatsApp por compatibilidade)
+- [x] Testar todas as funcionalidades
+- [x] Reverter para Stevo (Evolution API não funcionou)

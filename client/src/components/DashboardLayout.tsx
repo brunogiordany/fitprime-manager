@@ -32,6 +32,7 @@ import {
   CreditCard,
   Dumbbell,
   MessageSquare,
+  MessageCircle,
   Settings,
   FileText,
   Activity,
@@ -43,7 +44,8 @@ import {
   TrendingUp,
   HelpCircle,
   UserCircle,
-  Bot
+  Bot,
+  Phone
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -67,7 +69,9 @@ const menuItems = [
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Bot, label: "IA de Atendimento", path: "/ia-atendimento" },
-  { icon: Activity, label: "Mensagens", path: "/mensagens" },
+  { icon: MessageCircle, label: "Chat FitPrime", path: "/mensagens" },
+  { icon: Phone, label: "WhatsApp Mensagens", path: "/whatsapp" },
+  { icon: Activity, label: "WhatsApp Estatísticas", path: "/whatsapp-stats" },
   
   { icon: Shield, label: "Acessos do Aluno", path: "/acessos-aluno" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },

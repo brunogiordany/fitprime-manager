@@ -60,6 +60,8 @@ import QuizResultPlan from "./pages/QuizResultPlan";
 import LoginPage from "./pages/LoginPage";
 import AiAssistantSettings from "./pages/AiAssistantSettings";
 import ActivateAccount from "./pages/ActivateAccount";
+import WhatsAppMessages from "./pages/WhatsAppMessages";
+import WhatsAppStats from "./pages/WhatsAppStats";
 
 function Router() {
   return (
@@ -102,6 +104,8 @@ function Router() {
       <Route path="/automacoes" component={Automations} />
       <Route path="/ia-atendimento" component={AiAssistantSettings} />
       <Route path="/mensagens" component={Messages} />
+      <Route path="/whatsapp" component={WhatsAppMessages} />
+      <Route path="/whatsapp-stats" component={WhatsAppStats} />
       <Route path="/configuracoes" component={Settings} />
       <Route path="/lixeira" component={Trash} />
       <Route path="/relatorios" component={Reports} />
