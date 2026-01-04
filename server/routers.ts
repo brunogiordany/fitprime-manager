@@ -7931,6 +7931,68 @@ Seja motivador mas realista e profissional.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao analisar evolução.' });
         }
       }),
+    // Estatísticas de sessões do aluno (frequência, presenças, faltas)
+    sessionStats: studentProcedure.query(async ({ ctx }) => {
+      const sessions = await db.getSessionsByStudentId(ctx.student.id);
+      const now = new Date();
+      
+      // Contadores gerais
+      const completed = sessions.filter(s => s.status === 'completed');
+      const noShow = sessions.filter(s => s.status === 'no_show');
+      const cancelled = sessions.filter(s => s.status === 'cancelled');
+      
+      // Este mês
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const thisMonthCompleted = completed.filter(s => new Date(s.scheduledAt) >= thisMonthStart);
+      
+      // Mês passado
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      const lastMonthCompleted = completed.filter(s => {
+        const date = new Date(s.scheduledAt);
+        return date >= lastMonthStart && date <= lastMonthEnd;
+      });
+      
+      // Frequência por mês (últimos 6 meses)
+      const monthlyData = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+        const monthName = monthStart.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+        
+        const monthCompleted = sessions.filter(s => {
+          const date = new Date(s.scheduledAt);
+          return date >= monthStart && date <= monthEnd && s.status === 'completed';
+        }).length;
+        
+        const monthNoShow = sessions.filter(s => {
+          const date = new Date(s.scheduledAt);
+          return date >= monthStart && date <= monthEnd && s.status === 'no_show';
+        }).length;
+        
+        monthlyData.push({
+          month: monthName,
+          presencas: monthCompleted,
+          faltas: monthNoShow,
+        });
+      }
+      
+      const totalSessions = sessions.length;
+      const attendanceRate = totalSessions > 0 
+        ? Math.round((completed.length / totalSessions) * 100) 
+        : 0;
+      
+      return {
+        total: totalSessions,
+        completed: completed.length,
+        noShow: noShow.length,
+        cancelled: cancelled.length,
+        thisMonth: thisMonthCompleted.length,
+        lastMonth: lastMonthCompleted.length,
+        attendanceRate,
+        monthlyData,
+      };
+    }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { trpc } from "@/lib/trpc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,9 @@ export default function StudentEvolutionCharts({
   studentGender,
   studentHeight,
 }: StudentEvolutionChartsProps) {
+  // Buscar estatísticas de sessão do servidor (para dados mais precisos)
+  const { data: serverSessionStats } = trpc.studentPortal.sessionStats.useQuery();
+
   // Função auxiliar para criar data válida
   const parseDate = (dateValue: string | Date | number | null | undefined): Date | null => {
     if (!dateValue) return null;
@@ -194,19 +198,26 @@ export default function StudentEvolutionCharts({
     const lastWeight = lastWeightStr ? parseFloat(lastWeightStr) : null;
     const weightChange = firstWeight && lastWeight ? lastWeight - firstWeight : null;
 
-    const completedSessions = sessions.filter((s) => s.status === "completed").length;
-    const totalSessions = sessions.length;
-    const attendanceRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+    // Usar dados do servidor se disponíveis, senão calcular localmente
+    const completedSessions = serverSessionStats?.completed ?? sessions.filter((s) => s.status === "completed").length;
+    const noShowSessions = serverSessionStats?.noShow ?? sessions.filter((s) => s.status === "no_show").length;
+    const totalSessions = serverSessionStats?.total ?? sessions.length;
+    const attendanceRate = serverSessionStats?.attendanceRate ?? (totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0);
+    const thisMonth = serverSessionStats?.thisMonth ?? 0;
+    const lastMonth = serverSessionStats?.lastMonth ?? 0;
 
     return {
       firstWeight,
       lastWeight,
       weightChange,
       completedSessions,
+      noShowSessions,
       totalSessions,
       attendanceRate,
+      thisMonth,
+      lastMonth,
     };
-  }, [measurements, sessions]);
+  }, [measurements, sessions, serverSessionStats]);
 
   const getTrendIcon = (change: number | null) => {
     if (change === null) return <Minus className="h-4 w-4 text-gray-400" />;
@@ -233,7 +244,7 @@ export default function StudentEvolutionCharts({
 
   return (
     <div className="space-y-6">
-      {/* Cards de Estatísticas */}
+      {/* Cards de Estatísticas - Linha 1: Peso e Frequência */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
@@ -266,24 +277,10 @@ export default function StudentEvolutionCharts({
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Dumbbell className="h-8 w-8 text-blue-500" />
-              <Activity className="h-4 w-4 text-blue-400" />
+              <Target className="h-8 w-8 text-emerald-500" />
+              <Calendar className="h-4 w-4 text-emerald-400" />
             </div>
-            <p className="text-2xl font-bold mt-2">{stats.completedSessions}</p>
-            <p className="text-xs text-muted-foreground">Treinos Realizados</p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mt-2">
-              de {stats.totalSessions} agendados
-            </Badge>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <Target className="h-8 w-8 text-purple-500" />
-              <Calendar className="h-4 w-4 text-purple-400" />
-            </div>
-            <p className="text-2xl font-bold mt-2">{stats.attendanceRate.toFixed(0)}%</p>
+            <p className="text-2xl font-bold mt-2 text-emerald-600">{stats.attendanceRate.toFixed(0)}%</p>
             <p className="text-xs text-muted-foreground">Taxa de Presença</p>
             <Badge
               variant="outline"
@@ -303,12 +300,84 @@ export default function StudentEvolutionCharts({
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
+              <Dumbbell className="h-8 w-8 text-blue-500" />
+              <Activity className="h-4 w-4 text-blue-400" />
+            </div>
+            <p className="text-2xl font-bold mt-2">{stats.completedSessions}</p>
+            <p className="text-xs text-muted-foreground">Sessões Realizadas</p>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mt-2">
+              de {stats.totalSessions} agendadas
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <Calendar className="h-8 w-8 text-amber-500" />
+            </div>
+            <p className="text-2xl font-bold mt-2 text-amber-600">{stats.noShowSessions}</p>
+            <p className="text-xs text-muted-foreground">Faltas</p>
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 mt-2">
+              {stats.noShowSessions === 0 ? "Nenhuma falta!" : "total"}
+            </Badge>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cards de Estatísticas - Linha 2: Este Mês e Avaliações */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <Calendar className="h-8 w-8 text-purple-500" />
+            </div>
+            <p className="text-2xl font-bold mt-2">{stats.thisMonth}</p>
+            <p className="text-xs text-muted-foreground">Este Mês</p>
+            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 mt-2">
+              sessões realizadas
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <Calendar className="h-8 w-8 text-gray-500" />
+            </div>
+            <p className="text-2xl font-bold mt-2">{stats.lastMonth}</p>
+            <p className="text-xs text-muted-foreground">Mês Passado</p>
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 mt-2">
+              sessões realizadas
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
               <Ruler className="h-8 w-8 text-teal-500" />
             </div>
             <p className="text-2xl font-bold mt-2">{measurements.length}</p>
             <p className="text-xs text-muted-foreground">Avaliações Físicas</p>
             <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 mt-2">
               registradas
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <TrendingUp className="h-8 w-8 text-emerald-600" />
+            </div>
+            <p className="text-2xl font-bold mt-2 text-emerald-700">
+              {stats.thisMonth > stats.lastMonth ? "+" : ""}
+              {stats.thisMonth - stats.lastMonth}
+            </p>
+            <p className="text-xs text-emerald-600">vs Mês Anterior</p>
+            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-300 mt-2">
+              {stats.thisMonth >= stats.lastMonth ? "Progredindo!" : "Manter foco"}
             </Badge>
           </CardContent>
         </Card>
@@ -522,32 +591,41 @@ export default function StudentEvolutionCharts({
                 <Calendar className="h-5 w-5 text-teal-500" />
                 Frequência de Treinos
               </CardTitle>
-              <CardDescription>Sessões realizadas vs faltas por mês</CardDescription>
+              <CardDescription>Sessões realizadas vs faltas por mês (últimos 6 meses)</CardDescription>
             </CardHeader>
             <CardContent>
-              {sessionsData.length > 0 ? (
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={sessionsData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
-                      <YAxis stroke="#9ca3af" fontSize={12} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="realizadas" name="Realizadas" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="faltas" name="Faltas" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Nenhuma sessão registrada</p>
-                    <p className="text-sm">Suas sessões aparecerão aqui</p>
+              {/* Usar dados do servidor se disponíveis, senão usar dados locais */}
+              {(() => {
+                const chartData = serverSessionStats?.monthlyData || sessionsData.map(s => ({
+                  month: s.month,
+                  presencas: s.realizadas,
+                  faltas: s.faltas,
+                }));
+                
+                return chartData.length > 0 ? (
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
+                        <YAxis stroke="#9ca3af" fontSize={12} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="presencas" name="Presenças" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="faltas" name="Faltas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>Nenhuma sessão registrada</p>
+                      <p className="text-sm">Suas sessões aparecerão aqui</p>
+                    </div>
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>

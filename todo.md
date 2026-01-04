@@ -3068,3 +3068,13 @@
 - [x] Adicionar gráfico de evolução de carga na aba Treinos do perfil do aluno
 - [x] Unificar aba Evolução com métricas de treino (progresso de cargas)
 - [x] Adicionar botão de acesso rápido às fotos na aba Evolução
+
+
+## Estatísticas de Sessão no Portal do Aluno (v12.0)
+- [x] Adicionar endpoint sessionStats no studentPortal (taxa de presença, sessões realizadas, faltas, este mês)
+- [x] Adicionar KPIs de frequência no Portal do Aluno (igual ao StudentProfile do Personal)
+- [x] Adicionar gráfico de frequência mensal no Portal do Aluno (presenças vs faltas)
+- [x] Adicionar gráfico de evolução de peso no Portal do Aluno (já existia)
+- [x] Adicionar gráfico de composição corporal no Portal do Aluno (já existia)
+- [x] Adicionar gráfico de circunferências no Portal do Aluno (já existia)
+- [x] Adicionar gráfico de evolução de carga por exercício no Portal do Aluno (já existia no StudentTrainingDashboard)
