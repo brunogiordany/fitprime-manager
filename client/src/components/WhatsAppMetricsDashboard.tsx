@@ -37,6 +37,8 @@ import {
   ArrowDownRight,
   Phone,
   Calendar,
+  User,
+  X,
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, isWithinInterval, subMonths, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -71,6 +73,20 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
     to: new Date(),
   });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  
+  // Estado para filtro por aluno
+  const [selectedStudentId, setSelectedStudentId] = useState<number | 'all'>('all');
+
+  // Extrair lista única de alunos das mensagens
+  const students = useMemo(() => {
+    const studentMap = new Map<number, string>();
+    messages.forEach(m => {
+      if (m.student?.id && m.student?.name) {
+        studentMap.set(m.student.id, m.student.name);
+      }
+    });
+    return Array.from(studentMap.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [messages]);
 
   // Calcular datas do período selecionado
   const dateRange = useMemo(() => {
@@ -94,20 +110,24 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
     }
   }, [period, customDateRange]);
 
-  // Filtrar mensagens pelo período
+  // Filtrar mensagens pelo período e aluno
   const filteredMessages = useMemo(() => {
     return messages.filter(m => {
       const msgDate = new Date(m.log.createdAt || new Date());
-      return isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+      const inDateRange = isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+      const matchesStudent = selectedStudentId === 'all' || m.student?.id === selectedStudentId;
+      return inDateRange && matchesStudent;
     });
-  }, [messages, dateRange]);
+  }, [messages, dateRange, selectedStudentId]);
 
   const filteredChatMessages = useMemo(() => {
     return chatMessages.filter((m: any) => {
       const msgDate = new Date(m.createdAt);
-      return isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+      const inDateRange = isWithinInterval(msgDate, { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) });
+      const matchesStudent = selectedStudentId === 'all' || m.studentId === selectedStudentId;
+      return inDateRange && matchesStudent;
     });
-  }, [chatMessages, dateRange]);
+  }, [chatMessages, dateRange, selectedStudentId]);
 
   // Calcular métricas com mensagens filtradas
   const totalMessages = filteredMessages.length;
@@ -210,7 +230,27 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
             Análise de desempenho das mensagens
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Filtro por Aluno */}
+          <Select 
+            value={selectedStudentId === 'all' ? 'all' : String(selectedStudentId)} 
+            onValueChange={(value) => setSelectedStudentId(value === 'all' ? 'all' : Number(value))}
+          >
+            <SelectTrigger className="w-[180px]">
+              <User className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filtrar por aluno" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os alunos</SelectItem>
+              {students.map(student => (
+                <SelectItem key={student.id} value={String(student.id)}>
+                  {student.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Filtro por Período */}
           <Select value={period} onValueChange={(value: PeriodOption) => setPeriod(value)}>
             <SelectTrigger className="w-[160px]">
               <Calendar className="h-4 w-4 mr-2" />
@@ -255,6 +295,20 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
           <Badge variant="outline" className="text-gray-500">
             {differenceInDays(dateRange.end, dateRange.start) + 1} dias
           </Badge>
+
+          {/* Badge do aluno selecionado */}
+          {selectedStudentId !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              <User className="h-3 w-3" />
+              {students.find(s => s.id === selectedStudentId)?.name}
+              <button 
+                onClick={() => setSelectedStudentId('all')}
+                className="ml-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
         </div>
       </div>
 

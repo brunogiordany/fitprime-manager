@@ -787,6 +787,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       const chatMessageType = messageType === 'document' ? 'file' : messageType;
       
       // Criar mensagem no chat como vinda do aluno via WhatsApp
+      // Source 'internal' para aparecer no Chat FitPrime (todas as conversas ficam unificadas)
       await db.createChatMessage({
         personalId: student.personalId,
         studentId: student.id,
@@ -796,7 +797,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
         mediaUrl: mediaUrl || null,
         mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
         isRead: false,
-        source: 'whatsapp', // Marcar como vinda do WhatsApp
+        source: 'internal', // Unificado no Chat FitPrime
         externalId: messageId, // Salvar ID externo para evitar duplicação
       });
       
@@ -888,7 +889,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
                   },
                 });
                 
-                // Salvar resposta da IA no chat
+                // Salvar resposta da IA no chat (unificado no Chat FitPrime)
                 await db.createChatMessage({
                   personalId: student.personalId,
                   studentId: student.id,
@@ -896,7 +897,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
                   message: aiResponse.message,
                   messageType: 'text',
                   isRead: true,
-                  source: 'whatsapp',
+                  source: 'internal',
                 });
                 
                 console.log('[Stevo Webhook] Resposta da IA enviada com sucesso');
