@@ -823,7 +823,16 @@ export default function PersonalLogin() {
                     resetPasswordMutation.mutate(
                       { email: setupEmail, code: setupCode, newPassword: setupPassword },
                       {
-                        onSuccess: () => setSetupStep('success'),
+                        onSuccess: () => {
+                          setSetupStep('success');
+                          // Login automático após definir senha
+                          setTimeout(() => {
+                            loginMutation.mutate({
+                              email: setupEmail,
+                              password: setupPassword,
+                            });
+                          }, 500);
+                        },
                         onError: (err: any) => toast.error(err.message || 'Erro ao definir senha')
                       }
                     );
@@ -841,25 +850,11 @@ export default function PersonalLogin() {
             {setupStep === 'success' && (
               <div className="text-center space-y-4">
                 <div className="mx-auto h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <CheckCircle2 className="h-8 w-8 text-green-400" />
+                  <Loader2 className="h-8 w-8 text-green-400 animate-spin" />
                 </div>
                 <p className="text-slate-300">
-                  Sua senha foi configurada! Agora você pode fazer login.
+                  Senha configurada! Entrando na sua conta...
                 </p>
-                <Button
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
-                  onClick={() => {
-                    setShowPasswordSetup(false);
-                    setSetupStep('code');
-                    setSetupCode('');
-                    setSetupPassword('');
-                    setSetupConfirmPassword('');
-                    // Preencher o email no form de login
-                    setLoginForm(prev => ({ ...prev, email: setupEmail, password: '' }));
-                  }}
-                >
-                  Fazer Login
-                </Button>
               </div>
             )}
           </div>

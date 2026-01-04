@@ -3267,3 +3267,9 @@
 - [x] Permitir login de contas criadas via OAuth (sem senha cadastrada)
 - [x] Criar fluxo para definir senha em contas existentes
 - [x] Enviar código de ativação por email para definir senha
+
+
+## Bug Login Após Definir Senha (v5.4)
+- [x] Após definir senha, fazer login automático
+- [x] Redirecionar diretamente para o dashboard (não para tela intermediária)
+- [x] Remover tela intermediária desnecessária
