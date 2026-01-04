@@ -3056,3 +3056,4 @@
 
 ## IA de Atendimento (v9.5)
 - [x] Adicionar indicador BETA (não usar) na página de IA de Atendimento
+- [x] Bloquear toggle interno de IA quando não liberado pelo Super Admin
