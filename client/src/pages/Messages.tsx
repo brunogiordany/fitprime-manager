@@ -55,8 +55,10 @@ import {
   Smile,
   Pause,
   Play,
-  Square
+  Square,
+  BarChart3
 } from "lucide-react";
+import WhatsAppMetricsDashboard from "@/components/WhatsAppMetricsDashboard";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -131,6 +133,9 @@ export default function Messages() {
   const [selectedWhatsAppStudent, setSelectedWhatsAppStudent] = useState<StudentWithUnread | null>(null);
   const [newWhatsAppMessage, setNewWhatsAppMessage] = useState("");
   const whatsappMessagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Estado para alternar entre chat e métricas no WhatsApp
+  const [whatsappView, setWhatsappView] = useState<'chat' | 'metrics'>('chat');
 
   // Estado para envio de mensagem manual no WhatsApp
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
@@ -199,9 +204,9 @@ export default function Messages() {
   // Lista de todos os alunos para mostrar conversas
   const { data: allStudents } = trpc.students.list.useQuery({});
 
-  // Chat messages do aluno selecionado (apenas mensagens internas do FitPrime)
+  // Chat messages do aluno selecionado (todas as mensagens - internas e WhatsApp)
   const { data: chatMessages, refetch: refetchChat, isLoading: isLoadingChat } = trpc.chat.messages.useQuery(
-    { studentId: selectedStudent?.studentId || 0, limit: 100, source: 'internal' },
+    { studentId: selectedStudent?.studentId || 0, limit: 100, source: 'all' },
     { 
       enabled: !!selectedStudent,
       refetchInterval: 5000
@@ -879,201 +884,12 @@ export default function Messages() {
             </div>
           </TabsContent>
 
-          {/* WhatsApp Tab - Estilo Chat igual ao FitPrime */}
-          <TabsContent value="whatsapp" className="flex-1 m-0 overflow-hidden">
-            <div className="flex h-full bg-gray-100 dark:bg-gray-900">
-              {/* Lista de Conversas WhatsApp - Sidebar */}
-              <div className={`${selectedWhatsAppStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r`}>
-                {/* Header da lista */}
-                <div className="flex-shrink-0 p-4 border-b bg-green-600 text-white">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                      <Phone className="h-5 w-5" />
-                      WhatsApp
-                    </h2>
-                  </div>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-200" />
-                    <Input
-                      placeholder="Buscar aluno..."
-                      className="pl-10 bg-green-700 border-green-500 text-white placeholder:text-green-200 focus:bg-green-600"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Lista de conversas WhatsApp */}
-                <div className="flex-1 overflow-y-auto">
-                  {conversationsList
-                    .filter((conv) => 
-                      conv.studentName.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((conv) => (
-                      <button
-                        key={conv.studentId}
-                        onClick={() => setSelectedWhatsAppStudent(conv)}
-                        className={`w-full flex items-center gap-3 p-4 text-left transition-colors border-b border-gray-100 dark:border-gray-800 ${
-                          selectedWhatsAppStudent?.studentId === conv.studentId
-                            ? "bg-green-50 dark:bg-green-900/20"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                        }`}
-                      >
-                        <Avatar className="h-12 w-12 flex-shrink-0">
-                          <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-600 text-white text-lg">
-                            {conv.studentName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="font-semibold truncate">{conv.studentName}</p>
-                          </div>
-                          <p className="text-sm text-gray-500 truncate flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            Clique para ver conversa
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  {conversationsList.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      <Phone className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                      <p className="font-medium">Nenhum aluno encontrado</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Área de Chat WhatsApp */}
-              <div className={`${selectedWhatsAppStudent ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-[#e5ddd5] dark:bg-gray-800`}>
-                {selectedWhatsAppStudent ? (
-                  <>
-                    {/* Header do chat */}
-                    <div className="flex-shrink-0 flex items-center gap-3 p-3 bg-green-600 text-white">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedWhatsAppStudent(null)}
-                        className="md:hidden text-white hover:bg-green-700"
-                      >
-                        <ArrowLeft className="h-5 w-5" />
-                      </Button>
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-green-700 text-white">
-                          {selectedWhatsAppStudent.studentName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold">{selectedWhatsAppStudent.studentName}</p>
-                        <p className="text-xs text-green-200 flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          WhatsApp
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Mensagens WhatsApp */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                      {isLoadingWhatsAppChat ? (
-                        <div className="flex items-center justify-center h-full">
-                          <Loader2 className="h-8 w-8 animate-spin text-green-500" />
-                        </div>
-                      ) : whatsappChatMessages && whatsappChatMessages.length > 0 ? (
-                        <>
-                          {whatsappChatMessages.map((msg: any, index: number) => {
-                            const isPersonal = msg.senderType === 'personal';
-                            const showDateSeparator = index === 0 || !isSameDay(
-                              new Date(msg.createdAt),
-                              new Date(whatsappChatMessages[index - 1]?.createdAt)
-                            );
-                            
-                            return (
-                              <div key={msg.id}>
-                                {showDateSeparator && (
-                                  <div className="flex justify-center my-4">
-                                    <span className="bg-white/80 dark:bg-gray-700 px-3 py-1 rounded-full text-xs text-gray-500">
-                                      {isToday(new Date(msg.createdAt))
-                                        ? 'Hoje'
-                                        : isYesterday(new Date(msg.createdAt))
-                                        ? 'Ontem'
-                                        : format(new Date(msg.createdAt), "dd 'de' MMMM", { locale: ptBR })}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                <div className={`flex ${isPersonal ? 'justify-end' : 'justify-start'}`}>
-                                  <div
-                                    className={`max-w-[70%] rounded-lg px-3 py-2 shadow-sm ${
-                                      isPersonal
-                                        ? 'bg-green-100 dark:bg-green-900 text-gray-800 dark:text-gray-100 rounded-br-none'
-                                        : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'
-                                    }`}
-                                  >
-                                    {msg.message && (
-                                      <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-                                    )}
-                                    
-                                    <div className={`flex items-center justify-end gap-1 mt-1 ${isPersonal ? "text-green-700 dark:text-green-300" : "text-gray-500"}`}>
-                                      <span className="text-[10px]">
-                                        {format(new Date(msg.createdAt), 'HH:mm')}
-                                      </span>
-                                      {isPersonal && (
-                                        <CheckCheck className="h-3 w-3 text-green-500" />
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                          <div ref={whatsappMessagesEndRef} />
-                        </>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                          <Phone className="h-16 w-16 mb-4 text-gray-300" />
-                          <p className="font-medium">Nenhuma mensagem do WhatsApp</p>
-                          <p className="text-sm">As mensagens do WhatsApp aparecerão aqui</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Campo de resposta manual */}
-                    <div className="flex-shrink-0 p-3 bg-green-50 dark:bg-green-900/20 border-t">
-                      <p className="text-xs text-green-700 dark:text-green-300 mb-2 text-center">
-                        📝 Responda manualmente quando a IA não conseguir resolver
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Digite sua mensagem..."
-                          value={newWhatsAppMessage}
-                          onChange={(e) => setNewWhatsAppMessage(e.target.value)}
-                          onKeyDown={handleWhatsAppKeyPress}
-                          className="flex-1 bg-white dark:bg-gray-800"
-                          disabled={isSendingWhatsApp}
-                        />
-                        <Button
-                          onClick={handleSendWhatsAppManual}
-                          disabled={!newWhatsAppMessage.trim() || isSendingWhatsApp}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          {isSendingWhatsApp ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
-                    <Phone className="h-24 w-24 mb-4 text-gray-300" />
-                    <p className="text-xl font-medium">WhatsApp</p>
-                    <p className="text-sm">Selecione um aluno para ver as mensagens</p>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* WhatsApp Tab - Dashboard de Métricas */}
+          <TabsContent value="whatsapp" className="flex-1 m-0 overflow-auto">
+            <WhatsAppMetricsDashboard 
+              messages={whatsappMessagesLog || []} 
+              chatMessages={chatMessages || []}
+            />
           </TabsContent>
         </Tabs>
       </div>

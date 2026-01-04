@@ -891,10 +891,8 @@ export const appRouter = router({
         }
         
         // Salvar mensagem no banco de dados
-        // Se vai enviar via WhatsApp, marcar como 'whatsapp', senão 'internal'
-        const willSendViaWhatsApp = input.sendViaWhatsApp && student.phone && student.whatsappOptIn;
+        // TODAS as mensagens do Chat FitPrime são 'internal' - mesmo que também vão pro WhatsApp
         const personal = ctx.personal;
-        const hasWhatsAppConfig = personal.evolutionApiKey && personal.evolutionInstance;
         
         const messageId = await db.createChatMessage({
           personalId: ctx.personal.id,
@@ -909,7 +907,7 @@ export const appRouter = router({
           mediaDuration: input.mediaDuration,
           audioTranscription: input.audioTranscription,
           linkPreviewUrl: input.linkPreview,
-          source: (willSendViaWhatsApp && hasWhatsAppConfig) ? 'whatsapp' : 'internal',
+          source: 'internal', // Sempre internal - todas as conversas ficam no Chat FitPrime
         });
         
         // Enviar via WhatsApp/Stevo se habilitado e aluno tem telefone
