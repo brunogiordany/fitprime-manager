@@ -204,9 +204,9 @@ export default function Messages() {
   // Lista de todos os alunos para mostrar conversas
   const { data: allStudents } = trpc.students.list.useQuery({});
 
-  // Chat messages do aluno selecionado (todas as mensagens - internas e WhatsApp)
+  // Chat messages do aluno selecionado (apenas mensagens internas do Chat FitPrime)
   const { data: chatMessages, refetch: refetchChat, isLoading: isLoadingChat } = trpc.chat.messages.useQuery(
-    { studentId: selectedStudent?.studentId || 0, limit: 100, source: 'all' },
+    { studentId: selectedStudent?.studentId || 0, limit: 100, source: 'internal' },
     { 
       enabled: !!selectedStudent,
       refetchInterval: 5000
