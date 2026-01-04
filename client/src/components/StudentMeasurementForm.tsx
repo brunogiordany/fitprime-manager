@@ -111,6 +111,7 @@ export default function StudentMeasurementForm({
   const [bioFileKey, setBioFileKey] = useState<string | null>(null);
   const [bioAiAnalysis, setBioAiAnalysis] = useState<string | null>(null);
   const [measurementPhotos, setMeasurementPhotos] = useState<{ poseId: string; url: string }[]>([]);
+  const [openAccordionItems, setOpenAccordionItems] = useState<string[]>(["principais"]);
   
   const [formData, setFormData] = useState({
     measureDate: format(new Date(), "yyyy-MM-dd"),
@@ -339,7 +340,7 @@ export default function StudentMeasurementForm({
       </div>
 
       {/* Medidas Principais */}
-      <Accordion type="multiple" defaultValue={["principais"]} className="w-full">
+      <Accordion type="multiple" value={openAccordionItems} onValueChange={setOpenAccordionItems} className="w-full">
         <AccordionItem value="principais">
           <AccordionTrigger className="text-sm font-semibold">
             <div className="flex items-center gap-2">
