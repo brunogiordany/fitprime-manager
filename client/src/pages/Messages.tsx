@@ -253,7 +253,8 @@ export default function Messages() {
     if (!newMessage.trim() || !selectedStudent) return;
     sendMessage.mutate({ 
       studentId: selectedStudent.studentId, 
-      message: newMessage.trim() 
+      message: newMessage.trim(),
+      sendViaWhatsApp: false // Chat FitPrime é apenas interno, não envia via WhatsApp
     });
   };
 
