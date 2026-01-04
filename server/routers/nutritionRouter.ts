@@ -8,7 +8,8 @@ import { getDb } from "../db";
 import { 
   foods, recipes, recipeIngredients, mealPlans, mealPlanDays, meals, mealItems,
   nutritionLogs, nutritionAssessments, labExams, nutritionAnamneses, 
-  nutritionGuidelines, nutritionSettings, personals, students, measurements, anamneses
+  nutritionGuidelines, nutritionSettings, personals, students, measurements, anamneses,
+  mealPlanTemplates, trainingNutritionProfiles, sessions, workouts
 } from "../../drizzle/schema";
 
 // Helper to get or create personal profile
@@ -1420,6 +1421,421 @@ Seja objetivo e prático. Lembre-se que você é um nutricionista, não um médi
           
           return { id: result.insertId };
         }
+      }),
+  }),
+
+  // ==================== MEAL PLAN TEMPLATES (Templates de Planos) ====================
+  templates: router({
+    // Listar templates disponíveis
+    list: nutritionProcedure
+      .input(z.object({
+        objective: z.enum(['weight_loss', 'muscle_gain', 'maintenance', 'recomposition', 'bulking', 'cutting', 'health', 'sports_performance', 'therapeutic']).optional(),
+        difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        let conditions = [
+          eq(mealPlanTemplates.isActive, true),
+          or(
+            isNull(mealPlanTemplates.personalId),
+            eq(mealPlanTemplates.personalId, ctx.personal.id)
+          )
+        ];
+        
+        if (input?.objective) {
+          conditions.push(eq(mealPlanTemplates.objective, input.objective));
+        }
+        if (input?.difficulty) {
+          conditions.push(eq(mealPlanTemplates.difficulty, input.difficulty));
+        }
+        
+        return await db.select()
+          .from(mealPlanTemplates)
+          .where(and(...conditions))
+          .orderBy(asc(mealPlanTemplates.name));
+      }),
+    
+    // Obter template por ID
+    get: nutritionProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const template = await db.select()
+          .from(mealPlanTemplates)
+          .where(and(
+            eq(mealPlanTemplates.id, input.id),
+            or(
+              isNull(mealPlanTemplates.personalId),
+              eq(mealPlanTemplates.personalId, ctx.personal.id)
+            )
+          ))
+          .limit(1);
+        
+        if (!template[0]) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Template não encontrado' });
+        }
+        
+        return template[0];
+      }),
+    
+    // Criar template personalizado
+    create: nutritionProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        objective: z.enum(['weight_loss', 'muscle_gain', 'maintenance', 'recomposition', 'bulking', 'cutting', 'health', 'sports_performance', 'therapeutic']),
+        proteinPerKg: z.string().optional(),
+        carbsPerKg: z.string().optional(),
+        fatPerKg: z.string().optional(),
+        calorieDeficit: z.number().optional(),
+        calorieSurplus: z.number().optional(),
+        mealsPerDay: z.number().optional(),
+        includeSnacks: z.boolean().optional(),
+        restrictions: z.array(z.string()).optional(),
+        preferences: z.array(z.string()).optional(),
+        dislikes: z.array(z.string()).optional(),
+        adjustForTraining: z.boolean().optional(),
+        trainingDayCaloriesBonus: z.number().optional(),
+        trainingDayCarbsBonus: z.number().optional(),
+        notes: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+        duration: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const { restrictions, preferences, dislikes, tags, ...data } = input;
+        
+        const [result] = await db.insert(mealPlanTemplates).values({
+          ...data,
+          personalId: ctx.personal.id,
+          restrictions: restrictions ? JSON.stringify(restrictions) : null,
+          preferences: preferences ? JSON.stringify(preferences) : null,
+          dislikes: dislikes ? JSON.stringify(dislikes) : null,
+          tags: tags ? JSON.stringify(tags) : null,
+        });
+        
+        return { id: result.insertId };
+      }),
+    
+    // Duplicar template
+    duplicate: nutritionProcedure
+      .input(z.object({ id: z.number(), name: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const template = await db.select()
+          .from(mealPlanTemplates)
+          .where(eq(mealPlanTemplates.id, input.id))
+          .limit(1);
+        
+        if (!template[0]) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Template não encontrado' });
+        }
+        
+        const { id, createdAt, updatedAt, usageCount, isSystem, ...templateData } = template[0];
+        
+        const [result] = await db.insert(mealPlanTemplates).values({
+          ...templateData,
+          name: input.name || `${templateData.name} (Cópia)`,
+          personalId: ctx.personal.id,
+          isSystem: false,
+          usageCount: 0,
+        });
+        
+        return { id: result.insertId };
+      }),
+    
+    // Deletar template personalizado
+    delete: nutritionProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const template = await db.select()
+          .from(mealPlanTemplates)
+          .where(and(
+            eq(mealPlanTemplates.id, input.id),
+            eq(mealPlanTemplates.personalId, ctx.personal.id)
+          ))
+          .limit(1);
+        
+        if (!template[0]) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Template não encontrado ou não pertence a você' });
+        }
+        
+        if (template[0].isSystem) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Não é possível deletar templates do sistema' });
+        }
+        
+        await db.delete(mealPlanTemplates).where(eq(mealPlanTemplates.id, input.id));
+        
+        return { success: true };
+      }),
+  }),
+
+  // ==================== TRAINING NUTRITION PROFILES (Perfis de Nutrição por Treino) ====================
+  trainingProfiles: router({
+    // Listar perfis disponíveis
+    list: nutritionProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+      
+      return await db.select()
+        .from(trainingNutritionProfiles)
+        .where(and(
+          eq(trainingNutritionProfiles.isActive, true),
+          or(
+            eq(trainingNutritionProfiles.isSystem, true),
+            eq(trainingNutritionProfiles.personalId, ctx.personal.id)
+          )
+        ))
+        .orderBy(asc(trainingNutritionProfiles.name));
+    }),
+    
+    // Obter perfil por tipo de treino
+    getByType: nutritionProcedure
+      .input(z.object({ 
+        trainingType: z.enum(['strength', 'cardio_low', 'cardio_high', 'mixed', 'rest', 'active_recovery', 'sports', 'competition'])
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        // Primeiro busca perfil personalizado do personal
+        let profile = await db.select()
+          .from(trainingNutritionProfiles)
+          .where(and(
+            eq(trainingNutritionProfiles.trainingType, input.trainingType),
+            eq(trainingNutritionProfiles.personalId, ctx.personal.id),
+            eq(trainingNutritionProfiles.isActive, true)
+          ))
+          .limit(1);
+        
+        // Se não encontrou, busca o do sistema
+        if (!profile[0]) {
+          profile = await db.select()
+            .from(trainingNutritionProfiles)
+            .where(and(
+              eq(trainingNutritionProfiles.trainingType, input.trainingType),
+              eq(trainingNutritionProfiles.isSystem, true),
+              eq(trainingNutritionProfiles.isActive, true)
+            ))
+            .limit(1);
+        }
+        
+        return profile[0] || null;
+      }),
+    
+    // Criar perfil personalizado
+    create: nutritionProcedure
+      .input(z.object({
+        name: z.string(),
+        trainingType: z.enum(['strength', 'cardio_low', 'cardio_high', 'mixed', 'rest', 'active_recovery', 'sports', 'competition']),
+        caloriesAdjustment: z.number().optional(),
+        proteinAdjustment: z.string().optional(),
+        carbsAdjustment: z.string().optional(),
+        fatAdjustment: z.string().optional(),
+        preWorkoutMealTiming: z.number().optional(),
+        postWorkoutMealTiming: z.number().optional(),
+        preWorkoutCarbs: z.string().optional(),
+        preWorkoutProtein: z.string().optional(),
+        postWorkoutCarbs: z.string().optional(),
+        postWorkoutProtein: z.string().optional(),
+        waterIntakeBonus: z.string().optional(),
+        notes: z.string().optional(),
+        recommendations: z.any().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        const { recommendations, ...data } = input;
+        
+        const [result] = await db.insert(trainingNutritionProfiles).values({
+          ...data,
+          personalId: ctx.personal.id,
+          recommendations: recommendations ? JSON.stringify(recommendations) : null,
+          isSystem: false,
+        });
+        
+        return { id: result.insertId };
+      }),
+  }),
+
+  // ==================== TRAINING INTEGRATION (Integração Nutrição x Treino) ====================
+  trainingIntegration: router({
+    // Calcular macros ajustados para um dia específico baseado no treino
+    calculateDayMacros: nutritionProcedure
+      .input(z.object({
+        studentId: z.number(),
+        date: z.string(), // YYYY-MM-DD
+        basePlan: z.object({
+          calories: z.number(),
+          protein: z.number(),
+          carbs: z.number(),
+          fat: z.number(),
+        }).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        // Buscar sessões de treino do aluno neste dia
+        const daySessions = await db.select({
+          id: sessions.id,
+          status: sessions.status,
+          workoutId: sessions.workoutId,
+        })
+          .from(sessions)
+          .where(and(
+            eq(sessions.studentId, input.studentId),
+            eq(sessions.personalId, ctx.personal.id),
+            sql`DATE(${sessions.scheduledAt}) = ${input.date}`
+          ));
+        
+        // Se não tem treino, retorna dia de descanso
+        if (daySessions.length === 0 || daySessions.every(s => s.status === 'cancelled' || s.status === 'no_show')) {
+          const restProfile = await db.select()
+            .from(trainingNutritionProfiles)
+            .where(and(
+              eq(trainingNutritionProfiles.trainingType, 'rest'),
+              or(
+                eq(trainingNutritionProfiles.personalId, ctx.personal.id),
+                eq(trainingNutritionProfiles.isSystem, true)
+              )
+            ))
+            .orderBy(desc(trainingNutritionProfiles.personalId)) // Prioriza personalizado
+            .limit(1);
+          
+          const profile = restProfile[0];
+          const base = input.basePlan || { calories: 2000, protein: 150, carbs: 200, fat: 70 };
+          
+          return {
+            isTrainingDay: false,
+            trainingType: 'rest' as const,
+            profile,
+            adjustedMacros: {
+              calories: base.calories + (profile?.caloriesAdjustment || 0),
+              protein: base.protein + parseFloat(String(profile?.proteinAdjustment || 0)),
+              carbs: base.carbs + parseFloat(String(profile?.carbsAdjustment || 0)),
+              fat: base.fat + parseFloat(String(profile?.fatAdjustment || 0)),
+            },
+            recommendations: profile?.recommendations ? JSON.parse(profile.recommendations as string) : null,
+          };
+        }
+        
+        // Determinar tipo de treino baseado no workout
+        // Por padrão, considera treino de força
+        let trainingType: 'strength' | 'cardio_low' | 'cardio_high' | 'mixed' | 'sports' = 'strength';
+        
+        // Buscar perfil de nutrição para este tipo de treino
+        let profile = await db.select()
+          .from(trainingNutritionProfiles)
+          .where(and(
+            eq(trainingNutritionProfiles.trainingType, trainingType),
+            or(
+              eq(trainingNutritionProfiles.personalId, ctx.personal.id),
+              eq(trainingNutritionProfiles.isSystem, true)
+            )
+          ))
+          .orderBy(desc(trainingNutritionProfiles.personalId))
+          .limit(1);
+        
+        const nutritionProfile = profile[0];
+        const base = input.basePlan || { calories: 2000, protein: 150, carbs: 200, fat: 70 };
+        
+        return {
+          isTrainingDay: true,
+          trainingType,
+          sessionsCount: daySessions.length,
+          profile: nutritionProfile,
+          adjustedMacros: {
+            calories: base.calories + (nutritionProfile?.caloriesAdjustment || 0),
+            protein: base.protein + parseFloat(String(nutritionProfile?.proteinAdjustment || 0)),
+            carbs: base.carbs + parseFloat(String(nutritionProfile?.carbsAdjustment || 0)),
+            fat: base.fat + parseFloat(String(nutritionProfile?.fatAdjustment || 0)),
+          },
+          timing: {
+            preWorkoutMealTiming: nutritionProfile?.preWorkoutMealTiming || 90,
+            postWorkoutMealTiming: nutritionProfile?.postWorkoutMealTiming || 30,
+            preWorkoutCarbs: nutritionProfile?.preWorkoutCarbs,
+            preWorkoutProtein: nutritionProfile?.preWorkoutProtein,
+            postWorkoutCarbs: nutritionProfile?.postWorkoutCarbs,
+            postWorkoutProtein: nutritionProfile?.postWorkoutProtein,
+          },
+          recommendations: nutritionProfile?.recommendations ? JSON.parse(nutritionProfile.recommendations as string) : null,
+        };
+      }),
+    
+    // Obter resumo semanal de nutrição x treino
+    weeklyOverview: nutritionProcedure
+      .input(z.object({
+        studentId: z.number(),
+        startDate: z.string(), // YYYY-MM-DD (segunda-feira)
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        
+        // Buscar todas as sessões da semana
+        const weekSessions = await db.select({
+          id: sessions.id,
+          scheduledAt: sessions.scheduledAt,
+          status: sessions.status,
+          workoutId: sessions.workoutId,
+        })
+          .from(sessions)
+          .where(and(
+            eq(sessions.studentId, input.studentId),
+            eq(sessions.personalId, ctx.personal.id),
+            sql`DATE(${sessions.scheduledAt}) >= ${input.startDate}`,
+            sql`DATE(${sessions.scheduledAt}) < DATE_ADD(${input.startDate}, INTERVAL 7 DAY)`
+          ))
+          .orderBy(asc(sessions.scheduledAt));
+        
+        // Agrupar por dia
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const overview = days.map((day, index) => {
+          const dayDate = new Date(input.startDate);
+          dayDate.setDate(dayDate.getDate() + index);
+          const dateStr = dayDate.toISOString().split('T')[0];
+          
+          const daySessions = weekSessions.filter(s => {
+            const sessionDate = new Date(s.scheduledAt).toISOString().split('T')[0];
+            return sessionDate === dateStr;
+          });
+          
+          const hasTraining = daySessions.some(s => s.status !== 'cancelled' && s.status !== 'no_show');
+          
+          return {
+            day,
+            date: dateStr,
+            isTrainingDay: hasTraining,
+            sessionsCount: daySessions.length,
+            trainingType: hasTraining ? 'strength' : 'rest',
+          };
+        });
+        
+        const trainingDays = overview.filter(d => d.isTrainingDay).length;
+        const restDays = 7 - trainingDays;
+        
+        return {
+          overview,
+          summary: {
+            trainingDays,
+            restDays,
+            totalSessions: weekSessions.length,
+          },
+        };
       }),
   }),
 

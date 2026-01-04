@@ -330,6 +330,13 @@
       "when": 1767548247021,
       "tag": "0046_soft_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "5",
+      "when": 1767557047815,
+      "tag": "0047_hesitant_sentinel",
+      "breakpoints": true
     }
   ]
 }

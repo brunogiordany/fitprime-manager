@@ -2358,3 +2358,111 @@ export const nutritionSettings = mysqlTable("nutrition_settings", {
 
 export type NutritionSetting = typeof nutritionSettings.$inferSelect;
 export type InsertNutritionSetting = typeof nutritionSettings.$inferInsert;
+
+
+// ==================== MEAL PLAN TEMPLATES (Templates de Planos Alimentares) ====================
+export const mealPlanTemplates = mysqlTable("meal_plan_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // null = template do sistema
+  
+  // Identificação
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  objective: mysqlEnum("objective", [
+    "weight_loss", "muscle_gain", "maintenance", "recomposition", 
+    "bulking", "cutting", "health", "sports_performance", "therapeutic"
+  ]).notNull(),
+  
+  // Macros por kg de peso corporal
+  proteinPerKg: decimal("proteinPerKg", { precision: 4, scale: 2 }).default("2.0"), // g/kg
+  carbsPerKg: decimal("carbsPerKg", { precision: 4, scale: 2 }).default("3.0"), // g/kg
+  fatPerKg: decimal("fatPerKg", { precision: 4, scale: 2 }).default("1.0"), // g/kg
+  
+  // Ajuste calórico
+  calorieDeficit: int("calorieDeficit").default(0), // kcal (para perda de peso)
+  calorieSurplus: int("calorieSurplus").default(0), // kcal (para ganho de massa)
+  
+  // Configurações
+  mealsPerDay: int("mealsPerDay").default(5),
+  includeSnacks: boolean("includeSnacks").default(true),
+  
+  // Restrições e preferências
+  restrictions: text("restrictions"), // JSON array: ["gluten_free", "lactose_free", "vegetarian", "keto", "low_carb"]
+  preferences: text("preferences"), // JSON array de alimentos preferidos
+  dislikes: text("dislikes"), // JSON array de alimentos a evitar
+  
+  // Integração com treino
+  adjustForTraining: boolean("adjustForTraining").default(true),
+  trainingDayCaloriesBonus: int("trainingDayCaloriesBonus").default(0),
+  trainingDayCarbsBonus: int("trainingDayCarbsBonus").default(0),
+  
+  // Metadados
+  notes: text("notes"), // Notas e orientações do template
+  tags: text("tags"), // JSON array de tags para busca
+  difficulty: mysqlEnum("difficulty", ["beginner", "intermediate", "advanced"]).default("intermediate"),
+  duration: varchar("duration", { length: 50 }), // Ex: "4_weeks", "8_weeks", "12_weeks", "ongoing"
+  
+  // Controle
+  isActive: boolean("isActive").default(true).notNull(),
+  isSystem: boolean("isSystem").default(false), // true = template do sistema (não editável)
+  usageCount: int("usageCount").default(0), // Quantas vezes foi usado
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MealPlanTemplate = typeof mealPlanTemplates.$inferSelect;
+export type InsertMealPlanTemplate = typeof mealPlanTemplates.$inferInsert;
+
+// ==================== TRAINING NUTRITION PROFILES (Perfis de Nutrição por Tipo de Treino) ====================
+export const trainingNutritionProfiles = mysqlTable("training_nutrition_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // null = perfil do sistema
+  
+  // Identificação
+  name: varchar("name", { length: 100 }).notNull(),
+  trainingType: mysqlEnum("trainingType", [
+    "strength", // Treino de força/hipertrofia
+    "cardio_low", // Cardio baixa intensidade (caminhada, bike leve)
+    "cardio_high", // Cardio alta intensidade (HIIT, corrida)
+    "mixed", // Treino misto (musculação + cardio)
+    "rest", // Dia de descanso
+    "active_recovery", // Recuperação ativa (alongamento, yoga)
+    "sports", // Treino esportivo específico
+    "competition" // Dia de competição
+  ]).notNull(),
+  
+  // Ajustes de macros (em % ou valores absolutos)
+  caloriesAdjustment: int("caloriesAdjustment").default(0), // kcal extra/menos
+  caloriesAdjustmentPercent: decimal("caloriesAdjustmentPercent", { precision: 5, scale: 2 }), // % de ajuste
+  
+  proteinAdjustment: decimal("proteinAdjustment", { precision: 5, scale: 2 }).default("0"), // g extra
+  carbsAdjustment: decimal("carbsAdjustment", { precision: 5, scale: 2 }).default("0"), // g extra
+  fatAdjustment: decimal("fatAdjustment", { precision: 5, scale: 2 }).default("0"), // g extra
+  
+  // Timing nutricional
+  preWorkoutMealTiming: int("preWorkoutMealTiming").default(90), // minutos antes
+  postWorkoutMealTiming: int("postWorkoutMealTiming").default(30), // minutos depois
+  
+  // Recomendações de macros pré/pós treino
+  preWorkoutCarbs: decimal("preWorkoutCarbs", { precision: 5, scale: 2 }), // g
+  preWorkoutProtein: decimal("preWorkoutProtein", { precision: 5, scale: 2 }), // g
+  postWorkoutCarbs: decimal("postWorkoutCarbs", { precision: 5, scale: 2 }), // g
+  postWorkoutProtein: decimal("postWorkoutProtein", { precision: 5, scale: 2 }), // g
+  
+  // Hidratação
+  waterIntakeBonus: decimal("waterIntakeBonus", { precision: 4, scale: 2 }).default("0.5"), // litros extra
+  
+  // Notas
+  notes: text("notes"),
+  recommendations: text("recommendations"), // JSON com recomendações específicas
+  
+  isActive: boolean("isActive").default(true).notNull(),
+  isSystem: boolean("isSystem").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TrainingNutritionProfile = typeof trainingNutritionProfiles.$inferSelect;
+export type InsertTrainingNutritionProfile = typeof trainingNutritionProfiles.$inferInsert;

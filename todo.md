@@ -3195,3 +3195,36 @@
 - [x] Banner de integração treino + nutrição
 - [x] Controle de acesso (feature flag beta)
 
+
+
+### FitPrime Nutrition - Próximos Passos (v13.0)
+- [x] Importar banco de alimentos TACO (Tabela Brasileira de Composição de Alimentos)
+  - [x] Script de importação (scripts/seed-taco-drizzle.mjs)
+  - [x] 597 alimentos importados com dados nutricionais completos
+  - [x] Categorias: Carnes, Verduras, Frutas, Cereais, Pescados, Laticínios, etc.
+- [ ] Importar banco de alimentos USDA (dados internacionais) - pendente
+- [x] Criar templates de planos alimentares pré-definidos
+  - [x] Low Carb - Redução de Carboidratos
+  - [x] Cutting - Definição Muscular
+  - [x] Bulking - Ganho de Massa
+  - [x] Manutenção - Equilíbrio
+  - [x] Cetogênica - Keto
+  - [x] Vegetariano - Sem Carne
+  - [x] Alto Proteína - Hipertrofia
+  - [x] Jejum Intermitente 16:8
+  - [x] Recomposição Corporal
+  - [x] Performance Esportiva
+- [x] Integrar nutrição com treinos (ajuste automático de macros por tipo de treino)
+  - [x] Perfis de nutrição por tipo de treino (8 perfis)
+  - [x] Treino de Força/Hipertrofia (+300 kcal, +50g carbs)
+  - [x] Cardio Baixa Intensidade (+100 kcal)
+  - [x] Cardio Alta Intensidade/HIIT (+250 kcal, +40g carbs)
+  - [x] Treino Misto (+350 kcal, +60g carbs)
+  - [x] Dia de Descanso (-200 kcal, -30g carbs)
+  - [x] Recuperação Ativa (neutro)
+  - [x] Treino Esportivo (+400 kcal, +80g carbs)
+  - [x] Dia de Competição (+500 kcal, +100g carbs)
+  - [x] Endpoints tRPC para cálculo de macros ajustados
+  - [x] Visão semanal de treino x nutrição
+  - [x] Timing nutricional (pré/pós-treino)
+  - [x] Recomendações por tipo de treino
