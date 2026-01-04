@@ -3039,3 +3039,6 @@
 ## Bugs WhatsApp (v9.1)
 - [x] Mensagens enviadas via WhatsApp não aparecem na aba WhatsApp Mensagens (corrigido: source agora é 'whatsapp' quando envia via WhatsApp)
 - [ ] Respostas dos alunos via WhatsApp não são recebidas no sistema (webhook precisa estar configurado corretamente no domínio publicado)
+
+## Bugs Automações (v9.2)
+- [x] Erro "Maximum update depth exceeded" ao enviar mensagem manual das automações (corrigido: useMemo para filteredStudents)

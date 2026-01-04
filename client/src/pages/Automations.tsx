@@ -36,7 +36,7 @@ import {
   Users,
   Loader2
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -123,18 +123,19 @@ export default function Automations() {
 
   // Buscar alunos elegíveis (ativos, com telefone e opt-in)
   const { data: eligibleStudents } = trpc.students.list.useQuery();
-  const filteredStudents = eligibleStudents?.filter(
-    (s: any) => s.phone && s.whatsappOptIn && s.status === 'active'
-  ) || [];
+  const filteredStudents = useMemo(() => 
+    eligibleStudents?.filter(
+      (s: any) => s.phone && s.whatsappOptIn && s.status === 'active'
+    ) || [],
+    [eligibleStudents]
+  );
 
   // Quando abre o modal, seleciona todos por padrão
   useEffect(() => {
-    if (sendDialogOpen && filteredStudents.length > 0) {
-      if (selectAll) {
-        setSelectedStudents(filteredStudents.map((s: any) => s.id));
-      }
+    if (sendDialogOpen && filteredStudents.length > 0 && selectAll) {
+      setSelectedStudents(filteredStudents.map((s: any) => s.id));
     }
-  }, [sendDialogOpen, filteredStudents, selectAll]);
+  }, [sendDialogOpen, filteredStudents.length, selectAll]);
 
   const resetForm = () => {
     setNewAutomation({
