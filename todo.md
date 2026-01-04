@@ -3057,3 +3057,9 @@
 ## IA de Atendimento (v9.5)
 - [x] Adicionar indicador BETA (não usar) na página de IA de Atendimento
 - [x] Bloquear toggle interno de IA quando não liberado pelo Super Admin
+
+## Perfil do Aluno - Aba Fotos
+- [x] Analisar subtópicos da aba Fotos (Visão Geral, Fotos, Medidas, Treinos)
+- [x] Identificar funcionalidades únicas em cada subtópico
+- [x] Integrar funcionalidades únicas nas abas principais
+- [x] Remover subtópicos duplicados
