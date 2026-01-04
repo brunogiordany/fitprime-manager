@@ -5376,6 +5376,18 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
               status: result.success ? 'sent' : 'failed',
             });
             
+            // Salvar mensagem no chat com source 'whatsapp' para aparecer na aba WhatsApp
+            if (result.success) {
+              await db.createChatMessage({
+                personalId: ctx.personal.id,
+                studentId: student.id,
+                senderType: 'personal',
+                messageType: 'text',
+                message,
+                source: 'whatsapp',
+              });
+            }
+            
             if (result.success) {
               results.sent++;
             } else {

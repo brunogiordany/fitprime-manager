@@ -1,10 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { 
   MessageSquare, 
@@ -17,7 +33,13 @@ import {
   CheckCheck,
   Wifi,
   WifiOff,
-  RefreshCw
+  RefreshCw,
+  Users,
+  AlertTriangle,
+  Lightbulb,
+  Megaphone,
+  CheckCircle2,
+  Info
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,12 +70,23 @@ export default function WhatsAppMessages() {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSending, setIsSending] = useState(false);
+  
+  // Estados para envio em massa
+  const [showBulkSend, setShowBulkSend] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isSendingBulk, setIsSendingBulk] = useState(false);
+  const [showStrategyTips, setShowStrategyTips] = useState(true);
 
   // Buscar alunos com telefone (apenas alunos que podem receber WhatsApp)
   const { data: allStudents, refetch: refetchStudents } = trpc.students.list.useQuery({});
   
   // Filtrar apenas alunos com telefone e opt-in
-  const studentsWithPhone = allStudents?.filter((s: any) => s.phone && s.whatsappOptIn) || [];
+  const studentsWithPhone = useMemo(() => 
+    allStudents?.filter((s: any) => s.phone && s.whatsappOptIn) || [],
+    [allStudents]
+  );
 
   // Buscar mensagens do WhatsApp do aluno selecionado
   const { data: whatsappMessages, refetch: refetchMessages, isLoading: isLoadingMessages } = trpc.chat.messages.useQuery(
@@ -94,6 +127,15 @@ export default function WhatsAppMessages() {
     scrollToBottom();
   }, [whatsappMessages, scrollToBottom]);
 
+  // Selecionar/deselecionar todos
+  useEffect(() => {
+    if (selectAll) {
+      setSelectedStudents(studentsWithPhone.map((s: any) => s.id));
+    } else if (selectedStudents.length === studentsWithPhone.length) {
+      setSelectedStudents([]);
+    }
+  }, [selectAll]);
+
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedStudent) return;
     setIsSending(true);
@@ -109,6 +151,49 @@ export default function WhatsAppMessages() {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // Envio em massa
+  const handleBulkSend = async () => {
+    if (!bulkMessage.trim() || selectedStudents.length === 0) return;
+    
+    setIsSendingBulk(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const studentId of selectedStudents) {
+      try {
+        await sendMessage.mutateAsync({
+          studentId,
+          message: bulkMessage.trim(),
+          sendViaWhatsApp: true
+        });
+        successCount++;
+      } catch (error) {
+        errorCount++;
+      }
+    }
+    
+    setIsSendingBulk(false);
+    setBulkMessage("");
+    setSelectedStudents([]);
+    setSelectAll(false);
+    setShowBulkSend(false);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} mensagem(ns) enviada(s) com sucesso!`);
+    }
+    if (errorCount > 0) {
+      toast.error(`${errorCount} mensagem(ns) falharam`);
+    }
+  };
+
+  const toggleStudentSelection = (studentId: number) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
   };
 
   // Formatar data para separador
@@ -150,18 +235,79 @@ export default function WhatsAppMessages() {
       <div className="h-[calc(100vh-80px)] flex flex-col">
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500 rounded-lg">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">WhatsApp Mensagens</h1>
+                <p className="text-sm text-muted-foreground">
+                  Envie mensagens para seus alunos via WhatsApp
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">WhatsApp Mensagens</h1>
-              <p className="text-sm text-muted-foreground">
-                Converse com seus alunos via WhatsApp
-              </p>
-            </div>
+            <Button 
+              onClick={() => setShowBulkSend(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Megaphone className="h-4 w-4 mr-2" />
+              Envio em Massa
+            </Button>
           </div>
         </div>
+
+        {/* Aviso Importante */}
+        <div className="flex-shrink-0 px-4 pb-2">
+          <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800 dark:text-amber-400">Importante: Canal de Envio</AlertTitle>
+            <AlertDescription className="text-amber-700 dark:text-amber-300">
+              Este canal <strong>apenas envia</strong> mensagens via WhatsApp. As respostas dos alunos chegam diretamente no WhatsApp do seu celular.
+              Para conversas bidirecionais, use o <strong>Chat FitPrime</strong> no menu lateral.
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        {/* Dicas de Estratégia */}
+        {showStrategyTips && (
+          <div className="flex-shrink-0 px-4 pb-2">
+            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm flex items-center gap-2 text-blue-800 dark:text-blue-400">
+                    <Lightbulb className="h-4 w-4" />
+                    Estratégias de Uso
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowStrategyTips(false)}
+                    className="text-blue-600 hover:text-blue-800 h-6 px-2"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-blue-700 dark:text-blue-300">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span><strong>Lembretes:</strong> Envie lembretes de sessão 24h antes para reduzir faltas</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span><strong>Motivação:</strong> Mensagens de incentivo aumentam engajamento em 40%</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span><strong>Promoções:</strong> Use envio em massa para divulgar novos planos ou promoções</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Chat Container */}
         <div className="flex-1 flex bg-gray-100 dark:bg-gray-900 overflow-hidden">
@@ -172,7 +318,7 @@ export default function WhatsAppMessages() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <Wifi className="h-5 w-5" />
-                  Conversas
+                  Alunos ({studentsWithPhone.length})
                 </h2>
                 <Button
                   variant="ghost"
@@ -262,9 +408,10 @@ export default function WhatsAppMessages() {
                       {selectedStudent.phone}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-green-700">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
+                  <Badge className="bg-green-700 text-white text-xs">
+                    <Send className="h-3 w-3 mr-1" />
+                    Apenas Envio
+                  </Badge>
                 </div>
 
                 {/* Área de mensagens */}
@@ -282,8 +429,8 @@ export default function WhatsAppMessages() {
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center bg-white/80 dark:bg-gray-900/80 rounded-2xl p-8 shadow-lg">
                         <MessageSquare className="h-16 w-16 mx-auto mb-4 text-green-500" />
-                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Nenhuma mensagem WhatsApp</p>
-                        <p className="text-sm text-gray-500">Envie uma mensagem para iniciar!</p>
+                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Nenhuma mensagem enviada</p>
+                        <p className="text-sm text-gray-500">Envie uma mensagem para este aluno!</p>
                       </div>
                     </div>
                   ) : (
@@ -368,20 +515,140 @@ export default function WhatsAppMessages() {
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-64 h-64 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                    <MessageSquare className="h-32 w-32 text-green-500" />
+                <div className="text-center max-w-md px-4">
+                  <div className="w-48 h-48 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <MessageSquare className="h-24 w-24 text-green-500" />
                   </div>
                   <h2 className="text-2xl font-light text-gray-600 dark:text-gray-400 mb-2">WhatsApp Mensagens</h2>
-                  <p className="text-gray-500 dark:text-gray-500">
-                    Selecione um aluno para conversar via WhatsApp
+                  <p className="text-gray-500 dark:text-gray-500 mb-4">
+                    Selecione um aluno para enviar mensagem via WhatsApp
                   </p>
+                  <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 text-left">
+                    <div className="flex items-start gap-2">
+                      <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-amber-700 dark:text-amber-300">
+                        <p className="font-medium mb-1">Dica de uso:</p>
+                        <p>Use o botão "Envio em Massa" para enviar a mesma mensagem para vários alunos de uma vez!</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Dialog de Envio em Massa */}
+      <Dialog open={showBulkSend} onOpenChange={setShowBulkSend}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-green-600" />
+              Envio em Massa via WhatsApp
+            </DialogTitle>
+            <DialogDescription>
+              Envie a mesma mensagem para múltiplos alunos de uma vez.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-hidden flex flex-col gap-4">
+            {/* Aviso */}
+            <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 flex-shrink-0">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
+                As mensagens serão enviadas individualmente para cada aluno. Respostas chegarão no seu WhatsApp pessoal.
+              </AlertDescription>
+            </Alert>
+
+            {/* Seleção de alunos */}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">
+                  Selecionar Alunos ({selectedStudents.length} de {studentsWithPhone.length})
+                </label>
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="selectAll"
+                    checked={selectAll}
+                    onCheckedChange={(checked) => setSelectAll(checked as boolean)}
+                  />
+                  <label htmlFor="selectAll" className="text-sm cursor-pointer">
+                    Selecionar todos
+                  </label>
+                </div>
+              </div>
+              
+              <ScrollArea className="flex-1 border rounded-lg p-2 max-h-[200px]">
+                <div className="space-y-1">
+                  {studentsWithPhone.map((student: any) => (
+                    <div 
+                      key={student.id}
+                      className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                        selectedStudents.includes(student.id) 
+                          ? 'bg-green-50 dark:bg-green-900/20' 
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                      onClick={() => toggleStudentSelection(student.id)}
+                    >
+                      <Checkbox 
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={() => toggleStudentSelection(student.id)}
+                      />
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-green-500 text-white text-sm">
+                          {student.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{student.name}</p>
+                        <p className="text-xs text-gray-500">{student.phone}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Mensagem */}
+            <div className="flex-shrink-0">
+              <label className="text-sm font-medium mb-2 block">Mensagem</label>
+              <Textarea
+                placeholder="Digite a mensagem que será enviada para todos os alunos selecionados..."
+                value={bulkMessage}
+                onChange={(e) => setBulkMessage(e.target.value)}
+                className="min-h-[100px]"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Dica: Use mensagens personalizadas como "Olá! Lembrete de treino amanhã 💪"
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" onClick={() => setShowBulkSend(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleBulkSend}
+              disabled={isSendingBulk || selectedStudents.length === 0 || !bulkMessage.trim()}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSendingBulk ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Enviar para {selectedStudents.length} aluno{selectedStudents.length !== 1 ? 's' : ''}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

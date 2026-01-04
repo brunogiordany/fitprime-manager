@@ -3042,3 +3042,10 @@
 
 ## Bugs Automações (v9.2)
 - [x] Erro "Maximum update depth exceeded" ao enviar mensagem manual das automações (corrigido: useMemo para filteredStudents)
+
+## Melhorias WhatsApp Mensagens (v9.3)
+- [x] Envio em massa para múltiplos alunos
+- [x] Seleção de alunos para envio
+- [x] Aviso informativo que só envia, não recebe
+- [x] Sugestão de estratégia de uso
+- [x] Mostrar mensagens de automação na aba WhatsApp
