@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, studentId, senderType, SUBSTRING(message, 1, 50) as msg, source, DATE_FORMAT(createdAt, '%H:%i:%s') as hora FROM chat_messages WHERE studentId = 1 AND source = 'internal' ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, senderType, SUBSTRING(message, 1, 50) as msg, source, DATE_FORMAT(createdAt, '%H:%i:%s') as hora FROM chat_messages WHERE studentId = 1 AND source = 'internal' ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "270026",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "personal mandando mensagem pro aluno via fitprime ",
+      "source": "internal",
+      "hora": "01:07:44"
+    },
+    {
+      "id": "270022",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi aluno mandando mensagem pelo chat do aluno",
+      "source": "internal",
+      "hora": "00:41:03"
+    },
+    {
+      "id": "240001",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Opaa",
+      "source": "internal",
+      "hora": "14:56:45"
+    },
+    {
+      "id": "210002",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "Teste",
+      "source": "internal",
+      "hora": "02:30:07"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tsenderType\tmsg\tsource\thora\n270026\t1\tpersonal\tpersonal mandando mensagem pro aluno via fitprime \tinternal\t01:07:44\n270022\t1\tstudent\tOi aluno mandando mensagem pelo chat do aluno\tinternal\t00:41:03\n240001\t1\tstudent\tOpaa\tinternal\t14:56:45\n210002\t1\tpersonal\tTeste\tinternal\t02:30:07\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

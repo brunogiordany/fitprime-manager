@@ -742,11 +742,8 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       return { success: true, processed: false, error: 'no_sender' };
     }
     
-    // Ignorar mensagens enviadas por nós mesmos
-    if (payload.data?.key?.fromMe) {
-      console.log('[Stevo Webhook] Ignorando mensagem enviada por nós');
-      return { success: true, processed: false, error: 'from_me' };
-    }
+    // Verificar se é mensagem enviada pelo personal (fromMe)
+    const isFromMe = payload.data?.key?.fromMe === true;
     
     // Normalizar número de telefone (remover 55 se presente)
     let phone = from.replace(/\D/g, '');
@@ -757,6 +754,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     console.log('[Stevo Webhook] Processando mensagem de:', phone);
     console.log('[Stevo Webhook] Tipo:', messageType);
     console.log('[Stevo Webhook] Texto:', messageText);
+    console.log('[Stevo Webhook] FromMe:', isFromMe);
     
     // Importar db para buscar aluno
     const db = await import('./db');
@@ -786,24 +784,33 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
       // Mapear tipo de mensagem do Stevo para o tipo do chat
       const chatMessageType = messageType === 'document' ? 'file' : messageType;
       
-      // Criar mensagem no chat como vinda do aluno via WhatsApp
+      // Determinar senderType: se fromMe é true, é mensagem do personal enviada pelo WhatsApp
+      const senderType = isFromMe ? 'personal' : 'student';
+      
+      // Criar mensagem no chat - centralizado no FitPrime Chat
       // Source 'internal' para aparecer no Chat FitPrime (todas as conversas ficam unificadas)
       await db.createChatMessage({
         personalId: student.personalId,
         studentId: student.id,
-        senderType: 'student',
+        senderType: senderType,
         message: messageText || null,
         messageType: chatMessageType as any,
         mediaUrl: mediaUrl || null,
         mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
-        isRead: false,
+        isRead: isFromMe ? true : false, // Mensagens enviadas pelo personal já são lidas
         source: 'internal', // Unificado no Chat FitPrime
         externalId: messageId, // Salvar ID externo para evitar duplicação
       });
       
-      console.log('[Stevo Webhook] Mensagem salva no chat do aluno:', student.name, 'ID:', messageId);
+      console.log('[Stevo Webhook] Mensagem salva no chat:', senderType === 'personal' ? 'Personal -> Aluno' : 'Aluno -> Personal', student.name, 'ID:', messageId);
     } catch (chatError) {
       console.error('[Stevo Webhook] Erro ao salvar mensagem no chat:', chatError);
+    }
+    
+    // Se for mensagem enviada pelo personal (fromMe), não precisa processar mais nada
+    if (isFromMe) {
+      console.log('[Stevo Webhook] Mensagem do personal salva, finalizando');
+      return { success: true, processed: true, action: 'personal_message_saved' };
     }
     
     // Criar objeto de mensagem para análise de pagamento

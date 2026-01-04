@@ -1,0 +1,211 @@
+{
+  "query": "SELECT id, studentId, senderType, SUBSTRING(message, 1, 50) as msg, source, DATE_FORMAT(createdAt, '%H:%i:%s') as hora FROM chat_messages WHERE studentId = 1 ORDER BY createdAt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, senderType, SUBSTRING(message, 1, 50) as msg, source, DATE_FORMAT(createdAt, '%H:%i:%s') as hora FROM chat_messages WHERE studentId = 1 ORDER BY createdAt DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "270026",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "personal mandando mensagem pro aluno via fitprime ",
+      "source": "internal",
+      "hora": "01:07:44"
+    },
+    {
+      "id": "270025",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "personal mandando mensagem pro aluno via fitprime ",
+      "source": "whatsapp",
+      "hora": "00:56:03"
+    },
+    {
+      "id": "270024",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "chat personal para bruno",
+      "source": "whatsapp",
+      "hora": "00:43:58"
+    },
+    {
+      "id": "270023",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "oi recebido, respondendo via chat do personal",
+      "source": "whatsapp",
+      "hora": "00:41:27"
+    },
+    {
+      "id": "270022",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi aluno mandando mensagem pelo chat do aluno",
+      "source": "internal",
+      "hora": "00:41:03"
+    },
+    {
+      "id": "270021",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Teste de mensagem do aluno Bruno via webhook",
+      "source": "whatsapp",
+      "hora": "00:22:06"
+    },
+    {
+      "id": "270020",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "mensagem via pwa personal",
+      "source": "whatsapp",
+      "hora": "00:17:03"
+    },
+    {
+      "id": "270019",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Teste no dominio de producao",
+      "source": "whatsapp",
+      "hora": "00:04:31"
+    },
+    {
+      "id": "270017",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, tudo bem? Teste do webhook",
+      "source": "whatsapp",
+      "hora": "00:02:39"
+    },
+    {
+      "id": "270016",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "oii",
+      "source": "whatsapp",
+      "hora": "23:55:00"
+    },
+    {
+      "id": "270015",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "oi bb",
+      "source": "whatsapp",
+      "hora": "23:51:40"
+    },
+    {
+      "id": "270013",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "hora": "22:56:54"
+    },
+    {
+      "id": "270011",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Teste de duplicação",
+      "source": "whatsapp",
+      "hora": "22:30:41"
+    },
+    {
+      "id": "270009",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "hora": "22:28:47"
+    },
+    {
+      "id": "270008",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "hora": "22:27:42"
+    },
+    {
+      "id": "270007",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Teste IA",
+      "source": "whatsapp",
+      "hora": "22:26:01"
+    },
+    {
+      "id": "270006",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Teste IA",
+      "source": "whatsapp",
+      "hora": "22:25:57"
+    },
+    {
+      "id": "270005",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "hora": "22:25:35"
+    },
+    {
+      "id": "270004",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "hora": "22:24:51"
+    },
+    {
+      "id": "270003",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "hora": "22:14:47"
+    },
+    {
+      "id": "270002",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "oi",
+      "source": "whatsapp",
+      "hora": "21:37:19"
+    },
+    {
+      "id": "270001",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "oi",
+      "source": "whatsapp",
+      "hora": "21:27:27"
+    },
+    {
+      "id": "240001",
+      "studentId": "1",
+      "senderType": "student",
+      "msg": "Opaa",
+      "source": "internal",
+      "hora": "14:56:45"
+    },
+    {
+      "id": "210002",
+      "studentId": "1",
+      "senderType": "personal",
+      "msg": "Teste",
+      "source": "internal",
+      "hora": "02:30:07"
+    }
+  ],
+  "messages": [
+    "270018\t1\tpersonal\tOlá, Bruno! Tudo ótimo por aqui, obrigado!",
+    "Parece\twhatsapp\t00:02:52",
+    "270014\t1\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊",
+    "Lembrei\twhatsapp\t22:57:11",
+    "270012\t1\tpersonal\tOi, Bruno! Tudo certo por aí?",
+    "Seu treino atual é \twhatsapp\t22:30:55",
+    "270010\t1\tpersonal\tOi, Bruno! Tudo bem?",
+    "Que bom que você está animad\twhatsapp\t22:29:00"
+  ],
+  "stdout": "id\tstudentId\tsenderType\tmsg\tsource\thora\n270026\t1\tpersonal\tpersonal mandando mensagem pro aluno via fitprime \tinternal\t01:07:44\n270025\t1\tpersonal\tpersonal mandando mensagem pro aluno via fitprime \twhatsapp\t00:56:03\n270024\t1\tpersonal\tchat personal para bruno\twhatsapp\t00:43:58\n270023\t1\tpersonal\toi recebido, respondendo via chat do personal\twhatsapp\t00:41:27\n270022\t1\tstudent\tOi aluno mandando mensagem pelo chat do aluno\tinternal\t00:41:03\n270021\t1\tstudent\tTeste de mensagem do aluno Bruno via webhook\twhatsapp\t00:22:06\n270020\t1\tpersonal\tmensagem via pwa personal\twhatsapp\t00:17:03\n270019\t1\tstudent\tTeste no dominio de producao\twhatsapp\t00:04:31\n270018\t1\tpersonal\tOlá, Bruno! Tudo ótimo por aqui, obrigado!\n\nParece\twhatsapp\t00:02:52\n270017\t1\tstudent\tOi, tudo bem? Teste do webhook\twhatsapp\t00:02:39\n270016\t1\tpersonal\toii\twhatsapp\t23:55:00\n270015\t1\tpersonal\toi bb\twhatsapp\t23:51:40\n270014\t1\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊\n\nLembrei\twhatsapp\t22:57:11\n270013\t1\tstudent\tOi, tudo bem?\twhatsapp\t22:56:54\n270012\t1\tpersonal\tOi, Bruno! Tudo certo por aí?\n\nSeu treino atual é \twhatsapp\t22:30:55\n270011\t1\tstudent\tTeste de duplicação\twhatsapp\t22:30:41\n270010\t1\tpersonal\tOi, Bruno! Tudo bem?\n\nQue bom que você está animad\twhatsapp\t22:29:00\n270009\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t22:28:47\n270008\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t22:27:42\n270007\t1\tstudent\tTeste IA\twhatsapp\t22:26:01\n270006\t1\tstudent\tTeste IA\twhatsapp\t22:25:57\n270005\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t22:25:35\n270004\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t22:24:51\n270003\t1\tstudent\tOi, tudo bem?\twhatsapp\t22:14:47\n270002\t1\tpersonal\toi\twhatsapp\t21:37:19\n270001\t1\tpersonal\toi\twhatsapp\t21:27:27\n240001\t1\tstudent\tOpaa\tinternal\t14:56:45\n210002\t1\tpersonal\tTeste\tinternal\t02:30:07\n",
+  "stderr": "",
+  "execution_time_ms": 81
+}
