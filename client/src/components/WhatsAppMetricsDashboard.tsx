@@ -58,14 +58,23 @@ interface WhatsAppMessageLog {
   };
 }
 
+interface AutomationStats {
+  totalAutomations: number;
+  totalSent: number;
+  successRate: number;
+  studentsReached: number;
+  byType?: { name: string; sent: number; successRate: number }[];
+}
+
 interface WhatsAppMetricsDashboardProps {
   messages: WhatsAppMessageLog[];
   chatMessages?: any[];
+  automationStats?: AutomationStats;
 }
 
 type PeriodOption = 'today' | 'yesterday' | '7d' | '15d' | '30d' | '90d' | 'custom';
 
-export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }: WhatsAppMetricsDashboardProps) {
+export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], automationStats }: WhatsAppMetricsDashboardProps) {
   // Estado para período
   const [period, setPeriod] = useState<PeriodOption>('7d');
   const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
@@ -612,6 +621,59 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [] }
           </CardContent>
         </Card>
       </div>
+
+      {/* Estatísticas de Automações */}
+      {automationStats && (
+        <Card className="border-purple-200 dark:border-purple-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Zap className="h-4 w-4 text-purple-500" />
+              Estatísticas de Automações
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <p className="text-2xl font-bold text-purple-600">{automationStats.totalAutomations}</p>
+                <p className="text-xs text-gray-500">Automações Ativas</p>
+              </div>
+              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">{automationStats.totalSent}</p>
+                <p className="text-xs text-gray-500">Mensagens Enviadas</p>
+              </div>
+              <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">{automationStats.successRate}%</p>
+                <p className="text-xs text-gray-500">Taxa de Sucesso</p>
+              </div>
+              <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                <p className="text-2xl font-bold text-amber-600">{automationStats.studentsReached}</p>
+                <p className="text-xs text-gray-500">Alunos Alcançados</p>
+              </div>
+            </div>
+            
+            {automationStats.byType && automationStats.byType.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-medium mb-2">Por Tipo de Automação</p>
+                <div className="space-y-2">
+                  {automationStats.byType.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                      <span className="text-sm">{item.name}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-green-600">
+                          {item.sent} enviadas
+                        </Badge>
+                        <Badge variant="outline" className="text-blue-600">
+                          {item.successRate}% sucesso
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Insights */}
       <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">

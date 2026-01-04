@@ -579,7 +579,7 @@ export default function WhatsAppMessages() {
                 </div>
               </div>
               
-              <ScrollArea className="flex-1 border rounded-lg p-2 max-h-[200px]">
+              <ScrollArea className="flex-1 border rounded-lg p-2 h-[250px]">
                 <div className="space-y-1">
                   {studentsWithPhone.map((student: any) => (
                     <div 

@@ -3049,3 +3049,7 @@
 - [x] Aviso informativo que só envia, não recebe
 - [x] Sugestão de estratégia de uso
 - [x] Mostrar mensagens de automação na aba WhatsApp
+
+## Bugs/Melhorias WhatsApp (v9.4)
+- [x] Corrigir scroll no modal de envio em massa (aumentada altura para 250px)
+- [x] Adicionar estatísticas de automações na página WhatsApp Estatísticas
