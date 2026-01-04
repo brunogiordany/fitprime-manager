@@ -319,6 +319,8 @@ export async function sendSessionReminder(params: {
     month: 'long',
   });
   
+  const chatLink = 'https://fitprimemanager.com/login-aluno';
+  
   const message = `Olá ${studentName}! 👋
 
 🏋️ *Lembrete de Treino*
@@ -328,7 +330,8 @@ export async function sendSessionReminder(params: {
 
 Não se esqueça do seu treino com ${personalName}!
 
-Confirme sua presença respondendo esta mensagem.
+💬 Responda pelo FitPrime Chat:
+${chatLink}
 
 _FitPrime Manager_`;
 
@@ -353,6 +356,8 @@ export async function sendPaymentConfirmation(params: {
     currency: 'BRL',
   }).format(amount);
   
+  const chatLink = 'https://fitprimemanager.com/login-aluno';
+  
   const message = `Olá ${studentName}! 👋
 
 ✅ *Pagamento Confirmado*
@@ -362,6 +367,9 @@ export async function sendPaymentConfirmation(params: {
 📅 Data: ${new Date().toLocaleDateString('pt-BR')}
 
 Obrigado pelo pagamento! Continue firme nos treinos! 💪
+
+💬 Acesse seu portal:
+${chatLink}
 
 _${personalName} - FitPrime Manager_`;
 
@@ -389,6 +397,8 @@ export async function sendPaymentReminder(params: {
   
   const formattedDate = dueDate.toLocaleDateString('pt-BR');
   
+  const chatLink = 'https://fitprimemanager.com/login-aluno';
+  
   const message = `Olá ${studentName}! 👋
 
 💳 *Lembrete de Pagamento*
@@ -398,6 +408,9 @@ export async function sendPaymentReminder(params: {
 📅 Vencimento: ${formattedDate}
 
 Por favor, regularize seu pagamento para continuar aproveitando seus treinos!
+
+💬 Responda pelo FitPrime Chat:
+${chatLink}
 
 _${personalName} - FitPrime Manager_`;
 
@@ -415,6 +428,8 @@ export async function sendWelcomeMessage(params: {
 }): Promise<SendMessageResult> {
   const { studentName, studentPhone, personalName, config } = params;
   
+  const chatLink = 'https://fitprimemanager.com/login-aluno';
+  
   const message = `Olá ${studentName}! 👋
 
 🎉 *Bem-vindo(a) ao FitPrime!*
@@ -422,6 +437,9 @@ export async function sendWelcomeMessage(params: {
 Estou muito feliz em ter você como aluno(a)! 
 
 Juntos vamos alcançar seus objetivos de saúde e fitness. 💪
+
+💬 Acesse seu portal e converse comigo:
+${chatLink}
 
 Qualquer dúvida, estou à disposição!
 
@@ -441,6 +459,8 @@ export async function sendBirthdayMessage(params: {
 }): Promise<SendMessageResult> {
   const { studentName, studentPhone, personalName, config } = params;
   
+  const chatLink = 'https://fitprimemanager.com/login-aluno';
+  
   const message = `Olá ${studentName}! 🎂
 
 🎉 *Feliz Aniversário!*
@@ -448,6 +468,9 @@ export async function sendBirthdayMessage(params: {
 Desejo a você um dia incrível cheio de alegria e realizações!
 
 Que este novo ano traga muita saúde, força e conquistas nos treinos! 💪
+
+💬 Acesse seu portal:
+${chatLink}
 
 Um grande abraço!
 

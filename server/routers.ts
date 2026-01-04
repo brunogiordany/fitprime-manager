@@ -770,6 +770,26 @@ export const appRouter = router({
           await db.updateUserCref(ctx.user.id, input.cref);
         }
         
+        // Se configurou WhatsApp/Stevo, configurar webhook automaticamente
+        if (input.evolutionApiKey && input.evolutionInstance) {
+          try {
+            const { setWebhook } = await import('./stevo');
+            const webhookUrl = 'https://fitprimemanager.com/api/webhook/stevo';
+            await setWebhook(
+              {
+                apiKey: input.evolutionApiKey,
+                instanceName: input.evolutionInstance,
+                server: input.stevoServer || 'sm15',
+              },
+              webhookUrl,
+              ['All']
+            );
+            console.log('[Personal Update] Webhook configurado automaticamente:', webhookUrl);
+          } catch (error) {
+            console.error('[Personal Update] Erro ao configurar webhook:', error);
+          }
+        }
+        
         return { success: true };
       }),
     

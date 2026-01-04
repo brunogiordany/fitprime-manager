@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, senderType, message, source, createdAt FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, senderType, message, source, createdAt FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "270013",
+      "senderType": "student",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:56:54"
+    },
+    {
+      "id": "270011",
+      "senderType": "student",
+      "message": "Teste de duplicação",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:30:41"
+    },
+    {
+      "id": "270009",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:28:47"
+    },
+    {
+      "id": "270008",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:27:42"
+    },
+    {
+      "id": "270007",
+      "senderType": "student",
+      "message": "Teste IA",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:26:01"
+    },
+    {
+      "id": "270006",
+      "senderType": "student",
+      "message": "Teste IA",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:25:57"
+    },
+    {
+      "id": "270005",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:25:35"
+    },
+    {
+      "id": "270004",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:24:51"
+    },
+    {
+      "id": "270003",
+      "senderType": "student",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:14:47"
+    },
+    {
+      "id": "240001",
+      "senderType": "student",
+      "message": "Opaa",
+      "source": "internal",
+      "createdAt": "2025-12-31 14:56:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsenderType\tmessage\tsource\tcreatedAt\n270013\tstudent\tOi, tudo bem?\twhatsapp\t2026-01-03 22:56:54\n270011\tstudent\tTeste de duplicação\twhatsapp\t2026-01-03 22:30:41\n270009\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:28:47\n270008\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:27:42\n270007\tstudent\tTeste IA\twhatsapp\t2026-01-03 22:26:01\n270006\tstudent\tTeste IA\twhatsapp\t2026-01-03 22:25:57\n270005\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:25:35\n270004\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:24:51\n270003\tstudent\tOi, tudo bem?\twhatsapp\t2026-01-03 22:14:47\n240001\tstudent\tOpaa\tinternal\t2025-12-31 14:56:45\n",
+  "stderr": "",
+  "execution_time_ms": 73
+}

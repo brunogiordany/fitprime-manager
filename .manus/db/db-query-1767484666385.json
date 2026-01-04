@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, phone FROM students WHERE deletedAt IS NULL LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, phone FROM students WHERE deletedAt IS NULL LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "phone": "15997612063"
+    },
+    {
+      "id": "30001",
+      "name": "Laura",
+      "phone": "15996442324"
+    },
+    {
+      "id": "60001",
+      "name": "AgenteIA",
+      "phone": "13996442512"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "phone": "13996442520"
+    },
+    {
+      "id": "120001",
+      "name": "Julimar vieira",
+      "phone": "15981046085"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\n1\tBruno\t15997612063\n30001\tLaura\t15996442324\n60001\tAgenteIA\t13996442512\n90001\tbruno ps\t13996442520\n120001\tJulimar vieira\t15981046085\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

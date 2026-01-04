@@ -1,0 +1,18 @@
+{
+  "query": "SELECT COUNT(*) as total, source FROM chat_messages WHERE studentId = 1 GROUP BY source;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COUNT(*) as total, source FROM chat_messages WHERE studentId = 1 GROUP BY source;",
+  "rows": [
+    {
+      "total": "16",
+      "source": "whatsapp"
+    },
+    {
+      "total": "2",
+      "source": "internal"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tsource\n16\twhatsapp\n2\tinternal\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

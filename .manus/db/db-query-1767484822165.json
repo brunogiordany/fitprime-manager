@@ -1,0 +1,124 @@
+{
+  "query": "SELECT id, studentId, senderType, message, source, createdAt FROM chat_messages WHERE source = 'whatsapp' ORDER BY createdAt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, senderType, message, source, createdAt FROM chat_messages WHERE source = 'whatsapp' ORDER BY createdAt DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "270016",
+      "studentId": "1",
+      "senderType": "personal",
+      "message": "oii",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 23:55:00"
+    },
+    {
+      "id": "270015",
+      "studentId": "1",
+      "senderType": "personal",
+      "message": "oi bb",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 23:51:40"
+    },
+    {
+      "id": "270013",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:56:54"
+    },
+    {
+      "id": "270011",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Teste de duplicação",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:30:41"
+    },
+    {
+      "id": "270009",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:28:47"
+    },
+    {
+      "id": "270008",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:27:42"
+    },
+    {
+      "id": "270007",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Teste IA",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:26:01"
+    },
+    {
+      "id": "270006",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Teste IA",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:25:57"
+    },
+    {
+      "id": "270005",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:25:35"
+    },
+    {
+      "id": "270004",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:24:51"
+    },
+    {
+      "id": "270003",
+      "studentId": "1",
+      "senderType": "student",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 22:14:47"
+    },
+    {
+      "id": "270002",
+      "studentId": "1",
+      "senderType": "personal",
+      "message": "oi",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 21:37:19"
+    },
+    {
+      "id": "270001",
+      "studentId": "1",
+      "senderType": "personal",
+      "message": "oi",
+      "source": "whatsapp",
+      "createdAt": "2026-01-03 21:27:27"
+    }
+  ],
+  "messages": [
+    "270014\t1\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊",
+    "Lembrei que você perguntou qual era o treino de hoje. Para eu te passar a ficha certa (A, B ou C) do seu **Treino 2.0 de Hipertrofia**, você lembra qual grupo muscular você treinou por último?\twhatsapp\t2026-01-03 22:57:11",
+    "270012\t1\tpersonal\tOi, Bruno! Tudo certo por aí?",
+    "Seu treino atual é o **Treino 2.0 - Hipertrofia ABC Adaptado**.",
+    "Para eu te dizer qual letra (A, B ou C) você deve fazer hoje, preciso saber qual foi o último treino que você completou. Assim garantimos a sequência correta! 😉\twhatsapp\t2026-01-03 22:30:55",
+    "270010\t1\tpersonal\tOi, Bruno! Tudo bem?",
+    "Que bom que você está animado para treinar hoje! 💪",
+    "Seu treino atual é o **Treino 2.0 - Hipertrofia ABC Adaptado**.",
+    "Para eu confirmar qual letra (A, B ou C) você fará hoje, me diz só uma coisa: Qual foi o último grupo muscular que você treinou?\twhatsapp\t2026-01-03 22:29:00"
+  ],
+  "stdout": "id\tstudentId\tsenderType\tmessage\tsource\tcreatedAt\n270016\t1\tpersonal\toii\twhatsapp\t2026-01-03 23:55:00\n270015\t1\tpersonal\toi bb\twhatsapp\t2026-01-03 23:51:40\n270014\t1\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊\n\nLembrei que você perguntou qual era o treino de hoje. Para eu te passar a ficha certa (A, B ou C) do seu **Treino 2.0 de Hipertrofia**, você lembra qual grupo muscular você treinou por último?\twhatsapp\t2026-01-03 22:57:11\n270013\t1\tstudent\tOi, tudo bem?\twhatsapp\t2026-01-03 22:56:54\n270012\t1\tpersonal\tOi, Bruno! Tudo certo por aí?\n\nSeu treino atual é o **Treino 2.0 - Hipertrofia ABC Adaptado**.\n\nPara eu te dizer qual letra (A, B ou C) você deve fazer hoje, preciso saber qual foi o último treino que você completou. Assim garantimos a sequência correta! 😉\twhatsapp\t2026-01-03 22:30:55\n270011\t1\tstudent\tTeste de duplicação\twhatsapp\t2026-01-03 22:30:41\n270010\t1\tpersonal\tOi, Bruno! Tudo bem?\n\nQue bom que você está animado para treinar hoje! 💪\n\nSeu treino atual é o **Treino 2.0 - Hipertrofia ABC Adaptado**.\n\nPara eu confirmar qual letra (A, B ou C) você fará hoje, me diz só uma coisa: Qual foi o último grupo muscular que você treinou?\twhatsapp\t2026-01-03 22:29:00\n270009\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:28:47\n270008\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:27:42\n270007\t1\tstudent\tTeste IA\twhatsapp\t2026-01-03 22:26:01\n270006\t1\tstudent\tTeste IA\twhatsapp\t2026-01-03 22:25:57\n270005\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:25:35\n270004\t1\tstudent\tOi, qual meu treino de hoje?\twhatsapp\t2026-01-03 22:24:51\n270003\t1\tstudent\tOi, tudo bem?\twhatsapp\t2026-01-03 22:14:47\n270002\t1\tpersonal\toi\twhatsapp\t2026-01-03 21:37:19\n270001\t1\tpersonal\toi\twhatsapp\t2026-01-03 21:27:27\n",
+  "stderr": "",
+  "execution_time_ms": 100
+}

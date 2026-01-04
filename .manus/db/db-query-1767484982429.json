@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, senderType, message, source, externalId, createdAt FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, senderType, message, source, externalId, createdAt FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "270017",
+      "senderType": "student",
+      "message": "Oi, tudo bem? Teste do webhook",
+      "source": "whatsapp",
+      "externalId": "test_msg_123",
+      "createdAt": "2026-01-04 00:02:39"
+    },
+    {
+      "id": "270013",
+      "senderType": "student",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp",
+      "externalId": "test123456",
+      "createdAt": "2026-01-03 22:56:54"
+    },
+    {
+      "id": "270011",
+      "senderType": "student",
+      "message": "Teste de duplicação",
+      "source": "whatsapp",
+      "externalId": "MSG123456",
+      "createdAt": "2026-01-03 22:30:41"
+    },
+    {
+      "id": "270009",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "externalId": "NULL",
+      "createdAt": "2026-01-03 22:28:47"
+    },
+    {
+      "id": "270008",
+      "senderType": "student",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp",
+      "externalId": "NULL",
+      "createdAt": "2026-01-03 22:27:42"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsenderType\tmessage\tsource\texternalId\tcreatedAt\n270017\tstudent\tOi, tudo bem? Teste do webhook\twhatsapp\ttest_msg_123\t2026-01-04 00:02:39\n270013\tstudent\tOi, tudo bem?\twhatsapp\ttest123456\t2026-01-03 22:56:54\n270011\tstudent\tTeste de duplicação\twhatsapp\tMSG123456\t2026-01-03 22:30:41\n270009\tstudent\tOi, qual meu treino de hoje?\twhatsapp\tNULL\t2026-01-03 22:28:47\n270008\tstudent\tOi, qual meu treino de hoje?\twhatsapp\tNULL\t2026-01-03 22:27:42\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

@@ -2993,3 +2993,6 @@
 ## Chat e WhatsApp v5.1
 - [x] Opção de ativar IA no Chat Interno do FitPrime
 - [x] Resposta manual no WhatsApp (campo de texto para personal responder)
+
+## Bugs v5.2
+- [ ] Mensagens do WhatsApp real não estão sincronizadas com a interface

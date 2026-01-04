@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, senderType, message, source, externalId, createdAt FROM chat_messages WHERE studentId = 1 ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, senderType, message, source, externalId, createdAt FROM chat_messages WHERE studentId = 1 ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "270017",
+      "senderType": "student",
+      "message": "Oi, tudo bem? Teste do webhook",
+      "source": "whatsapp",
+      "externalId": "test_msg_123",
+      "createdAt": "2026-01-04 00:02:39"
+    },
+    {
+      "id": "270016",
+      "senderType": "personal",
+      "message": "oii",
+      "source": "whatsapp",
+      "externalId": "NULL",
+      "createdAt": "2026-01-03 23:55:00"
+    },
+    {
+      "id": "270015",
+      "senderType": "personal",
+      "message": "oi bb",
+      "source": "whatsapp",
+      "externalId": "NULL",
+      "createdAt": "2026-01-03 23:51:40"
+    }
+  ],
+  "messages": [
+    "270018\tpersonal\tOlá, Bruno! Tudo ótimo por aqui, obrigado!",
+    "Parece que a mensagem duplicou, mas sem problemas! 😉",
+    "Você ainda quer saber qual é o treino de hoje? Me diga qual foi o último grupo muscular que você treinou para eu te passar a sequência correta do seu Hipertrofia ABC Adaptado!\twhatsapp\tNULL\t2026-01-04 00:02:52",
+    "270014\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊",
+    "Lembrei que você perguntou qual era o treino de hoje. Para eu te passar a ficha certa (A, B ou C) do seu **Treino 2.0 de Hipertrofia**, você lembra qual grupo muscular você treinou por último?\twhatsapp\tNULL\t2026-01-03 22:57:11"
+  ],
+  "stdout": "id\tsenderType\tmessage\tsource\texternalId\tcreatedAt\n270018\tpersonal\tOlá, Bruno! Tudo ótimo por aqui, obrigado!\n\nParece que a mensagem duplicou, mas sem problemas! 😉\n\nVocê ainda quer saber qual é o treino de hoje? Me diga qual foi o último grupo muscular que você treinou para eu te passar a sequência correta do seu Hipertrofia ABC Adaptado!\twhatsapp\tNULL\t2026-01-04 00:02:52\n270017\tstudent\tOi, tudo bem? Teste do webhook\twhatsapp\ttest_msg_123\t2026-01-04 00:02:39\n270016\tpersonal\toii\twhatsapp\tNULL\t2026-01-03 23:55:00\n270015\tpersonal\toi bb\twhatsapp\tNULL\t2026-01-03 23:51:40\n270014\tpersonal\tTudo ótimo por aqui, Bruno! E com você? 😊\n\nLembrei que você perguntou qual era o treino de hoje. Para eu te passar a ficha certa (A, B ou C) do seu **Treino 2.0 de Hipertrofia**, você lembra qual grupo muscular você treinou por último?\twhatsapp\tNULL\t2026-01-03 22:57:11\n",
+  "stderr": "",
+  "execution_time_ms": 114
+}

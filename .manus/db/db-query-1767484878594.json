@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, message, source FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, message, source FROM chat_messages WHERE studentId = 1 AND senderType = 'student' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "270013",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270011",
+      "message": "Teste de duplicação",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270009",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270008",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270007",
+      "message": "Teste IA",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270006",
+      "message": "Teste IA",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270005",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270004",
+      "message": "Oi, qual meu treino de hoje?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "270003",
+      "message": "Oi, tudo bem?",
+      "source": "whatsapp"
+    },
+    {
+      "id": "240001",
+      "message": "Opaa",
+      "source": "internal"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmessage\tsource\n270013\tOi, tudo bem?\twhatsapp\n270011\tTeste de duplicação\twhatsapp\n270009\tOi, qual meu treino de hoje?\twhatsapp\n270008\tOi, qual meu treino de hoje?\twhatsapp\n270007\tTeste IA\twhatsapp\n270006\tTeste IA\twhatsapp\n270005\tOi, qual meu treino de hoje?\twhatsapp\n270004\tOi, qual meu treino de hoje?\twhatsapp\n270003\tOi, tudo bem?\twhatsapp\n240001\tOpaa\tinternal\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}
