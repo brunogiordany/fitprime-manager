@@ -91,6 +91,7 @@ function Router() {
       
       {/* Personal Trainer routes */}
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/students">{() => { window.location.replace('/alunos'); return null; }}</Route>
       <Route path="/alunos" component={Students} />
       <Route path="/alunos/:id" component={StudentProfile} />
       <Route path="/agenda" component={Schedule} />
