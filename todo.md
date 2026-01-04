@@ -3031,6 +3031,6 @@
 - [x] Criar página WhatsApp Mensagens (chat dedicado WhatsApp)
 - [x] Criar página WhatsApp Estatísticas (métricas e análises)
 - [x] Atualizar menu lateral com as novas opções
-- [ ] Ajustar Chat FitPrime para ser apenas interno (mantido com aba WhatsApp por compatibilidade)
+- [x] Ajustar Chat FitPrime para ser apenas interno (removida aba WhatsApp duplicada)
 - [x] Testar todas as funcionalidades
 - [x] Reverter para Stevo (Evolution API não funcionou)

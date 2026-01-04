@@ -565,28 +565,23 @@ export default function Messages() {
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-80px)] flex flex-col">
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+        {/* Chat FitPrime - Estilo WhatsApp */}
+        <div className="flex flex-col h-full">
+          {/* Header com título */}
           <div className="flex-shrink-0 px-4 pt-4 pb-2">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
-              <TabsTrigger value="chat" className="relative">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Chat FitPrime
-                {totalUnread && totalUnread > 0 && (
-                  <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
-                    {totalUnread}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="whatsapp">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                WhatsApp
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-emerald-600" />
+              <h1 className="text-xl font-bold">Chat FitPrime</h1>
+              {totalUnread && totalUnread > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5">
+                  {totalUnread}
+                </Badge>
+              )}
+            </div>
           </div>
 
-          {/* Chat FitPrime Tab - Estilo WhatsApp */}
-          <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
+          {/* Área do Chat */}
+          <div className="flex-1 overflow-hidden">
             <div className="flex h-full bg-gray-100 dark:bg-gray-900">
               {/* Lista de Conversas - Sidebar */}
               <div className={`${selectedStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r`}>
@@ -882,16 +877,8 @@ export default function Messages() {
                 )}
               </div>
             </div>
-          </TabsContent>
-
-          {/* WhatsApp Tab - Dashboard de Métricas */}
-          <TabsContent value="whatsapp" className="flex-1 m-0 overflow-auto">
-            <WhatsAppMetricsDashboard 
-              messages={whatsappMessagesLog || []} 
-              chatMessages={chatMessages || []}
-            />
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
 
       {/* Modal de Broadcast */}
