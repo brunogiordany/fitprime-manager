@@ -2996,3 +2996,11 @@
 
 ## Bugs v5.2
 - [ ] Mensagens do WhatsApp real não estão sincronizadas com a interface
+- [ ] Webhook Stevo: capturar evento SEND_MESSAGE (mensagens enviadas pelo personal via WhatsApp)
+
+## Integração Evolution API (03/01/2026)
+- [x] Criar endpoint /api/webhook/evolution para receber webhooks da Evolution API Cloud
+- [x] Configurar Evolution API Cloud com webhook para capturar evento SEND_MESSAGE
+- [x] Processar mensagens enviadas pelo personal via WhatsApp (fromMe: true)
+- [x] Processar mensagens recebidas do aluno via WhatsApp
+- [ ] Publicar para ativar webhook em produção

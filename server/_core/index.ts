@@ -57,6 +57,28 @@ async function startServer() {
     }
   });
   
+  // Evolution API webhook - receives WhatsApp messages (alternative to Stevo)
+  app.post('/api/webhook/evolution', express.json(), async (req: any, res: any) => {
+    console.log('[Evolution Webhook] Recebido payload:', JSON.stringify(req.body, null, 2));
+    
+    // Verificar header de segurança
+    const apiKey = req.headers['x-api-key'];
+    if (apiKey !== 'fitprime-evolution-secret-2024') {
+      console.log('[Evolution Webhook] API key inválida:', apiKey);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    try {
+      const { handleEvolutionWebhook } = await import('../evolution');
+      const result = await handleEvolutionWebhook(req.body);
+      console.log('[Evolution Webhook] Resultado:', JSON.stringify(result, null, 2));
+      res.json(result);
+    } catch (error: any) {
+      console.error('[Evolution Webhook] Error:', error);
+      res.status(500).json({ error: error?.message || 'Internal error' });
+    }
+  });
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

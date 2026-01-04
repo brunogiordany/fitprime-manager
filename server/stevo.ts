@@ -631,12 +631,16 @@ _FitPrime Manager_`;
 
 /**
  * Interface para o payload que o Stevo envia ao webhook
- * Baseado na documentação: eventos Message, ReadReceipt, etc.
+ * Baseado na documentação: eventos Message, ReadReceipt, SEND_MESSAGE, etc.
+ * 
+ * IMPORTANTE: O evento SEND_MESSAGE (mensagens enviadas pelo personal) pode ter
+ * estrutura diferente do MESSAGES_UPSERT (mensagens recebidas).
  */
 export interface StevoWebhookPayload {
-  // Evento Message
+  // Evento (MESSAGES_UPSERT, SEND_MESSAGE, etc.)
   event?: string;
   instance?: string;
+  // Formato padrão do Evolution API / Stevo
   data?: {
     key?: {
       remoteJid?: string;
@@ -671,6 +675,38 @@ export interface StevoWebhookPayload {
     };
     messageTimestamp?: number;
   };
+  // Formato alternativo do evento SEND_MESSAGE
+  key?: {
+    remoteJid?: string;
+    fromMe?: boolean;
+    id?: string;
+  };
+  message?: {
+    conversation?: string;
+    extendedTextMessage?: {
+      text?: string;
+    };
+    imageMessage?: {
+      url?: string;
+      mimetype?: string;
+      caption?: string;
+    };
+    documentMessage?: {
+      url?: string;
+      mimetype?: string;
+      fileName?: string;
+    };
+    audioMessage?: {
+      url?: string;
+      mimetype?: string;
+    };
+    videoMessage?: {
+      url?: string;
+      mimetype?: string;
+      caption?: string;
+    };
+  };
+  messageTimestamp?: number;
   // Campos alternativos (formato simplificado)
   from?: string;
   body?: string;
@@ -691,6 +727,7 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
 }> {
   try {
     console.log('[Stevo Webhook] Payload recebido:', JSON.stringify(payload, null, 2));
+    console.log('[Stevo Webhook] Evento:', payload.event);
     
     // Extrair informações da mensagem
     let from = '';
@@ -698,52 +735,72 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     let messageType: 'text' | 'image' | 'document' | 'audio' | 'video' = 'text';
     let mediaUrl: string | undefined;
     let timestamp = Date.now();
+    let isFromMe = false;
+    let messageId = '';
     
-    // Formato padrão do Stevo (evento Message)
+    // Função auxiliar para extrair texto da mensagem
+    const extractMessageContent = (message: any) => {
+      if (!message) return { text: '', type: 'text' as const, url: undefined };
+      
+      if (message.conversation) {
+        return { text: message.conversation, type: 'text' as const, url: undefined };
+      } else if (message.extendedTextMessage?.text) {
+        return { text: message.extendedTextMessage.text, type: 'text' as const, url: undefined };
+      } else if (message.imageMessage) {
+        return { text: message.imageMessage.caption || '', type: 'image' as const, url: message.imageMessage.url };
+      } else if (message.documentMessage) {
+        return { text: '', type: 'document' as const, url: message.documentMessage.url };
+      } else if (message.audioMessage) {
+        return { text: '', type: 'audio' as const, url: message.audioMessage.url };
+      } else if (message.videoMessage) {
+        return { text: message.videoMessage.caption || '', type: 'video' as const, url: message.videoMessage.url };
+      }
+      return { text: '', type: 'text' as const, url: undefined };
+    };
+    
+    // FORMATO 1: Evento MESSAGES_UPSERT (mensagens recebidas) - payload.data.key
     if (payload.data?.key?.remoteJid) {
+      console.log('[Stevo Webhook] Formato detectado: MESSAGES_UPSERT (payload.data.key)');
       from = payload.data.key.remoteJid.replace('@s.whatsapp.net', '');
+      isFromMe = payload.data.key.fromMe === true;
+      messageId = payload.data.key.id || '';
       timestamp = (payload.data.messageTimestamp || Date.now() / 1000) * 1000;
       
-      // Extrair texto da mensagem
-      if (payload.data.message?.conversation) {
-        messageText = payload.data.message.conversation;
-        messageType = 'text';
-      } else if (payload.data.message?.extendedTextMessage?.text) {
-        messageText = payload.data.message.extendedTextMessage.text;
-        messageType = 'text';
-      } else if (payload.data.message?.imageMessage) {
-        messageType = 'image';
-        mediaUrl = payload.data.message.imageMessage.url;
-        messageText = payload.data.message.imageMessage.caption || '';
-      } else if (payload.data.message?.documentMessage) {
-        messageType = 'document';
-        mediaUrl = payload.data.message.documentMessage.url;
-      } else if (payload.data.message?.audioMessage) {
-        messageType = 'audio';
-        mediaUrl = payload.data.message.audioMessage.url;
-      } else if (payload.data.message?.videoMessage) {
-        messageType = 'video';
-        mediaUrl = payload.data.message.videoMessage.url;
-        messageText = payload.data.message.videoMessage.caption || '';
-      }
+      const content = extractMessageContent(payload.data.message);
+      messageText = content.text;
+      messageType = content.type;
+      mediaUrl = content.url;
     }
-    // Formato simplificado (alternativo)
+    // FORMATO 2: Evento SEND_MESSAGE (mensagens enviadas) - payload.key diretamente
+    else if (payload.key?.remoteJid) {
+      console.log('[Stevo Webhook] Formato detectado: SEND_MESSAGE (payload.key)');
+      from = payload.key.remoteJid.replace('@s.whatsapp.net', '');
+      isFromMe = payload.key.fromMe === true;
+      messageId = payload.key.id || '';
+      timestamp = (payload.messageTimestamp || Date.now() / 1000) * 1000;
+      
+      const content = extractMessageContent(payload.message);
+      messageText = content.text;
+      messageType = content.type;
+      mediaUrl = content.url;
+    }
+    // FORMATO 3: Formato simplificado (alternativo)
     else if (payload.from) {
+      console.log('[Stevo Webhook] Formato detectado: Simplificado (payload.from)');
       from = payload.from.replace('@s.whatsapp.net', '');
       messageText = payload.body || '';
       messageType = (payload.type as any) || 'text';
       mediaUrl = payload.mediaUrl;
       timestamp = payload.timestamp || Date.now();
+      messageId = `${from}_${timestamp}`;
     }
     
     // Se não conseguiu extrair o remetente, ignorar
     if (!from) {
-      console.log('[Stevo Webhook] Não foi possível extrair remetente');
+      console.log('[Stevo Webhook] Não foi possível extrair remetente - payload não reconhecido');
+      console.log('[Stevo Webhook] Chaves do payload:', Object.keys(payload));
       return { success: true, processed: false, error: 'no_sender' };
     }
-    
-    // Verificar se é mensagem enviada pelo personal (fromMe)
-    const isFromMe = payload.data?.key?.fromMe === true;
     
     // Normalizar número de telefone (remover 55 se presente)
     let phone = from.replace(/\D/g, '');
@@ -770,14 +827,14 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
     console.log('[Stevo Webhook] Aluno encontrado:', student.name);
     
     // SALVAR A MENSAGEM NO CHAT (independente do conteúdo)
-    // Extrair messageId para evitar duplicação
-    const messageId = payload.data?.key?.id || `${from}_${timestamp}`;
+    // Usar messageId já extraído acima, ou gerar um
+    const finalMessageId = messageId || `${from}_${timestamp}`;
     
     try {
       // Verificar se a mensagem já foi processada (evitar duplicação)
-      const existingMessage = await db.getChatMessageByExternalId(student.personalId, student.id, messageId);
+      const existingMessage = await db.getChatMessageByExternalId(student.personalId, student.id, finalMessageId);
       if (existingMessage) {
-        console.log('[Stevo Webhook] Mensagem já processada, ignorando duplicata:', messageId);
+        console.log('[Stevo Webhook] Mensagem já processada, ignorando duplicata:', finalMessageId);
         return { success: true, processed: false, error: 'duplicate_message' };
       }
       
@@ -799,10 +856,10 @@ export async function handleStevoWebhook(payload: StevoWebhookPayload): Promise<
         mediaName: mediaUrl ? 'Mídia recebida via WhatsApp' : null,
         isRead: isFromMe ? true : false, // Mensagens enviadas pelo personal já são lidas
         source: 'internal', // Unificado no Chat FitPrime
-        externalId: messageId, // Salvar ID externo para evitar duplicação
+        externalId: finalMessageId, // Salvar ID externo para evitar duplicação
       });
       
-      console.log('[Stevo Webhook] Mensagem salva no chat:', senderType === 'personal' ? 'Personal -> Aluno' : 'Aluno -> Personal', student.name, 'ID:', messageId);
+      console.log('[Stevo Webhook] Mensagem salva no chat:', senderType === 'personal' ? 'Personal -> Aluno' : 'Aluno -> Personal', student.name, 'ID:', finalMessageId);
     } catch (chatError) {
       console.error('[Stevo Webhook] Erro ao salvar mensagem no chat:', chatError);
     }
