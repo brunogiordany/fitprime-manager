@@ -233,6 +233,9 @@ export default function AiAssistantSettings() {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Bot className="h-7 w-7 text-emerald-600" />
               IA de Atendimento
+              <Badge variant="outline" className="ml-2 text-amber-600 border-amber-400 bg-amber-50">
+                BETA - Não usar
+              </Badge>
             </h1>
             <p className="text-muted-foreground mt-1">
               Configure sua assistente virtual para atender leads e alunos automaticamente

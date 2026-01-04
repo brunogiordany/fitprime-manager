@@ -3053,3 +3053,6 @@
 ## Bugs/Melhorias WhatsApp (v9.4)
 - [x] Corrigir scroll no modal de envio em massa (aumentada altura para 250px)
 - [x] Adicionar estatísticas de automações na página WhatsApp Estatísticas
+
+## IA de Atendimento (v9.5)
+- [x] Adicionar indicador BETA (não usar) na página de IA de Atendimento
