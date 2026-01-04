@@ -62,6 +62,8 @@ import AiAssistantSettings from "./pages/AiAssistantSettings";
 import ActivateAccount from "./pages/ActivateAccount";
 import WhatsAppMessages from "./pages/WhatsAppMessages";
 import WhatsAppStats from "./pages/WhatsAppStats";
+import NutritionDashboard from "./pages/NutritionDashboard";
+import { FoodsPage, MealPlansPage, RecipesPage, PatientsPage, PatientDetailPage, AssessmentPage, ExamsPage, MealPlanDetailPage, AnamnesisPage, EvolutionPage, NutritionSettingsPage } from "./pages/nutrition";
 
 function Router() {
   return (
@@ -103,6 +105,19 @@ function Router() {
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />
       <Route path="/ia-atendimento" component={AiAssistantSettings} />
+      <Route path="/nutrition" component={NutritionDashboard} />
+      <Route path="/nutrition/alimentos" component={FoodsPage} />
+      <Route path="/nutrition/planos-alimentares" component={MealPlansPage} />
+      <Route path="/nutrition/receitas" component={RecipesPage} />
+      <Route path="/nutrition/pacientes" component={PatientsPage} />
+      <Route path="/nutrition/pacientes/:id" component={PatientDetailPage} />
+      <Route path="/nutrition/avaliacao" component={AssessmentPage} />
+      <Route path="/nutrition/exames" component={ExamsPage} />
+      <Route path="/nutrition/planos-alimentares/:id" component={MealPlanDetailPage} />
+      <Route path="/nutrition/anamnese" component={AnamnesisPage} />
+      <Route path="/nutrition/evolucao" component={EvolutionPage} />
+      <Route path="/nutrition/configuracoes" component={NutritionSettingsPage} />
+      <Route path="/nutrition/:section" component={NutritionDashboard} />
       <Route path="/mensagens" component={Messages} />
       <Route path="/whatsapp" component={WhatsAppMessages} />
       <Route path="/whatsapp-stats" component={WhatsAppStats} />

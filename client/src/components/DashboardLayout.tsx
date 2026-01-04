@@ -45,7 +45,8 @@ import {
   HelpCircle,
   UserCircle,
   Bot,
-  Phone
+  Phone,
+  Apple
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -69,6 +70,7 @@ const menuItems = [
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Bot, label: "IA de Atendimento", path: "/ia-atendimento" },
+  { icon: Apple, label: "FitPrime Nutrition", path: "/nutrition", beta: true },
   { icon: MessageCircle, label: "Chat FitPrime", path: "/mensagens" },
   { icon: Phone, label: "WhatsApp Mensagens", path: "/whatsapp" },
   { icon: Activity, label: "WhatsApp Estatísticas", path: "/whatsapp-stats" },
@@ -174,6 +176,9 @@ function DashboardLayoutContent({
     undefined,
     { refetchInterval: 30000 } // Atualizar a cada 30 segundos
   );
+  
+  // Query para feature flags (controle de funcionalidades BETA)
+  const { data: featureFlags } = trpc.personal.featureFlags.useQuery();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -265,7 +270,15 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0 py-2">
             <SidebarMenu className="px-2 py-1 space-y-1">
-              {menuItems.map(item => {
+              {menuItems
+                .filter(item => {
+                  // Filtrar itens beta baseado nas featureFlags
+                  if (item.path === "/nutrition") {
+                    return featureFlags?.nutritionBetaEnabled === true;
+                  }
+                  return true;
+                })
+                .map(item => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>
@@ -287,6 +300,11 @@ function DashboardLayoutContent({
                         {item.path === "/mensagens" && totalUnread && totalUnread > 0 && (
                           <Badge className="bg-red-500 text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                             {totalUnread > 99 ? "99+" : totalUnread}
+                          </Badge>
+                        )}
+                        {(item as any).beta && (
+                          <Badge variant="outline" className="text-amber-600 border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-[10px] px-1 py-0">
+                            BETA
                           </Badge>
                         )}
                       </span>

@@ -3084,3 +3084,114 @@
 - [x] Atualizar Central de Ajuda do Personal com novidades das estatísticas de sessão
 - [x] Atualizar Central de Ajuda do Aluno com novidades das estatísticas de sessão
 - [x] Ajustar aba Fotos no Portal do Aluno para ter mesmo layout do Personal (abas Visão Geral e Fotos)
+
+
+## Módulo FitPrimeNutrition
+- [x] Pesquisar principais softwares de nutrição do mercado brasileiro
+- [x] Analisar funcionalidades e preços dos concorrentes
+- [x] Elaborar relatório comparativo de concorrentes
+- [ ] Implementar menu FitPrimeNutrition no sidebar
+- [ ] Criar verificação de permissão (CRN cadastrado)
+- [ ] Criar página inicial do módulo com sub-seções
+- [x] Criar documento de especificação completo do FitPrime Nutrition
+
+### Implementação FitPrime Nutrition BETA
+- [x] Adicionar campo nutritionBetaEnabled no schema (personals)
+- [x] Criar controle no Super Admin para liberar/bloquear Nutrition BETA
+- [x] Adicionar menu FitPrime Nutrition no sidebar com badge BETA
+- [ ] Criar página inicial (Dashboard) do módulo Nutrition
+- [ ] Criar página de Pacientes (integrada com Alunos)
+- [ ] Criar página de Planos Alimentares
+- [ ] Criar página de Alimentos
+- [ ] Criar página de Receitas
+- [ ] Criar página de Avaliação Nutricional
+- [ ] Criar página de Evolução
+- [ ] Criar anamnese complementar de nutrição (campos que faltam)
+- [ ] Criar página de Exames
+- [ ] Criar página de Orientações
+- [ ] Criar página de Configurações Nutrição
+
+
+## FitPrime Nutrition - Módulo de Nutrição (v3.5)
+
+### Infraestrutura
+- [x] Schema do banco de dados para nutrição (foods, recipes, meal_plans, assessments, etc.)
+- [x] Router tRPC completo para nutrição (nutritionRouter.ts)
+- [x] Integração com sistema de alunos existente
+
+### Banco de Alimentos
+- [x] Página de Alimentos (FoodsPage.tsx)
+- [x] Listagem de alimentos com busca e filtros
+- [x] Informações nutricionais (calorias, proteína, carboidratos, gorduras)
+- [x] Suporte a bancos TACO e USDA
+- [x] Cadastro de alimentos personalizados
+
+### Planos Alimentares
+- [x] Página de Planos Alimentares (MealPlansPage.tsx)
+- [x] Listagem de planos com status
+- [x] Criação de planos por paciente
+- [x] Página de detalhes do plano (MealPlanDetailPage.tsx)
+- [x] Geração de plano com IA (integração LLM)
+- [x] Cálculo automático de macros
+
+### Receitas
+- [x] Página de Receitas (RecipesPage.tsx)
+- [x] Cadastro de receitas com ingredientes
+- [x] Cálculo nutricional automático baseado nos ingredientes
+- [x] Categorização de receitas
+
+### Pacientes/Alunos
+- [x] Página de Pacientes (PatientsPage.tsx)
+- [x] Integração com sistema de alunos existente
+- [x] Página de detalhes do paciente (PatientDetailPage.tsx)
+- [x] Visualização de planos, avaliações e exames
+
+### Avaliação Nutricional
+- [x] Página de Avaliação Nutricional (AssessmentPage.tsx)
+- [x] Registro de peso, altura, IMC
+- [x] Cálculo de TMB (Mifflin-St Jeor, Harris-Benedict, etc.)
+- [x] Cálculo de GET (Gasto Energético Total)
+- [x] Distribuição de macros
+
+### Evolução Nutricional
+- [x] Página de Evolução (EvolutionPage.tsx)
+- [x] Gráficos de evolução de peso
+- [x] Gráficos de evolução de IMC
+- [x] Gráficos de evolução de BF%
+- [x] Comparativo temporal
+
+### Anamnese Nutricional
+- [x] Página de Anamnese (AnamnesisPage.tsx)
+- [x] Histórico alimentar
+- [x] Hábitos alimentares
+- [x] Preferências e restrições
+- [x] Alergias e intolerâncias
+- [x] Saúde digestiva
+- [x] Cozinha e rotina
+- [x] Orçamento alimentar
+- [x] Objetivos nutricionais
+
+### Exames Laboratoriais
+- [x] Página de Exames (ExamsPage.tsx)
+- [x] Registro de exames laboratoriais
+- [x] Interpretação com IA
+- [x] Valores de referência
+- [x] Histórico de exames
+
+### Configurações
+- [x] Página de Configurações (NutritionSettingsPage.tsx)
+- [x] Fórmula de TMB padrão
+- [x] Fator de atividade padrão
+- [x] Distribuição de macros padrão
+- [x] Proteína por objetivo (perda, ganho, manutenção)
+- [x] Ajustes calóricos (déficit/superávit)
+- [x] Preferências de exibição
+- [x] Notificações
+
+### Dashboard de Nutrição
+- [x] Página principal do módulo (NutritionDashboard.tsx)
+- [x] Cards de acesso rápido aos módulos
+- [x] Estatísticas gerais (planos, receitas, avaliações)
+- [x] Banner de integração treino + nutrição
+- [x] Controle de acesso (feature flag beta)
+

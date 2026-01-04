@@ -19,6 +19,7 @@ import { trialRouter } from "./routers/trialRouter";
 import { sitePagesRouter, trackingPixelsRouter, abTestsRouter, pageBlocksRouter, pageAssetsRouter, pageVersionsRouter } from "./routers/sitePagesRouter";
 import { activationRouter } from "./routers/activationRouter";
 import aiAssistant from "./aiAssistant";
+import { nutritionRouter } from "./routers/nutritionRouter";
 
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
@@ -733,6 +734,7 @@ export const appRouter = router({
           bulkMessagingEnabled: z.boolean().optional(),
           automationsEnabled: z.boolean().optional(),
           studentPortalEnabled: z.boolean().optional(),
+          nutritionBetaEnabled: z.boolean().optional(),
         }),
         reason: z.string().optional(),
       }))
@@ -770,6 +772,7 @@ export const appRouter = router({
           'bulkMessagingEnabled',
           'automationsEnabled',
           'studentPortalEnabled',
+          'nutritionBetaEnabled',
         ]),
         enabled: z.boolean(),
         reason: z.string().optional(),
@@ -816,6 +819,7 @@ export const appRouter = router({
           'bulkMessagingEnabled',
           'automationsEnabled',
           'studentPortalEnabled',
+          'nutritionBetaEnabled',
         ]),
         enabled: z.boolean(),
         reason: z.string().optional(),
@@ -1019,6 +1023,7 @@ export const appRouter = router({
           bulkMessagingEnabled: true,
           automationsEnabled: true,
           studentPortalEnabled: true,
+          nutritionBetaEnabled: false, // FitPrime Nutrition desabilitado por padrão
         };
       }
       
@@ -1032,6 +1037,7 @@ export const appRouter = router({
         bulkMessagingEnabled: flags.bulkMessagingEnabled,
         automationsEnabled: flags.automationsEnabled,
         studentPortalEnabled: flags.studentPortalEnabled,
+        nutritionBetaEnabled: flags.nutritionBetaEnabled,
       };
     }),
   }),
@@ -8844,6 +8850,9 @@ Retorne APENAS o JSON no formato especificado.`;
         }
       }),
   }),
+
+  // ==================== NUTRITION MODULE ====================
+  nutrition: nutritionRouter,
 });
 
 export type AppRouter = typeof appRouter;

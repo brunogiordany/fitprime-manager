@@ -1,0 +1,25 @@
+{
+  "query": "SHOW TABLES LIKE '%nutrition%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SHOW TABLES LIKE '%nutrition%';",
+  "rows": [
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)": "nutrition_anamneses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)": "nutrition_assessments"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)": "nutrition_guidelines"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)": "nutrition_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)": "nutrition_settings"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_SFH8sqABSCK5KntMvXXcPM (%nutrition%)\nnutrition_anamneses\nnutrition_assessments\nnutrition_guidelines\nnutrition_logs\nnutrition_settings\n",
+  "stderr": "",
+  "execution_time_ms": 392
+}

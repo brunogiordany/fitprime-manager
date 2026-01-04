@@ -1,0 +1,49 @@
+{
+  "query": "SHOW TABLES WHERE Tables_in_SFH8sqABSCK5KntMvXXcPM IN ('foods', 'recipes', 'recipe_ingredients', 'meal_plans', 'meal_plan_days', 'meals', 'meal_items', 'nutrition_logs', 'nutrition_assessments', 'lab_exams', 'nutrition_anamneses', 'nutrition_guidelines', 'nutrition_settings');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SHOW TABLES WHERE Tables_in_SFH8sqABSCK5KntMvXXcPM IN ('foods', 'recipes', 'recipe_ingredients', 'meal_plans', 'meal_plan_days', 'meals', 'meal_items', 'nutrition_logs', 'nutrition_assessments', 'lab_exams', 'nutrition_anamneses', 'nutrition_guidelines', 'nutrition_settings');",
+  "rows": [
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "foods"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "lab_exams"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_items"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_plan_days"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_plans"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meals"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_anamneses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_assessments"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_guidelines"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_settings"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "recipe_ingredients"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "recipes"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_SFH8sqABSCK5KntMvXXcPM\nfoods\nlab_exams\nmeal_items\nmeal_plan_days\nmeal_plans\nmeals\nnutrition_anamneses\nnutrition_assessments\nnutrition_guidelines\nnutrition_logs\nnutrition_settings\nrecipe_ingredients\nrecipes\n",
+  "stderr": "",
+  "execution_time_ms": 396
+}

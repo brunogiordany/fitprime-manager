@@ -779,6 +779,11 @@ function FeatureFlagsTab({ personals }: { personals: any[] }) {
       description: "Acesso do aluno ao app",
       icon: User 
     },
+    nutritionBetaEnabled: { 
+      label: "FitPrime Nutrition", 
+      description: "Módulo de nutrição integrado (BETA)",
+      icon: Sparkles 
+    },
   };
   
   const filteredPersonals = personals.filter(p => 
@@ -882,18 +887,19 @@ function FeatureFlagsTab({ personals }: { personals: any[] }) {
                   <TableHead className="text-center">IA Treino</TableHead>
                   <TableHead className="text-center">Automações</TableHead>
                   <TableHead className="text-center">Portal</TableHead>
+                  <TableHead className="text-center">Nutrition</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingFlags ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredPersonals.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       Nenhum personal encontrado
                     </TableCell>
                   </TableRow>
@@ -980,6 +986,19 @@ function FeatureFlagsTab({ personals }: { personals: any[] }) {
                               toggleFeatureMutation.mutate({ 
                                 personalId: personal.id, 
                                 feature: 'studentPortalEnabled', 
+                                enabled: checked 
+                              })
+                            }
+                            disabled={toggleFeatureMutation.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={flags?.nutritionBetaEnabled ?? false}
+                            onCheckedChange={(checked) => 
+                              toggleFeatureMutation.mutate({ 
+                                personalId: personal.id, 
+                                feature: 'nutritionBetaEnabled', 
                                 enabled: checked 
                               })
                             }

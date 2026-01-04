@@ -42,6 +42,11 @@ export const personals = mysqlTable("personals", {
   testAccessEndsAt: timestamp("testAccessEndsAt"), // Data de término do acesso de teste (liberado pelo owner)
   testAccessGrantedBy: varchar("testAccessGrantedBy", { length: 255 }), // Nome de quem liberou o acesso de teste
   testAccessGrantedAt: timestamp("testAccessGrantedAt"), // Data em que o acesso de teste foi liberado
+  // FitPrime Nutrition BETA
+  nutritionBetaEnabled: boolean("nutritionBetaEnabled").default(false), // Acesso ao módulo Nutrition BETA
+  nutritionBetaEnabledAt: timestamp("nutritionBetaEnabledAt"), // Data em que o acesso foi liberado
+  nutritionBetaEnabledBy: varchar("nutritionBetaEnabledBy", { length: 255 }), // Quem liberou o acesso
+  crn: varchar("crn", { length: 50 }), // Registro no Conselho Regional de Nutricionistas
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   deletedAt: timestamp("deletedAt"), // Soft delete - data de exclusão
@@ -1669,6 +1674,7 @@ export const featureFlags = mysqlTable("feature_flags", {
   bulkMessagingEnabled: boolean("bulkMessagingEnabled").default(true).notNull(), // Envio em Massa
   automationsEnabled: boolean("automationsEnabled").default(true).notNull(), // Automações
   studentPortalEnabled: boolean("studentPortalEnabled").default(true).notNull(), // Portal do Aluno
+  nutritionBetaEnabled: boolean("nutritionBetaEnabled").default(false).notNull(), // FitPrime Nutrition BETA
   
   // Metadados
   enabledBy: varchar("enabledBy", { length: 255 }), // Quem habilitou/desabilitou
@@ -1710,3 +1716,645 @@ export const adminActivityLog = mysqlTable("admin_activity_log", {
 });
 export type AdminActivityLog = typeof adminActivityLog.$inferSelect;
 export type InsertAdminActivityLog = typeof adminActivityLog.$inferInsert;
+
+
+// ==================== FITPRIME NUTRITION MODULE ====================
+
+// ==================== FOODS (Banco de Alimentos TACO/USDA) ====================
+export const foods = mysqlTable("foods", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // null = alimento do sistema (TACO/USDA)
+  
+  // Identificação
+  name: varchar("name", { length: 255 }).notNull(),
+  nameEn: varchar("nameEn", { length: 255 }), // Nome em inglês (USDA)
+  category: varchar("category", { length: 100 }).notNull(), // Ex: "Cereais", "Carnes", "Frutas"
+  subcategory: varchar("subcategory", { length: 100 }), // Ex: "Arroz", "Bovina", "Cítricas"
+  source: mysqlEnum("source", ["taco", "usda", "custom"]).default("custom").notNull(),
+  sourceId: varchar("sourceId", { length: 50 }), // ID original na tabela TACO/USDA
+  
+  // Porção padrão
+  servingSize: decimal("servingSize", { precision: 8, scale: 2 }).default("100").notNull(), // em gramas
+  servingUnit: varchar("servingUnit", { length: 20 }).default("g"), // g, ml, unidade
+  householdMeasure: varchar("householdMeasure", { length: 100 }), // Ex: "1 colher de sopa", "1 xícara"
+  householdGrams: decimal("householdGrams", { precision: 8, scale: 2 }), // Gramas da medida caseira
+  
+  // Macronutrientes (por 100g)
+  calories: decimal("calories", { precision: 8, scale: 2 }), // kcal
+  protein: decimal("protein", { precision: 8, scale: 2 }), // g
+  carbohydrates: decimal("carbohydrates", { precision: 8, scale: 2 }), // g
+  fiber: decimal("fiber", { precision: 8, scale: 2 }), // g
+  totalFat: decimal("totalFat", { precision: 8, scale: 2 }), // g
+  saturatedFat: decimal("saturatedFat", { precision: 8, scale: 2 }), // g
+  monounsaturatedFat: decimal("monounsaturatedFat", { precision: 8, scale: 2 }), // g
+  polyunsaturatedFat: decimal("polyunsaturatedFat", { precision: 8, scale: 2 }), // g
+  transFat: decimal("transFat", { precision: 8, scale: 2 }), // g
+  cholesterol: decimal("cholesterol", { precision: 8, scale: 2 }), // mg
+  sugar: decimal("sugar", { precision: 8, scale: 2 }), // g
+  
+  // Micronutrientes - Vitaminas
+  vitaminA: decimal("vitaminA", { precision: 10, scale: 4 }), // mcg (RE)
+  vitaminB1: decimal("vitaminB1", { precision: 10, scale: 4 }), // mg (Tiamina)
+  vitaminB2: decimal("vitaminB2", { precision: 10, scale: 4 }), // mg (Riboflavina)
+  vitaminB3: decimal("vitaminB3", { precision: 10, scale: 4 }), // mg (Niacina)
+  vitaminB5: decimal("vitaminB5", { precision: 10, scale: 4 }), // mg (Ác. Pantotênico)
+  vitaminB6: decimal("vitaminB6", { precision: 10, scale: 4 }), // mg (Piridoxina)
+  vitaminB9: decimal("vitaminB9", { precision: 10, scale: 4 }), // mcg (Folato)
+  vitaminB12: decimal("vitaminB12", { precision: 10, scale: 4 }), // mcg (Cobalamina)
+  vitaminC: decimal("vitaminC", { precision: 10, scale: 4 }), // mg
+  vitaminD: decimal("vitaminD", { precision: 10, scale: 4 }), // mcg
+  vitaminE: decimal("vitaminE", { precision: 10, scale: 4 }), // mg
+  vitaminK: decimal("vitaminK", { precision: 10, scale: 4 }), // mcg
+  
+  // Micronutrientes - Minerais
+  calcium: decimal("calcium", { precision: 10, scale: 4 }), // mg
+  iron: decimal("iron", { precision: 10, scale: 4 }), // mg
+  magnesium: decimal("magnesium", { precision: 10, scale: 4 }), // mg
+  phosphorus: decimal("phosphorus", { precision: 10, scale: 4 }), // mg
+  potassium: decimal("potassium", { precision: 10, scale: 4 }), // mg
+  sodium: decimal("sodium", { precision: 10, scale: 4 }), // mg
+  zinc: decimal("zinc", { precision: 10, scale: 4 }), // mg
+  copper: decimal("copper", { precision: 10, scale: 4 }), // mg
+  manganese: decimal("manganese", { precision: 10, scale: 4 }), // mg
+  selenium: decimal("selenium", { precision: 10, scale: 4 }), // mcg
+  iodine: decimal("iodine", { precision: 10, scale: 4 }), // mcg
+  
+  // Outros
+  water: decimal("water", { precision: 8, scale: 2 }), // g (umidade)
+  ash: decimal("ash", { precision: 8, scale: 2 }), // g (cinzas)
+  glycemicIndex: int("glycemicIndex"), // Índice glicêmico (0-100)
+  
+  // Metadados
+  isActive: boolean("isActive").default(true).notNull(),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Food = typeof foods.$inferSelect;
+export type InsertFood = typeof foods.$inferInsert;
+
+// ==================== RECIPES (Receitas) ====================
+export const recipes = mysqlTable("recipes", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // null = receita do sistema
+  
+  // Identificação
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }), // Ex: "Café da manhã", "Almoço", "Jantar", "Lanche"
+  tags: text("tags"), // JSON array: ["low carb", "vegano", "sem glúten"]
+  
+  // Preparo
+  prepTime: int("prepTime"), // Tempo de preparo em minutos
+  cookTime: int("cookTime"), // Tempo de cozimento em minutos
+  servings: int("servings").default(1), // Número de porções
+  servingSize: decimal("servingSize", { precision: 8, scale: 2 }), // Tamanho da porção em gramas
+  difficulty: mysqlEnum("difficulty", ["easy", "medium", "hard"]).default("easy"),
+  
+  // Instruções
+  instructions: text("instructions"), // JSON array de passos
+  tips: text("tips"),
+  
+  // Valores nutricionais calculados (por porção)
+  totalCalories: decimal("totalCalories", { precision: 10, scale: 2 }),
+  totalProtein: decimal("totalProtein", { precision: 10, scale: 2 }),
+  totalCarbs: decimal("totalCarbs", { precision: 10, scale: 2 }),
+  totalFat: decimal("totalFat", { precision: 10, scale: 2 }),
+  totalFiber: decimal("totalFiber", { precision: 10, scale: 2 }),
+  totalSodium: decimal("totalSodium", { precision: 10, scale: 2 }),
+  
+  // Metadados
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  isPublic: boolean("isPublic").default(false), // Receita pública para todos os personals
+  isActive: boolean("isActive").default(true).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Recipe = typeof recipes.$inferSelect;
+export type InsertRecipe = typeof recipes.$inferInsert;
+
+// ==================== RECIPE INGREDIENTS (Ingredientes das Receitas) ====================
+export const recipeIngredients = mysqlTable("recipe_ingredients", {
+  id: int("id").autoincrement().primaryKey(),
+  recipeId: int("recipeId").notNull().references(() => recipes.id),
+  foodId: int("foodId").notNull().references(() => foods.id),
+  
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(), // Quantidade
+  unit: varchar("unit", { length: 50 }).default("g"), // g, ml, unidade, colher, xícara
+  notes: varchar("notes", { length: 255 }), // Ex: "picado", "cozido", "sem casca"
+  
+  // Valores nutricionais calculados para esta quantidade
+  calories: decimal("calories", { precision: 10, scale: 2 }),
+  protein: decimal("protein", { precision: 10, scale: 2 }),
+  carbs: decimal("carbs", { precision: 10, scale: 2 }),
+  fat: decimal("fat", { precision: 10, scale: 2 }),
+  
+  sortOrder: int("sortOrder").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type RecipeIngredient = typeof recipeIngredients.$inferSelect;
+export type InsertRecipeIngredient = typeof recipeIngredients.$inferInsert;
+
+// ==================== MEAL PLANS (Planos Alimentares) ====================
+export const mealPlans = mysqlTable("meal_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  
+  // Identificação
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  objective: mysqlEnum("objective", [
+    "weight_loss", "muscle_gain", "maintenance", "recomposition", 
+    "bulking", "cutting", "health", "sports_performance", "therapeutic"
+  ]).default("maintenance"),
+  
+  // Período
+  startDate: date("startDate"),
+  endDate: date("endDate"),
+  status: mysqlEnum("status", ["draft", "active", "paused", "completed", "archived"]).default("draft"),
+  
+  // Metas diárias
+  targetCalories: int("targetCalories"), // kcal/dia
+  targetProtein: int("targetProtein"), // g/dia
+  targetCarbs: int("targetCarbs"), // g/dia
+  targetFat: int("targetFat"), // g/dia
+  targetFiber: int("targetFiber"), // g/dia
+  targetWater: decimal("targetWater", { precision: 4, scale: 2 }), // L/dia
+  
+  // Distribuição de macros (%)
+  proteinPercentage: int("proteinPercentage"), // % das calorias
+  carbsPercentage: int("carbsPercentage"), // % das calorias
+  fatPercentage: int("fatPercentage"), // % das calorias
+  
+  // Configurações
+  mealsPerDay: int("mealsPerDay").default(5), // Número de refeições
+  includeSnacks: boolean("includeSnacks").default(true),
+  
+  // Restrições e preferências
+  restrictions: text("restrictions"), // JSON array: ["gluten_free", "lactose_free", "vegetarian"]
+  allergies: text("allergies"), // JSON array: ["amendoim", "frutos do mar"]
+  preferences: text("preferences"), // JSON array de alimentos preferidos
+  dislikes: text("dislikes"), // JSON array de alimentos que não gosta
+  
+  // Integração com treino
+  adjustForTraining: boolean("adjustForTraining").default(true), // Ajustar macros baseado no treino
+  trainingDayCaloriesBonus: int("trainingDayCaloriesBonus").default(0), // Calorias extras em dia de treino
+  trainingDayCarbsBonus: int("trainingDayCarbsBonus").default(0), // Carboidratos extras em dia de treino
+  
+  // IA
+  generatedByAI: boolean("generatedByAI").default(false),
+  aiPrompt: text("aiPrompt"), // Prompt usado para gerar
+  aiVersion: varchar("aiVersion", { length: 50 }), // Versão do plano (1.0, 2.0, etc)
+  
+  // Metadados
+  notes: text("notes"),
+  version: int("version").default(1),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MealPlan = typeof mealPlans.$inferSelect;
+export type InsertMealPlan = typeof mealPlans.$inferInsert;
+
+// ==================== MEAL PLAN DAYS (Dias do Plano Alimentar) ====================
+export const mealPlanDays = mysqlTable("meal_plan_days", {
+  id: int("id").autoincrement().primaryKey(),
+  mealPlanId: int("mealPlanId").notNull().references(() => mealPlans.id),
+  
+  dayOfWeek: mysqlEnum("dayOfWeek", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+  dayNumber: int("dayNumber"), // Para planos que não seguem dias da semana (dia 1, 2, 3...)
+  isTrainingDay: boolean("isTrainingDay").default(false),
+  
+  // Totais calculados do dia
+  totalCalories: decimal("totalCalories", { precision: 10, scale: 2 }),
+  totalProtein: decimal("totalProtein", { precision: 10, scale: 2 }),
+  totalCarbs: decimal("totalCarbs", { precision: 10, scale: 2 }),
+  totalFat: decimal("totalFat", { precision: 10, scale: 2 }),
+  totalFiber: decimal("totalFiber", { precision: 10, scale: 2 }),
+  
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MealPlanDay = typeof mealPlanDays.$inferSelect;
+export type InsertMealPlanDay = typeof mealPlanDays.$inferInsert;
+
+// ==================== MEALS (Refeições) ====================
+export const meals = mysqlTable("meals", {
+  id: int("id").autoincrement().primaryKey(),
+  mealPlanDayId: int("mealPlanDayId").notNull().references(() => mealPlanDays.id),
+  
+  name: varchar("name", { length: 100 }).notNull(), // Ex: "Café da manhã", "Lanche da manhã"
+  mealType: mysqlEnum("mealType", [
+    "breakfast", "morning_snack", "lunch", "afternoon_snack", 
+    "pre_workout", "post_workout", "dinner", "supper", "other"
+  ]).notNull(),
+  scheduledTime: varchar("scheduledTime", { length: 5 }), // HH:MM
+  
+  // Totais calculados da refeição
+  totalCalories: decimal("totalCalories", { precision: 10, scale: 2 }),
+  totalProtein: decimal("totalProtein", { precision: 10, scale: 2 }),
+  totalCarbs: decimal("totalCarbs", { precision: 10, scale: 2 }),
+  totalFat: decimal("totalFat", { precision: 10, scale: 2 }),
+  totalFiber: decimal("totalFiber", { precision: 10, scale: 2 }),
+  
+  notes: text("notes"),
+  sortOrder: int("sortOrder").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Meal = typeof meals.$inferSelect;
+export type InsertMeal = typeof meals.$inferInsert;
+
+// ==================== MEAL ITEMS (Itens das Refeições) ====================
+export const mealItems = mysqlTable("meal_items", {
+  id: int("id").autoincrement().primaryKey(),
+  mealId: int("mealId").notNull().references(() => meals.id),
+  
+  // Pode ser um alimento OU uma receita
+  foodId: int("foodId").references(() => foods.id),
+  recipeId: int("recipeId").references(() => recipes.id),
+  
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
+  unit: varchar("unit", { length: 50 }).default("g"), // g, ml, porção, unidade
+  
+  // Valores nutricionais calculados
+  calories: decimal("calories", { precision: 10, scale: 2 }),
+  protein: decimal("protein", { precision: 10, scale: 2 }),
+  carbs: decimal("carbs", { precision: 10, scale: 2 }),
+  fat: decimal("fat", { precision: 10, scale: 2 }),
+  fiber: decimal("fiber", { precision: 10, scale: 2 }),
+  
+  notes: varchar("notes", { length: 255 }),
+  sortOrder: int("sortOrder").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MealItem = typeof mealItems.$inferSelect;
+export type InsertMealItem = typeof mealItems.$inferInsert;
+
+// ==================== NUTRITION LOGS (Diário Alimentar) ====================
+export const nutritionLogs = mysqlTable("nutrition_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  mealPlanId: int("mealPlanId").references(() => mealPlans.id), // Plano que estava seguindo
+  
+  logDate: date("logDate").notNull(),
+  mealType: mysqlEnum("mealType", [
+    "breakfast", "morning_snack", "lunch", "afternoon_snack", 
+    "pre_workout", "post_workout", "dinner", "supper", "other"
+  ]).notNull(),
+  logTime: varchar("logTime", { length: 5 }), // HH:MM
+  
+  // Pode ser um alimento, receita ou descrição livre
+  foodId: int("foodId").references(() => foods.id),
+  recipeId: int("recipeId").references(() => recipes.id),
+  freeDescription: text("freeDescription"), // Descrição livre do que comeu
+  
+  quantity: decimal("quantity", { precision: 10, scale: 2 }),
+  unit: varchar("unit", { length: 50 }),
+  
+  // Valores nutricionais (calculados ou estimados)
+  calories: decimal("calories", { precision: 10, scale: 2 }),
+  protein: decimal("protein", { precision: 10, scale: 2 }),
+  carbs: decimal("carbs", { precision: 10, scale: 2 }),
+  fat: decimal("fat", { precision: 10, scale: 2 }),
+  fiber: decimal("fiber", { precision: 10, scale: 2 }),
+  
+  // Aderência ao plano
+  wasPlanned: boolean("wasPlanned").default(true), // Se estava no plano ou foi extra
+  adherenceScore: int("adherenceScore"), // 0-100 (quanto seguiu o plano)
+  
+  // Feedback
+  hungerLevel: mysqlEnum("hungerLevel", ["very_hungry", "hungry", "neutral", "satisfied", "very_full"]),
+  energyLevel: mysqlEnum("energyLevel", ["very_low", "low", "normal", "high", "very_high"]),
+  mood: mysqlEnum("mood", ["bad", "neutral", "good", "excellent"]),
+  
+  notes: text("notes"),
+  photoUrl: varchar("photoUrl", { length: 500 }), // Foto da refeição
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NutritionLog = typeof nutritionLogs.$inferSelect;
+export type InsertNutritionLog = typeof nutritionLogs.$inferInsert;
+
+// ==================== NUTRITION ASSESSMENTS (Avaliações Nutricionais) ====================
+export const nutritionAssessments = mysqlTable("nutrition_assessments", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  measurementId: int("measurementId").references(() => measurements.id), // Vincula com medidas corporais
+  
+  assessmentDate: date("assessmentDate").notNull(),
+  
+  // Dados antropométricos específicos de nutrição
+  height: decimal("height", { precision: 5, scale: 2 }), // cm
+  weight: decimal("weight", { precision: 5, scale: 2 }), // kg
+  bmi: decimal("bmi", { precision: 4, scale: 2 }), // IMC calculado
+  bmiClassification: varchar("bmiClassification", { length: 50 }), // Baixo peso, Normal, Sobrepeso, etc.
+  
+  // Composição corporal
+  bodyFatPercentage: decimal("bodyFatPercentage", { precision: 5, scale: 2 }),
+  muscleMass: decimal("muscleMass", { precision: 5, scale: 2 }), // kg
+  fatMass: decimal("fatMass", { precision: 5, scale: 2 }), // kg
+  boneMass: decimal("boneMass", { precision: 5, scale: 2 }), // kg
+  waterPercentage: decimal("waterPercentage", { precision: 5, scale: 2 }), // %
+  visceralFat: int("visceralFat"), // Nível 1-59
+  
+  // Circunferências (cm)
+  waistCircumference: decimal("waistCircumference", { precision: 5, scale: 2 }),
+  hipCircumference: decimal("hipCircumference", { precision: 5, scale: 2 }),
+  waistHipRatio: decimal("waistHipRatio", { precision: 4, scale: 3 }), // Relação cintura/quadril
+  neckCircumference: decimal("neckCircumference", { precision: 5, scale: 2 }),
+  armCircumference: decimal("armCircumference", { precision: 5, scale: 2 }),
+  
+  // Cálculos metabólicos
+  bmr: int("bmr"), // Taxa Metabólica Basal (kcal)
+  bmrFormula: varchar("bmrFormula", { length: 50 }), // Mifflin-St Jeor, Harris-Benedict, etc.
+  tdee: int("tdee"), // Gasto Energético Total Diário (kcal)
+  activityLevel: mysqlEnum("activityLevel", ["sedentary", "light", "moderate", "active", "very_active"]),
+  
+  // Metas calculadas
+  recommendedCalories: int("recommendedCalories"),
+  recommendedProtein: int("recommendedProtein"),
+  recommendedCarbs: int("recommendedCarbs"),
+  recommendedFat: int("recommendedFat"),
+  
+  // Indicadores de risco
+  cardiovascularRisk: mysqlEnum("cardiovascularRisk", ["low", "moderate", "high", "very_high"]),
+  metabolicSyndromeRisk: boolean("metabolicSyndromeRisk").default(false),
+  
+  // Observações e análise
+  clinicalObservations: text("clinicalObservations"),
+  dietaryRecommendations: text("dietaryRecommendations"),
+  aiAnalysis: text("aiAnalysis"), // Análise gerada por IA
+  
+  // Método de avaliação
+  assessmentMethod: mysqlEnum("assessmentMethod", [
+    "bioimpedance", "skinfold", "dexa", "hydrostatic", "visual", "other"
+  ]).default("bioimpedance"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NutritionAssessment = typeof nutritionAssessments.$inferSelect;
+export type InsertNutritionAssessment = typeof nutritionAssessments.$inferInsert;
+
+// ==================== LAB EXAMS (Exames Laboratoriais) ====================
+export const labExams = mysqlTable("lab_exams", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  examDate: date("examDate").notNull(),
+  labName: varchar("labName", { length: 255 }), // Nome do laboratório
+  
+  // Hemograma
+  hemoglobin: decimal("hemoglobin", { precision: 5, scale: 2 }), // g/dL
+  hematocrit: decimal("hematocrit", { precision: 5, scale: 2 }), // %
+  redBloodCells: decimal("redBloodCells", { precision: 5, scale: 2 }), // milhões/mm³
+  whiteBloodCells: decimal("whiteBloodCells", { precision: 8, scale: 0 }), // /mm³
+  platelets: decimal("platelets", { precision: 8, scale: 0 }), // /mm³
+  
+  // Perfil lipídico
+  totalCholesterol: decimal("totalCholesterol", { precision: 6, scale: 2 }), // mg/dL
+  hdlCholesterol: decimal("hdlCholesterol", { precision: 6, scale: 2 }), // mg/dL
+  ldlCholesterol: decimal("ldlCholesterol", { precision: 6, scale: 2 }), // mg/dL
+  vldlCholesterol: decimal("vldlCholesterol", { precision: 6, scale: 2 }), // mg/dL
+  triglycerides: decimal("triglycerides", { precision: 6, scale: 2 }), // mg/dL
+  
+  // Glicemia
+  fastingGlucose: decimal("fastingGlucose", { precision: 6, scale: 2 }), // mg/dL
+  hba1c: decimal("hba1c", { precision: 4, scale: 2 }), // %
+  insulin: decimal("insulin", { precision: 6, scale: 2 }), // µU/mL
+  homaIr: decimal("homaIr", { precision: 5, scale: 2 }), // Índice HOMA-IR
+  
+  // Função renal
+  creatinine: decimal("creatinine", { precision: 5, scale: 2 }), // mg/dL
+  urea: decimal("urea", { precision: 6, scale: 2 }), // mg/dL
+  uricAcid: decimal("uricAcid", { precision: 5, scale: 2 }), // mg/dL
+  
+  // Função hepática
+  ast: decimal("ast", { precision: 6, scale: 2 }), // U/L (TGO)
+  alt: decimal("alt", { precision: 6, scale: 2 }), // U/L (TGP)
+  ggt: decimal("ggt", { precision: 6, scale: 2 }), // U/L
+  alkalinePhosphatase: decimal("alkalinePhosphatase", { precision: 6, scale: 2 }), // U/L
+  totalBilirubin: decimal("totalBilirubin", { precision: 5, scale: 2 }), // mg/dL
+  albumin: decimal("albumin", { precision: 5, scale: 2 }), // g/dL
+  
+  // Tireoide
+  tsh: decimal("tsh", { precision: 6, scale: 3 }), // mUI/L
+  t4Free: decimal("t4Free", { precision: 5, scale: 3 }), // ng/dL
+  t3Free: decimal("t3Free", { precision: 5, scale: 3 }), // pg/mL
+  
+  // Vitaminas e minerais
+  vitaminD: decimal("vitaminD", { precision: 6, scale: 2 }), // ng/mL
+  vitaminB12: decimal("vitaminB12", { precision: 8, scale: 2 }), // pg/mL
+  ferritin: decimal("ferritin", { precision: 8, scale: 2 }), // ng/mL
+  serumIron: decimal("serumIron", { precision: 6, scale: 2 }), // µg/dL
+  folicAcid: decimal("folicAcid", { precision: 6, scale: 2 }), // ng/mL
+  
+  // Hormônios (para atletas/fisiculturistas)
+  testosterone: decimal("testosterone", { precision: 8, scale: 2 }), // ng/dL
+  cortisol: decimal("cortisol", { precision: 6, scale: 2 }), // µg/dL
+  
+  // Inflamação
+  crp: decimal("crp", { precision: 6, scale: 3 }), // mg/L (PCR)
+  
+  // Arquivo do exame
+  fileUrl: varchar("fileUrl", { length: 500 }), // PDF do exame
+  
+  notes: text("notes"),
+  aiInterpretation: text("aiInterpretation"), // Interpretação por IA
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LabExam = typeof labExams.$inferSelect;
+export type InsertLabExam = typeof labExams.$inferInsert;
+
+// ==================== NUTRITION ANAMNESIS (Anamnese Nutricional Complementar) ====================
+export const nutritionAnamneses = mysqlTable("nutrition_anamneses", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  anamnesisId: int("anamnesisId").references(() => anamneses.id), // Vincula com anamnese principal
+  
+  // Histórico alimentar
+  previousDiets: text("previousDiets"), // Dietas anteriores (JSON)
+  dietHistory: text("dietHistory"), // Histórico de peso/dietas
+  eatingDisorderHistory: boolean("eatingDisorderHistory").default(false),
+  eatingDisorderDetails: text("eatingDisorderDetails"),
+  
+  // Hábitos alimentares detalhados
+  mealsPerDay: int("mealsPerDay"),
+  mealTimes: text("mealTimes"), // JSON: {"breakfast": "07:00", "lunch": "12:00", ...}
+  eatingSpeed: mysqlEnum("eatingSpeed", ["very_fast", "fast", "normal", "slow", "very_slow"]),
+  chewingQuality: mysqlEnum("chewingQuality", ["poor", "fair", "good", "excellent"]),
+  eatingLocation: text("eatingLocation"), // JSON: ["casa", "trabalho", "restaurante"]
+  eatingCompany: mysqlEnum("eatingCompany", ["alone", "family", "friends", "coworkers", "varies"]),
+  screenWhileEating: boolean("screenWhileEating").default(false), // Come usando tela
+  
+  // Preferências e aversões
+  favoritesFoods: text("favoritesFoods"), // JSON array
+  dislikedFoods: text("dislikedFoods"), // JSON array
+  foodCravings: text("foodCravings"), // Desejos alimentares
+  comfortFoods: text("comfortFoods"), // Alimentos de conforto
+  
+  // Intolerâncias e alergias
+  foodIntolerances: text("foodIntolerances"), // JSON: ["lactose", "gluten", ...]
+  foodAllergies: text("foodAllergies"), // JSON array
+  allergySymptoms: text("allergySymptoms"),
+  
+  // Restrições alimentares
+  dietaryRestrictions: text("dietaryRestrictions"), // JSON: ["vegetariano", "vegano", "kosher", ...]
+  religiousRestrictions: text("religiousRestrictions"),
+  ethicalRestrictions: text("ethicalRestrictions"),
+  
+  // Consumo de líquidos
+  waterIntakeLiters: decimal("waterIntakeLiters", { precision: 4, scale: 2 }),
+  beverageConsumption: text("beverageConsumption"), // JSON: {"coffee": 3, "soda": 1, ...}
+  alcoholConsumption: mysqlEnum("alcoholConsumption", ["none", "occasional", "moderate", "frequent"]),
+  alcoholDetails: text("alcoholDetails"),
+  
+  // Suplementação
+  currentSupplements: text("currentSupplements"), // JSON array
+  previousSupplements: text("previousSupplements"),
+  supplementGoals: text("supplementGoals"),
+  
+  // Sintomas gastrointestinais
+  digestiveIssues: text("digestiveIssues"), // JSON: ["constipação", "diarreia", "gases", ...]
+  bowelFrequency: varchar("bowelFrequency", { length: 50 }), // Ex: "1x ao dia"
+  bowelConsistency: mysqlEnum("bowelConsistency", ["hard", "normal", "soft", "liquid", "varies"]),
+  
+  // Apetite e saciedade
+  appetiteLevel: mysqlEnum("appetiteLevel", ["very_low", "low", "normal", "high", "very_high"]),
+  satietyLevel: mysqlEnum("satietyLevel", ["never_full", "rarely_full", "normal", "easily_full", "always_full"]),
+  emotionalEating: boolean("emotionalEating").default(false),
+  emotionalEatingTriggers: text("emotionalEatingTriggers"),
+  
+  // Cozinha e preparo
+  cookingSkills: mysqlEnum("cookingSkills", ["none", "basic", "intermediate", "advanced"]),
+  cookingFrequency: mysqlEnum("cookingFrequency", ["never", "rarely", "sometimes", "often", "always"]),
+  mealPrepTime: int("mealPrepTime"), // Tempo disponível para preparo (minutos)
+  kitchenEquipment: text("kitchenEquipment"), // JSON: ["fogão", "forno", "air fryer", ...]
+  
+  // Orçamento
+  monthlyFoodBudget: decimal("monthlyFoodBudget", { precision: 10, scale: 2 }),
+  budgetPriority: mysqlEnum("budgetPriority", ["very_limited", "limited", "moderate", "flexible", "unlimited"]),
+  
+  // Rotina alimentar
+  workSchedule: text("workSchedule"), // Horário de trabalho
+  mealPrepDay: text("mealPrepDay"), // Dia de preparar marmitas
+  eatingOutFrequency: mysqlEnum("eatingOutFrequency", ["never", "rarely", "weekly", "often", "daily"]),
+  deliveryFrequency: mysqlEnum("deliveryFrequency", ["never", "rarely", "weekly", "often", "daily"]),
+  
+  // Objetivos nutricionais específicos
+  nutritionGoals: text("nutritionGoals"), // JSON array
+  expectedResults: text("expectedResults"),
+  timeline: varchar("timeline", { length: 100 }), // Ex: "3 meses"
+  
+  // Observações
+  additionalNotes: text("additionalNotes"),
+  
+  version: int("version").default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NutritionAnamnesis = typeof nutritionAnamneses.$inferSelect;
+export type InsertNutritionAnamnesis = typeof nutritionAnamneses.$inferInsert;
+
+// ==================== NUTRITION GUIDELINES (Orientações Nutricionais) ====================
+export const nutritionGuidelines = mysqlTable("nutrition_guidelines", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // null = orientação do sistema
+  
+  title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }), // Ex: "Hidratação", "Pré-treino", "Pós-treino"
+  content: text("content").notNull(), // Conteúdo em Markdown
+  summary: text("summary"), // Resumo curto
+  
+  // Público-alvo
+  targetGoals: text("targetGoals"), // JSON: ["weight_loss", "muscle_gain", ...]
+  targetConditions: text("targetConditions"), // JSON: ["diabetes", "hipertensão", ...]
+  
+  // Metadados
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  isPublic: boolean("isPublic").default(false),
+  isActive: boolean("isActive").default(true),
+  viewCount: int("viewCount").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NutritionGuideline = typeof nutritionGuidelines.$inferSelect;
+export type InsertNutritionGuideline = typeof nutritionGuidelines.$inferInsert;
+
+// ==================== NUTRITION SETTINGS (Configurações do Módulo de Nutrição) ====================
+export const nutritionSettings = mysqlTable("nutrition_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").notNull().references(() => personals.id).unique(),
+  
+  // Configurações de cálculo
+  defaultBmrFormula: mysqlEnum("defaultBmrFormula", [
+    "mifflin_st_jeor", "harris_benedict", "katch_mcardle", "cunningham"
+  ]).default("mifflin_st_jeor"),
+  defaultActivityMultiplier: decimal("defaultActivityMultiplier", { precision: 3, scale: 2 }).default("1.55"),
+  
+  // Distribuição padrão de macros (%)
+  defaultProteinPercentage: int("defaultProteinPercentage").default(30),
+  defaultCarbsPercentage: int("defaultCarbsPercentage").default(40),
+  defaultFatPercentage: int("defaultFatPercentage").default(30),
+  
+  // Proteína por kg de peso
+  proteinPerKgWeightLoss: decimal("proteinPerKgWeightLoss", { precision: 3, scale: 2 }).default("1.8"),
+  proteinPerKgMuscleGain: decimal("proteinPerKgMuscleGain", { precision: 3, scale: 2 }).default("2.2"),
+  proteinPerKgMaintenance: decimal("proteinPerKgMaintenance", { precision: 3, scale: 2 }).default("1.6"),
+  
+  // Déficit/superávit calórico padrão
+  defaultCaloricDeficit: int("defaultCaloricDeficit").default(500), // kcal
+  defaultCaloricSurplus: int("defaultCaloricSurplus").default(300), // kcal
+  
+  // Configurações de refeições
+  defaultMealsPerDay: int("defaultMealsPerDay").default(5),
+  defaultMealNames: text("defaultMealNames"), // JSON: ["Café da manhã", "Lanche", "Almoço", ...]
+  
+  // Integração com treino
+  trainingDayCaloriesBonus: int("trainingDayCaloriesBonus").default(200),
+  trainingDayCarbsBonus: int("trainingDayCarbsBonus").default(50),
+  
+  // Preferências de exibição
+  showMicronutrients: boolean("showMicronutrients").default(true),
+  showGlycemicIndex: boolean("showGlycemicIndex").default(false),
+  preferredFoodDatabase: mysqlEnum("preferredFoodDatabase", ["taco", "usda", "both"]).default("taco"),
+  
+  // Notificações
+  sendMealReminders: boolean("sendMealReminders").default(false),
+  sendWeeklyReport: boolean("sendWeeklyReport").default(true),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NutritionSetting = typeof nutritionSettings.$inferSelect;
+export type InsertNutritionSetting = typeof nutritionSettings.$inferInsert;

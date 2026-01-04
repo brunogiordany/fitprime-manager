@@ -1,0 +1,11 @@
+export { default as FoodsPage } from "./FoodsPage";
+export { default as MealPlansPage } from "./MealPlansPage";
+export { default as RecipesPage } from "./RecipesPage";
+export { default as PatientsPage } from "./PatientsPage";
+export { default as PatientDetailPage } from "./PatientDetailPage";
+export { default as AssessmentPage } from "./AssessmentPage";
+export { default as ExamsPage } from "./ExamsPage";
+export { default as MealPlanDetailPage } from "./MealPlanDetailPage";
+export { default as AnamnesisPage } from "./AnamnesisPage";
+export { default as EvolutionPage } from "./EvolutionPage";
+export { default as NutritionSettingsPage } from "./SettingsPage";
