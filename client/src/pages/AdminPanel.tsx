@@ -1634,6 +1634,21 @@ export default function AdminPanel() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link href="/admin/emails">
+                <Card className="cursor-pointer hover:border-orange-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                        <Mail className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Templates de Email</p>
+                        <p className="text-xs text-muted-foreground">Personalizar emails</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             
             {/* Gráficos */}
