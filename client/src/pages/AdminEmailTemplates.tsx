@@ -77,6 +77,42 @@ const SENDER_LABELS: Record<string, string> = {
   contato: "Contato (contato@)",
 };
 
+// Lista completa de todas as variáveis disponíveis no sistema
+const ALL_VARIABLES: { name: string; description: string; category: string }[] = [
+  // Dados do Aluno
+  { name: "studentName", description: "Nome do aluno", category: "Aluno" },
+  { name: "studentEmail", description: "Email do aluno", category: "Aluno" },
+  { name: "studentPhone", description: "Telefone do aluno", category: "Aluno" },
+  // Dados do Personal
+  { name: "personalName", description: "Nome do personal trainer", category: "Personal" },
+  { name: "personalEmail", description: "Email do personal", category: "Personal" },
+  { name: "personalPhone", description: "Telefone do personal", category: "Personal" },
+  { name: "businessName", description: "Nome da empresa/negócio", category: "Personal" },
+  // Links e URLs
+  { name: "inviteLink", description: "Link para criar conta (convite)", category: "Links" },
+  { name: "loginLink", description: "Link para fazer login", category: "Links" },
+  { name: "resetLink", description: "Link para resetar senha", category: "Links" },
+  { name: "dashboardLink", description: "Link para o dashboard", category: "Links" },
+  { name: "activationLink", description: "Link para ativar conta", category: "Links" },
+  // Sessões e Treinos
+  { name: "sessionDate", description: "Data da sessão", category: "Sessão" },
+  { name: "sessionTime", description: "Horário da sessão", category: "Sessão" },
+  { name: "sessionDuration", description: "Duração da sessão", category: "Sessão" },
+  { name: "workoutName", description: "Nome do treino", category: "Sessão" },
+  // Pagamentos
+  { name: "paymentAmount", description: "Valor do pagamento", category: "Pagamento" },
+  { name: "paymentDueDate", description: "Data de vencimento", category: "Pagamento" },
+  { name: "planName", description: "Nome do plano", category: "Pagamento" },
+  { name: "paymentLink", description: "Link para pagamento", category: "Pagamento" },
+  // Sistema
+  { name: "verificationCode", description: "Código de verificação", category: "Sistema" },
+  { name: "currentDate", description: "Data atual", category: "Sistema" },
+  { name: "appName", description: "Nome do aplicativo", category: "Sistema" },
+];
+
+// Categorias de variáveis
+const VARIABLE_CATEGORIES = ["Aluno", "Personal", "Links", "Sessão", "Pagamento", "Sistema"];
+
 // Mapeamento de ícones por tipo
 const TEMPLATE_ICONS: Record<string, string> = {
   invite: "💌",
@@ -109,6 +145,20 @@ export default function AdminEmailTemplates() {
     senderType: "default",
     isActive: true,
   });
+  
+  // Estado para editor visual
+  const [useVisualEditor, setUseVisualEditor] = useState(true);
+  const [visualContent, setVisualContent] = useState({
+    headerTitle: "",
+    headerSubtitle: "",
+    greeting: "",
+    mainText: "",
+    buttonText: "",
+    buttonLink: "",
+    footerText: "",
+    primaryColor: "#10b981",
+  });
+  const [showAllVariables, setShowAllVariables] = useState(false);
 
   // Verificar se é owner/admin
   const { data: ownerCheck, isLoading: ownerLoading } = trpc.admin.isOwner.useQuery();
@@ -201,14 +251,22 @@ export default function AdminEmailTemplates() {
       senderType: template.senderType as "default" | "convites" | "avisos" | "cobranca" | "sistema" | "contato",
       isActive: template.isActive,
     });
+    // Extrai conteúdo visual do HTML existente
+    const extracted = extractVisualContent(template.htmlContent);
+    setVisualContent(extracted);
     setIsEditing(true);
   };
 
   const handleSave = () => {
     if (!selectedTemplate) return;
+    
+    // Se estiver usando editor visual, gera o HTML
+    const finalHtmlContent = useVisualEditor ? generateHtmlFromVisual() : editForm.htmlContent;
+    
     updateMutation.mutate({
       id: selectedTemplate.id,
       ...editForm,
+      htmlContent: finalHtmlContent,
     });
   };
 
@@ -223,6 +281,111 @@ export default function AdminEmailTemplates() {
   const copyVariable = (varName: string) => {
     navigator.clipboard.writeText(`{{${varName}}}`);
     toast.success(`Variável {{${varName}}} copiada!`);
+  };
+
+  // Função para extrair conteúdo visual do HTML
+  const extractVisualContent = (html: string) => {
+    // Tenta extrair os elementos principais do template HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    
+    // Extrai título (h1 ou primeiro heading)
+    const h1 = doc.querySelector("h1");
+    const headerTitle = h1?.textContent || "";
+    
+    // Extrai subtítulo (primeiro p após h1)
+    const subtitle = doc.querySelector("h1 + p, h2");
+    const headerSubtitle = subtitle?.textContent || "";
+    
+    // Extrai saudação (texto que começa com "Olá" ou "Oi")
+    const allText = doc.body?.textContent || "";
+    const greetingMatch = allText.match(/Olá[^!]*!|Oi[^!]*!/i);
+    const greeting = greetingMatch ? greetingMatch[0] : "";
+    
+    // Extrai texto principal (maior parágrafo)
+    const paragraphs = Array.from(doc.querySelectorAll("p"));
+    const mainParagraph = paragraphs.sort((a, b) => (b.textContent?.length || 0) - (a.textContent?.length || 0))[0];
+    const mainText = mainParagraph?.textContent || "";
+    
+    // Extrai botão
+    const button = doc.querySelector("a[style*='background'], button, a.button");
+    const buttonText = button?.textContent || "";
+    const buttonLink = button?.getAttribute("href") || "";
+    
+    // Extrai cor primária (do botão ou estilo)
+    const styleMatch = html.match(/background[^:]*:\s*([#][0-9a-fA-F]{6}|rgb[^)]+\))/i);
+    const primaryColor = styleMatch ? styleMatch[1] : "#10b981";
+    
+    return {
+      headerTitle,
+      headerSubtitle,
+      greeting,
+      mainText,
+      buttonText,
+      buttonLink,
+      footerText: "",
+      primaryColor,
+    };
+  };
+
+  // Função para gerar HTML a partir do conteúdo visual
+  const generateHtmlFromVisual = () => {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, ${visualContent.primaryColor} 0%, ${adjustColor(visualContent.primaryColor, -20)} 100%); padding: 40px; text-align: center;">
+              <div style="width: 80px; height: 80px; background-color: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 40px;">✉️</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">${visualContent.headerTitle || "Título do Email"}</h1>
+              ${visualContent.headerSubtitle ? `<p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">${visualContent.headerSubtitle}</p>` : ""}
+            </td>
+          </tr>
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              ${visualContent.greeting ? `<div style="background-color: ${visualContent.primaryColor}15; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 18px; color: #1f2937;">${visualContent.greeting}</p>
+              </div>` : ""}
+              ${visualContent.mainText ? `<p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">${visualContent.mainText}</p>` : ""}
+              ${visualContent.buttonText ? `<div style="text-align: center; margin: 32px 0;">
+                <a href="${visualContent.buttonLink || "#"}" style="display: inline-block; background: linear-gradient(135deg, ${visualContent.primaryColor} 0%, ${adjustColor(visualContent.primaryColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px ${visualContent.primaryColor}40;">${visualContent.buttonText}</a>
+              </div>` : ""}
+              ${visualContent.footerText ? `<p style="color: #6b7280; font-size: 14px; margin: 24px 0 0;">${visualContent.footerText}</p>` : ""}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">Este email foi enviado automaticamente pelo FitPrime Manager</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  };
+
+  // Função auxiliar para ajustar cor
+  const adjustColor = (color: string, amount: number): string => {
+    const hex = color.replace("#", "");
+    const num = parseInt(hex, 16);
+    const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+    const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
+    const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
+    return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
   };
 
   return (
@@ -477,39 +640,215 @@ export default function AdminEmailTemplates() {
                           </p>
                         </div>
 
-                        {/* Variáveis Disponíveis */}
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2">
-                            <Info className="h-4 w-4" />
-                            Variáveis Disponíveis
-                          </Label>
-                          <div className="flex flex-wrap gap-2">
-                            {parseVariables(selectedTemplate.variables).map((v) => (
-                              <Button
-                                key={v.name}
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyVariable(v.name)}
-                                className="text-xs"
-                              >
-                                <Copy className="h-3 w-3 mr-1" />
-                                {`{{${v.name}}}`}
-                              </Button>
-                            ))}
+                        {/* Todas as Variáveis Disponíveis */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="flex items-center gap-2">
+                              <Info className="h-4 w-4" />
+                              Variáveis Disponíveis
+                            </Label>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowAllVariables(!showAllVariables)}
+                            >
+                              {showAllVariables ? "Mostrar menos" : "Ver todas as variáveis"}
+                            </Button>
+                          </div>
+                          
+                          {!showAllVariables ? (
+                            <div className="flex flex-wrap gap-2">
+                              {parseVariables(selectedTemplate.variables).map((v) => (
+                                <Button
+                                  key={v.name}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyVariable(v.name)}
+                                  className="text-xs"
+                                >
+                                  <Copy className="h-3 w-3 mr-1" />
+                                  {`{{${v.name}}}`}
+                                </Button>
+                              ))}
+                            </div>
+                          ) : (
+                            <Card className="bg-muted/50">
+                              <CardContent className="p-4">
+                                <p className="text-sm text-muted-foreground mb-4">
+                                  Clique em qualquer variável para copiar. Use no assunto ou conteúdo do email.
+                                </p>
+                                <div className="space-y-4">
+                                  {VARIABLE_CATEGORIES.map((category) => (
+                                    <div key={category}>
+                                      <h4 className="text-sm font-semibold mb-2 text-primary">{category}</h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {ALL_VARIABLES.filter(v => v.category === category).map((v) => (
+                                          <Button
+                                            key={v.name}
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => copyVariable(v.name)}
+                                            className="text-xs h-auto py-1"
+                                            title={v.description}
+                                          >
+                                            <Copy className="h-3 w-3 mr-1" />
+                                            {`{{${v.name}}}`}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
+                        </div>
+
+                        <Separator />
+
+                        {/* Alternar entre Editor Visual e Código */}
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div>
+                            <Label className="font-medium">Modo de Edição</Label>
+                            <p className="text-xs text-muted-foreground">
+                              {useVisualEditor ? "Editor visual simplificado" : "Editor de código HTML"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm ${!useVisualEditor ? 'font-medium' : 'text-muted-foreground'}`}>Código</span>
+                            <Switch
+                              checked={useVisualEditor}
+                              onCheckedChange={setUseVisualEditor}
+                            />
+                            <span className={`text-sm ${useVisualEditor ? 'font-medium' : 'text-muted-foreground'}`}>Visual</span>
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label>Conteúdo HTML</Label>
-                          <Textarea
-                            value={editForm.htmlContent}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, htmlContent: e.target.value })
-                            }
-                            rows={15}
-                            className="font-mono text-sm"
-                          />
-                        </div>
+                        {useVisualEditor ? (
+                          /* Editor Visual */
+                          <div className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label>Título Principal</Label>
+                                <Input
+                                  value={visualContent.headerTitle}
+                                  onChange={(e) => setVisualContent({ ...visualContent, headerTitle: e.target.value })}
+                                  placeholder="Ex: Você foi convidado!"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Subtítulo (opcional)</Label>
+                                <Input
+                                  value={visualContent.headerSubtitle}
+                                  onChange={(e) => setVisualContent({ ...visualContent, headerSubtitle: e.target.value })}
+                                  placeholder="Ex: Uma nova jornada fitness te espera"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Saudação</Label>
+                              <Input
+                                value={visualContent.greeting}
+                                onChange={(e) => setVisualContent({ ...visualContent, greeting: e.target.value })}
+                                placeholder="Ex: Olá {{studentName}}! 👋"
+                              />
+                              <p className="text-xs text-muted-foreground">Use variáveis como {"{{studentName}}"} para personalizar</p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Texto Principal</Label>
+                              <Textarea
+                                value={visualContent.mainText}
+                                onChange={(e) => setVisualContent({ ...visualContent, mainText: e.target.value })}
+                                rows={4}
+                                placeholder="Ex: {{personalName}} está te convidando para fazer parte do FitPrime!"
+                              />
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label>Texto do Botão</Label>
+                                <Input
+                                  value={visualContent.buttonText}
+                                  onChange={(e) => setVisualContent({ ...visualContent, buttonText: e.target.value })}
+                                  placeholder="Ex: Criar Minha Conta"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Link do Botão</Label>
+                                <Input
+                                  value={visualContent.buttonLink}
+                                  onChange={(e) => setVisualContent({ ...visualContent, buttonLink: e.target.value })}
+                                  placeholder="Ex: {{inviteLink}}"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Texto Adicional (opcional)</Label>
+                              <Textarea
+                                value={visualContent.footerText}
+                                onChange={(e) => setVisualContent({ ...visualContent, footerText: e.target.value })}
+                                rows={2}
+                                placeholder="Ex: Se você não solicitou este convite, ignore este email."
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Cor Principal</Label>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="color"
+                                  value={visualContent.primaryColor}
+                                  onChange={(e) => setVisualContent({ ...visualContent, primaryColor: e.target.value })}
+                                  className="w-12 h-10 rounded cursor-pointer border"
+                                />
+                                <Input
+                                  value={visualContent.primaryColor}
+                                  onChange={(e) => setVisualContent({ ...visualContent, primaryColor: e.target.value })}
+                                  className="w-32"
+                                />
+                                <div className="flex gap-2">
+                                  {["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899"].map((color) => (
+                                    <button
+                                      key={color}
+                                      onClick={() => setVisualContent({ ...visualContent, primaryColor: color })}
+                                      className="w-8 h-8 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                                      style={{ backgroundColor: color }}
+                                      title={color}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Preview em tempo real */}
+                            <div className="space-y-2">
+                              <Label>Preview em Tempo Real</Label>
+                              <div className="border rounded-lg overflow-hidden">
+                                <iframe
+                                  srcDoc={generateHtmlFromVisual()}
+                                  className="w-full h-[400px] bg-white"
+                                  title="Email Preview"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Editor de Código */
+                          <div className="space-y-2">
+                            <Label>Conteúdo HTML</Label>
+                            <Textarea
+                              value={editForm.htmlContent}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, htmlContent: e.target.value })
+                              }
+                              rows={15}
+                              className="font-mono text-sm"
+                            />
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-2">
                           <Switch

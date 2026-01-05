@@ -3450,3 +3450,8 @@
 - [x] Criar design profissional para template de Ativação de Compra
 - [x] Adicionar botão "Restaurar Padrões" na página de admin emails
 - [x] Testar envio de email para brunogiordany@gmail.com
+
+## Melhorias Templates de Email (v4.7)
+- [x] Adicionar seção com lista completa de variáveis disponíveis na página de Templates de Email
+- [x] Criar editor visual simplificado para editar templates sem código HTML
+
