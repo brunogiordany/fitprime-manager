@@ -1751,11 +1751,48 @@ export const appRouter = router({
         // Atualizar contagem de alunos na subscription
         await updateStudentCount(ctx.personal.id);
         
+        // Enviar convite automaticamente se tiver email
+        let inviteSent = false;
+        let inviteLink: string | null = null;
+        if (input.email) {
+          try {
+            const { nanoid } = await import('nanoid');
+            const inviteToken = nanoid(32);
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
+            
+            // Criar convite
+            await db.createStudentInvite({
+              personalId: ctx.personal.id,
+              studentId: id,
+              inviteToken,
+              email: input.email,
+              phone: input.phone || undefined,
+              expiresAt,
+            });
+            
+            // Construir link completo
+            const baseUrl = process.env.VITE_APP_URL || 'https://fitprimehub-sfh8sqab.manus.space';
+            inviteLink = `${baseUrl}/convite/${inviteToken}`;
+            
+            // Enviar email
+            const { sendInviteEmail } = await import('./email');
+            const personalName = ctx.user.name || 'Seu Personal Trainer';
+            await sendInviteEmail(input.email, input.name, personalName, inviteLink);
+            inviteSent = true;
+          } catch (error) {
+            console.error('Erro ao enviar convite automático:', error);
+            // Não falha a criação do aluno se o convite falhar
+          }
+        }
+        
         return { 
           id,
           willBeCharged: canAdd.willBeCharged,
           extraCost: canAdd.extraCost,
           message: canAdd.message || null,
+          inviteSent,
+          inviteLink,
         };
       }),
     

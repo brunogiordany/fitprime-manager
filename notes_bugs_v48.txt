@@ -1,0 +1,18 @@
+# Bugs e Melhorias v4.8
+
+## Bug 1: Anamnese duplicada (ID 30001)
+- Erro: Failed query: update 'anamneses' set ... where 'anamneses'.'id' = 30001
+- O ID 30001 não existe no banco de dados
+- Causa provável: O endpoint está tentando atualizar uma anamnese que não existe
+- O endpoint saveWithMeasurements verifica se existe anamnese pelo studentId, mas pode haver um problema de cache ou race condition
+
+## Bug 2: Cálculos automáticos não aparecem na visualização
+- Na edição/nova medição: BF Estimado 29.9%, Massa Gorda 26.3kg, Massa Magra 61.7kg aparecem
+- Na visualização principal: BF Estimado -%, Massa Gorda - kg, Massa Magra - kg
+- Causa: Os cálculos são feitos no frontend durante a edição, mas não são salvos no banco ou não são recalculados na visualização
+
+## Melhorias solicitadas:
+1. Adicionar circunferências no onboarding do aluno
+2. Cálculo de kcal diárias baseado no objetivo
+3. Sugestão de cardio necessário
+4. Recomendações de treino personalizadas

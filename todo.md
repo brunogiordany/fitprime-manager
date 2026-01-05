@@ -3456,3 +3456,17 @@
 - [x] Criar editor visual simplificado para editar templates sem código HTML
 
 - [x] Adicionar lista de variáveis de email em local estratégico e visível na página de Templates de Email
+
+## Bugs e Melhorias Portal do Aluno (v4.8)
+- [ ] Bug: Email de convite não está sendo enviado ao cadastrar aluno
+- [x] Bug: Anamnese duplicada - aluno precisa preencher 2x (erro na primeira)
+- [x] Adicionar campos de circunferências na anamnese do aluno (cintura, peito, braços, pernas, etc.)
+- [ ] Cálculo automático de TMB (Taxa Metabólica Basal)
+- [ ] Cálculo automático de TDEE (Gasto Energético Diário Total)
+- [ ] Cálculo de kcal diárias recomendadas baseado no objetivo
+- [ ] Painel de recomendações personalizadas para o aluno:
+  - [ ] Quantidade de kcal diárias para atingir objetivo
+  - [ ] Sugestão de cardio necessário
+  - [ ] Recomendações de treino
+- [x] Bug: Cálculos automáticos (BF, Massa Gorda, Massa Magra) não aparecem na visualização das Medidas Corporais (só na edição)
+- [ ] Bug UX: Modal Preview das Sessões - botões sendo tampados pelo conteúdo (precisa de scroll ou footer fixo)

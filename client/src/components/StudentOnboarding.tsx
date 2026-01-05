@@ -50,6 +50,17 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
       gender: "",
       height: "",
       weight: "",
+      // Circunferências
+      neck: "",
+      chest: "",
+      waist: "",
+      hip: "",
+      rightArm: "",
+      leftArm: "",
+      rightThigh: "",
+      leftThigh: "",
+      rightCalf: "",
+      leftCalf: "",
       // Saúde
       healthConditions: "",
       medications: "",
@@ -139,6 +150,16 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
       measurements: {
         weight: formData.weight || undefined,
         height: formData.height || undefined,
+        neck: formData.neck || undefined,
+        chest: formData.chest || undefined,
+        waist: formData.waist || undefined,
+        hip: formData.hip || undefined,
+        rightArm: formData.rightArm || undefined,
+        leftArm: formData.leftArm || undefined,
+        rightThigh: formData.rightThigh || undefined,
+        leftThigh: formData.leftThigh || undefined,
+        rightCalf: formData.rightCalf || undefined,
+        leftCalf: formData.leftCalf || undefined,
       },
     });
   };
@@ -203,7 +224,7 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
           <div className="min-h-[300px]">
             {currentStep === 1 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Dados Pessoais</h3>
+                <h3 className="text-lg font-semibold">Dados Pessoais e Medidas</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="birthDate">Data de Nascimento</Label>
@@ -247,6 +268,134 @@ export default function StudentOnboarding({ studentId, studentName, onComplete }
                       value={formData.weight}
                       onChange={(e) => updateField("weight", e.target.value)}
                     />
+                  </div>
+                </div>
+                
+                {/* Circunferências */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-md font-medium mb-3 text-emerald-700">Circunferências (cm) - Opcional</h4>
+                  <p className="text-sm text-gray-500 mb-3">Essas medidas ajudam a calcular seu percentual de gordura corporal</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="neck" className="text-sm">Pescoço</Label>
+                      <Input
+                        id="neck"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 38"
+                        value={formData.neck}
+                        onChange={(e) => updateField("neck", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="chest" className="text-sm">Peito</Label>
+                      <Input
+                        id="chest"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 100"
+                        value={formData.chest}
+                        onChange={(e) => updateField("chest", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="waist" className="text-sm">Cintura</Label>
+                      <Input
+                        id="waist"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 85"
+                        value={formData.waist}
+                        onChange={(e) => updateField("waist", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="hip" className="text-sm">Quadril</Label>
+                      <Input
+                        id="hip"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 100"
+                        value={formData.hip}
+                        onChange={(e) => updateField("hip", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="rightArm" className="text-sm">Braço D</Label>
+                      <Input
+                        id="rightArm"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 35"
+                        value={formData.rightArm}
+                        onChange={(e) => updateField("rightArm", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="leftArm" className="text-sm">Braço E</Label>
+                      <Input
+                        id="leftArm"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 35"
+                        value={formData.leftArm}
+                        onChange={(e) => updateField("leftArm", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="rightThigh" className="text-sm">Coxa D</Label>
+                      <Input
+                        id="rightThigh"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 55"
+                        value={formData.rightThigh}
+                        onChange={(e) => updateField("rightThigh", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="leftThigh" className="text-sm">Coxa E</Label>
+                      <Input
+                        id="leftThigh"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 55"
+                        value={formData.leftThigh}
+                        onChange={(e) => updateField("leftThigh", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="rightCalf" className="text-sm">Panturrilha D</Label>
+                      <Input
+                        id="rightCalf"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 38"
+                        value={formData.rightCalf}
+                        onChange={(e) => updateField("rightCalf", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="leftCalf" className="text-sm">Panturrilha E</Label>
+                      <Input
+                        id="leftCalf"
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 38"
+                        value={formData.leftCalf}
+                        onChange={(e) => updateField("leftCalf", e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

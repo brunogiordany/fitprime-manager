@@ -1,0 +1,18 @@
+{
+  "query": "SELECT a.id, a.studentId, s.name as studentName, a.mainGoal, a.occupation, a.version \nFROM anamneses a \nJOIN students s ON a.studentId = s.id \nWHERE s.name LIKE '%Paulo%' OR s.name LIKE '%Tescaro%'\nORDER BY a.id DESC\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT a.id, a.studentId, s.name as studentName, a.mainGoal, a.occupation, a.version \nFROM anamneses a \nJOIN students s ON a.studentId = s.id \nWHERE s.name LIKE '%Paulo%' OR s.name LIKE '%Tescaro%'\nORDER BY a.id DESC\nLIMIT 5;",
+  "rows": [
+    {
+      "id": "30001",
+      "studentId": "150001",
+      "studentName": "Paulo Tescaro",
+      "mainGoal": "muscle_gain",
+      "occupation": "Líder ferramentaria  ",
+      "version": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tstudentName\tmainGoal\toccupation\tversion\n30001\t150001\tPaulo Tescaro\tmuscle_gain\tLíder ferramentaria  \t2\n",
+  "stderr": "",
+  "execution_time_ms": 865
+}

@@ -21,6 +21,7 @@ import StudentFeedback from "@/components/StudentFeedback";
 import StudentTrainingTips from "@/components/StudentTrainingTips";
 import StudentTrainingDashboard from "@/components/StudentTrainingDashboard";
 import StudentHelpCenter from "@/components/StudentHelpCenter";
+import StudentNutritionRecommendations from "@/components/StudentNutritionRecommendations";
 import { GuidedPhotos } from "@/components/GuidedPhotos";
 import { StudentEvolutionDashboard } from "@/components/StudentEvolutionDashboard";
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
@@ -689,6 +690,29 @@ export default function StudentPortalPage() {
             <StudentTrainingTips 
               nextSession={upcomingSessions[0]} 
               studentGoal={studentData?.goal || undefined}
+            />
+            
+            {/* Recomendações Nutricionais e de Treino */}
+            <StudentNutritionRecommendations
+              studentData={{
+                id: studentData?.id || 0,
+                name: studentData?.name || '',
+                gender: studentData?.gender,
+                goal: studentData?.goal,
+              }}
+              measurements={measurements && measurements.length > 0 ? {
+                weight: measurements[0]?.weight?.toString(),
+                height: measurements[0]?.height?.toString(),
+                bodyFat: measurements[0]?.bodyFat?.toString(),
+              } : null}
+              anamnesis={anamnesis ? {
+                mainGoal: anamnesis.mainGoal,
+                targetWeight: anamnesis.targetWeight,
+                lifestyle: anamnesis.lifestyle,
+                weeklyFrequency: anamnesis.weeklyFrequency,
+                sessionDuration: anamnesis.sessionDuration,
+                doesCardio: anamnesis.doesCardio,
+              } : null}
             />
 
             

@@ -1313,72 +1313,112 @@ export default function Measurements() {
         )}
 
         {/* Card de Cálculos Automáticos - Visível fora do modal */}
-        {latestMeasurement && (
-          <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2 text-emerald-800">
-                <Calculator className="h-5 w-5" />
-                Cálculos Automáticos
-              </CardTitle>
-              <CardDescription className="text-emerald-600">
-                Baseado na última medição registrada
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {/* IMC */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-emerald-600">{latestMeasurement.bmi || '-'}</p>
-                    <p className="text-sm font-medium text-emerald-700 mt-1">IMC</p>
-                    <p className="text-xs text-emerald-500 mt-1">
-                      {latestMeasurement.bmi ? (
-                        parseFloat(String(latestMeasurement.bmi)) < 18.5 ? 'Abaixo do peso' :
-                        parseFloat(String(latestMeasurement.bmi)) < 25 ? 'Peso normal' :
-                        parseFloat(String(latestMeasurement.bmi)) < 30 ? 'Sobrepeso' : 'Obesidade'
-                      ) : '-'}
-                    </p>
+        {latestMeasurement && (() => {
+          // Calcular BF estimado usando circunferências se não tiver bodyFat direto
+          const height = latestMeasurement.height ? parseFloat(String(latestMeasurement.height)) : null;
+          const waist = latestMeasurement.waist ? parseFloat(String(latestMeasurement.waist)) : null;
+          const neck = latestMeasurement.neck ? parseFloat(String(latestMeasurement.neck)) : null;
+          const hip = latestMeasurement.hip ? parseFloat(String(latestMeasurement.hip)) : null;
+          const weight = latestMeasurement.weight ? parseFloat(String(latestMeasurement.weight)) : null;
+          const gender = student?.gender || 'male';
+          
+          // Calcular BF estimado pela fórmula da Marinha dos EUA
+          let estimatedBF: number | null = null;
+          if (height && waist && neck) {
+            if (gender === 'female' && hip) {
+              const bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+              estimatedBF = Math.max(0, bf);
+            } else if (gender === 'male') {
+              const bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+              estimatedBF = Math.max(0, bf);
+            }
+          }
+          
+          // Usar BF da medição ou estimado
+          const bodyFatValue = latestMeasurement.bodyFat 
+            ? parseFloat(String(latestMeasurement.bodyFat)) 
+            : estimatedBF;
+          
+          // Calcular massas
+          const fatMass = weight && bodyFatValue ? ((weight * bodyFatValue) / 100) : null;
+          const leanMass = weight && bodyFatValue ? (weight - (weight * bodyFatValue) / 100) : null;
+          
+          const isEstimated = !latestMeasurement.bodyFat && estimatedBF !== null;
+          
+          return (
+            <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2 text-emerald-800">
+                  <Calculator className="h-5 w-5" />
+                  Cálculos Automáticos
+                </CardTitle>
+                <CardDescription className="text-emerald-600">
+                  Baseado na última medição registrada
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* IMC */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-emerald-600">{latestMeasurement.bmi || '-'}</p>
+                      <p className="text-sm font-medium text-emerald-700 mt-1">IMC</p>
+                      <p className="text-xs text-emerald-500 mt-1">
+                        {latestMeasurement.bmi ? (
+                          parseFloat(String(latestMeasurement.bmi)) < 18.5 ? 'Abaixo do peso' :
+                          parseFloat(String(latestMeasurement.bmi)) < 25 ? 'Peso normal' :
+                          parseFloat(String(latestMeasurement.bmi)) < 30 ? 'Sobrepeso' : 'Obesidade'
+                        ) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* BF Estimado */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-100">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-orange-500">
+                        {bodyFatValue ? bodyFatValue.toFixed(1) : '-'}%
+                      </p>
+                      <p className="text-sm font-medium text-orange-600 mt-1">
+                        BF {isEstimated ? 'Estimado' : ''}
+                      </p>
+                      <p className="text-xs text-orange-400 mt-1">
+                        {isEstimated ? 'Fórmula Marinha EUA' : '% Gordura Corporal'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Massa Gorda */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-red-100">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-red-500">
+                        {fatMass ? fatMass.toFixed(1) : '-'} kg
+                      </p>
+                      <p className="text-sm font-medium text-red-600 mt-1">Massa Gorda</p>
+                      <p className="text-xs text-red-400 mt-1">Peso de gordura</p>
+                    </div>
+                  </div>
+                  
+                  {/* Massa Magra */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-100">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-blue-500">
+                        {leanMass ? leanMass.toFixed(1) : '-'} kg
+                      </p>
+                      <p className="text-sm font-medium text-blue-600 mt-1">Massa Magra</p>
+                      <p className="text-xs text-blue-400 mt-1">Músculos + ossos</p>
+                    </div>
                   </div>
                 </div>
-                
-                {/* BF Estimado */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-100">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-orange-500">{latestMeasurement.bodyFat || '-'}%</p>
-                    <p className="text-sm font-medium text-orange-600 mt-1">BF Estimado</p>
-                    <p className="text-xs text-orange-400 mt-1">% Gordura Corporal</p>
-                  </div>
-                </div>
-                
-                {/* Massa Gorda */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-red-100">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-red-500">
-                      {latestMeasurement.weight && latestMeasurement.bodyFat 
-                        ? ((parseFloat(String(latestMeasurement.weight)) * parseFloat(String(latestMeasurement.bodyFat))) / 100).toFixed(1)
-                        : '-'} kg
-                    </p>
-                    <p className="text-sm font-medium text-red-600 mt-1">Massa Gorda</p>
-                    <p className="text-xs text-red-400 mt-1">Peso de gordura</p>
-                  </div>
-                </div>
-                
-                {/* Massa Magra */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-100">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-blue-500">
-                      {latestMeasurement.weight && latestMeasurement.bodyFat 
-                        ? (parseFloat(String(latestMeasurement.weight)) - (parseFloat(String(latestMeasurement.weight)) * parseFloat(String(latestMeasurement.bodyFat))) / 100).toFixed(1)
-                        : '-'} kg
-                    </p>
-                    <p className="text-sm font-medium text-blue-600 mt-1">Massa Magra</p>
-                    <p className="text-xs text-blue-400 mt-1">Músculos + ossos</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                {isEstimated && (
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    * BF estimado requer: altura, pescoço, cintura{gender === 'female' ? ', quadril' : ''}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Gráficos */}
         {chartData.length > 1 && (

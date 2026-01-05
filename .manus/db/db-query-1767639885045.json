@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, name, email FROM students WHERE email LIKE '%paulo%' OR name LIKE '%Paulo%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email FROM students WHERE email LIKE '%paulo%' OR name LIKE '%Paulo%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Paulo Tescaro",
+      "email": "paulo_tescaro@hotmail.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\n150001\tPaulo Tescaro\tpaulo_tescaro@hotmail.com\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}
