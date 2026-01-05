@@ -764,7 +764,7 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="sessoes" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Sessões
@@ -776,6 +776,10 @@ export default function TrainingDiaryPage() {
             <TabsTrigger value="cardio" className="flex items-center gap-2">
               <Heart className="h-4 w-4" />
               Cardio
+            </TabsTrigger>
+            <TabsTrigger value="cardio-stats" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Estat. Cardio
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -1132,6 +1136,11 @@ export default function TrainingDiaryPage() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+          
+          {/* Tab: Estatísticas Cardio */}
+          <TabsContent value="cardio-stats" className="space-y-4">
+            <CardioStatsTab studentId={selectedStudentId} />
           </TabsContent>
           
           {/* Tab: Dashboard */}
@@ -3594,5 +3603,391 @@ export default function TrainingDiaryPage() {
         </Dialog>
       </div>
     </DashboardLayout>
+  );
+}
+
+// Componente de Estatísticas de Cardio
+function CardioStatsTab({ studentId }: { studentId: string }) {
+  const { user } = useAuth();
+  const [period, setPeriod] = useState("30");
+  const [groupBy, setGroupBy] = useState<"day" | "week" | "month">("day");
+  
+  // Calcular datas baseado no período
+  const endDate = new Date().toISOString().split('T')[0];
+  const startDate = (() => {
+    const date = new Date();
+    date.setDate(date.getDate() - parseInt(period));
+    return date.toISOString().split('T')[0];
+  })();
+  
+  // Buscar dados de evolução
+  const { data: evolutionData, isLoading: loadingEvolution } = trpc.cardio.evolution.useQuery(
+    { 
+      studentId: parseInt(studentId), 
+      startDate, 
+      endDate, 
+      groupBy 
+    },
+    { enabled: !!studentId && !!user }
+  );
+  
+  // Buscar comparação de períodos
+  const { data: comparisonData } = trpc.cardio.comparison.useQuery(
+    {
+      studentId: parseInt(studentId),
+      currentPeriodStart: startDate,
+      currentPeriodEnd: endDate,
+      previousPeriodStart: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - parseInt(period) * 2);
+        return date.toISOString().split('T')[0];
+      })(),
+      previousPeriodEnd: startDate
+    },
+    { enabled: !!studentId && !!user }
+  );
+  
+  // Buscar estatísticas por tipo
+  const { data: typeStats } = trpc.cardio.byType.useQuery(
+    { studentId: parseInt(studentId), startDate, endDate },
+    { enabled: !!studentId && !!user }
+  );
+  
+  if (!studentId) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="font-semibold text-lg mb-2">Selecione um Aluno</h3>
+          <p className="text-muted-foreground">
+            Escolha um aluno no filtro acima para ver as estatísticas de cardio.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (loadingEvolution) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Preparar dados para gráficos
+  const distanceData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDistance || 0 })) || [];
+  const durationData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDuration || 0 })) || [];
+  const heartRateData = evolutionData?.filter((d: any) => d.avgHeartRate > 0).map((d: any) => ({ date: d.date, value: d.avgHeartRate || 0 })) || [];
+  const sessionsData = evolutionData?.map((d: any) => ({ date: d.date, value: d.sessionCount || 0 })) || [];
+  
+  // Calcular totais
+  const totals = evolutionData?.reduce((acc: any, d: any) => ({
+    sessions: acc.sessions + (d.sessionCount || 0),
+    duration: acc.duration + (d.totalDuration || 0),
+    distance: acc.distance + (d.totalDistance || 0),
+    calories: acc.calories + (d.totalCalories || 0),
+  }), { sessions: 0, duration: 0, distance: 0, calories: 0 }) || { sessions: 0, duration: 0, distance: 0, calories: 0 };
+  
+  return (
+    <div className="space-y-6">
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-4">
+        <Select value={period} onValueChange={setPeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Período" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">Últimos 7 dias</SelectItem>
+            <SelectItem value="14">Últimos 14 dias</SelectItem>
+            <SelectItem value="30">Último mês</SelectItem>
+            <SelectItem value="90">Últimos 3 meses</SelectItem>
+            <SelectItem value="180">Últimos 6 meses</SelectItem>
+            <SelectItem value="365">Último ano</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select value={groupBy} onValueChange={(v) => setGroupBy(v as "day" | "week" | "month")}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Agrupar" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">Por dia</SelectItem>
+            <SelectItem value="week">Por semana</SelectItem>
+            <SelectItem value="month">Por mês</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Activity className="h-4 w-4" />
+              <span className="text-sm">Sessões</span>
+            </div>
+            <p className="text-2xl font-bold">{totals.sessions}</p>
+            {comparisonData?.changes?.sessionCount !== undefined && (
+              <p className={`text-xs ${comparisonData.changes.sessionCount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {comparisonData.changes.sessionCount >= 0 ? '↑' : '↓'} {Math.abs(comparisonData.changes.sessionCount)}% vs período anterior
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Timer className="h-4 w-4" />
+              <span className="text-sm">Tempo Total</span>
+            </div>
+            <p className="text-2xl font-bold">
+              {totals.duration >= 60 
+                ? `${Math.floor(totals.duration / 60)}h ${totals.duration % 60}min`
+                : `${totals.duration}min`
+              }
+            </p>
+            {comparisonData?.changes?.totalDuration !== undefined && (
+              <p className={`text-xs ${comparisonData.changes.totalDuration >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {comparisonData.changes.totalDuration >= 0 ? '↑' : '↓'} {Math.abs(comparisonData.changes.totalDuration)}% vs período anterior
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Footprints className="h-4 w-4" />
+              <span className="text-sm">Distância</span>
+            </div>
+            <p className="text-2xl font-bold">{totals.distance.toFixed(1)} km</p>
+            {comparisonData?.changes?.totalDistance !== undefined && (
+              <p className={`text-xs ${comparisonData.changes.totalDistance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {comparisonData.changes.totalDistance >= 0 ? '↑' : '↓'} {Math.abs(comparisonData.changes.totalDistance)}% vs período anterior
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Flame className="h-4 w-4" />
+              <span className="text-sm">Calorias</span>
+            </div>
+            <p className="text-2xl font-bold">{totals.calories.toLocaleString('pt-BR')}</p>
+            {comparisonData?.changes?.totalCalories !== undefined && (
+              <p className={`text-xs ${comparisonData.changes.totalCalories >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {comparisonData.changes.totalCalories >= 0 ? '↑' : '↓'} {Math.abs(comparisonData.changes.totalCalories)}% vs período anterior
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Gráficos de Evolução */}
+      {evolutionData && evolutionData.length > 0 ? (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Gráfico de Distância */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Footprints className="h-4 w-4 text-green-500" />
+                Evolução da Distância
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SimpleLineChart data={distanceData} color="green" unit="km" />
+            </CardContent>
+          </Card>
+          
+          {/* Gráfico de Tempo */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Timer className="h-4 w-4 text-blue-500" />
+                Evolução do Tempo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SimpleLineChart data={durationData} color="blue" unit="min" />
+            </CardContent>
+          </Card>
+          
+          {/* Gráfico de Frequência Cardíaca */}
+          {heartRateData.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-red-500" />
+                  Frequência Cardíaca Média
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SimpleLineChart data={heartRateData} color="red" unit="bpm" />
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Gráfico de Sessões */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Activity className="h-4 w-4 text-purple-500" />
+                Frequência de Treinos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SimpleBarChart data={sessionsData} color="purple" />
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Sem dados de cardio</h3>
+            <p className="text-muted-foreground">
+              Não há registros de cardio para este aluno no período selecionado.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Distribuição por Tipo */}
+      {typeStats && typeStats.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Distribuição por Tipo de Cardio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {typeStats.map((stat: any) => {
+                const cardioType = CARDIO_TYPES.find(t => t.value === stat.type);
+                const maxDuration = Math.max(...typeStats.map((s: any) => s.totalDuration));
+                const percentage = maxDuration > 0 ? (stat.totalDuration / maxDuration) * 100 : 0;
+                return (
+                  <div key={stat.type} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{cardioType?.label || stat.type}</span>
+                      <span className="text-muted-foreground">
+                        {stat.sessionCount} sessões · {stat.totalDuration}min · {stat.totalDistance?.toFixed(1) || 0}km
+                      </span>
+                    </div>
+                    <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// Componente de gráfico de linha simples
+function SimpleLineChart({ data, color, unit }: { data: { date: string; value: number }[]; color: string; unit: string }) {
+  if (data.length === 0) {
+    return <div className="h-32 flex items-center justify-center text-muted-foreground text-sm">Sem dados</div>;
+  }
+  
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  const minValue = Math.min(...data.map(d => d.value), 0);
+  const range = maxValue - minValue || 1;
+  
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1 || 1)) * 100;
+    const y = 100 - ((d.value - minValue) / range) * 80 - 10;
+    return { x, y, value: d.value, date: d.date };
+  });
+  
+  const linePoints = points.map(p => `${p.x},${p.y}`).join(' ');
+  const areaPoints = `0,100 ${linePoints} 100,100`;
+  
+  const colorMap: Record<string, { stroke: string; fill: string }> = {
+    green: { stroke: "stroke-green-500", fill: "fill-green-500/20" },
+    blue: { stroke: "stroke-blue-500", fill: "fill-blue-500/20" },
+    red: { stroke: "stroke-red-500", fill: "fill-red-500/20" },
+    purple: { stroke: "stroke-purple-500", fill: "fill-purple-500/20" },
+  };
+  
+  const colors = colorMap[color] || colorMap.green;
+  
+  return (
+    <div className="relative">
+      <div className="h-32">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polygon points={areaPoints} className={colors.fill} />
+          <polyline points={linePoints} fill="none" className={colors.stroke} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          {points.map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y} r="2" className={colors.stroke.replace('stroke', 'fill')} vectorEffect="non-scaling-stroke" />
+          ))}
+        </svg>
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+        <span>{data[0]?.date}</span>
+        <span>{data[data.length - 1]?.date}</span>
+      </div>
+      <div className="absolute left-0 top-0 h-32 flex flex-col justify-between text-xs text-muted-foreground">
+        <span>{maxValue.toFixed(unit === 'km' ? 1 : 0)}{unit}</span>
+        <span>{minValue.toFixed(unit === 'km' ? 1 : 0)}{unit}</span>
+      </div>
+    </div>
+  );
+}
+
+// Componente de gráfico de barras simples
+function SimpleBarChart({ data, color }: { data: { date: string; value: number }[]; color: string }) {
+  if (data.length === 0) {
+    return <div className="h-32 flex items-center justify-center text-muted-foreground text-sm">Sem dados</div>;
+  }
+  
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  
+  const colorMap: Record<string, string> = {
+    green: "bg-green-500",
+    blue: "bg-blue-500",
+    red: "bg-red-500",
+    purple: "bg-purple-500",
+  };
+  
+  const barColor = colorMap[color] || colorMap.green;
+  
+  return (
+    <div>
+      <div className="h-32 flex items-end gap-1">
+        {data.map((d, i) => {
+          const height = maxValue > 0 ? (d.value / maxValue) * 100 : 0;
+          return (
+            <div 
+              key={i} 
+              className="flex-1 flex flex-col items-center justify-end"
+              title={`${d.date}: ${d.value}`}
+            >
+              <span className="text-[10px] text-muted-foreground mb-1">{d.value}</span>
+              <div 
+                className={`w-full ${barColor} rounded-t transition-all duration-300`}
+                style={{ height: `${Math.max(height, 5)}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+        <span>{data[0]?.date}</span>
+        <span>{data[data.length - 1]?.date}</span>
+      </div>
+    </div>
   );
 }

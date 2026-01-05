@@ -3277,6 +3277,9 @@ Seja profissional, detalhado e motivador.`;
         const measurements = await db.getMeasurementsByStudentId(input.studentId);
         const latestMeasurement = measurements[0];
         
+        // Buscar histórico de cardio dos últimos 30 dias
+        const cardioStats = await db.getCardioStats(input.studentId, ctx.personal.id, 30);
+        
         // Montar prompt para a IA
         const studentInfo = {
           nome: student.name,
@@ -3365,14 +3368,24 @@ REGRAS CRÍTICAS - FREQUÊNCIA SEMANAL:
 - Se não informada, use 3 dias como padrão
 
 REGRAS CRÍTICAS - ATIVIDADES AERÓBICAS/CARDIO:
-- Se o aluno JÁ FAZ cardio regularmente (natação, corrida, ciclismo, etc.):
+- ANALISE O HISTÓRICO DE CARDIO fornecido para tomar decisões:
+  * Se o aluno tem muitas sessões de cardio registradas (>8 por mês): ele já faz cardio regularmente
+  * Se tem poucas sessões (<4 por mês): considere sugerir mais cardio
+  * Se não tem registros: verifique na anamnese se faz cardio
+- Se o aluno JÁ FAZ cardio regularmente:
   * NÃO adicione cardio extra no treino de musculação
   * Considere que ele já tem gasto calórico adicional
   * Ajuste o volume de treino para não sobrecarregar
   * Se faz muitas atividades aeróbicas, reduza volume de pernas
+  * Analise os tipos de cardio que ele faz e adapte o treino
 - Se o aluno NÃO FAZ cardio e o objetivo é emagrecimento:
   * Sugira incluir cardio leve ao final do treino (10-15 min)
   * Ou sugira HIIT em dias alternados
+- INTEGRAÇÃO CARDIO + MUSCULAÇÃO:
+  * Se faz corrida/caminhada: reduza volume de quadríceps e panturrilha
+  * Se faz natação: reduza volume de ombros e costas
+  * Se faz ciclismo: reduza volume de pernas
+  * Considere a frequência cardíaca média para ajustar intensidade
 
 REGRAS CRÍTICAS - NUTRIÇÃO E CALORIAS:
 - Se o consumo calórico diário for informado:
@@ -3399,6 +3412,18 @@ Regras adicionais:
 - Se houver restrição no joelho: evite leg press profundo, agachamento completo, saltos
 - Se houver restrição no ombro: evite desenvolvimento atrás da nuca, crucifixo com peso alto`;
         
+        // Montar informações de cardio histórico
+        const cardioInfo = cardioStats && cardioStats.totalSessions > 0 ? {
+          sessoesUltimos30Dias: cardioStats.totalSessions,
+          tempoTotalMinutos: cardioStats.totalDuration || 0,
+          distanciaTotalKm: cardioStats.totalDistance?.toFixed(1) || 0,
+          caloriasQueimadas: cardioStats.totalCalories || 0,
+          frequenciaCardiacaMedia: cardioStats.avgHeartRate || null,
+          tiposRealizados: cardioStats.byType ? Object.entries(cardioStats.byType).map(([type, data]: [string, any]) => 
+            `${type}: ${data.count} sessões, ${data.duration}min`
+          ) : [],
+        } : null;
+        
         const userPrompt = `Crie um treino personalizado para este aluno:
 
 Informações do Aluno:
@@ -3409,6 +3434,9 @@ ${anamnesisInfo ? JSON.stringify(anamnesisInfo, null, 2) : 'Não preenchida - cr
 
 Medidas Atuais:
 ${measurementInfo ? JSON.stringify(measurementInfo, null, 2) : 'Não informadas'}
+
+Histórico de Cardio (últimos 30 dias):
+${cardioInfo ? JSON.stringify(cardioInfo, null, 2) : 'Nenhuma atividade cardiovascular registrada - considere incluir recomendações de cardio se adequado ao objetivo'}
 
 ${input.customPrompt ? `Instruções adicionais do personal: ${input.customPrompt}` : ''}
 
@@ -9029,6 +9057,10 @@ Seja motivador mas realista e profissional.`;
         const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
         const recentLogs = allLogs.filter(log => new Date(log.trainingDate).getTime() > thirtyDaysAgo);
         
+        // Buscar dados de cardio dos últimos 90 dias
+        const cardioStats = await db.getCardioStats(input.studentId, ctx.personal.id, 90);
+        const cardioLogs = await db.getCardioLogsByStudent(input.studentId, ctx.personal.id, 30);
+        
         // Buscar progressão de exercícios principais
         const mainExercises = ['Supino Reto', 'Agachamento', 'Levantamento Terra', 'Desenvolvimento', 'Remada'];
         const exerciseProgress: Record<string, any[]> = {};
@@ -9110,9 +9142,28 @@ ${Object.entries(exerciseProgress).length > 0 ? Object.entries(exerciseProgress)
 }).join('\n') : 'Nenhum dado de progressão'}
 
 ## FREQUÊNCIA E CONSISTÊNCIA
-- Treinos nos últimos 30 dias: ${trainingDays}
+- Treinos de musculação nos últimos 30 dias: ${trainingDays}
 - Média semanal: ${avgTrainingsPerWeek.toFixed(1)} treinos/semana
 - Sentimento médio: ${avgFeeling.toFixed(1)}/5
+
+## ATIVIDADES CARDIOVASCULARES (Últimos 90 dias)
+${cardioStats && cardioStats.totalSessions > 0 ? `
+- Total de sessões: ${cardioStats.totalSessions}
+- Tempo total: ${cardioStats.totalDuration || 0} minutos
+- Distância total: ${cardioStats.totalDistance?.toFixed(1) || 0} km
+- Calorias queimadas: ${cardioStats.totalCalories || 0} kcal
+- Frequência cardíaca média: ${cardioStats.avgHeartRate || 'Não registrada'} bpm
+${cardioStats.byType ? `
+Distribuição por tipo:
+${Object.entries(cardioStats.byType).map(([type, data]: [string, any]) => 
+  `  - ${type}: ${data.count} sessões, ${data.duration}min, ${data.distance?.toFixed(1) || 0}km`
+).join('\n')}` : ''}
+${cardioLogs && cardioLogs.length > 0 ? `
+Últimas sessões:
+${cardioLogs.slice(0, 5).map((log: any) => 
+  `  - ${new Date(log.cardioDate).toLocaleDateString('pt-BR')}: ${log.cardioType} - ${log.durationMinutes}min${log.distanceKm ? `, ${log.distanceKm}km` : ''}${log.intensity ? ` (${log.intensity})` : ''}`
+).join('\n')}` : ''}
+` : 'Nenhuma atividade cardiovascular registrada. Considere incluir cardio no programa de treino se for adequado ao objetivo do aluno.'}
 
 ## FOTOS DE EVOLUÇÃO
 ${hasPhotoEvolution ? `O aluno possui fotos de evolução registradas:
@@ -9132,8 +9183,9 @@ Com base nesses dados, forneça:
 2. **Pontos Fortes**: O que está indo bem (lista de 2-4 itens)
 3. **Pontos de Atenção**: O que precisa de cuidado ou ajuste (lista de 2-4 itens)
 4. **Desequilíbrios Musculares**: Grupos que estão sendo negligenciados ou supertreinados
-5. **Recomendações**: Sugestões práticas para o personal (lista de 3-5 itens)
-6. **Alerta**: Qualquer preocupação importante baseada nos dados (se houver)
+5. **Análise de Cardio**: Avalie a consistência, volume e intensidade das atividades cardiovasculares em relação ao objetivo do aluno
+6. **Recomendações**: Sugestões práticas para o personal, incluindo ajustes no treino de musculação E cardio (lista de 3-5 itens)
+7. **Alerta**: Qualquer preocupação importante baseada nos dados (se houver)
 
 Retorne APENAS o JSON no formato especificado.`;
         
@@ -9166,17 +9218,21 @@ Retorne APENAS o JSON no formato especificado.`;
                     items: { type: 'string' },
                     description: 'Grupos musculares negligenciados ou supertreinados'
                   },
+                  analiseCardio: {
+                    type: 'string',
+                    description: 'Análise da consistência, volume e intensidade das atividades cardiovasculares em relação ao objetivo do aluno'
+                  },
                   recomendacoes: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Sugestões práticas para o personal'
+                    description: 'Sugestões práticas para o personal, incluindo ajustes no treino de musculação e cardio'
                   },
                   alerta: {
                     type: 'string',
                     description: 'Preocupação importante ou string vazia se não houver'
                   },
                 },
-                required: ['resumoGeral', 'pontosFortes', 'pontosAtencao', 'desequilibriosMusculares', 'recomendacoes', 'alerta'],
+                required: ['resumoGeral', 'pontosFortes', 'pontosAtencao', 'desequilibriosMusculares', 'analiseCardio', 'recomendacoes', 'alerta'],
                 additionalProperties: false,
               },
             },
@@ -9205,6 +9261,9 @@ Retorne APENAS o JSON no formato especificado.`;
                 muscleGroups: muscleGroupAnalysis.length,
                 trainingDays,
                 exercisesTracked: Object.keys(exerciseProgress).length,
+                cardioSessions: cardioStats?.totalSessions || 0,
+                cardioDuration: cardioStats?.totalDuration || 0,
+                cardioDistance: cardioStats?.totalDistance || 0,
               },
             },
           };

@@ -3373,3 +3373,11 @@
 - [x] Invalidar cache do auth.me após login bem-sucedido
 - [x] Garantir que o estado de autenticação seja atualizado antes do redirecionamento
 
+
+
+## Estatísticas Cardio e Integração com IA (v4.3)
+- [x] Adicionar aba de Estatísticas Cardio no Diário de Treino
+- [x] Mostrar gráficos de evolução na aba de estatísticas
+- [x] Interligar dados de cardio com análises de evolução do aluno
+- [x] Integrar cardio na análise da IA para treinos melhorados
+- [x] Sincronizar cardio com outras métricas (medidas, treinos, etc)
