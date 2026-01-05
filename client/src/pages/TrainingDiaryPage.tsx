@@ -3653,43 +3653,7 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
     { enabled: !!studentId && !!user }
   );
   
-  if (!studentId) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-semibold text-lg mb-2">Selecione um Aluno</h3>
-          <p className="text-muted-foreground">
-            Escolha um aluno no filtro acima para ver as estatísticas de cardio.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  if (loadingEvolution) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  // Preparar dados para gráficos
-  const distanceData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDistance || 0 })) || [];
-  const durationData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDuration || 0 })) || [];
-  const heartRateData = evolutionData?.filter((d: any) => d.avgHeartRate > 0).map((d: any) => ({ date: d.date, value: d.avgHeartRate || 0 })) || [];
-  const sessionsData = evolutionData?.map((d: any) => ({ date: d.date, value: d.sessionCount || 0 })) || [];
-  
-  // Calcular totais
-  const totals = evolutionData?.reduce((acc: any, d: any) => ({
-    sessions: acc.sessions + (d.sessionCount || 0),
-    duration: acc.duration + (d.totalDuration || 0),
-    distance: acc.distance + (d.totalDistance || 0),
-    calories: acc.calories + (d.totalCalories || 0),
-  }), { sessions: 0, duration: 0, distance: 0, calories: 0 }) || { sessions: 0, duration: 0, distance: 0, calories: 0 };
-  
-  // Mutation para exportar PDF
+  // Mutation para exportar PDF (deve estar antes de qualquer early return)
   const exportPDFMutation = trpc.cardio.exportPDF.useMutation({
     onSuccess: (data) => {
       // Criar blob e fazer download
@@ -3725,6 +3689,42 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
       groupBy,
     });
   };
+  
+  if (!studentId) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="font-semibold text-lg mb-2">Selecione um Aluno</h3>
+          <p className="text-muted-foreground">
+            Escolha um aluno no filtro acima para ver as estatísticas de cardio.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (loadingEvolution) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Preparar dados para gráficos
+  const distanceData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDistance || 0 })) || [];
+  const durationData = evolutionData?.map((d: any) => ({ date: d.date, value: d.totalDuration || 0 })) || [];
+  const heartRateData = evolutionData?.filter((d: any) => d.avgHeartRate > 0).map((d: any) => ({ date: d.date, value: d.avgHeartRate || 0 })) || [];
+  const sessionsData = evolutionData?.map((d: any) => ({ date: d.date, value: d.sessionCount || 0 })) || [];
+  
+  // Calcular totais
+  const totals = evolutionData?.reduce((acc: any, d: any) => ({
+    sessions: acc.sessions + (d.sessionCount || 0),
+    duration: acc.duration + (d.totalDuration || 0),
+    distance: acc.distance + (d.totalDistance || 0),
+    calories: acc.calories + (d.totalCalories || 0),
+  }), { sessions: 0, duration: 0, distance: 0, calories: 0 }) || { sessions: 0, duration: 0, distance: 0, calories: 0 };
   
   return (
     <div className="space-y-6">

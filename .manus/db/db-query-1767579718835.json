@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, personalId FROM students WHERE deletedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, personalId FROM students WHERE deletedAt IS NULL;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "personalId": "1"
+    },
+    {
+      "id": "30001",
+      "name": "Laura",
+      "personalId": "1"
+    },
+    {
+      "id": "60001",
+      "name": "AgenteIA",
+      "personalId": "1"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "personalId": "1"
+    },
+    {
+      "id": "120001",
+      "name": "Julimar vieira",
+      "personalId": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpersonalId\n1\tBruno\t1\n30001\tLaura\t1\n60001\tAgenteIA\t1\n90001\tbruno ps\t1\n120001\tJulimar vieira\t1\n",
+  "stderr": "",
+  "execution_time_ms": 378
+}

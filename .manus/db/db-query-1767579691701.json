@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, studentId, personalId, cardioDate, cardioType, durationMinutes FROM cardio_logs LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, personalId, cardioDate, cardioType, durationMinutes FROM cardio_logs LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "studentId": "1",
+      "personalId": "1",
+      "cardioDate": "2026-01-04",
+      "cardioType": "treadmill",
+      "durationMinutes": "30"
+    },
+    {
+      "id": "2",
+      "studentId": "1",
+      "personalId": "1",
+      "cardioDate": "2026-01-05",
+      "cardioType": "walking",
+      "durationMinutes": "35"
+    },
+    {
+      "id": "3",
+      "studentId": "1",
+      "personalId": "1",
+      "cardioDate": "2026-01-05",
+      "cardioType": "treadmill",
+      "durationMinutes": "33"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tpersonalId\tcardioDate\tcardioType\tdurationMinutes\n1\t1\t1\t2026-01-04\ttreadmill\t30\n2\t1\t1\t2026-01-05\twalking\t35\n3\t1\t1\t2026-01-05\ttreadmill\t33\n",
+  "stderr": "",
+  "execution_time_ms": 398
+}

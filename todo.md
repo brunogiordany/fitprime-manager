@@ -3387,3 +3387,6 @@
 - [x] Gerar PDF com gráficos e estatísticas de cardio
 - [x] Incluir KPIs, evolução e distribuição por tipo
 - [x] Compartilhar com o aluno
+
+## Bug Relatório Cardio (v4.4.1)
+- [x] Corrigir relatório de cardio que não exibe dados dos alunos
