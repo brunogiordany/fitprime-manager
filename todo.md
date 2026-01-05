@@ -3398,3 +3398,8 @@
 ## Layout Análise do Aluno (v4.4.2)
 - [x] Centralizar informações verticalmente na janela de análise
 - [x] Remover necessidade de scroll lateral
+
+## Configuração DNS Resend (v4.4.3)
+- [x] Adicionar seção de configuração DNS do Resend no painel admin
+- [x] Mostrar registros DNS necessários para configurar domínio
+- [x] Incluir instruções de configuração

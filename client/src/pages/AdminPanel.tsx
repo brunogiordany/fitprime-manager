@@ -1410,7 +1410,7 @@ export default function AdminPanel() {
       {/* Content */}
       <div className="container py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -1438,6 +1438,10 @@ export default function AdminPanel() {
             <TabsTrigger value="trash" className="gap-2">
               <Trash className="h-4 w-4" />
               Lixeira
+            </TabsTrigger>
+            <TabsTrigger value="dns" className="gap-2">
+              <Settings className="h-4 w-4" />
+              DNS/Email
             </TabsTrigger>
           </TabsList>
           
@@ -2207,6 +2211,192 @@ export default function AdminPanel() {
               </CardHeader>
               <CardContent>
                 <TrashTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* DNS/Email Configuration */}
+          <TabsContent value="dns" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Configuração DNS - Resend
+                </CardTitle>
+                <CardDescription>
+                  Configure os registros DNS para habilitar o envio de emails pelo domínio fitprimemanager.com
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Instruções */}
+                <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Instruções de Configuração</h4>
+                  <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
+                    <li>Acesse o painel de DNS do seu provedor de domínio (Cloudflare, GoDaddy, etc.)</li>
+                    <li>Adicione os registros DNS listados abaixo</li>
+                    <li>Aguarde a propagação (pode levar até 48 horas)</li>
+                    <li>Verifique o status no painel do Resend</li>
+                  </ol>
+                </div>
+                
+                {/* Registros DNS */}
+                <div className="space-y-4">
+                  <h4 className="font-medium">Registros DNS Necessários</h4>
+                  
+                  {/* SPF Record */}
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">SPF</Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText('v=spf1 include:amazonses.com ~all');
+                          toast.success('Valor copiado!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copiar
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tipo</p>
+                        <p className="font-mono">TXT</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Nome/Host</p>
+                        <p className="font-mono">@</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Valor</p>
+                        <p className="font-mono text-xs break-all">v=spf1 include:amazonses.com ~all</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* DKIM Record */}
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">DKIM</Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText('resend._domainkey');
+                          toast.success('Nome copiado!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copiar Nome
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tipo</p>
+                        <p className="font-mono">CNAME</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Nome/Host</p>
+                        <p className="font-mono">resend._domainkey</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Valor (obter no painel do Resend)</p>
+                        <p className="font-mono text-xs text-muted-foreground">Acesse resend.com/domains para obter o valor DKIM específico</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* DMARC Record */}
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">DMARC</Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText('v=DMARC1; p=none;');
+                          toast.success('Valor copiado!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copiar
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tipo</p>
+                        <p className="font-mono">TXT</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Nome/Host</p>
+                        <p className="font-mono">_dmarc</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Valor</p>
+                        <p className="font-mono text-xs">v=DMARC1; p=none;</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* MX Record (opcional) */}
+                  <div className="border rounded-lg p-4 space-y-2 opacity-70">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">MX</Badge>
+                        <span className="text-xs text-muted-foreground">(Opcional - para receber emails)</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tipo</p>
+                        <p className="font-mono">MX</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Nome/Host</p>
+                        <p className="font-mono">@</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Valor</p>
+                        <p className="font-mono text-xs">feedback-smtp.us-east-1.amazonses.com</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Links úteis */}
+                <div className="pt-4 border-t space-y-3">
+                  <h4 className="font-medium">Links Úteis</h4>
+                  <div className="flex flex-wrap gap-3">
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Painel Resend
+                      </a>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="https://resend.com/docs/dashboard/domains/introduction" target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Documentação
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Status atual */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-medium mb-3">Status Atual</h4>
+                  <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                      <span className="font-medium text-amber-800 dark:text-amber-200">Domínio Pendente de Verificação</span>
+                    </div>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+                      Configure os registros DNS acima e verifique no painel do Resend. 
+                      Atualmente os emails estão sendo enviados pelo domínio padrão do Resend (onboarding@resend.dev).
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
