@@ -5,6 +5,43 @@
  * Note: For production, you need to configure RESEND_API_KEY in environment
  * For now, we'll use a placeholder that logs emails to console
  */
+import * as db from './db';
+
+/**
+ * Get email template from database and replace variables
+ * Falls back to default template if not found in database
+ */
+export async function getEmailTemplate(
+  templateKey: string,
+  variables: Record<string, string>
+): Promise<{ subject: string; html: string; senderType: string } | null> {
+  try {
+    const template = await db.getEmailTemplateByKey(templateKey);
+    
+    if (!template || !template.isActive) {
+      return null;
+    }
+    
+    let subject = template.subject;
+    let html = template.htmlContent;
+    
+    // Replace all variables {{variableName}} with actual values
+    for (const [key, value] of Object.entries(variables)) {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      subject = subject.replace(regex, value);
+      html = html.replace(regex, value);
+    }
+    
+    return {
+      subject,
+      html,
+      senderType: template.senderType,
+    };
+  } catch (error) {
+    console.error('[Email] Error fetching template:', error);
+    return null;
+  }
+}
 export interface EmailPayload {
   to: string;
   subject: string;
@@ -87,6 +124,24 @@ export async function sendInviteEmail(
   personalName: string,
   inviteLink: string
 ): Promise<boolean> {
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('invite', {
+    studentName,
+    personalName,
+    inviteLink,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: studentEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.convites,
+    });
+  }
+  
+  // Fallback to default template
   const subject = `${personalName} convidou você para o FitPrime`;
   
   const html = `
@@ -167,6 +222,23 @@ export async function sendWelcomeEmail(
   studentName: string,
   loginLink: string
 ): Promise<boolean> {
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('welcome', {
+    studentName,
+    loginLink,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: studentEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.convites,
+    });
+  }
+  
+  // Fallback to default template
   const subject = 'Bem-vindo ao FitPrime! 🎉';
   
   const html = `
@@ -260,7 +332,26 @@ export async function sendSessionReminderEmail(
     hour: '2-digit',
     minute: '2-digit',
   });
+  
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('session_reminder', {
+    studentName,
+    personalName,
+    sessionDate: formattedDate,
+    sessionTime: formattedTime,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: studentEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.avisos,
+    });
+  }
 
+  // Fallback to default template
   const subject = hoursUntil <= 2 
     ? `⏰ Seu treino começa em ${Math.round(hoursUntil * 60)} minutos!`
     : `📅 Lembrete: Treino amanhã às ${formattedTime}`;
@@ -566,6 +657,23 @@ export async function sendPasswordResetEmail(
   studentName: string,
   code: string
 ): Promise<boolean> {
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('password_reset', {
+    studentName,
+    code,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: studentEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.sistema,
+    });
+  }
+  
+  // Fallback to default template
   const subject = '🔐 Código de Recuperação de Senha - FitPrime';
 
   const html = `
@@ -661,9 +769,33 @@ export async function sendPurchaseActivationEmail(
   amount: number,
   activationLink: string
 ): Promise<boolean> {
+  const formattedAmount = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount);
+  
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('purchase_activation', {
+    customerName: customerName || 'Personal',
+    planName,
+    amount: formattedAmount,
+    activationLink,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: customerEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.cobranca,
+    });
+  }
+  
+  // Fallback to default template
   const subject = '🎉 Compra confirmada! Ative sua conta FitPrime';
   
-  const formattedAmount = new Intl.NumberFormat('pt-BR', {
+  const formattedAmountFallback = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   }).format(amount);
@@ -699,7 +831,7 @@ export async function sendPurchaseActivationEmail(
         <h3 style="color: #166534; margin: 0 0 12px; font-size: 18px;">📋 Detalhes da Compra</h3>
         <p style="color: #166534; margin: 0; font-size: 16px;">
           <strong>Plano:</strong> ${planName}<br>
-          <strong>Valor:</strong> ${formattedAmount}/mês
+          <strong>Valor:</strong> ${formattedAmountFallback}/mês
         </p>
       </div>
       

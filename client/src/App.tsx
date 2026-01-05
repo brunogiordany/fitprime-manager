@@ -57,6 +57,7 @@ import AdminPagesManager from "@/pages/AdminPagesManager";
 import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
 import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
+import AdminEmailTemplates from "./pages/AdminEmailTemplates";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import LoginPage from "./pages/LoginPage";
 import PersonalLogin from "./pages/PersonalLogin";
@@ -146,6 +147,7 @@ function Router() {
       <Route path="/admin/editor/:pageId" component={AdminPageEditor} />
       <Route path="/admin/editor/new" component={AdminPageEditor} />
       <Route path="/admin/ab-testing" component={AdminABTesting} />
+      <Route path="/admin/emails" component={AdminEmailTemplates} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

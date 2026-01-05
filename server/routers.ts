@@ -892,6 +892,134 @@ export const appRouter = router({
         
         return { success: true, message: 'Configuração atualizada' };
       }),
+    
+    // ==================== EMAIL TEMPLATES ====================
+    
+    // Listar todos os templates de email
+    listEmailTemplates: ownerProcedure.query(async () => {
+      return await db.getAllEmailTemplates();
+    }),
+    
+    // Buscar template por ID
+    getEmailTemplate: ownerProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getEmailTemplateById(input.id);
+      }),
+    
+    // Atualizar template de email
+    updateEmailTemplate: ownerProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        subject: z.string().optional(),
+        htmlContent: z.string().optional(),
+        textContent: z.string().optional(),
+        senderType: z.enum(['default', 'convites', 'avisos', 'cobranca', 'sistema', 'contato']).optional(),
+        isActive: z.boolean().optional(),
+        previewData: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        await db.updateEmailTemplate(id, data);
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: 'update_email_template',
+          targetType: 'email_template',
+          targetId: id,
+          details: JSON.stringify(data),
+        });
+        
+        return { success: true, message: 'Template atualizado com sucesso' };
+      }),
+    
+    // Resetar template para o padrão
+    resetEmailTemplate: ownerProcedure
+      .input(z.object({ templateKey: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        // Recriar o template padrão
+        await db.seedDefaultEmailTemplates();
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: 'reset_email_template',
+          targetType: 'email_template',
+          targetName: input.templateKey,
+        });
+        
+        return { success: true, message: 'Template resetado para o padrão' };
+      }),
+    
+    // Seed templates padrão (criar todos se não existirem)
+    seedEmailTemplates: ownerProcedure.mutation(async ({ ctx }) => {
+      await db.seedDefaultEmailTemplates();
+      
+      // Log da atividade
+      await db.logAdminActivity({
+        adminUserId: ctx.user.id,
+        action: 'seed_email_templates',
+        targetType: 'email_template',
+      });
+      
+      return { success: true, message: 'Templates criados com sucesso' };
+    }),
+    
+    // Enviar email de teste
+    sendTestEmail: ownerProcedure
+      .input(z.object({
+        templateKey: z.string(),
+        toEmail: z.string().email(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const template = await db.getEmailTemplateByKey(input.templateKey);
+        if (!template) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Template não encontrado' });
+        }
+        
+        // Usar dados de preview para substituir variáveis
+        let html = template.htmlContent;
+        let subject = template.subject;
+        const previewData = template.previewData ? JSON.parse(template.previewData) : {};
+        
+        // Substituir variáveis {{variavel}} pelos valores de preview
+        for (const [key, value] of Object.entries(previewData)) {
+          const regex = new RegExp(`{{${key}}}`, 'g');
+          html = html.replace(regex, String(value));
+          subject = subject.replace(regex, String(value));
+        }
+        
+        // Importar função de envio de email
+        const { sendEmail, EMAIL_SENDERS } = await import('./email');
+        
+        const senderKey = template.senderType as keyof typeof EMAIL_SENDERS;
+        const from = EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.default;
+        
+        const success = await sendEmail({
+          to: input.toEmail,
+          subject: `[TESTE] ${subject}`,
+          html,
+          from,
+        });
+        
+        // Log da atividade
+        await db.logAdminActivity({
+          adminUserId: ctx.user.id,
+          action: 'send_test_email',
+          targetType: 'email_template',
+          targetName: input.templateKey,
+          details: JSON.stringify({ toEmail: input.toEmail, success }),
+        });
+        
+        if (!success) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Falha ao enviar email de teste' });
+        }
+        
+        return { success: true, message: `Email de teste enviado para ${input.toEmail}` };
+      }),
   }),
   
   // ==================== SUPORTE COM IA ====================

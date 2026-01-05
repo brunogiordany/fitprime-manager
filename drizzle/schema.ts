@@ -2678,3 +2678,24 @@ export const syncedActivities = mysqlTable("synced_activities", {
 
 export type SyncedActivity = typeof syncedActivities.$inferSelect;
 export type InsertSyncedActivity = typeof syncedActivities.$inferInsert;
+
+
+// ==================== EMAIL TEMPLATES ====================
+export const emailTemplates = mysqlTable("email_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  templateKey: varchar("templateKey", { length: 50 }).notNull().unique(), // invite, welcome, session_reminder, password_reset, payment_reminder
+  name: varchar("name", { length: 100 }).notNull(), // Nome amigável do template
+  description: text("description"), // Descrição do template
+  subject: varchar("subject", { length: 255 }).notNull(), // Assunto do email
+  htmlContent: text("htmlContent").notNull(), // Conteúdo HTML do email
+  textContent: text("textContent"), // Versão texto puro (opcional)
+  senderType: mysqlEnum("senderType", ["default", "convites", "avisos", "cobranca", "sistema", "contato"]).default("default").notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  variables: text("variables"), // JSON com variáveis disponíveis: [{name: "studentName", description: "Nome do aluno"}]
+  previewData: text("previewData"), // JSON com dados de preview: {studentName: "João", personalName: "Carlos"}
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;

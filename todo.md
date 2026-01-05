@@ -3415,3 +3415,14 @@
 - [x] Atualizar remetente para noreply@fitprimemanager.online
 - [x] Atualizar remetente de cobranças para cobranca@fitprimemanager.online
 - [x] Testar envio de emails com novo domínio
+
+
+## Templates de Email Personalizáveis (v4.1)
+- [x] Schema do banco para templates de email
+- [x] Endpoints tRPC para gerenciar templates (CRUD)
+- [x] Página de administração de emails no Super Admin (/admin/emails)
+- [x] Integração com serviço de email (usa template do banco se existir)
+- [x] Templates padrão para: convite, boas-vindas, lembrete de sessão, recuperação de senha, lembrete de pagamento, ativação de compra
+- [x] Preview de email com variáveis substituídas
+- [x] Envio de email de teste
+- [x] Variáveis dinâmicas: {{studentName}}, {{personalName}}, {{inviteLink}}, etc.

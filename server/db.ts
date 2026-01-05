@@ -51,6 +51,7 @@ import {
   systemSettings, InsertSystemSetting, SystemSetting,
   adminActivityLog, InsertAdminActivityLog, AdminActivityLog,
   cardioLogs, InsertCardioLog, CardioLog,
+  emailTemplates, InsertEmailTemplate, EmailTemplate,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -5579,4 +5580,512 @@ export async function getCardioOverallStats(
     avgDurationPerSession: totalSessions > 0 ? Math.round(totalDuration / totalSessions) : 0,
     topStudents,
   };
+}
+
+
+// ==================== EMAIL TEMPLATES ====================
+
+// Listar todos os templates de email
+export async function getAllEmailTemplates(): Promise<EmailTemplate[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(emailTemplates).orderBy(emailTemplates.name);
+}
+
+// Buscar template por key
+export async function getEmailTemplateByKey(templateKey: string): Promise<EmailTemplate | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [template] = await db.select()
+    .from(emailTemplates)
+    .where(eq(emailTemplates.templateKey, templateKey))
+    .limit(1);
+  
+  return template || null;
+}
+
+// Buscar template por ID
+export async function getEmailTemplateById(id: number): Promise<EmailTemplate | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [template] = await db.select()
+    .from(emailTemplates)
+    .where(eq(emailTemplates.id, id))
+    .limit(1);
+  
+  return template || null;
+}
+
+// Criar template de email
+export async function createEmailTemplate(data: InsertEmailTemplate): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const [result] = await db.insert(emailTemplates).values(data);
+  return result.insertId;
+}
+
+// Atualizar template de email
+export async function updateEmailTemplate(id: number, data: Partial<InsertEmailTemplate>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.update(emailTemplates)
+    .set(data)
+    .where(eq(emailTemplates.id, id));
+}
+
+// Deletar template de email
+export async function deleteEmailTemplate(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+}
+
+// Upsert template (criar ou atualizar por key)
+export async function upsertEmailTemplate(templateKey: string, data: Omit<InsertEmailTemplate, 'templateKey'>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const existing = await getEmailTemplateByKey(templateKey);
+  
+  if (existing) {
+    await updateEmailTemplate(existing.id, data);
+  } else {
+    await createEmailTemplate({ ...data, templateKey });
+  }
+}
+
+// Seed templates padrão
+export async function seedDefaultEmailTemplates(): Promise<void> {
+  const defaultTemplates: InsertEmailTemplate[] = [
+    {
+      templateKey: 'invite',
+      name: 'Convite para Aluno',
+      description: 'Email enviado quando o personal convida um novo aluno para a plataforma',
+      subject: '{{personalName}} convidou você para o FitPrime',
+      senderType: 'convites',
+      variables: JSON.stringify([
+        { name: 'studentName', description: 'Nome do aluno' },
+        { name: 'personalName', description: 'Nome do personal trainer' },
+        { name: 'inviteLink', description: 'Link para criar conta' },
+      ]),
+      previewData: JSON.stringify({
+        studentName: 'João Silva',
+        personalName: 'Carlos Personal',
+        inviteLink: 'https://fitprimemanager.com/convite/abc123',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">💪</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Bem-vindo ao FitPrime!</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{studentName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        <strong>{{personalName}}</strong> convidou você para acessar o Portal do Aluno do FitPrime. 
+        Lá você poderá ver seus treinos, acompanhar sua evolução e muito mais!
+      </p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{{inviteLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Criar minha conta
+        </a>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+        <a href="{{inviteLink}}" style="color: #10b981;">{{inviteLink}}</a>
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Este link expira em 7 dias. Se você não solicitou este convite, ignore este email.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+    {
+      templateKey: 'welcome',
+      name: 'Boas-vindas ao Aluno',
+      description: 'Email enviado após o aluno criar sua conta com sucesso',
+      subject: 'Bem-vindo ao FitPrime! 🎉',
+      senderType: 'convites',
+      variables: JSON.stringify([
+        { name: 'studentName', description: 'Nome do aluno' },
+        { name: 'loginLink', description: 'Link para fazer login' },
+      ]),
+      previewData: JSON.stringify({
+        studentName: 'João Silva',
+        loginLink: 'https://fitprimemanager.com/login-aluno',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">🎉</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Cadastro Realizado!</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{studentName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Sua conta no FitPrime foi criada com sucesso! Agora você pode acessar o Portal do Aluno 
+        para ver seus treinos, acompanhar sua evolução e muito mais.
+      </p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{{loginLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Acessar Portal do Aluno
+        </a>
+      </div>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="color: #166534; font-size: 14px; margin: 0;">
+          <strong>Próximo passo:</strong> Complete sua anamnese para que seu personal possa criar treinos personalizados para você!
+        </p>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Guarde este email para referência futura.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+    {
+      templateKey: 'session_reminder',
+      name: 'Lembrete de Sessão',
+      description: 'Email enviado para lembrar o aluno de uma sessão agendada',
+      subject: '📅 Lembrete: Treino {{sessionDate}} às {{sessionTime}}',
+      senderType: 'avisos',
+      variables: JSON.stringify([
+        { name: 'studentName', description: 'Nome do aluno' },
+        { name: 'personalName', description: 'Nome do personal trainer' },
+        { name: 'sessionDate', description: 'Data da sessão (ex: segunda-feira, 6 de janeiro)' },
+        { name: 'sessionTime', description: 'Horário da sessão (ex: 10:00)' },
+      ]),
+      previewData: JSON.stringify({
+        studentName: 'João Silva',
+        personalName: 'Carlos Personal',
+        sessionDate: 'segunda-feira, 6 de janeiro',
+        sessionTime: '10:00',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">⏰</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Lembrete de Treino</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{studentName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Não esqueça do seu treino com <strong>{{personalName}}</strong>!
+      </p>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+        <p style="color: #166534; font-size: 16px; margin: 0;">
+          📅 {{sessionDate}}
+        </p>
+        <p style="color: #166534; font-size: 24px; font-weight: 600; margin: 10px 0 0;">
+          ⏰ {{sessionTime}}
+        </p>
+      </div>
+      
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="color: #92400e; font-size: 14px; margin: 0;">
+          <strong>Dicas para o treino:</strong><br>
+          • Hidrate-se bem antes<br>
+          • Use roupas confortáveis<br>
+          • Chegue 5 minutos antes
+        </p>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime - Seu parceiro de treinos 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+    {
+      templateKey: 'password_reset',
+      name: 'Recuperação de Senha',
+      description: 'Email com código de verificação para recuperar senha',
+      subject: '🔐 Código de Recuperação de Senha - FitPrime',
+      senderType: 'sistema',
+      variables: JSON.stringify([
+        { name: 'studentName', description: 'Nome do aluno' },
+        { name: 'code', description: 'Código de 6 dígitos' },
+      ]),
+      previewData: JSON.stringify({
+        studentName: 'João Silva',
+        code: '847291',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">🔐</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Recuperação de Senha</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{studentName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Recebemos uma solicitação para redefinir a senha da sua conta no FitPrime. Use o código abaixo para continuar:
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 2px solid #10b981; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center;">
+        <p style="color: #166534; font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 1px;">
+          Seu código de verificação
+        </p>
+        <p style="color: #10b981; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: monospace;">
+          {{code}}
+        </p>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
+        ⏱️ Este código expira em <strong>15 minutos</strong>
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
+        Se você não solicitou a recuperação de senha, ignore este email. Sua conta permanece segura.
+      </p>
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime - Seu parceiro de treinos 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+    {
+      templateKey: 'payment_reminder',
+      name: 'Lembrete de Pagamento',
+      description: 'Email enviado para lembrar o aluno de um pagamento pendente',
+      subject: '💰 Lembrete: Pagamento vence em {{daysUntil}} dias',
+      senderType: 'cobranca',
+      variables: JSON.stringify([
+        { name: 'studentName', description: 'Nome do aluno' },
+        { name: 'personalName', description: 'Nome do personal trainer' },
+        { name: 'planName', description: 'Nome do plano' },
+        { name: 'amount', description: 'Valor do pagamento (ex: R$ 350,00)' },
+        { name: 'dueDate', description: 'Data de vencimento' },
+        { name: 'daysUntil', description: 'Dias até o vencimento' },
+        { name: 'portalLink', description: 'Link para o portal do aluno' },
+      ]),
+      previewData: JSON.stringify({
+        studentName: 'João Silva',
+        personalName: 'Carlos Personal',
+        planName: 'Mensal 3x semana',
+        amount: 'R$ 350,00',
+        dueDate: '10/01/2026',
+        daysUntil: '5',
+        portalLink: 'https://fitprimemanager.com/meu-portal',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">💰</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Lembrete de Pagamento</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{studentName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Este é um lembrete amigável de que seu pagamento do plano com <strong>{{personalName}}</strong> vence em breve.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #f59e0b;">
+        <h3 style="color: #92400e; margin: 0 0 12px; font-size: 18px;">📋 Detalhes</h3>
+        <p style="color: #92400e; margin: 0; font-size: 16px;">
+          <strong>Plano:</strong> {{planName}}<br>
+          <strong>Valor:</strong> {{amount}}<br>
+          <strong>Vencimento:</strong> {{dueDate}}
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{{portalLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Ver Detalhes no Portal
+        </a>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime - Seu parceiro de treinos 💪
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+    {
+      templateKey: 'purchase_activation',
+      name: 'Ativação de Compra',
+      description: 'Email enviado após a compra para o personal ativar sua conta',
+      subject: '🎉 Compra confirmada! Ative sua conta FitPrime',
+      senderType: 'cobranca',
+      variables: JSON.stringify([
+        { name: 'customerName', description: 'Nome do cliente' },
+        { name: 'planName', description: 'Nome do plano comprado' },
+        { name: 'amount', description: 'Valor pago (ex: R$ 97,00)' },
+        { name: 'activationLink', description: 'Link para ativar a conta' },
+      ]),
+      previewData: JSON.stringify({
+        customerName: 'Carlos Personal',
+        planName: 'Plano Profissional',
+        amount: 'R$ 97,00',
+        activationLink: 'https://fitprimemanager.com/ativar/abc123',
+      }),
+      htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 36px;">🎉</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Compra Confirmada!</h1>
+        <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">Bem-vindo ao FitPrime</p>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>{{customerName}}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Sua compra foi processada com sucesso! Agora você tem acesso completo ao FitPrime, 
+        a plataforma que vai revolucionar a forma como você gerencia seus alunos.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #10b981;">
+        <h3 style="color: #166534; margin: 0 0 12px; font-size: 18px;">📋 Detalhes da Compra</h3>
+        <p style="color: #166534; margin: 0; font-size: 16px;">
+          <strong>Plano:</strong> {{planName}}<br>
+          <strong>Valor:</strong> {{amount}}/mês
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 32px 0;">
+        <p style="color: #4b5563; font-size: 14px; margin-bottom: 16px;">
+          Clique no botão abaixo para ativar sua conta e começar a usar:
+        </p>
+        <a href="{{activationLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+          🚀 Ativar Minha Conta
+        </a>
+      </div>
+      
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <p style="color: #92400e; font-size: 14px; margin: 0;">
+          <strong>⚠️ Importante:</strong> Este link expira em 7 dias. Se você já tem uma conta, 
+          basta fazer login normalmente que seu plano será ativado automaticamente.
+        </p>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <div style="text-align: center;">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px;">
+          Precisa de ajuda? Responda este email ou acesse nosso suporte.
+        </p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          FitPrime - Gestão inteligente para Personal Trainers 💪
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`,
+      isActive: true,
+    },
+  ];
+  
+  for (const template of defaultTemplates) {
+    await upsertEmailTemplate(template.templateKey, template);
+  }
 }
