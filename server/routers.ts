@@ -1755,11 +1755,14 @@ export const appRouter = router({
         let inviteSent = false;
         let inviteLink: string | null = null;
         if (input.email) {
+          console.log('[Convite] Iniciando envio de convite para:', input.email);
           try {
             const { nanoid } = await import('nanoid');
             const inviteToken = nanoid(32);
             const expiresAt = new Date();
             expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
+            
+            console.log('[Convite] Token gerado:', inviteToken);
             
             // Criar convite
             await db.createStudentInvite({
@@ -1771,19 +1774,27 @@ export const appRouter = router({
               expiresAt,
             });
             
+            console.log('[Convite] Convite salvo no banco');
+            
             // Construir link completo
-            const baseUrl = process.env.VITE_APP_URL || 'https://fitprimehub-sfh8sqab.manus.space';
+            const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
             inviteLink = `${baseUrl}/convite/${inviteToken}`;
+            
+            console.log('[Convite] Link gerado:', inviteLink);
             
             // Enviar email
             const { sendInviteEmail } = await import('./email');
             const personalName = ctx.user.name || 'Seu Personal Trainer';
-            await sendInviteEmail(input.email, input.name, personalName, inviteLink);
-            inviteSent = true;
+            console.log('[Convite] Enviando email para:', input.email, 'de:', personalName);
+            const emailSent = await sendInviteEmail(input.email, input.name, personalName, inviteLink);
+            console.log('[Convite] Resultado do envio:', emailSent ? 'SUCESSO' : 'FALHOU');
+            inviteSent = emailSent;
           } catch (error) {
-            console.error('Erro ao enviar convite automático:', error);
+            console.error('[Convite] Erro ao enviar convite automático:', error);
             // Não falha a criação do aluno se o convite falhar
           }
+        } else {
+          console.log('[Convite] Aluno sem email, convite não enviado');
         }
         
         return { 

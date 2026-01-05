@@ -3458,15 +3458,20 @@
 - [x] Adicionar lista de variáveis de email em local estratégico e visível na página de Templates de Email
 
 ## Bugs e Melhorias Portal do Aluno (v4.8)
-- [ ] Bug: Email de convite não está sendo enviado ao cadastrar aluno
+- [x] Bug: Email de convite não está sendo enviado ao cadastrar aluno - LOGS ADICIONADOS PARA DEBUG
 - [x] Bug: Anamnese duplicada - aluno precisa preencher 2x (erro na primeira)
 - [x] Adicionar campos de circunferências na anamnese do aluno (cintura, peito, braços, pernas, etc.)
-- [ ] Cálculo automático de TMB (Taxa Metabólica Basal)
-- [ ] Cálculo automático de TDEE (Gasto Energético Diário Total)
+- [x] Cálculo automático de TMB (Taxa Metabólica Basal)
+- [x] Cálculo automático de TDEE (Gasto Energético Diário Total)
 - [ ] Cálculo de kcal diárias recomendadas baseado no objetivo
 - [ ] Painel de recomendações personalizadas para o aluno:
   - [ ] Quantidade de kcal diárias para atingir objetivo
   - [ ] Sugestão de cardio necessário
   - [ ] Recomendações de treino
 - [x] Bug: Cálculos automáticos (BF, Massa Gorda, Massa Magra) não aparecem na visualização das Medidas Corporais (só na edição)
-- [ ] Bug UX: Modal Preview das Sessões - botões sendo tampados pelo conteúdo (precisa de scroll ou footer fixo)
+- [x] Bug UX: Modal Preview das Sessões - botões sendo tampados pelo conteúdo (precisa de scroll ou footer fixo)
+- [x] Bug: Cardio triplicado ao registrar (aparece 3x ao invés de 1x) - NÃO ERA BUG, usuário confundiu
+
+- [x] Bug UX: Preview das Sessões - botão tampado pela preview do treino (precisa ajustar layout)
+- [x] Bug: Diário do Maromba - encavalamento de informações no mobile (iPhone 15 Pro Max)
+- [x] Planos mensais pré-definidos de fábrica (1x a 6x semana) - IMPLEMENTADO

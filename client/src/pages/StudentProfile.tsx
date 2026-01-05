@@ -89,6 +89,7 @@ import {
 } from "recharts";
 import { UnifiedEvolutionDashboard } from "@/components/UnifiedEvolutionDashboard";
 import { EvolutionCharts } from "@/components/EvolutionCharts";
+import StudentNutritionRecommendations from "@/components/StudentNutritionRecommendations";
 
 export default function StudentProfile() {
   const [, setLocation] = useLocation();
@@ -1450,6 +1451,31 @@ export default function StudentProfile() {
               measurements={measurements || []} 
               onNewMeasure={() => setLocation(`/alunos/${studentId}/medidas`)}
             />
+
+            {/* Cálculos Nutricionais - TMB, TDEE, Kcal diárias */}
+            {student && measurements && measurements.length > 0 && (
+              <StudentNutritionRecommendations
+                studentData={{
+                  id: student.id,
+                  name: student.name,
+                  gender: student.gender,
+                  goal: anamnesis?.mainGoal,
+                }}
+                measurements={{
+                  weight: measurements[0]?.weight,
+                  height: measurements[0]?.height,
+                  bodyFat: measurements[0]?.estimatedBodyFat || measurements[0]?.bioBodyFat,
+                }}
+                anamnesis={anamnesis ? {
+                  mainGoal: anamnesis.mainGoal,
+                  targetWeight: anamnesis.targetWeight ? String(anamnesis.targetWeight) : null,
+                  lifestyle: anamnesis.lifestyle,
+                  weeklyFrequency: anamnesis.weeklyFrequency,
+                  sessionDuration: anamnesis.sessionDuration,
+                  doesCardio: anamnesis.doesCardio,
+                } : null}
+              />
+            )}
 
 
 

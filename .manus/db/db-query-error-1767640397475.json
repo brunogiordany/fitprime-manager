@@ -1,0 +1,8 @@
+{
+  "query": "SELECT cl.*, s.name as student_name \nFROM cardio_logs cl \nJOIN students s ON cl.student_id = s.id \nWHERE s.name LIKE '%Paulo%' OR s.name LIKE '%Bruno%'\nORDER BY cl.created_at DESC \nLIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT cl.*, s.name as student_name \nFROM cardio_logs cl \nJOIN students s ON cl.student_id = s.id \nWHERE s.name LIKE '%Paulo%' OR s.name LIKE '%Bruno%'\nORDER BY cl.created_at DESC \nLIMIT 20",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'cl.student_id' in 'on clause'"
+  ]
+}

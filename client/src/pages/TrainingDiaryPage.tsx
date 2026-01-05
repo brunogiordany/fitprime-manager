@@ -764,28 +764,34 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="sessoes" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Sessões
-            </TabsTrigger>
-            <TabsTrigger value="registros" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Registros Maromba
-            </TabsTrigger>
-            <TabsTrigger value="cardio" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Cardio
-            </TabsTrigger>
-            <TabsTrigger value="cardio-stats" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Estat. Cardio
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1 p-1">
+              <TabsTrigger value="sessoes" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Sessões</span>
+                <span className="sm:hidden">Sess.</span>
+              </TabsTrigger>
+              <TabsTrigger value="registros" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Registros Maromba</span>
+                <span className="sm:hidden">Reg.</span>
+              </TabsTrigger>
+              <TabsTrigger value="cardio" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
+                Cardio
+              </TabsTrigger>
+              <TabsTrigger value="cardio-stats" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Estat. Cardio</span>
+                <span className="sm:hidden">Estat.</span>
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+                <span className="sm:hidden">Dash</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           {/* Tab: Sessões - Mostra apenas sessões NÃO preenchidas (sem workoutLog) */}
           <TabsContent value="sessoes" className="space-y-4">

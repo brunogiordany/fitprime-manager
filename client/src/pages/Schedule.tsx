@@ -1657,8 +1657,9 @@ export default function Schedule() {
 
         {/* Modal de Preview de Sessões em Lote */}
         <Dialog open={showBatchPreview} onOpenChange={setShowBatchPreview}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0">
+            {/* Header fixo */}
+            <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <CalendarDays className="h-5 w-5 text-emerald-500" />
                 Preview das Sessões
@@ -1668,24 +1669,25 @@ export default function Schedule() {
               </DialogDescription>
             </DialogHeader>
             
-            <ScrollArea className="flex-1 max-h-[50vh] pr-4">
-              <div className="space-y-2">
+            {/* Conteúdo scrollável - ocupa todo espaço disponível */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-2 pb-4">
                 {batchPreviewSessions.map((session, index) => (
                   <div 
                     key={index} 
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                           {format(session.date, 'dd')}
                         </span>
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-medium text-sm">
                           {format(session.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground truncate">
                           {session.time} - {newSession.duration} min
                           {session.workoutName && (
                             <span className="ml-2 text-emerald-600 dark:text-emerald-400">
@@ -1695,15 +1697,16 @@ export default function Schedule() {
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 flex-shrink-0 ml-2">
                       #{index + 1}
                     </Badge>
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
-            <div className="pt-4 border-t space-y-3">
+            {/* Footer fixo - sempre visível no rodapé */}
+            <div className="px-6 pb-6 pt-4 border-t space-y-3 flex-shrink-0 bg-background shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
               <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                 <p className="text-sm text-amber-700 dark:text-amber-400">
                   <AlertCircle className="h-4 w-4 inline mr-1" />
@@ -1711,7 +1714,7 @@ export default function Schedule() {
                 </p>
               </div>
               
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
                 <Button variant="outline" onClick={() => setShowBatchPreview(false)}>
                   Voltar e Editar
                 </Button>

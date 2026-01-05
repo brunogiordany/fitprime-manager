@@ -429,8 +429,344 @@ export const beginnerFullBody: WorkoutTemplate = {
   ]
 };
 
+// ==================== PLANOS MENSAIS PRÉ-DEFINIDOS (1x a 6x semana) ====================
+
+// Plano 1x por semana - Full Body
+export const plan1xWeek: WorkoutTemplate = {
+  id: 'plan-1x-week',
+  name: 'Plano 1x Semana - Full Body',
+  description: 'Treino completo para quem pode treinar apenas 1x por semana. Máximo aproveitamento em uma única sessão.',
+  goal: 'general',
+  difficulty: 'beginner',
+  daysPerWeek: 1,
+  type: 'strength',
+  days: [
+    {
+      name: 'Full Body Completo',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 4, reps: '10-12', restSeconds: 120 },
+        { name: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Desenvolvimento', muscleGroup: 'Ombros', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Prancha', muscleGroup: 'Core', sets: 3, reps: '30-45s', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
+// Plano 2x por semana - Upper/Lower
+export const plan2xWeek: WorkoutTemplate = {
+  id: 'plan-2x-week',
+  name: 'Plano 2x Semana - Upper/Lower',
+  description: 'Divisão superior/inferior para quem treina 2x por semana. Equilíbrio entre membros superiores e inferiores.',
+  goal: 'general',
+  difficulty: 'beginner',
+  daysPerWeek: 2,
+  type: 'strength',
+  days: [
+    {
+      name: 'Upper Body (Membros Superiores)',
+      exercises: [
+        { name: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Desenvolvimento', muscleGroup: 'Ombros', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Puxada Frontal', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Crucifixo', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Lower Body (Membros Inferiores)',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Quadríceps', sets: 4, reps: '10-12', restSeconds: 120 },
+        { name: 'Leg Press 45°', muscleGroup: 'Quadríceps', sets: 4, reps: '12-15', restSeconds: 90 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Panturrilha em Pé', muscleGroup: 'Panturrilha', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Abdominal Crunch', muscleGroup: 'Abdômen', sets: 3, reps: '15-20', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
+// Plano 3x por semana - ABC
+export const plan3xWeek: WorkoutTemplate = {
+  id: 'plan-3x-week',
+  name: 'Plano 3x Semana - ABC',
+  description: 'Divisão clássica ABC para quem treina 3x por semana. Ideal para iniciantes e intermediários.',
+  goal: 'hypertrophy',
+  difficulty: 'beginner',
+  daysPerWeek: 3,
+  type: 'strength',
+  days: [
+    {
+      name: 'Treino A - Peito, Ombro e Tríceps',
+      exercises: [
+        { name: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Supino Inclinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Crucifixo', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Desenvolvimento', muscleGroup: 'Ombros', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Francês', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino B - Costas e Bíceps',
+      exercises: [
+        { name: 'Puxada Frontal', muscleGroup: 'Costas', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Pulldown', muscleGroup: 'Costas', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino C - Pernas e Abdômen',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Quadríceps', sets: 4, reps: '10-12', restSeconds: 120 },
+        { name: 'Leg Press 45°', muscleGroup: 'Quadríceps', sets: 4, reps: '12-15', restSeconds: 90 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 60 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Panturrilha em Pé', muscleGroup: 'Panturrilha', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Abdominal Crunch', muscleGroup: 'Abdômen', sets: 3, reps: '15-20', restSeconds: 45 },
+        { name: 'Prancha', muscleGroup: 'Core', sets: 3, reps: '30-45s', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
+// Plano 4x por semana - ABCD
+export const plan4xWeek: WorkoutTemplate = {
+  id: 'plan-4x-week',
+  name: 'Plano 4x Semana - ABCD',
+  description: 'Divisão ABCD para quem treina 4x por semana. Maior volume por grupo muscular.',
+  goal: 'hypertrophy',
+  difficulty: 'intermediate',
+  daysPerWeek: 4,
+  type: 'strength',
+  days: [
+    {
+      name: 'Treino A - Peito e Tríceps',
+      exercises: [
+        { name: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Tríceps Pulley Corda', muscleGroup: 'Tríceps', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Mergulho no Banco', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino B - Costas e Bíceps',
+      exercises: [
+        { name: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '8-10', restSeconds: 120, notes: 'Use assistência se necessário' },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-10', restSeconds: 90 },
+        { name: 'Puxada Frontal Fechada', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Rosca Direta Barra W', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Concentrada', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino C - Ombros e Trapézio',
+      exercises: [
+        { name: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Crucifixo Invertido', muscleGroup: 'Ombro Posterior', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Encolhimento com Barra', muscleGroup: 'Trapézio', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Face Pull', muscleGroup: 'Ombro Posterior', sets: 3, reps: '15-20', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino D - Pernas Completo',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Quadríceps', sets: 5, reps: '6-8', restSeconds: 180 },
+        { name: 'Leg Press 45°', muscleGroup: 'Quadríceps', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Hack Squat', muscleGroup: 'Quadríceps', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 60 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Panturrilha Sentado', muscleGroup: 'Panturrilha', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Panturrilha em Pé', muscleGroup: 'Panturrilha', sets: 4, reps: '12-15', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
+// Plano 5x por semana - ABCDE
+export const plan5xWeek: WorkoutTemplate = {
+  id: 'plan-5x-week',
+  name: 'Plano 5x Semana - ABCDE',
+  description: 'Divisão ABCDE para quem treina 5x por semana. Um grupo muscular por dia para máximo foco.',
+  goal: 'hypertrophy',
+  difficulty: 'intermediate',
+  daysPerWeek: 5,
+  type: 'strength',
+  days: [
+    {
+      name: 'Treino A - Peito',
+      exercises: [
+        { name: 'Supino Reto com Barra', muscleGroup: 'Peito', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Supino Inclinado Halteres', muscleGroup: 'Peito Superior', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Supino Declinado', muscleGroup: 'Peito Inferior', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Crossover Alto', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Crossover Baixo', muscleGroup: 'Peito Superior', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Pullover', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+      ]
+    },
+    {
+      name: 'Treino B - Costas',
+      exercises: [
+        { name: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-10', restSeconds: 90 },
+        { name: 'Puxada Frontal Aberta', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Pulldown', muscleGroup: 'Costas', sets: 3, reps: '12-15', restSeconds: 60 },
+      ]
+    },
+    {
+      name: 'Treino C - Ombros',
+      exercises: [
+        { name: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Desenvolvimento Arnold', muscleGroup: 'Ombros', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Elevação Lateral', muscleGroup: 'Ombro Lateral', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Elevação Frontal', muscleGroup: 'Ombro Anterior', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Crucifixo Invertido', muscleGroup: 'Ombro Posterior', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Encolhimento', muscleGroup: 'Trapézio', sets: 4, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino D - Pernas',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Quadríceps', sets: 5, reps: '6-8', restSeconds: 180 },
+        { name: 'Leg Press 45°', muscleGroup: 'Quadríceps', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Hack Squat', muscleGroup: 'Quadríceps', sets: 3, reps: '10-12', restSeconds: 90 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 60 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Panturrilha em Pé', muscleGroup: 'Panturrilha', sets: 5, reps: '15-20', restSeconds: 45 },
+        { name: 'Panturrilha Sentado', muscleGroup: 'Panturrilha', sets: 4, reps: '15-20', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Treino E - Braços e Abdômen',
+      exercises: [
+        { name: 'Rosca Direta Barra', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', restSeconds: 60 },
+        { name: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Abdominal Crunch', muscleGroup: 'Abdômen', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Prancha', muscleGroup: 'Core', sets: 3, reps: '45-60s', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
+// Plano 6x por semana - Push/Pull/Legs (2x)
+export const plan6xWeek: WorkoutTemplate = {
+  id: 'plan-6x-week',
+  name: 'Plano 6x Semana - Push/Pull/Legs',
+  description: 'Divisão Push/Pull/Legs repetida 2x na semana. Para avançados que buscam máximo volume.',
+  goal: 'hypertrophy',
+  difficulty: 'advanced',
+  daysPerWeek: 6,
+  type: 'strength',
+  days: [
+    {
+      name: 'Push A - Peito, Ombro, Tríceps (Força)',
+      exercises: [
+        { name: 'Supino Reto com Barra', muscleGroup: 'Peito', sets: 5, reps: '5-6', restSeconds: 180 },
+        { name: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '6-8', restSeconds: 120 },
+        { name: 'Supino Inclinado Halteres', muscleGroup: 'Peito', sets: 3, reps: '8-10', restSeconds: 90 },
+        { name: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Tríceps Francês', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Pull A - Costas, Bíceps (Força)',
+      exercises: [
+        { name: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '6-8', restSeconds: 120 },
+        { name: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '6-8', restSeconds: 120 },
+        { name: 'Puxada Frontal', muscleGroup: 'Costas', sets: 3, reps: '8-10', restSeconds: 90 },
+        { name: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Legs A - Pernas (Força)',
+      exercises: [
+        { name: 'Agachamento Livre', muscleGroup: 'Quadríceps', sets: 5, reps: '5-6', restSeconds: 180 },
+        { name: 'Leg Press 45°', muscleGroup: 'Quadríceps', sets: 4, reps: '8-10', restSeconds: 120 },
+        { name: 'Stiff', muscleGroup: 'Posterior', sets: 4, reps: '8-10', restSeconds: 90 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Panturrilha em Pé', muscleGroup: 'Panturrilha', sets: 4, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Push B - Peito, Ombro, Tríceps (Hipertrofia)',
+      exercises: [
+        { name: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Desenvolvimento Arnold', muscleGroup: 'Ombros', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Crucifixo Invertido', muscleGroup: 'Ombro Posterior', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Tríceps Corda', muscleGroup: 'Tríceps', sets: 4, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Pull B - Costas, Bíceps (Hipertrofia)',
+      exercises: [
+        { name: 'Puxada Frontal Aberta', muscleGroup: 'Costas', sets: 4, reps: '10-12', restSeconds: 60 },
+        { name: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '10-12', restSeconds: 60 },
+        { name: 'Pulldown', muscleGroup: 'Costas', sets: 3, reps: '12-15', restSeconds: 60 },
+        { name: 'Face Pull', muscleGroup: 'Ombro Posterior', sets: 3, reps: '15-20', restSeconds: 45 },
+        { name: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', restSeconds: 45 },
+        { name: 'Rosca Concentrada', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', restSeconds: 45 },
+      ]
+    },
+    {
+      name: 'Legs B - Pernas (Hipertrofia)',
+      exercises: [
+        { name: 'Hack Squat', muscleGroup: 'Quadríceps', sets: 4, reps: '10-12', restSeconds: 90 },
+        { name: 'Afundo', muscleGroup: 'Quadríceps', sets: 3, reps: '10-12 cada', restSeconds: 60 },
+        { name: 'Cadeira Extensora', muscleGroup: 'Quadríceps', sets: 4, reps: '12-15', restSeconds: 60 },
+        { name: 'Mesa Flexora', muscleGroup: 'Posterior', sets: 4, reps: '12-15', restSeconds: 60 },
+        { name: 'Glúteo na Máquina', muscleGroup: 'Glúteos', sets: 3, reps: '12-15', restSeconds: 45 },
+        { name: 'Panturrilha Sentado', muscleGroup: 'Panturrilha', sets: 4, reps: '15-20', restSeconds: 45 },
+        { name: 'Abdominal', muscleGroup: 'Abdômen', sets: 3, reps: '15-20', restSeconds: 45 },
+      ]
+    }
+  ]
+};
+
 // Lista de todos os templates disponíveis
 export const allWorkoutTemplates: WorkoutTemplate[] = [
+  // Planos mensais pré-definidos (1x a 6x semana)
+  plan1xWeek,
+  plan2xWeek,
+  plan3xWeek,
+  plan4xWeek,
+  plan5xWeek,
+  plan6xWeek,
+  // Templates específicos por objetivo
   beginnerFullBody,
   hypertrophyBeginnerABC,
   hypertrophyIntermediateABCD,
