@@ -3381,3 +3381,9 @@
 - [x] Interligar dados de cardio com análises de evolução do aluno
 - [x] Integrar cardio na análise da IA para treinos melhorados
 - [x] Sincronizar cardio com outras métricas (medidas, treinos, etc)
+
+## Exportar Relatório de Cardio em PDF (v4.4)
+- [x] Botão de exportar PDF na aba Estat. Cardio
+- [x] Gerar PDF com gráficos e estatísticas de cardio
+- [x] Incluir KPIs, evolução e distribuição por tipo
+- [x] Compartilhar com o aluno

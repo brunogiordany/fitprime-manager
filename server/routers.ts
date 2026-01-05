@@ -9482,6 +9482,80 @@ Retorne APENAS o JSON no formato especificado.`;
           input.endDate
         );
       }),
+    
+    // Exportar relatório de cardio em PDF
+    exportPDF: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        period: z.number(), // dias
+        groupBy: z.enum(['day', 'week', 'month']).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateCardioPDF } = await import('./pdf/cardioReport');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Calcular datas
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - input.period);
+        
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        // Buscar estatísticas
+        const stats = await db.getCardioStats(input.studentId, ctx.personal.id, input.period);
+        
+        // Buscar evolução
+        const evolution = await db.getCardioEvolutionData(
+          input.studentId,
+          ctx.personal.id,
+          startDateStr,
+          endDateStr,
+          input.groupBy || 'day'
+        );
+        
+        // Buscar logs recentes
+        const recentLogs = await db.getCardioLogsByStudent(input.studentId, ctx.personal.id, 50);
+        
+        // Preparar info do personal para o PDF
+        const personalInfo = {
+          businessName: ctx.personal.businessName,
+          logoUrl: ctx.personal.logoUrl,
+        };
+        
+        // Gerar label do período
+        const periodLabels: Record<number, string> = {
+          7: 'Últimos 7 dias',
+          14: 'Últimos 14 dias',
+          30: 'Último mês',
+          90: 'Últimos 3 meses',
+          180: 'Últimos 6 meses',
+          365: 'Último ano',
+        };
+        const periodLabel = periodLabels[input.period] || `Últimos ${input.period} dias`;
+        
+        // Gerar PDF
+        const pdfBuffer = await generateCardioPDF(
+          { name: student.name, email: student.email, phone: student.phone },
+          stats as any,
+          evolution as any[],
+          recentLogs as any[],
+          periodLabel,
+          personalInfo
+        );
+        
+        // Retornar como base64
+        return {
+          filename: `${student.name.replace(/\s+/g, '_')}_cardio_${startDateStr}_${endDateStr}.pdf`,
+          data: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        };
+      }),
   }),
 
   // ==================== NUTRITION MODULE ====================

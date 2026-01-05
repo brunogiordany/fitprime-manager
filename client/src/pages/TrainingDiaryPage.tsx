@@ -3689,10 +3689,47 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
     calories: acc.calories + (d.totalCalories || 0),
   }), { sessions: 0, duration: 0, distance: 0, calories: 0 }) || { sessions: 0, duration: 0, distance: 0, calories: 0 };
   
+  // Mutation para exportar PDF
+  const exportPDFMutation = trpc.cardio.exportPDF.useMutation({
+    onSuccess: (data) => {
+      // Criar blob e fazer download
+      const byteCharacters = atob(data.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      
+      // Criar link de download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = data.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF exportado com sucesso!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao exportar PDF: ' + error.message);
+    },
+  });
+  
+  const handleExportPDF = () => {
+    exportPDFMutation.mutate({
+      studentId: parseInt(studentId),
+      period: parseInt(period),
+      groupBy,
+    });
+  };
+  
   return (
     <div className="space-y-6">
       {/* Filtros */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Período" />
@@ -3717,6 +3754,18 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
             <SelectItem value="month">Por mês</SelectItem>
           </SelectContent>
         </Select>
+        
+        <div className="flex-1" />
+        
+        <Button
+          variant="outline"
+          onClick={handleExportPDF}
+          disabled={exportPDFMutation.isPending || !evolutionData || evolutionData.length === 0}
+          className="gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          {exportPDFMutation.isPending ? 'Gerando PDF...' : 'Exportar PDF'}
+        </Button>
       </div>
       
       {/* KPIs */}
