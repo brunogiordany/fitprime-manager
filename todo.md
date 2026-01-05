@@ -3365,3 +3365,9 @@
 - [ ] Filtros por período (semana, mês, trimestre, ano)
 - [ ] Comparativo entre períodos
 
+
+## Bug de Redirecionamento após Login (v4.0.1)
+- [x] Dashboard não carrega após login - precisa atualizar página manualmente
+- [x] Invalidar cache do auth.me após login bem-sucedido
+- [x] Garantir que o estado de autenticação seja atualizado antes do redirecionamento
+

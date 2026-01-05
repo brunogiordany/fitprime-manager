@@ -40,6 +40,7 @@ type AuthMode = "login" | "register";
 
 export default function PersonalLogin() {
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   
   // Login form
@@ -100,7 +101,7 @@ export default function PersonalLogin() {
 
   // Login mutation
   const loginMutation = trpc.auth.loginPersonal.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`Bem-vindo, ${data.userName}!`);
       
       if (rememberMe) {
@@ -108,6 +109,9 @@ export default function PersonalLogin() {
       } else {
         localStorage.removeItem("personalRememberEmail");
       }
+      
+      // Invalidar o cache do auth.me para forçar nova verificação
+      await utils.auth.me.invalidate();
       
       // Redirect to dashboard
       setLocation("/dashboard");
@@ -127,8 +131,12 @@ export default function PersonalLogin() {
 
   // Register mutation
   const registerMutation = trpc.auth.registerPersonal.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`Conta criada com sucesso! Bem-vindo, ${data.userName}!`);
+      
+      // Invalidar o cache do auth.me para forçar nova verificação
+      await utils.auth.me.invalidate();
+      
       setLocation("/dashboard");
     },
     onError: (error: any) => {
