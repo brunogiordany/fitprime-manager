@@ -3344,3 +3344,24 @@
   - [x] Distribuição por tipo de cardio
   - [x] Estatísticas de sessões, tempo, distância e calorias
   - [x] Frequência cardíaca média
+
+
+## Correção Login Personal (v4.0)
+- [x] Corrigir bug de login do Personal Trainer que redirecionava para tela de login
+- [x] Usar SDK createSessionToken ao invés de jsonwebtoken para gerar token de sessão
+- [x] Garantir compatibilidade do token com o sistema de autenticação OAuth
+
+## Integração com Dispositivos Fitness (v4.1)
+- [ ] Importar dados de Strava
+- [ ] Importar dados de Garmin Connect
+- [ ] Importar dados de Apple Health
+- [ ] Interface para conectar dispositivos/apps
+- [ ] Sincronização automática de dados de cardio
+
+## Relatórios de Cardio por Período (v4.2)
+- [ ] Gráficos de evolução temporal de distância
+- [ ] Gráficos de evolução temporal de tempo
+- [ ] Gráficos de evolução temporal de frequência cardíaca
+- [ ] Filtros por período (semana, mês, trimestre, ano)
+- [ ] Comparativo entre períodos
+

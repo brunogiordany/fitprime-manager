@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { sdk } from "./_core/sdk";
 import { publicProcedure, protectedProcedure, router, ownerProcedure } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -975,15 +976,13 @@ export const appRouter = router({
         // Atualizar último login
         await db.upsertUser({ openId: user.openId, lastSignedIn: new Date() });
         
-        // Gerar token JWT e setar cookie de sessão
-        const jwt = await import('jsonwebtoken');
-        const token = jwt.default.sign(
-          { userId: user.id, openId: user.openId, type: 'personal' },
-          process.env.JWT_SECRET || 'secret',
-          { expiresIn: '30d' }
-        );
+        // Gerar token de sessão usando o SDK (mesmo formato do OAuth)
+        const token = await sdk.createSessionToken(user.openId, {
+          expiresInMs: 30 * 24 * 60 * 60 * 1000, // 30 dias
+          name: user.name || '',
+        });
         
-        // Setar cookie de sessão (mesmo formato do OAuth)
+        // Setar cookie de sessão
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
         
@@ -1035,13 +1034,11 @@ export const appRouter = router({
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao criar conta' });
         }
         
-        // Gerar token JWT e setar cookie de sessão
-        const jwt = await import('jsonwebtoken');
-        const token = jwt.default.sign(
-          { userId: user.id, openId: user.openId, type: 'personal' },
-          process.env.JWT_SECRET || 'secret',
-          { expiresIn: '30d' }
-        );
+        // Gerar token de sessão usando o SDK (mesmo formato do OAuth)
+        const token = await sdk.createSessionToken(user.openId, {
+          expiresInMs: 30 * 24 * 60 * 60 * 1000, // 30 dias
+          name: user.name || '',
+        });
         
         // Setar cookie de sessão
         const cookieOptions = getSessionCookieOptions(ctx.req);
