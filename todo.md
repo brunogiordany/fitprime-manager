@@ -3390,3 +3390,11 @@
 
 ## Bug Relatório Cardio (v4.4.1)
 - [x] Corrigir relatório de cardio que não exibe dados dos alunos
+
+## Layout Análise do Aluno (v4.4.2)
+- [ ] Centralizar informações verticalmente na janela de análise
+- [ ] Remover necessidade de scroll lateral
+
+## Layout Análise do Aluno (v4.4.2)
+- [x] Centralizar informações verticalmente na janela de análise
+- [x] Remover necessidade de scroll lateral

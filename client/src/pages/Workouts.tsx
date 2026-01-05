@@ -1587,7 +1587,7 @@ export default function Workouts() {
             setStudentAnalysis(null);
           }
         }}>
-          <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto overflow-x-hidden p-3 sm:p-4">
+          <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto p-3 sm:p-4">
             <DialogHeader className="pr-8">
               <DialogTitle className="flex items-center gap-2 flex-wrap text-base sm:text-lg">
                 <Brain className="h-5 w-5 text-cyan-600 shrink-0" />
@@ -1599,11 +1599,11 @@ export default function Workouts() {
             </DialogHeader>
             
             {studentAnalysis && (
-              <div className="space-y-3 w-full">
+              <div className="space-y-3 w-full max-w-full">
                 {/* Resumo */}
                 <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50">
                   <CardContent className="p-3">
-                    <p className="text-xs sm:text-sm leading-relaxed break-words" style={{ wordBreak: 'break-word' }}>{studentAnalysis.analysis.summary}</p>
+                    <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{studentAnalysis.analysis.summary}</p>
                   </CardContent>
                 </Card>
                 
@@ -1698,7 +1698,7 @@ export default function Workouts() {
                           {studentAnalysis.analysis.strengths.map((s: string, i: number) => (
                             <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
                               <span className="text-green-500 mt-0.5 shrink-0">•</span>
-                              <span className="break-words" style={{ wordBreak: 'break-word' }}>{s}</span>
+                              <span className="whitespace-pre-wrap" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{s}</span>
                             </li>
                           ))}
                         </ul>
@@ -1719,7 +1719,7 @@ export default function Workouts() {
                           {studentAnalysis.analysis.deficits.map((d: string, i: number) => (
                             <li key={i} className="text-xs sm:text-sm flex items-start gap-2">
                               <span className="text-red-500 mt-0.5 shrink-0">•</span>
-                              <span className="break-words" style={{ wordBreak: 'break-word' }}>{d}</span>
+                              <span className="whitespace-pre-wrap" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{d}</span>
                             </li>
                           ))}
                         </ul>
@@ -1733,9 +1733,9 @@ export default function Workouts() {
                   {studentAnalysis.analysis.muscleGroupsProgressing?.length > 0 && (
                     <div>
                       <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5">Grupos Evoluindo Bem</p>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 max-w-full">
                         {studentAnalysis.analysis.muscleGroupsProgressing.map((g: string, i: number) => (
-                          <Badge key={i} className="bg-green-100 text-green-700 text-[10px] sm:text-xs px-1.5 py-0.5">{g}</Badge>
+                          <Badge key={i} className="bg-green-100 text-green-700 text-[10px] sm:text-xs px-1.5 py-0.5 whitespace-normal" style={{ wordBreak: 'break-word' }}>{g}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1744,9 +1744,9 @@ export default function Workouts() {
                   {studentAnalysis.analysis.muscleGroupsToFocus?.length > 0 && (
                     <div>
                       <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5">Grupos para Focar</p>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 max-w-full">
                         {studentAnalysis.analysis.muscleGroupsToFocus.map((g: string, i: number) => (
-                          <Badge key={i} className="bg-orange-100 text-orange-700 text-[10px] sm:text-xs px-1.5 py-0.5">{g}</Badge>
+                          <Badge key={i} className="bg-orange-100 text-orange-700 text-[10px] sm:text-xs px-1.5 py-0.5 whitespace-normal" style={{ wordBreak: 'break-word' }}>{g}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1767,7 +1767,7 @@ export default function Workouts() {
                         {studentAnalysis.analysis.recommendations.map((r: string, i: number) => (
                           <li key={i} className="text-xs sm:text-sm text-blue-700 flex items-start gap-2">
                             <span className="mt-0.5 shrink-0">{i + 1}.</span>
-                            <span className="break-words" style={{ wordBreak: 'break-word' }}>{r}</span>
+                            <span className="whitespace-pre-wrap" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{r}</span>
                           </li>
                         ))}
                       </ul>
