@@ -2467,3 +2467,90 @@ export const trainingNutritionProfiles = mysqlTable("training_nutrition_profiles
 
 export type TrainingNutritionProfile = typeof trainingNutritionProfiles.$inferSelect;
 export type InsertTrainingNutritionProfile = typeof trainingNutritionProfiles.$inferInsert;
+
+
+// ==================== CARDIO LOGS (Registro de Cardio - Diário do Maromba) ====================
+export const cardioLogs = mysqlTable("cardio_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  sessionId: int("sessionId").references(() => sessions.id), // Sessão vinculada (opcional)
+  workoutLogId: int("workoutLogId").references(() => workoutLogs.id), // Treino vinculado (opcional)
+  
+  // Data e hora
+  cardioDate: date("cardioDate").notNull(),
+  startTime: varchar("startTime", { length: 5 }), // HH:MM
+  endTime: varchar("endTime", { length: 5 }), // HH:MM
+  
+  // Tipo de cardio
+  cardioType: mysqlEnum("cardioType", [
+    "treadmill", // Esteira
+    "outdoor_run", // Corrida ao ar livre
+    "stationary_bike", // Bicicleta ergométrica
+    "outdoor_bike", // Ciclismo ao ar livre
+    "elliptical", // Elíptico/Transport
+    "rowing", // Remo
+    "stair_climber", // Escada/StairMaster
+    "swimming", // Natação
+    "jump_rope", // Pular corda
+    "hiit", // HIIT
+    "walking", // Caminhada
+    "hiking", // Trilha
+    "dance", // Dança
+    "boxing", // Boxe/Muay Thai
+    "crossfit", // CrossFit
+    "sports", // Esportes (futebol, basquete, etc)
+    "other" // Outro
+  ]).notNull(),
+  cardioTypeName: varchar("cardioTypeName", { length: 100 }), // Nome personalizado (quando type = other)
+  
+  // Métricas principais
+  durationMinutes: int("durationMinutes").notNull(), // Duração em minutos
+  distanceKm: decimal("distanceKm", { precision: 6, scale: 2 }), // Distância em km
+  caloriesBurned: int("caloriesBurned"), // Calorias queimadas
+  
+  // Frequência cardíaca
+  avgHeartRate: int("avgHeartRate"), // BPM médio
+  maxHeartRate: int("maxHeartRate"), // BPM máximo
+  minHeartRate: int("minHeartRate"), // BPM mínimo
+  
+  // Intensidade
+  intensity: mysqlEnum("intensity", [
+    "very_light", // Muito leve (50-60% FCmax)
+    "light", // Leve (60-70% FCmax)
+    "moderate", // Moderado (70-80% FCmax)
+    "vigorous", // Vigoroso (80-90% FCmax)
+    "maximum" // Máximo (90-100% FCmax)
+  ]).default("moderate"),
+  
+  // Métricas adicionais
+  avgSpeed: decimal("avgSpeed", { precision: 5, scale: 2 }), // km/h
+  maxSpeed: decimal("maxSpeed", { precision: 5, scale: 2 }), // km/h
+  avgPace: varchar("avgPace", { length: 10 }), // min/km (ex: "5:30")
+  incline: decimal("incline", { precision: 4, scale: 1 }), // % inclinação (esteira)
+  resistance: int("resistance"), // Nível de resistência (bike, elíptico)
+  laps: int("laps"), // Voltas (natação, pista)
+  steps: int("steps"), // Passos (caminhada, corrida)
+  
+  // Sensação subjetiva
+  perceivedEffort: int("perceivedEffort"), // Escala de Borg 1-10
+  feelingBefore: mysqlEnum("feelingBefore", ["terrible", "bad", "okay", "good", "great"]),
+  feelingAfter: mysqlEnum("feelingAfter", ["terrible", "bad", "okay", "good", "great"]),
+  
+  // Condições
+  weather: mysqlEnum("weather", ["indoor", "sunny", "cloudy", "rainy", "cold", "hot", "humid"]).default("indoor"),
+  location: varchar("location", { length: 255 }), // Local (academia, parque, etc)
+  
+  // Observações
+  notes: text("notes"),
+  
+  // Quem registrou
+  registeredBy: mysqlEnum("registeredBy", ["personal", "student"]).default("personal"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  deletedAt: timestamp("deletedAt"), // Soft delete
+});
+
+export type CardioLog = typeof cardioLogs.$inferSelect;
+export type InsertCardioLog = typeof cardioLogs.$inferInsert;

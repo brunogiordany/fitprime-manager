@@ -3314,3 +3314,33 @@
 - [ ] Indicadores de tendência (subindo, descendo, estável)
 - [ ] Comparativo primeira vs última medição
 - [ ] Metas e objetivos nos gráficos
+
+
+## Sistema de Cardio no Diário do Maromba (v14.0)
+- [x] Schema do banco de dados para cardio_logs
+  - [x] Tipo de cardio (corrida, bike, elíptico, esteira, natação, etc.)
+  - [x] Duração (minutos)
+  - [x] Distância (km)
+  - [x] Calorias queimadas
+  - [x] Frequência cardíaca média/máxima
+  - [x] Intensidade (leve, moderada, intensa, HIIT)
+  - [x] Observações
+- [x] Endpoints tRPC para cardio
+  - [x] createCardioLog
+  - [x] updateCardioLog
+  - [x] deleteCardioLog
+  - [x] getCardioLogs (por aluno/período)
+  - [x] getCardioStats (estatísticas)
+- [x] Aba Cardio no Diário do Maromba (Personal)
+  - [x] Formulário de registro de cardio
+  - [x] Lista de registros de cardio
+  - [x] Estatísticas de cardio (total km, calorias, tempo)
+- [x] Aba Cardio no Portal do Aluno
+  - [x] Formulário de registro de cardio
+  - [x] Histórico de cardio
+  - [x] Estatísticas pessoais
+- [x] Gráficos de Cardio na Evolução
+  - [x] Resumo de cardio no Dashboard do Diário
+  - [x] Distribuição por tipo de cardio
+  - [x] Estatísticas de sessões, tempo, distância e calorias
+  - [x] Frequência cardíaca média

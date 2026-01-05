@@ -50,6 +50,7 @@ import {
   featureFlags, InsertFeatureFlag, FeatureFlag,
   systemSettings, InsertSystemSetting, SystemSetting,
   adminActivityLog, InsertAdminActivityLog, AdminActivityLog,
+  cardioLogs, InsertCardioLog, CardioLog,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -5111,4 +5112,195 @@ export async function markPersonalResetCodeUsed(tokenId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, tokenId));
+}
+
+
+// ==================== CARDIO LOGS FUNCTIONS ====================
+
+export async function createCardioLog(data: InsertCardioLog): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(cardioLogs).values(data);
+  return result[0].insertId;
+}
+
+export async function updateCardioLog(id: number, personalId: number, data: Partial<InsertCardioLog>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(cardioLogs)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(cardioLogs.id, id), eq(cardioLogs.personalId, personalId)));
+}
+
+export async function deleteCardioLog(id: number, personalId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(cardioLogs)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(cardioLogs.id, id), eq(cardioLogs.personalId, personalId)));
+}
+
+export async function getCardioLogsByStudent(studentId: number, personalId: number, limit: number = 50): Promise<CardioLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt)
+    ))
+    .orderBy(desc(cardioLogs.cardioDate), desc(cardioLogs.createdAt))
+    .limit(limit);
+  return result;
+}
+
+export async function getAllCardioLogsByPersonal(personalId: number, limit: number = 50): Promise<CardioLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select()
+    .from(cardioLogs)
+    .leftJoin(students, eq(cardioLogs.studentId, students.id))
+    .where(and(
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt)
+    ))
+    .orderBy(desc(cardioLogs.cardioDate), desc(cardioLogs.createdAt))
+    .limit(limit);
+  return result.map(r => ({
+    ...r.cardio_logs,
+    student: r.students ? { id: r.students.id, name: r.students.name } : null
+  })) as any;
+}
+
+export async function getCardioLogsByDateRange(
+  studentId: number, 
+  personalId: number, 
+  startDate: string, 
+  endDate: string
+): Promise<CardioLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${startDate}`,
+      sql`${cardioLogs.cardioDate} <= ${endDate}`
+    ))
+    .orderBy(desc(cardioLogs.cardioDate));
+  return result;
+}
+
+export async function getCardioStats(studentId: number, personalId: number, days: number = 30) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  const startDateStr = startDate.toISOString().split('T')[0];
+  
+  const logs = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${startDateStr}`
+    ));
+  
+  if (logs.length === 0) return {
+    totalSessions: 0,
+    totalDuration: 0,
+    totalDistance: 0,
+    totalCalories: 0,
+    avgHeartRate: 0,
+    avgDuration: 0,
+    avgDistance: 0,
+    byType: {}
+  };
+  
+  const totalDuration = logs.reduce((sum, log) => sum + (log.durationMinutes || 0), 0);
+  const totalDistance = logs.reduce((sum, log) => sum + parseFloat(log.distanceKm?.toString() || '0'), 0);
+  const totalCalories = logs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0);
+  const heartRates = logs.filter(l => l.avgHeartRate).map(l => l.avgHeartRate!);
+  const avgHeartRate = heartRates.length > 0 ? Math.round(heartRates.reduce((a, b) => a + b, 0) / heartRates.length) : 0;
+  
+  // Agrupar por tipo
+  const byType: Record<string, { count: number; duration: number; distance: number; calories: number }> = {};
+  logs.forEach(log => {
+    const type = log.cardioType;
+    if (!byType[type]) {
+      byType[type] = { count: 0, duration: 0, distance: 0, calories: 0 };
+    }
+    byType[type].count++;
+    byType[type].duration += log.durationMinutes || 0;
+    byType[type].distance += parseFloat(log.distanceKm?.toString() || '0');
+    byType[type].calories += log.caloriesBurned || 0;
+  });
+  
+  return {
+    totalSessions: logs.length,
+    totalDuration,
+    totalDistance: Math.round(totalDistance * 100) / 100,
+    totalCalories,
+    avgHeartRate,
+    avgDuration: Math.round(totalDuration / logs.length),
+    avgDistance: Math.round((totalDistance / logs.length) * 100) / 100,
+    byType
+  };
+}
+
+export async function getCardioLogById(id: number, personalId: number): Promise<CardioLog | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.id, id),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt)
+    ))
+    .limit(1);
+  return result[0] || null;
+}
+
+// Função para aluno registrar cardio (verifica se pertence ao personal)
+export async function createCardioLogByStudent(studentId: number, data: Omit<InsertCardioLog, 'studentId' | 'personalId'>): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar o personalId do aluno
+  const student = await db.select().from(students).where(eq(students.id, studentId)).limit(1);
+  if (!student[0]) throw new Error("Student not found");
+  
+  const result = await db.insert(cardioLogs).values({
+    ...data,
+    studentId,
+    personalId: student[0].personalId,
+    registeredBy: 'student',
+  });
+  return result[0].insertId;
+}
+
+export async function getCardioLogsByStudentForPortal(studentId: number, limit: number = 50): Promise<CardioLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar o personalId do aluno
+  const student = await db.select().from(students).where(eq(students.id, studentId)).limit(1);
+  if (!student[0]) return [];
+  
+  const result = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, student[0].personalId),
+      isNull(cardioLogs.deletedAt)
+    ))
+    .orderBy(desc(cardioLogs.cardioDate), desc(cardioLogs.createdAt))
+    .limit(limit);
+  return result;
 }

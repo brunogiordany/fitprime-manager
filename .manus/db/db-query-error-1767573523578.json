@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, student_id, cardio_type, duration_minutes, cardio_date, created_at FROM cardio_logs;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, student_id, cardio_type, duration_minutes, cardio_date, created_at FROM cardio_logs;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'student_id' in 'field list'"
+  ]
+}

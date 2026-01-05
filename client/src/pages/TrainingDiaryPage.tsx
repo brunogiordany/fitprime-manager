@@ -33,7 +33,13 @@ import {
   Flame,
   User,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  Bike,
+  Footprints,
+  Waves,
+  Mountain,
+  Zap
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +60,56 @@ const FEELINGS = [
   { value: "normal", label: "Normal", emoji: "😐" },
   { value: "tired", label: "Cansado", emoji: "😓" },
   { value: "exhausted", label: "Exausto", emoji: "😵" },
+];
+
+// Tipos de cardio
+const CARDIO_TYPES = [
+  { value: "treadmill", label: "Esteira", icon: "Footprints" },
+  { value: "outdoor_run", label: "Corrida ao ar livre", icon: "Footprints" },
+  { value: "stationary_bike", label: "Bicicleta ergométrica", icon: "Bike" },
+  { value: "outdoor_bike", label: "Ciclismo", icon: "Bike" },
+  { value: "elliptical", label: "Elíptico", icon: "Activity" },
+  { value: "rowing", label: "Remo", icon: "Waves" },
+  { value: "stair_climber", label: "Escada", icon: "Mountain" },
+  { value: "swimming", label: "Natação", icon: "Waves" },
+  { value: "jump_rope", label: "Pular corda", icon: "Zap" },
+  { value: "hiit", label: "HIIT", icon: "Zap" },
+  { value: "walking", label: "Caminhada", icon: "Footprints" },
+  { value: "hiking", label: "Trilha", icon: "Mountain" },
+  { value: "dance", label: "Dança", icon: "Activity" },
+  { value: "boxing", label: "Boxe/Luta", icon: "Zap" },
+  { value: "crossfit", label: "CrossFit", icon: "Zap" },
+  { value: "sports", label: "Esportes", icon: "Activity" },
+  { value: "other", label: "Outro", icon: "Activity" },
+];
+
+// Intensidades de cardio
+const CARDIO_INTENSITIES = [
+  { value: "very_light", label: "Muito leve", color: "bg-blue-300", description: "50-60% FC máx" },
+  { value: "light", label: "Leve", color: "bg-green-400", description: "60-70% FC máx" },
+  { value: "moderate", label: "Moderado", color: "bg-yellow-400", description: "70-80% FC máx" },
+  { value: "vigorous", label: "Vigoroso", color: "bg-orange-500", description: "80-90% FC máx" },
+  { value: "maximum", label: "Máximo", color: "bg-red-500", description: "90-100% FC máx" },
+];
+
+// Sensações de cardio
+const CARDIO_FEELINGS = [
+  { value: "terrible", label: "Péssimo", emoji: "😫" },
+  { value: "bad", label: "Ruim", emoji: "😟" },
+  { value: "okay", label: "Ok", emoji: "😐" },
+  { value: "good", label: "Bom", emoji: "😊" },
+  { value: "great", label: "Ótimo", emoji: "🔥" },
+];
+
+// Clima
+const WEATHER_OPTIONS = [
+  { value: "indoor", label: "Indoor/Academia" },
+  { value: "sunny", label: "Ensolarado" },
+  { value: "cloudy", label: "Nublado" },
+  { value: "rainy", label: "Chuvoso" },
+  { value: "cold", label: "Frio" },
+  { value: "hot", label: "Quente" },
+  { value: "humid", label: "Úmido" },
 ];
 
 // Interface para série
@@ -125,6 +181,39 @@ export default function TrainingDiaryPage() {
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
+  // Estados para Cardio
+  const [showCardioModal, setShowCardioModal] = useState(false);
+  const [showCardioDetailModal, setShowCardioDetailModal] = useState(false);
+  const [selectedCardioId, setSelectedCardioId] = useState<number | null>(null);
+  const [cardioForm, setCardioForm] = useState({
+    studentId: 0,
+    cardioDate: new Date().toISOString().split('T')[0],
+    cardioType: '' as string,
+    cardioTypeName: '',
+    durationMinutes: 0,
+    distanceKm: '',
+    caloriesBurned: undefined as number | undefined,
+    avgHeartRate: undefined as number | undefined,
+    maxHeartRate: undefined as number | undefined,
+    minHeartRate: undefined as number | undefined,
+    intensity: '' as string,
+    avgSpeed: '',
+    maxSpeed: '',
+    avgPace: '',
+    incline: '',
+    resistance: undefined as number | undefined,
+    laps: undefined as number | undefined,
+    steps: undefined as number | undefined,
+    perceivedEffort: undefined as number | undefined,
+    feelingBefore: '' as string,
+    feelingAfter: '' as string,
+    weather: 'indoor' as string,
+    location: '',
+    notes: '',
+    startTime: '',
+    endTime: '',
+  });
+  
   // Estado do novo registro
   const [newLog, setNewLog] = useState({
     studentId: 0,
@@ -193,6 +282,20 @@ export default function TrainingDiaryPage() {
     { enabled: true }
   );
   
+  // Queries de Cardio
+  const { data: cardioLogs, refetch: refetchCardioLogs } = trpc.cardio.list.useQuery(
+    { studentId: selectedStudentId ? parseInt(selectedStudentId) : 0 },
+    { enabled: true }
+  );
+  const { data: cardioStats, refetch: refetchCardioStats } = trpc.cardio.stats.useQuery(
+    selectedStudentId ? { studentId: parseInt(selectedStudentId), days: 30 } : { studentId: 0, days: 30 },
+    { enabled: !!selectedStudentId }
+  );
+  const { data: cardioDetail } = trpc.cardio.get.useQuery(
+    { id: selectedCardioId! },
+    { enabled: !!selectedCardioId }
+  );
+  
   // Estado para filtro de busca de exercícios
   const [exerciseSearchFilter, setExerciseSearchFilter] = useState<string>("");
   
@@ -259,6 +362,77 @@ export default function TrainingDiaryPage() {
       refetchLogDetail();
     },
   });
+  
+  // Mutations de Cardio
+  const createCardio = trpc.cardio.create.useMutation({
+    onSuccess: () => {
+      toast.success("Cardio registrado com sucesso!");
+      setShowCardioModal(false);
+      refetchCardioLogs();
+      refetchCardioStats();
+      resetCardioForm();
+    },
+    onError: (error) => {
+      toast.error("Erro ao registrar cardio", { description: error.message });
+    },
+  });
+  
+  const updateCardio = trpc.cardio.update.useMutation({
+    onSuccess: () => {
+      toast.success("Cardio atualizado!");
+      refetchCardioLogs();
+      refetchCardioStats();
+      setShowCardioDetailModal(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar cardio", { description: error.message });
+    },
+  });
+  
+  const deleteCardio = trpc.cardio.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Cardio excluído!");
+      refetchCardioLogs();
+      refetchCardioStats();
+      setShowCardioDetailModal(false);
+      setSelectedCardioId(null);
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir cardio", { description: error.message });
+    },
+  });
+  
+  // Função para resetar o formulário de cardio
+  const resetCardioForm = () => {
+    setCardioForm({
+      studentId: 0,
+      cardioDate: new Date().toISOString().split('T')[0],
+      cardioType: '',
+      cardioTypeName: '',
+      durationMinutes: 0,
+      distanceKm: '',
+      caloriesBurned: undefined,
+      avgHeartRate: undefined,
+      maxHeartRate: undefined,
+      minHeartRate: undefined,
+      intensity: '',
+      avgSpeed: '',
+      maxSpeed: '',
+      avgPace: '',
+      incline: '',
+      resistance: undefined,
+      laps: undefined,
+      steps: undefined,
+      perceivedEffort: undefined,
+      feelingBefore: '',
+      feelingAfter: '',
+      weather: 'indoor',
+      location: '',
+      notes: '',
+      startTime: '',
+      endTime: '',
+    });
+  };
   
   // Efeito para carregar exercícios quando abre modal de sessão com treino vinculado
   useEffect(() => {
@@ -590,7 +764,7 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="sessoes" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Sessões
@@ -598,6 +772,10 @@ export default function TrainingDiaryPage() {
             <TabsTrigger value="registros" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Registros Maromba
+            </TabsTrigger>
+            <TabsTrigger value="cardio" className="flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              Cardio
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -766,6 +944,190 @@ export default function TrainingDiaryPage() {
                   <Button onClick={() => setShowNewLogModal(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Criar Primeiro Registro
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          {/* Tab: Cardio */}
+          <TabsContent value="cardio" className="space-y-4">
+            {/* Botão de novo cardio */}
+            <div className="flex justify-end">
+              <Button onClick={() => setShowCardioModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Cardio
+              </Button>
+            </div>
+            
+            {/* Estatísticas de Cardio */}
+            {cardioStats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Heart className="h-4 w-4" />
+                      <span className="text-sm">Sessões</span>
+                    </div>
+                    <p className="text-2xl font-bold">{cardioStats.totalSessions || 0}</p>
+                    <p className="text-xs text-muted-foreground">Últimos 30 dias</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Timer className="h-4 w-4" />
+                      <span className="text-sm">Tempo Total</span>
+                    </div>
+                    <p className="text-2xl font-bold">{cardioStats.totalDuration || 0}min</p>
+                    <p className="text-xs text-muted-foreground">Média: {cardioStats.avgDuration || 0}min/sessão</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Footprints className="h-4 w-4" />
+                      <span className="text-sm">Distância</span>
+                    </div>
+                    <p className="text-2xl font-bold">{cardioStats.totalDistance?.toFixed(1) || 0}km</p>
+                    <p className="text-xs text-muted-foreground">Média: {cardioStats.avgDistance?.toFixed(1) || 0}km/sessão</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Flame className="h-4 w-4" />
+                      <span className="text-sm">Calorias</span>
+                    </div>
+                    <p className="text-2xl font-bold">{cardioStats.totalCalories || 0}</p>
+                    <p className="text-xs text-muted-foreground">FC Média: {cardioStats.avgHeartRate || '-'} bpm</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
+            {/* Distribuição por Tipo */}
+            {cardioStats?.byType && Object.keys(cardioStats.byType).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Distribuição por Tipo de Cardio
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {Object.entries(cardioStats.byType).map(([type, data]: [string, any]) => {
+                      const cardioType = CARDIO_TYPES.find(t => t.value === type);
+                      return (
+                        <div key={type} className="p-3 rounded-lg bg-muted/50 border">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Activity className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-sm">{cardioType?.label || type}</span>
+                          </div>
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <p>{data.count} sessões</p>
+                            <p>{data.duration}min total</p>
+                            <p>{data.distance?.toFixed(1) || 0}km</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Lista de Registros de Cardio */}
+            {cardioLogs && cardioLogs.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg">Histórico de Cardio</h3>
+                {cardioLogs.map((log: any) => {
+                  const cardioType = CARDIO_TYPES.find(t => t.value === log.cardioType);
+                  const intensity = CARDIO_INTENSITIES.find(i => i.value === log.intensity);
+                  return (
+                    <Card 
+                      key={log.id} 
+                      className="cursor-pointer hover:border-primary transition-colors"
+                      onClick={() => {
+                        setSelectedCardioId(log.id);
+                        setShowCardioDetailModal(true);
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                              <Heart className="h-6 w-6 text-red-500" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">{log.student?.name || "Aluno"}</h3>
+                                {log.feelingAfter && (
+                                  <span className="text-lg">
+                                    {CARDIO_FEELINGS.find(f => f.value === log.feelingAfter)?.emoji}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {cardioType?.label || log.cardioType} • {formatDate(log.cardioDate)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Timer className="h-3 w-3" />
+                              {log.durationMinutes}min
+                            </Badge>
+                            
+                            {log.distanceKm && parseFloat(log.distanceKm) > 0 && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Footprints className="h-3 w-3" />
+                                {parseFloat(log.distanceKm).toFixed(1)}km
+                              </Badge>
+                            )}
+                            
+                            {log.caloriesBurned && log.caloriesBurned > 0 && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Flame className="h-3 w-3" />
+                                {log.caloriesBurned}kcal
+                              </Badge>
+                            )}
+                            
+                            {log.avgHeartRate && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                {log.avgHeartRate}bpm
+                              </Badge>
+                            )}
+                            
+                            {intensity && (
+                              <Badge className={`${intensity.color} text-white`}>
+                                {intensity.label}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhum cardio registrado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Comece a registrar as atividades cardiovasculares dos seus alunos.
+                  </p>
+                  <Button onClick={() => setShowCardioModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Registrar Primeiro Cardio
                   </Button>
                 </CardContent>
               </Card>
@@ -943,6 +1305,80 @@ export default function TrainingDiaryPage() {
                     )}
                   </CardContent>
                 </Card>
+                
+                {/* Seção de Cardio no Dashboard */}
+                {cardioStats && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-red-500" />
+                        Resumo de Cardio (Últimos 30 dias)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div className="text-center p-3 bg-red-500/10 rounded-lg">
+                          <Heart className="h-5 w-5 mx-auto text-red-500 mb-1" />
+                          <p className="text-xl font-bold">{cardioStats.totalSessions || 0}</p>
+                          <p className="text-xs text-muted-foreground">Sessões</p>
+                        </div>
+                        <div className="text-center p-3 bg-blue-500/10 rounded-lg">
+                          <Timer className="h-5 w-5 mx-auto text-blue-500 mb-1" />
+                          <p className="text-xl font-bold">{cardioStats.totalDuration || 0}min</p>
+                          <p className="text-xs text-muted-foreground">Tempo Total</p>
+                        </div>
+                        <div className="text-center p-3 bg-green-500/10 rounded-lg">
+                          <Footprints className="h-5 w-5 mx-auto text-green-500 mb-1" />
+                          <p className="text-xl font-bold">{cardioStats.totalDistance?.toFixed(1) || 0}km</p>
+                          <p className="text-xs text-muted-foreground">Distância</p>
+                        </div>
+                        <div className="text-center p-3 bg-orange-500/10 rounded-lg">
+                          <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
+                          <p className="text-xl font-bold">{cardioStats.totalCalories || 0}</p>
+                          <p className="text-xs text-muted-foreground">Calorias</p>
+                        </div>
+                      </div>
+                      
+                      {/* Gráfico de barras por tipo de cardio */}
+                      {cardioStats.byType && Object.keys(cardioStats.byType).length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm text-muted-foreground">Distribuição por Tipo</h4>
+                          {Object.entries(cardioStats.byType).map(([type, data]: [string, any]) => {
+                            const cardioType = CARDIO_TYPES.find(t => t.value === type);
+                            const maxDuration = Math.max(...Object.values(cardioStats.byType).map((d: any) => d.duration));
+                            const percentage = maxDuration > 0 ? (data.duration / maxDuration) * 100 : 0;
+                            return (
+                              <div key={type} className="space-y-1">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium">{cardioType?.label || type}</span>
+                                  <span className="text-muted-foreground">
+                                    {data.count} sessões · {data.duration}min · {data.distance?.toFixed(1) || 0}km
+                                  </span>
+                                </div>
+                                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-red-500 rounded-full transition-all duration-500"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* Média de FC */}
+                      {cardioStats.avgHeartRate && cardioStats.avgHeartRate > 0 && (
+                        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Frequência Cardíaca Média</span>
+                            <span className="font-bold text-red-500">{cardioStats.avgHeartRate} bpm</span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
                 
                 {/* Distribuição de sentimento */}
                 <Card>
@@ -2759,6 +3195,399 @@ export default function TrainingDiaryPage() {
                     Salvar Registro
                   </>
                 )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal: Novo Cardio */}
+        <Dialog open={showCardioModal} onOpenChange={setShowCardioModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-red-500" />
+                Novo Registro de Cardio
+              </DialogTitle>
+              <DialogDescription>
+                Registre uma atividade cardiovascular do aluno
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Aluno e Data */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Aluno *</Label>
+                  <Select 
+                    value={cardioForm.studentId.toString()} 
+                    onValueChange={(v) => setCardioForm({ ...cardioForm, studentId: parseInt(v) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o aluno" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {students?.map((s: any) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Data *</Label>
+                  <Input
+                    type="date"
+                    value={cardioForm.cardioDate}
+                    onChange={(e) => setCardioForm({ ...cardioForm, cardioDate: e.target.value })}
+                  />
+                </div>
+              </div>
+              
+              {/* Tipo de Cardio */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Tipo de Cardio *</Label>
+                  <Select 
+                    value={cardioForm.cardioType} 
+                    onValueChange={(v) => setCardioForm({ ...cardioForm, cardioType: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CARDIO_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cardioForm.cardioType === 'other' && (
+                  <div>
+                    <Label>Nome do Cardio</Label>
+                    <Input
+                      placeholder="Ex: Patinação"
+                      value={cardioForm.cardioTypeName}
+                      onChange={(e) => setCardioForm({ ...cardioForm, cardioTypeName: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Métricas Principais */}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Duração (min) *</Label>
+                  <Input
+                    type="number"
+                    placeholder="30"
+                    value={cardioForm.durationMinutes || ''}
+                    onChange={(e) => setCardioForm({ ...cardioForm, durationMinutes: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <Label>Distância (km)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="5.0"
+                    value={cardioForm.distanceKm}
+                    onChange={(e) => setCardioForm({ ...cardioForm, distanceKm: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Calorias</Label>
+                  <Input
+                    type="number"
+                    placeholder="300"
+                    value={cardioForm.caloriesBurned || ''}
+                    onChange={(e) => setCardioForm({ ...cardioForm, caloriesBurned: parseInt(e.target.value) || undefined })}
+                  />
+                </div>
+              </div>
+              
+              {/* Frequência Cardíaca */}
+              <div>
+                <Label className="flex items-center gap-2 mb-2">
+                  <Heart className="h-4 w-4 text-red-500" />
+                  Frequência Cardíaca
+                </Label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Média (bpm)</Label>
+                    <Input
+                      type="number"
+                      placeholder="140"
+                      value={cardioForm.avgHeartRate || ''}
+                      onChange={(e) => setCardioForm({ ...cardioForm, avgHeartRate: parseInt(e.target.value) || undefined })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Máxima (bpm)</Label>
+                    <Input
+                      type="number"
+                      placeholder="170"
+                      value={cardioForm.maxHeartRate || ''}
+                      onChange={(e) => setCardioForm({ ...cardioForm, maxHeartRate: parseInt(e.target.value) || undefined })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Mínima (bpm)</Label>
+                    <Input
+                      type="number"
+                      placeholder="110"
+                      value={cardioForm.minHeartRate || ''}
+                      onChange={(e) => setCardioForm({ ...cardioForm, minHeartRate: parseInt(e.target.value) || undefined })}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Intensidade */}
+              <div>
+                <Label>Intensidade</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {CARDIO_INTENSITIES.map((intensity) => (
+                    <Button
+                      key={intensity.value}
+                      type="button"
+                      variant={cardioForm.intensity === intensity.value ? "default" : "outline"}
+                      size="sm"
+                      className={cardioForm.intensity === intensity.value ? intensity.color : ""}
+                      onClick={() => setCardioForm({ ...cardioForm, intensity: intensity.value })}
+                    >
+                      {intensity.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Sensações */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Como se sentiu antes?</Label>
+                  <div className="flex gap-1 mt-2">
+                    {CARDIO_FEELINGS.map((feeling) => (
+                      <Button
+                        key={feeling.value}
+                        type="button"
+                        variant={cardioForm.feelingBefore === feeling.value ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCardioForm({ ...cardioForm, feelingBefore: feeling.value })}
+                      >
+                        {feeling.emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label>Como se sentiu depois?</Label>
+                  <div className="flex gap-1 mt-2">
+                    {CARDIO_FEELINGS.map((feeling) => (
+                      <Button
+                        key={feeling.value}
+                        type="button"
+                        variant={cardioForm.feelingAfter === feeling.value ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCardioForm({ ...cardioForm, feelingAfter: feeling.value })}
+                      >
+                        {feeling.emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Clima e Local */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Clima/Ambiente</Label>
+                  <Select 
+                    value={cardioForm.weather} 
+                    onValueChange={(v) => setCardioForm({ ...cardioForm, weather: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WEATHER_OPTIONS.map((w) => (
+                        <SelectItem key={w.value} value={w.value}>
+                          {w.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Local</Label>
+                  <Input
+                    placeholder="Ex: Academia, Parque"
+                    value={cardioForm.location}
+                    onChange={(e) => setCardioForm({ ...cardioForm, location: e.target.value })}
+                  />
+                </div>
+              </div>
+              
+              {/* Observações */}
+              <div>
+                <Label>Observações</Label>
+                <Textarea
+                  placeholder="Anotações sobre o treino..."
+                  value={cardioForm.notes}
+                  onChange={(e) => setCardioForm({ ...cardioForm, notes: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCardioModal(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!cardioForm.studentId || !cardioForm.cardioType || !cardioForm.durationMinutes) {
+                    toast.error("Preencha os campos obrigatórios");
+                    return;
+                  }
+                  createCardio.mutate({
+                    studentId: cardioForm.studentId,
+                    cardioDate: cardioForm.cardioDate,
+                    cardioType: cardioForm.cardioType as any,
+                    cardioTypeName: cardioForm.cardioTypeName || undefined,
+                    durationMinutes: cardioForm.durationMinutes,
+                    distanceKm: cardioForm.distanceKm || undefined,
+                    caloriesBurned: cardioForm.caloriesBurned,
+                    avgHeartRate: cardioForm.avgHeartRate,
+                    maxHeartRate: cardioForm.maxHeartRate,
+                    minHeartRate: cardioForm.minHeartRate,
+                    intensity: cardioForm.intensity as any || undefined,
+                    feelingBefore: cardioForm.feelingBefore as any || undefined,
+                    feelingAfter: cardioForm.feelingAfter as any || undefined,
+                    weather: cardioForm.weather as any || undefined,
+                    location: cardioForm.location || undefined,
+                    notes: cardioForm.notes || undefined,
+                  });
+                }}
+                disabled={createCardio.isPending}
+              >
+                {createCardio.isPending ? "Salvando..." : "Salvar Cardio"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Modal: Detalhe do Cardio */}
+        <Dialog open={showCardioDetailModal} onOpenChange={setShowCardioDetailModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-red-500" />
+                Detalhes do Cardio
+              </DialogTitle>
+            </DialogHeader>
+            
+            {cardioDetail && (
+              <div className="space-y-6">
+                {/* Informações básicas */}
+                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="h-16 w-16 rounded-full bg-red-500/10 flex items-center justify-center">
+                    <Heart className="h-8 w-8 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      {students?.find((s: any) => s.id === cardioDetail.studentId)?.name || 'Aluno'}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {CARDIO_TYPES.find(t => t.value === cardioDetail.cardioType)?.label || cardioDetail.cardioType}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(cardioDetail.cardioDate)}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Métricas */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <Timer className="h-5 w-5 mx-auto text-primary mb-1" />
+                    <p className="text-xl font-bold">{cardioDetail.durationMinutes}min</p>
+                    <p className="text-xs text-muted-foreground">Duração</p>
+                  </div>
+                  {cardioDetail.distanceKm && (
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <Footprints className="h-5 w-5 mx-auto text-primary mb-1" />
+                      <p className="text-xl font-bold">{parseFloat(cardioDetail.distanceKm).toFixed(1)}km</p>
+                      <p className="text-xs text-muted-foreground">Distância</p>
+                    </div>
+                  )}
+                  {cardioDetail.caloriesBurned && (
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
+                      <p className="text-xl font-bold">{cardioDetail.caloriesBurned}</p>
+                      <p className="text-xs text-muted-foreground">Calorias</p>
+                    </div>
+                  )}
+                  {cardioDetail.avgHeartRate && (
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <Heart className="h-5 w-5 mx-auto text-red-500 mb-1" />
+                      <p className="text-xl font-bold">{cardioDetail.avgHeartRate}bpm</p>
+                      <p className="text-xs text-muted-foreground">FC Média</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Detalhes adicionais */}
+                {(cardioDetail.intensity || cardioDetail.feelingBefore || cardioDetail.feelingAfter) && (
+                  <div className="space-y-3">
+                    {cardioDetail.intensity && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Intensidade:</span>
+                        <Badge className={CARDIO_INTENSITIES.find(i => i.value === cardioDetail.intensity)?.color}>
+                          {CARDIO_INTENSITIES.find(i => i.value === cardioDetail.intensity)?.label}
+                        </Badge>
+                      </div>
+                    )}
+                    {cardioDetail.feelingBefore && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Sensação antes:</span>
+                        <span>{CARDIO_FEELINGS.find(f => f.value === cardioDetail.feelingBefore)?.emoji} {CARDIO_FEELINGS.find(f => f.value === cardioDetail.feelingBefore)?.label}</span>
+                      </div>
+                    )}
+                    {cardioDetail.feelingAfter && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Sensação depois:</span>
+                        <span>{CARDIO_FEELINGS.find(f => f.value === cardioDetail.feelingAfter)?.emoji} {CARDIO_FEELINGS.find(f => f.value === cardioDetail.feelingAfter)?.label}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Notas */}
+                {cardioDetail.notes && (
+                  <div>
+                    <Label className="text-muted-foreground">Observações</Label>
+                    <p className="mt-1 p-3 bg-muted/50 rounded-lg">{cardioDetail.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (selectedCardioId && confirm("Tem certeza que deseja excluir este registro?")) {
+                    deleteCardio.mutate({ id: selectedCardioId });
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </Button>
+              <Button variant="outline" onClick={() => setShowCardioDetailModal(false)}>
+                Fechar
               </Button>
             </DialogFooter>
           </DialogContent>

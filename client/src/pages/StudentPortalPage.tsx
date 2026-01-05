@@ -131,10 +131,32 @@ export default function StudentPortalPage() {
   const [manualDiaryNotes, setManualDiaryNotes] = useState('');
   const [manualDiaryFeeling, setManualDiaryFeeling] = useState('');
   const [manualDiaryDuration, setManualDiaryDuration] = useState(60);
-  const [diarySubTab, setDiarySubTab] = useState<'sessions' | 'records' | 'dashboard'>('sessions');
+  const [diarySubTab, setDiarySubTab] = useState<'sessions' | 'records' | 'dashboard' | 'cardio'>('sessions');
   const [editingWorkoutLog, setEditingWorkoutLog] = useState<any>(null);
   const [showWorkoutLogModal, setShowWorkoutLogModal] = useState(false);
   const [showPhotoInviteModal, setShowPhotoInviteModal] = useState(false); // Modal de convite para fotos após anamnese
+  
+  // Estados para Cardio
+  const [showCardioModal, setShowCardioModal] = useState(false);
+  const [showCardioDetailModal, setShowCardioDetailModal] = useState(false);
+  const [selectedCardioId, setSelectedCardioId] = useState<number | null>(null);
+  const [cardioForm, setCardioForm] = useState({
+    cardioDate: format(new Date(), 'yyyy-MM-dd'),
+    cardioType: '' as string,
+    cardioTypeName: '',
+    durationMinutes: 0,
+    distanceKm: '',
+    caloriesBurned: undefined as number | undefined,
+    avgHeartRate: undefined as number | undefined,
+    maxHeartRate: undefined as number | undefined,
+    minHeartRate: undefined as number | undefined,
+    intensity: '' as string,
+    feelingBefore: '' as string,
+    feelingAfter: '' as string,
+    weather: 'indoor' as string,
+    location: '',
+    notes: '',
+  });
 
   // Restaurar dados do formulário de anamnese do localStorage ao carregar
   useEffect(() => {
@@ -268,6 +290,20 @@ export default function StudentPortalPage() {
     { enabled: !!studentData?.id }
   );
 
+  // Queries de Cardio do Aluno
+  const { data: cardioLogs, refetch: refetchCardioLogs } = trpc.studentPortal.cardioLogs.useQuery(
+    undefined,
+    { enabled: !!studentData?.id }
+  );
+  const { data: cardioStats, refetch: refetchCardioStats } = trpc.studentPortal.cardioStats.useQuery(
+    { days: 30 },
+    { enabled: !!studentData?.id }
+  );
+  const { data: cardioDetail } = trpc.studentPortal.cardioLogDetail.useQuery(
+    { id: selectedCardioId! },
+    { enabled: !!selectedCardioId }
+  );
+
   // Mutation para criar registro de treino
   const createWorkoutLogMutation = trpc.studentPortal.createWorkoutLog.useMutation({
     onSuccess: () => {
@@ -304,6 +340,54 @@ export default function StudentPortalPage() {
       toast.error(error.message || "Erro ao registrar treino manual");
     },
   });
+
+  // Mutations de Cardio do Aluno
+  const createCardioMutation = trpc.studentPortal.createCardioLog.useMutation({
+    onSuccess: () => {
+      toast.success("Cardio registrado com sucesso!");
+      setShowCardioModal(false);
+      refetchCardioLogs();
+      refetchCardioStats();
+      resetCardioForm();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao registrar cardio");
+    },
+  });
+
+  const deleteCardioMutation = trpc.studentPortal.deleteCardioLog.useMutation({
+    onSuccess: () => {
+      toast.success("Cardio excluído!");
+      setShowCardioDetailModal(false);
+      setSelectedCardioId(null);
+      refetchCardioLogs();
+      refetchCardioStats();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao excluir cardio");
+    },
+  });
+
+  // Função para resetar o formulário de cardio
+  const resetCardioForm = () => {
+    setCardioForm({
+      cardioDate: format(new Date(), 'yyyy-MM-dd'),
+      cardioType: '',
+      cardioTypeName: '',
+      durationMinutes: 0,
+      distanceKm: '',
+      caloriesBurned: undefined,
+      avgHeartRate: undefined,
+      maxHeartRate: undefined,
+      minHeartRate: undefined,
+      intensity: '',
+      feelingBefore: '',
+      feelingAfter: '',
+      weather: 'indoor',
+      location: '',
+      notes: '',
+    });
+  };
 
   // Mutation para atualizar anamnese (usa studentProcedure para autenticação do aluno)
   const updateAnamneseMutation = trpc.studentPortal.saveWithMeasurements.useMutation({
@@ -798,6 +882,15 @@ export default function StudentPortalPage() {
                 >
                   <FileText className="h-4 w-4" />
                   Registros
+                </Button>
+                <Button
+                  variant={diarySubTab === 'cardio' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDiarySubTab('cardio')}
+                  className="gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Cardio
                 </Button>
                 <Button
                   variant={diarySubTab === 'dashboard' ? 'default' : 'outline'}
@@ -1311,6 +1404,196 @@ export default function StudentPortalPage() {
                   </CardContent>
                 </Card>
               </>
+            )}
+
+            {/* Sub-tab: Cardio */}
+            {diarySubTab === 'cardio' && (
+              <div className="space-y-6">
+                {/* Botão de novo cardio */}
+                <div className="flex justify-end">
+                  <Button onClick={() => setShowCardioModal(true)} className="bg-red-500 hover:bg-red-600">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Cardio
+                  </Button>
+                </div>
+                
+                {/* Estatísticas de Cardio */}
+                {cardioStats && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-gray-500 mb-1">
+                          <Heart className="h-4 w-4" />
+                          <span className="text-sm">Sessões</span>
+                        </div>
+                        <p className="text-2xl font-bold">{cardioStats.totalSessions || 0}</p>
+                        <p className="text-xs text-gray-500">Últimos 30 dias</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-gray-500 mb-1">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-sm">Tempo Total</span>
+                        </div>
+                        <p className="text-2xl font-bold">{cardioStats.totalDuration || 0}min</p>
+                        <p className="text-xs text-gray-500">Média: {cardioStats.avgDuration || 0}min</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-gray-500 mb-1">
+                          <Activity className="h-4 w-4" />
+                          <span className="text-sm">Distância</span>
+                        </div>
+                        <p className="text-2xl font-bold">{cardioStats.totalDistance?.toFixed(1) || 0}km</p>
+                        <p className="text-xs text-gray-500">Média: {cardioStats.avgDistance?.toFixed(1) || 0}km</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-gray-500 mb-1">
+                          <Flame className="h-4 w-4" />
+                          <span className="text-sm">Calorias</span>
+                        </div>
+                        <p className="text-2xl font-bold">{cardioStats.totalCalories || 0}</p>
+                        <p className="text-xs text-gray-500">FC Média: {cardioStats.avgHeartRate || '-'} bpm</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+                
+                {/* Lista de Registros de Cardio */}
+                {cardioLogs && cardioLogs.length > 0 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-red-500" />
+                        Histórico de Cardio
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {cardioLogs.map((log: any) => {
+                          const CARDIO_TYPES_MAP: Record<string, string> = {
+                            treadmill: 'Esteira',
+                            outdoor_run: 'Corrida ao ar livre',
+                            stationary_bike: 'Bicicleta ergométrica',
+                            outdoor_bike: 'Ciclismo',
+                            elliptical: 'Elíptico',
+                            rowing: 'Remo',
+                            stair_climber: 'Escada',
+                            swimming: 'Natação',
+                            jump_rope: 'Pular corda',
+                            hiit: 'HIIT',
+                            walking: 'Caminhada',
+                            hiking: 'Trilha',
+                            dance: 'Dança',
+                            boxing: 'Boxe/Luta',
+                            crossfit: 'CrossFit',
+                            sports: 'Esportes',
+                            other: 'Outro',
+                          };
+                          const INTENSITY_MAP: Record<string, { label: string; color: string }> = {
+                            very_light: { label: 'Muito leve', color: 'bg-blue-300' },
+                            light: { label: 'Leve', color: 'bg-green-400' },
+                            moderate: { label: 'Moderado', color: 'bg-yellow-400' },
+                            vigorous: { label: 'Vigoroso', color: 'bg-orange-500' },
+                            maximum: { label: 'Máximo', color: 'bg-red-500' },
+                          };
+                          const FEELING_MAP: Record<string, string> = {
+                            terrible: '😫',
+                            bad: '😟',
+                            okay: '😐',
+                            good: '😊',
+                            great: '🔥',
+                          };
+                          return (
+                            <div 
+                              key={log.id} 
+                              className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                              onClick={() => {
+                                setSelectedCardioId(log.id);
+                                setShowCardioDetailModal(true);
+                              }}
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                                    <Heart className="h-6 w-6 text-red-500" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="font-semibold">{CARDIO_TYPES_MAP[log.cardioType] || log.cardioType}</h3>
+                                      {log.feelingAfter && (
+                                        <span className="text-lg">{FEELING_MAP[log.feelingAfter]}</span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                      {format(new Date(log.cardioDate), "dd/MM/yyyy", { locale: ptBR })}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {log.durationMinutes}min
+                                  </Badge>
+                                  
+                                  {log.distanceKm && parseFloat(log.distanceKm) > 0 && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                      <Activity className="h-3 w-3" />
+                                      {parseFloat(log.distanceKm).toFixed(1)}km
+                                    </Badge>
+                                  )}
+                                  
+                                  {log.caloriesBurned && log.caloriesBurned > 0 && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                      <Flame className="h-3 w-3" />
+                                      {log.caloriesBurned}kcal
+                                    </Badge>
+                                  )}
+                                  
+                                  {log.avgHeartRate && (
+                                    <Badge variant="outline" className="flex items-center gap-1">
+                                      <Heart className="h-3 w-3" />
+                                      {log.avgHeartRate}bpm
+                                    </Badge>
+                                  )}
+                                  
+                                  {log.intensity && INTENSITY_MAP[log.intensity] && (
+                                    <Badge className={`${INTENSITY_MAP[log.intensity].color} text-white`}>
+                                      {INTENSITY_MAP[log.intensity].label}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Nenhum cardio registrado</h3>
+                      <p className="text-gray-500 mb-4">
+                        Comece a registrar suas atividades cardiovasculares.
+                      </p>
+                      <Button onClick={() => setShowCardioModal(true)} className="bg-red-500 hover:bg-red-600">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Registrar Primeiro Cardio
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
           </TabsContent>
 
@@ -3127,6 +3410,338 @@ export default function StudentPortalPage() {
             >
               <Camera className="h-4 w-4 mr-2" />
               Adicionar Fotos
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal: Novo Cardio */}
+      <Dialog open={showCardioModal} onOpenChange={setShowCardioModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-red-500" />
+              Novo Registro de Cardio
+            </DialogTitle>
+            <DialogDescription>
+              Registre sua atividade cardiovascular
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Data */}
+            <div>
+              <Label>Data *</Label>
+              <Input
+                type="date"
+                value={cardioForm.cardioDate}
+                onChange={(e) => setCardioForm({ ...cardioForm, cardioDate: e.target.value })}
+              />
+            </div>
+            
+            {/* Tipo de Cardio */}
+            <div>
+              <Label>Tipo de Cardio *</Label>
+              <Select 
+                value={cardioForm.cardioType} 
+                onValueChange={(v) => setCardioForm({ ...cardioForm, cardioType: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="treadmill">Esteira</SelectItem>
+                  <SelectItem value="outdoor_run">Corrida ao ar livre</SelectItem>
+                  <SelectItem value="stationary_bike">Bicicleta ergométrica</SelectItem>
+                  <SelectItem value="outdoor_bike">Ciclismo</SelectItem>
+                  <SelectItem value="elliptical">Elíptico</SelectItem>
+                  <SelectItem value="rowing">Remo</SelectItem>
+                  <SelectItem value="stair_climber">Escada</SelectItem>
+                  <SelectItem value="swimming">Natação</SelectItem>
+                  <SelectItem value="jump_rope">Pular corda</SelectItem>
+                  <SelectItem value="hiit">HIIT</SelectItem>
+                  <SelectItem value="walking">Caminhada</SelectItem>
+                  <SelectItem value="hiking">Trilha</SelectItem>
+                  <SelectItem value="dance">Dança</SelectItem>
+                  <SelectItem value="boxing">Boxe/Luta</SelectItem>
+                  <SelectItem value="crossfit">CrossFit</SelectItem>
+                  <SelectItem value="sports">Esportes</SelectItem>
+                  <SelectItem value="other">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Métricas Principais */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>Duração (min) *</Label>
+                <Input
+                  type="number"
+                  placeholder="30"
+                  value={cardioForm.durationMinutes || ''}
+                  onChange={(e) => setCardioForm({ ...cardioForm, durationMinutes: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Distância (km)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="5.0"
+                  value={cardioForm.distanceKm}
+                  onChange={(e) => setCardioForm({ ...cardioForm, distanceKm: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Calorias</Label>
+                <Input
+                  type="number"
+                  placeholder="300"
+                  value={cardioForm.caloriesBurned || ''}
+                  onChange={(e) => setCardioForm({ ...cardioForm, caloriesBurned: parseInt(e.target.value) || undefined })}
+                />
+              </div>
+            </div>
+            
+            {/* Frequência Cardíaca */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>FC Média (bpm)</Label>
+                <Input
+                  type="number"
+                  placeholder="140"
+                  value={cardioForm.avgHeartRate || ''}
+                  onChange={(e) => setCardioForm({ ...cardioForm, avgHeartRate: parseInt(e.target.value) || undefined })}
+                />
+              </div>
+              <div>
+                <Label>FC Máxima</Label>
+                <Input
+                  type="number"
+                  placeholder="170"
+                  value={cardioForm.maxHeartRate || ''}
+                  onChange={(e) => setCardioForm({ ...cardioForm, maxHeartRate: parseInt(e.target.value) || undefined })}
+                />
+              </div>
+              <div>
+                <Label>FC Mínima</Label>
+                <Input
+                  type="number"
+                  placeholder="110"
+                  value={cardioForm.minHeartRate || ''}
+                  onChange={(e) => setCardioForm({ ...cardioForm, minHeartRate: parseInt(e.target.value) || undefined })}
+                />
+              </div>
+            </div>
+            
+            {/* Intensidade */}
+            <div>
+              <Label>Intensidade</Label>
+              <Select 
+                value={cardioForm.intensity} 
+                onValueChange={(v) => setCardioForm({ ...cardioForm, intensity: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_light">Muito leve (50-60% FC máx)</SelectItem>
+                  <SelectItem value="light">Leve (60-70% FC máx)</SelectItem>
+                  <SelectItem value="moderate">Moderado (70-80% FC máx)</SelectItem>
+                  <SelectItem value="vigorous">Vigoroso (80-90% FC máx)</SelectItem>
+                  <SelectItem value="maximum">Máximo (90-100% FC máx)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Sensações */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Como se sentiu antes?</Label>
+                <Select 
+                  value={cardioForm.feelingBefore} 
+                  onValueChange={(v) => setCardioForm({ ...cardioForm, feelingBefore: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="terrible">😫 Péssimo</SelectItem>
+                    <SelectItem value="bad">😟 Ruim</SelectItem>
+                    <SelectItem value="okay">😐 Ok</SelectItem>
+                    <SelectItem value="good">😊 Bom</SelectItem>
+                    <SelectItem value="great">🔥 Ótimo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Como se sentiu depois?</Label>
+                <Select 
+                  value={cardioForm.feelingAfter} 
+                  onValueChange={(v) => setCardioForm({ ...cardioForm, feelingAfter: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="terrible">😫 Péssimo</SelectItem>
+                    <SelectItem value="bad">😟 Ruim</SelectItem>
+                    <SelectItem value="okay">😐 Ok</SelectItem>
+                    <SelectItem value="good">😊 Bom</SelectItem>
+                    <SelectItem value="great">🔥 Ótimo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Observações */}
+            <div>
+              <Label>Observações</Label>
+              <Textarea
+                placeholder="Como foi o treino?"
+                value={cardioForm.notes}
+                onChange={(e) => setCardioForm({ ...cardioForm, notes: e.target.value })}
+                rows={2}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowCardioModal(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => {
+                if (!cardioForm.cardioType || !cardioForm.durationMinutes) {
+                  toast.error("Preencha os campos obrigatórios");
+                  return;
+                }
+                createCardioMutation.mutate({
+                  cardioDate: cardioForm.cardioDate,
+                  cardioType: cardioForm.cardioType as any,
+                  cardioTypeName: cardioForm.cardioTypeName || undefined,
+                  durationMinutes: cardioForm.durationMinutes,
+                  distanceKm: cardioForm.distanceKm || undefined,
+                  caloriesBurned: cardioForm.caloriesBurned,
+                  avgHeartRate: cardioForm.avgHeartRate,
+                  maxHeartRate: cardioForm.maxHeartRate,
+                  minHeartRate: cardioForm.minHeartRate,
+                  intensity: cardioForm.intensity as any || undefined,
+                  feelingBefore: cardioForm.feelingBefore as any || undefined,
+                  feelingAfter: cardioForm.feelingAfter as any || undefined,
+                  weather: cardioForm.weather as any || undefined,
+                  location: cardioForm.location || undefined,
+                  notes: cardioForm.notes || undefined,
+                });
+              }}
+              disabled={createCardioMutation.isPending}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {createCardioMutation.isPending ? "Salvando..." : "Salvar Cardio"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal: Detalhe do Cardio */}
+      <Dialog open={showCardioDetailModal} onOpenChange={setShowCardioDetailModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-red-500" />
+              Detalhes do Cardio
+            </DialogTitle>
+          </DialogHeader>
+          
+          {cardioDetail && (
+            <div className="space-y-4">
+              {/* Tipo e Data */}
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">
+                    {{
+                      treadmill: 'Esteira',
+                      outdoor_run: 'Corrida ao ar livre',
+                      stationary_bike: 'Bicicleta ergométrica',
+                      outdoor_bike: 'Ciclismo',
+                      elliptical: 'Elíptico',
+                      rowing: 'Remo',
+                      stair_climber: 'Escada',
+                      swimming: 'Natação',
+                      jump_rope: 'Pular corda',
+                      hiit: 'HIIT',
+                      walking: 'Caminhada',
+                      hiking: 'Trilha',
+                      dance: 'Dança',
+                      boxing: 'Boxe/Luta',
+                      crossfit: 'CrossFit',
+                      sports: 'Esportes',
+                      other: 'Outro',
+                    }[cardioDetail.cardioType] || cardioDetail.cardioType}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {format(new Date(cardioDetail.cardioDate), "dd/MM/yyyy", { locale: ptBR })}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Métricas */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <Clock className="h-5 w-5 mx-auto text-blue-500 mb-1" />
+                  <p className="text-lg font-bold">{cardioDetail.durationMinutes}min</p>
+                  <p className="text-xs text-gray-500">Duração</p>
+                </div>
+                {cardioDetail.distanceKm && (
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <Activity className="h-5 w-5 mx-auto text-green-500 mb-1" />
+                    <p className="text-lg font-bold">{parseFloat(cardioDetail.distanceKm).toFixed(1)}km</p>
+                    <p className="text-xs text-gray-500">Distância</p>
+                  </div>
+                )}
+                {cardioDetail.caloriesBurned && (
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
+                    <p className="text-lg font-bold">{cardioDetail.caloriesBurned}</p>
+                    <p className="text-xs text-gray-500">Calorias</p>
+                  </div>
+                )}
+                {cardioDetail.avgHeartRate && (
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <Heart className="h-5 w-5 mx-auto text-red-500 mb-1" />
+                    <p className="text-lg font-bold">{cardioDetail.avgHeartRate}bpm</p>
+                    <p className="text-xs text-gray-500">FC Média</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Notas */}
+              {cardioDetail.notes && (
+                <div>
+                  <Label className="text-gray-500">Observações</Label>
+                  <p className="mt-1 p-3 bg-gray-50 rounded-lg">{cardioDetail.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="flex justify-between gap-2 mt-4">
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (selectedCardioId && confirm("Tem certeza que deseja excluir este registro?")) {
+                  deleteCardioMutation.mutate({ id: selectedCardioId });
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </Button>
+            <Button variant="outline" onClick={() => setShowCardioDetailModal(false)}>
+              Fechar
             </Button>
           </div>
         </DialogContent>

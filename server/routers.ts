@@ -8195,6 +8195,176 @@ Seja motivador mas realista e profissional.`;
         monthlyData,
       };
     }),
+    
+    // ==================== CARDIO DO ALUNO ====================
+    
+    // Listar registros de cardio do aluno
+    cardioLogs: studentProcedure
+      .input(z.object({
+        limit: z.number().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioLogsByStudent(ctx.student.id, ctx.student.personalId, input?.limit || 50);
+      }),
+    
+    // Buscar um registro de cardio específico
+    cardioLog: studentProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const log = await db.getCardioLogById(input.id, ctx.student.personalId);
+        if (!log || log.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro de cardio não encontrado' });
+        }
+        return log;
+      }),
+    
+    // Criar registro de cardio pelo aluno
+    createCardioLog: studentProcedure
+      .input(z.object({
+        cardioDate: z.string(),
+        cardioType: z.enum(['treadmill', 'outdoor_run', 'stationary_bike', 'outdoor_bike', 'elliptical', 'rowing', 'stair_climber', 'swimming', 'jump_rope', 'hiit', 'walking', 'hiking', 'dance', 'boxing', 'crossfit', 'sports', 'other']),
+        cardioTypeName: z.string().optional(),
+        durationMinutes: z.number(),
+        distanceKm: z.string().optional(),
+        caloriesBurned: z.number().optional(),
+        avgHeartRate: z.number().optional(),
+        maxHeartRate: z.number().optional(),
+        minHeartRate: z.number().optional(),
+        intensity: z.enum(['very_light', 'light', 'moderate', 'vigorous', 'maximum']).optional(),
+        avgSpeed: z.string().optional(),
+        maxSpeed: z.string().optional(),
+        avgPace: z.string().optional(),
+        incline: z.string().optional(),
+        resistance: z.number().optional(),
+        laps: z.number().optional(),
+        steps: z.number().optional(),
+        perceivedEffort: z.number().optional(),
+        feelingBefore: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        feelingAfter: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        weather: z.enum(['indoor', 'sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid']).optional(),
+        location: z.string().optional(),
+        notes: z.string().optional(),
+        sessionId: z.number().optional(),
+        workoutLogId: z.number().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await db.createCardioLog({
+          ...input,
+          studentId: ctx.student.id,
+          personalId: ctx.student.personalId,
+          cardioDate: new Date(input.cardioDate),
+          registeredBy: 'student',
+        } as any);
+        
+        // Notificar o personal
+        const { notifyOwner } = await import('./_core/notification');
+        const cardioLabels: Record<string, string> = {
+          treadmill: 'Esteira',
+          outdoor_run: 'Corrida ao ar livre',
+          stationary_bike: 'Bicicleta ergométrica',
+          outdoor_bike: 'Ciclismo',
+          elliptical: 'Elíptico',
+          rowing: 'Remo',
+          stair_climber: 'Escada',
+          swimming: 'Natação',
+          jump_rope: 'Pular corda',
+          hiit: 'HIIT',
+          walking: 'Caminhada',
+          hiking: 'Trilha',
+          dance: 'Dança',
+          boxing: 'Boxe/Luta',
+          crossfit: 'CrossFit',
+          sports: 'Esportes',
+          other: 'Outro',
+        };
+        await notifyOwner({
+          title: `🏃 Cardio Registrado - ${ctx.student.name}`,
+          content: `O aluno ${ctx.student.name} registrou um cardio:\n\n🏋️ Tipo: ${cardioLabels[input.cardioType] || input.cardioType}\n⏱️ Duração: ${input.durationMinutes} min${input.distanceKm ? `\n📍 Distância: ${input.distanceKm} km` : ''}${input.caloriesBurned ? `\n🔥 Calorias: ${input.caloriesBurned} kcal` : ''}\n📅 Data: ${new Date(input.cardioDate).toLocaleDateString('pt-BR')}`,
+        });
+        
+        return { id };
+      }),
+    
+    // Atualizar registro de cardio pelo aluno
+    updateCardioLog: studentProcedure
+      .input(z.object({
+        id: z.number(),
+        cardioDate: z.string().optional(),
+        cardioType: z.enum(['treadmill', 'outdoor_run', 'stationary_bike', 'outdoor_bike', 'elliptical', 'rowing', 'stair_climber', 'swimming', 'jump_rope', 'hiit', 'walking', 'hiking', 'dance', 'boxing', 'crossfit', 'sports', 'other']).optional(),
+        cardioTypeName: z.string().optional(),
+        durationMinutes: z.number().optional(),
+        distanceKm: z.string().optional(),
+        caloriesBurned: z.number().optional(),
+        avgHeartRate: z.number().optional(),
+        maxHeartRate: z.number().optional(),
+        minHeartRate: z.number().optional(),
+        intensity: z.enum(['very_light', 'light', 'moderate', 'vigorous', 'maximum']).optional(),
+        avgSpeed: z.string().optional(),
+        maxSpeed: z.string().optional(),
+        avgPace: z.string().optional(),
+        incline: z.string().optional(),
+        resistance: z.number().optional(),
+        laps: z.number().optional(),
+        steps: z.number().optional(),
+        perceivedEffort: z.number().optional(),
+        feelingBefore: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        feelingAfter: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        weather: z.enum(['indoor', 'sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid']).optional(),
+        location: z.string().optional(),
+        notes: z.string().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o registro pertence ao aluno
+        const log = await db.getCardioLogById(input.id, ctx.student.personalId);
+        if (!log || log.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro de cardio não encontrado' });
+        }
+        
+        const { id, cardioDate, ...rest } = input;
+        await db.updateCardioLog(id, ctx.student.personalId, {
+          ...rest,
+          cardioDate: cardioDate ? new Date(cardioDate) : undefined,
+        } as any);
+        return { success: true };
+      }),
+    
+    // Excluir registro de cardio pelo aluno
+    deleteCardioLog: studentProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o registro pertence ao aluno
+        const log = await db.getCardioLogById(input.id, ctx.student.personalId);
+        if (!log || log.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro de cardio não encontrado' });
+        }
+        
+        await db.deleteCardioLog(input.id, ctx.student.personalId);
+        return { success: true };
+      }),
+    
+    // Estatísticas de cardio do aluno
+    cardioStats: studentProcedure
+      .input(z.object({
+        days: z.number().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioStats(ctx.student.id, ctx.student.personalId, input?.days || 30);
+      }),
+    
+    // Detalhe de um registro de cardio do aluno
+    cardioLogDetail: studentProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const log = await db.getCardioLogById(input.id, ctx.student.personalId);
+        if (!log || log.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro não encontrado' });
+        }
+        return log;
+      }),
   }),
   
   // ==================== PENDING CHANGES (Para o Personal) ====================
@@ -9044,6 +9214,149 @@ Retorne APENAS o JSON no formato especificado.`;
         } catch (e) {
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao processar análise' });
         }
+      }),
+  }),
+
+  // ==================== CARDIO LOGS (Diário de Cardio) ====================
+  cardio: router({
+    // Listar registros de cardio de um aluno (ou todos se studentId = 0)
+    list: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (input.studentId === 0) {
+          // Listar todos os cardios do personal
+          return await db.getAllCardioLogsByPersonal(ctx.personal.id, input.limit || 50);
+        }
+        return await db.getCardioLogsByStudent(input.studentId, ctx.personal.id, input.limit || 50);
+      }),
+    
+    // Buscar um registro específico
+    get: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const log = await db.getCardioLogById(input.id, ctx.personal.id);
+        if (!log) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro de cardio não encontrado' });
+        }
+        return log;
+      }),
+    
+    // Criar registro de cardio
+    create: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        cardioDate: z.string(),
+        cardioType: z.enum(['treadmill', 'outdoor_run', 'stationary_bike', 'outdoor_bike', 'elliptical', 'rowing', 'stair_climber', 'swimming', 'jump_rope', 'hiit', 'walking', 'hiking', 'dance', 'boxing', 'crossfit', 'sports', 'other']),
+        cardioTypeName: z.string().optional(),
+        durationMinutes: z.number(),
+        distanceKm: z.string().optional(),
+        caloriesBurned: z.number().optional(),
+        avgHeartRate: z.number().optional(),
+        maxHeartRate: z.number().optional(),
+        minHeartRate: z.number().optional(),
+        intensity: z.enum(['very_light', 'light', 'moderate', 'vigorous', 'maximum']).optional(),
+        avgSpeed: z.string().optional(),
+        maxSpeed: z.string().optional(),
+        avgPace: z.string().optional(),
+        incline: z.string().optional(),
+        resistance: z.number().optional(),
+        laps: z.number().optional(),
+        steps: z.number().optional(),
+        perceivedEffort: z.number().optional(),
+        feelingBefore: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        feelingAfter: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        weather: z.enum(['indoor', 'sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid']).optional(),
+        location: z.string().optional(),
+        notes: z.string().optional(),
+        sessionId: z.number().optional(),
+        workoutLogId: z.number().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await db.createCardioLog({
+          ...input,
+          personalId: ctx.personal.id,
+          cardioDate: new Date(input.cardioDate),
+          registeredBy: 'personal',
+        } as any);
+        return { id };
+      }),
+    
+    // Atualizar registro de cardio
+    update: personalProcedure
+      .input(z.object({
+        id: z.number(),
+        cardioDate: z.string().optional(),
+        cardioType: z.enum(['treadmill', 'outdoor_run', 'stationary_bike', 'outdoor_bike', 'elliptical', 'rowing', 'stair_climber', 'swimming', 'jump_rope', 'hiit', 'walking', 'hiking', 'dance', 'boxing', 'crossfit', 'sports', 'other']).optional(),
+        cardioTypeName: z.string().optional(),
+        durationMinutes: z.number().optional(),
+        distanceKm: z.string().optional(),
+        caloriesBurned: z.number().optional(),
+        avgHeartRate: z.number().optional(),
+        maxHeartRate: z.number().optional(),
+        minHeartRate: z.number().optional(),
+        intensity: z.enum(['very_light', 'light', 'moderate', 'vigorous', 'maximum']).optional(),
+        avgSpeed: z.string().optional(),
+        maxSpeed: z.string().optional(),
+        avgPace: z.string().optional(),
+        incline: z.string().optional(),
+        resistance: z.number().optional(),
+        laps: z.number().optional(),
+        steps: z.number().optional(),
+        perceivedEffort: z.number().optional(),
+        feelingBefore: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        feelingAfter: z.enum(['terrible', 'bad', 'okay', 'good', 'great']).optional(),
+        weather: z.enum(['indoor', 'sunny', 'cloudy', 'rainy', 'cold', 'hot', 'humid']).optional(),
+        location: z.string().optional(),
+        notes: z.string().optional(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, cardioDate, ...rest } = input;
+        await db.updateCardioLog(id, ctx.personal.id, {
+          ...rest,
+          cardioDate: cardioDate ? new Date(cardioDate) : undefined,
+        } as any);
+        return { success: true };
+      }),
+    
+    // Excluir registro de cardio
+    delete: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteCardioLog(input.id, ctx.personal.id);
+        return { success: true };
+      }),
+    
+    // Estatísticas de cardio de um aluno
+    stats: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        days: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioStats(input.studentId, ctx.personal.id, input.days || 30);
+      }),
+    
+    // Buscar por período
+    byDateRange: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioLogsByDateRange(
+          input.studentId,
+          ctx.personal.id,
+          input.startDate,
+          input.endDate
+        );
       }),
   }),
 
