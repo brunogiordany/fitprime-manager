@@ -351,6 +351,13 @@
       "when": 1767571575264,
       "tag": "0049_flimsy_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "5",
+      "when": 1767576320026,
+      "tag": "0050_unique_madame_hydra",
+      "breakpoints": true
     }
   ]
 }

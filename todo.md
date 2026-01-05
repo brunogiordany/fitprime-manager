@@ -3351,19 +3351,21 @@
 - [x] Usar SDK createSessionToken ao invés de jsonwebtoken para gerar token de sessão
 - [x] Garantir compatibilidade do token com o sistema de autenticação OAuth
 
-## Integração com Dispositivos Fitness (v4.1)
-- [ ] Importar dados de Strava
-- [ ] Importar dados de Garmin Connect
-- [ ] Importar dados de Apple Health
-- [ ] Interface para conectar dispositivos/apps
-- [ ] Sincronização automática de dados de cardio
+## Integração com Dispositivos Fitness (v4.1) - CANCELADO
+- [x] Pesquisa de APIs realizada (Strava, Garmin, Apple Health)
+- [x] Decisão: não implementar integração com relógios por enquanto
 
 ## Relatórios de Cardio por Período (v4.2)
-- [ ] Gráficos de evolução temporal de distância
-- [ ] Gráficos de evolução temporal de tempo
-- [ ] Gráficos de evolução temporal de frequência cardíaca
-- [ ] Filtros por período (semana, mês, trimestre, ano)
-- [ ] Comparativo entre períodos
+- [x] Gráficos de evolução temporal de distância
+- [x] Gráficos de evolução temporal de tempo
+- [x] Gráficos de evolução de frequência cardíaca
+- [x] Gráficos de frequência de treinos
+- [x] Distribuição por tipo de cardio (donut chart)
+- [x] Comparativo entre períodos
+- [x] Visão geral de todos os alunos
+- [x] Top alunos em cardio
+- [x] Filtros por aluno, período e agrupamento
+- [x] Testes unitários implementados
 
 
 ## Bug de Redirecionamento após Login (v4.0.1)

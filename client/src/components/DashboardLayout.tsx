@@ -67,6 +67,7 @@ const menuItems = [
   { icon: CreditCard, label: "Cobranças", path: "/cobrancas" },
   { icon: FileText, label: "Planos", path: "/planos" },
   { icon: BarChart3, label: "Relatórios", path: "/relatorios" },
+  { icon: Activity, label: "Relatórios Cardio", path: "/relatorios-cardio" },
   { icon: AlertTriangle, label: "Alterações Pendentes", path: "/alteracoes-pendentes" },
   { icon: MessageSquare, label: "Automações", path: "/automacoes" },
   { icon: Bot, label: "IA de Atendimento", path: "/ia-atendimento" },

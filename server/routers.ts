@@ -9355,6 +9355,74 @@ Retorne APENAS o JSON no formato especificado.`;
           input.endDate
         );
       }),
+    
+    // Dados de evolução para gráficos
+    evolution: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+        groupBy: z.enum(['day', 'week', 'month']).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioEvolutionData(
+          input.studentId,
+          ctx.personal.id,
+          input.startDate,
+          input.endDate,
+          input.groupBy || 'day'
+        );
+      }),
+    
+    // Comparativo entre períodos
+    comparison: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        currentPeriodStart: z.string(),
+        currentPeriodEnd: z.string(),
+        previousPeriodStart: z.string(),
+        previousPeriodEnd: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioComparisonData(
+          input.studentId,
+          ctx.personal.id,
+          input.currentPeriodStart,
+          input.currentPeriodEnd,
+          input.previousPeriodStart,
+          input.previousPeriodEnd
+        );
+      }),
+    
+    // Estatísticas por tipo de cardio
+    byType: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioByTypeStats(
+          input.studentId,
+          ctx.personal.id,
+          input.startDate,
+          input.endDate
+        );
+      }),
+    
+    // Estatísticas gerais de todos os alunos (para relatórios do personal)
+    overallStats: personalProcedure
+      .input(z.object({
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await db.getCardioOverallStats(
+          ctx.personal.id,
+          input.startDate,
+          input.endDate
+        );
+      }),
   }),
 
   // ==================== NUTRITION MODULE ====================

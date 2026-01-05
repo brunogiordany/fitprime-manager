@@ -5304,3 +5304,279 @@ export async function getCardioLogsByStudentForPortal(studentId: number, limit: 
     .limit(limit);
   return result;
 }
+
+
+// ==================== CARDIO EVOLUTION DATA (Para Gráficos) ====================
+
+export async function getCardioEvolutionData(
+  studentId: number, 
+  personalId: number, 
+  startDate: string, 
+  endDate: string,
+  groupBy: 'day' | 'week' | 'month' = 'day'
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Buscar todos os logs no período
+  const logs = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${startDate}`,
+      sql`${cardioLogs.cardioDate} <= ${endDate}`
+    ))
+    .orderBy(cardioLogs.cardioDate);
+  
+  // Agrupar por período
+  const grouped: Record<string, {
+    date: string;
+    totalDuration: number;
+    totalDistance: number;
+    totalCalories: number;
+    avgHeartRate: number;
+    maxHeartRate: number;
+    sessionCount: number;
+    heartRateCount: number;
+  }> = {};
+  
+  for (const log of logs) {
+    let key: string;
+    const logDate = new Date(log.cardioDate);
+    
+    if (groupBy === 'day') {
+      key = log.cardioDate.toString().split('T')[0];
+    } else if (groupBy === 'week') {
+      // Início da semana (domingo)
+      const weekStart = new Date(logDate);
+      weekStart.setDate(logDate.getDate() - logDate.getDay());
+      key = weekStart.toISOString().split('T')[0];
+    } else {
+      // Mês
+      key = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}`;
+    }
+    
+    if (!grouped[key]) {
+      grouped[key] = {
+        date: key,
+        totalDuration: 0,
+        totalDistance: 0,
+        totalCalories: 0,
+        avgHeartRate: 0,
+        maxHeartRate: 0,
+        sessionCount: 0,
+        heartRateCount: 0,
+      };
+    }
+    
+    grouped[key].totalDuration += log.durationMinutes || 0;
+    grouped[key].totalDistance += parseFloat(log.distanceKm?.toString() || '0');
+    grouped[key].totalCalories += log.caloriesBurned || 0;
+    grouped[key].sessionCount += 1;
+    
+    if (log.avgHeartRate) {
+      grouped[key].avgHeartRate += log.avgHeartRate;
+      grouped[key].heartRateCount += 1;
+    }
+    if (log.maxHeartRate && log.maxHeartRate > grouped[key].maxHeartRate) {
+      grouped[key].maxHeartRate = log.maxHeartRate;
+    }
+  }
+  
+  // Calcular médias e formatar resultado
+  return Object.values(grouped).map(g => ({
+    date: g.date,
+    totalDuration: g.totalDuration,
+    totalDistance: Math.round(g.totalDistance * 100) / 100,
+    totalCalories: g.totalCalories,
+    avgHeartRate: g.heartRateCount > 0 ? Math.round(g.avgHeartRate / g.heartRateCount) : null,
+    maxHeartRate: g.maxHeartRate || null,
+    sessionCount: g.sessionCount,
+  })).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function getCardioComparisonData(
+  studentId: number,
+  personalId: number,
+  currentPeriodStart: string,
+  currentPeriodEnd: string,
+  previousPeriodStart: string,
+  previousPeriodEnd: string
+) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Período atual
+  const currentLogs = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${currentPeriodStart}`,
+      sql`${cardioLogs.cardioDate} <= ${currentPeriodEnd}`
+    ));
+  
+  // Período anterior
+  const previousLogs = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${previousPeriodStart}`,
+      sql`${cardioLogs.cardioDate} <= ${previousPeriodEnd}`
+    ));
+  
+  const calcStats = (logs: typeof currentLogs) => {
+    const totalDuration = logs.reduce((sum, l) => sum + (l.durationMinutes || 0), 0);
+    const totalDistance = logs.reduce((sum, l) => sum + parseFloat(l.distanceKm?.toString() || '0'), 0);
+    const totalCalories = logs.reduce((sum, l) => sum + (l.caloriesBurned || 0), 0);
+    const heartRates = logs.filter(l => l.avgHeartRate).map(l => l.avgHeartRate!);
+    const avgHeartRate = heartRates.length > 0 ? Math.round(heartRates.reduce((a, b) => a + b, 0) / heartRates.length) : null;
+    
+    return {
+      sessionCount: logs.length,
+      totalDuration,
+      totalDistance: Math.round(totalDistance * 100) / 100,
+      totalCalories,
+      avgHeartRate,
+      avgDuration: logs.length > 0 ? Math.round(totalDuration / logs.length) : 0,
+      avgDistance: logs.length > 0 ? Math.round((totalDistance / logs.length) * 100) / 100 : 0,
+    };
+  };
+  
+  const current = calcStats(currentLogs);
+  const previous = calcStats(previousLogs);
+  
+  // Calcular variações percentuais
+  const calcChange = (curr: number, prev: number) => {
+    if (prev === 0) return curr > 0 ? 100 : 0;
+    return Math.round(((curr - prev) / prev) * 100);
+  };
+  
+  return {
+    current,
+    previous,
+    changes: {
+      sessionCount: calcChange(current.sessionCount, previous.sessionCount),
+      totalDuration: calcChange(current.totalDuration, previous.totalDuration),
+      totalDistance: calcChange(current.totalDistance, previous.totalDistance),
+      totalCalories: calcChange(current.totalCalories, previous.totalCalories),
+      avgDuration: calcChange(current.avgDuration, previous.avgDuration),
+      avgDistance: calcChange(current.avgDistance, previous.avgDistance),
+    }
+  };
+}
+
+export async function getCardioByTypeStats(
+  studentId: number,
+  personalId: number,
+  startDate: string,
+  endDate: string
+) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const logs = await db.select()
+    .from(cardioLogs)
+    .where(and(
+      eq(cardioLogs.studentId, studentId),
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${startDate}`,
+      sql`${cardioLogs.cardioDate} <= ${endDate}`
+    ));
+  
+  // Agrupar por tipo
+  const byType: Record<string, {
+    type: string;
+    sessionCount: number;
+    totalDuration: number;
+    totalDistance: number;
+    totalCalories: number;
+  }> = {};
+  
+  for (const log of logs) {
+    const type = log.cardioType;
+    if (!byType[type]) {
+      byType[type] = {
+        type,
+        sessionCount: 0,
+        totalDuration: 0,
+        totalDistance: 0,
+        totalCalories: 0,
+      };
+    }
+    byType[type].sessionCount += 1;
+    byType[type].totalDuration += log.durationMinutes || 0;
+    byType[type].totalDistance += parseFloat(log.distanceKm?.toString() || '0');
+    byType[type].totalCalories += log.caloriesBurned || 0;
+  }
+  
+  return Object.values(byType).sort((a, b) => b.sessionCount - a.sessionCount);
+}
+
+// Estatísticas gerais de cardio para todos os alunos do personal (para relatórios)
+export async function getCardioOverallStats(
+  personalId: number,
+  startDate: string,
+  endDate: string
+) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const logs = await db.select()
+    .from(cardioLogs)
+    .leftJoin(students, eq(cardioLogs.studentId, students.id))
+    .where(and(
+      eq(cardioLogs.personalId, personalId),
+      isNull(cardioLogs.deletedAt),
+      sql`${cardioLogs.cardioDate} >= ${startDate}`,
+      sql`${cardioLogs.cardioDate} <= ${endDate}`
+    ));
+  
+  // Estatísticas gerais
+  const totalSessions = logs.length;
+  const totalDuration = logs.reduce((sum, l) => sum + (l.cardio_logs.durationMinutes || 0), 0);
+  const totalDistance = logs.reduce((sum, l) => sum + parseFloat(l.cardio_logs.distanceKm?.toString() || '0'), 0);
+  const totalCalories = logs.reduce((sum, l) => sum + (l.cardio_logs.caloriesBurned || 0), 0);
+  
+  // Alunos únicos
+  const uniqueStudents = new Set(logs.map(l => l.cardio_logs.studentId));
+  
+  // Top alunos por sessões
+  const studentSessions: Record<number, { id: number; name: string; sessions: number; duration: number; distance: number }> = {};
+  for (const log of logs) {
+    const sid = log.cardio_logs.studentId;
+    if (!studentSessions[sid]) {
+      studentSessions[sid] = {
+        id: sid,
+        name: log.students?.name || 'Aluno',
+        sessions: 0,
+        duration: 0,
+        distance: 0,
+      };
+    }
+    studentSessions[sid].sessions += 1;
+    studentSessions[sid].duration += log.cardio_logs.durationMinutes || 0;
+    studentSessions[sid].distance += parseFloat(log.cardio_logs.distanceKm?.toString() || '0');
+  }
+  
+  const topStudents = Object.values(studentSessions)
+    .sort((a, b) => b.sessions - a.sessions)
+    .slice(0, 5);
+  
+  return {
+    totalSessions,
+    totalDuration,
+    totalDistance: Math.round(totalDistance * 100) / 100,
+    totalCalories,
+    uniqueStudents: uniqueStudents.size,
+    avgSessionsPerStudent: uniqueStudents.size > 0 ? Math.round(totalSessions / uniqueStudents.size * 10) / 10 : 0,
+    avgDurationPerSession: totalSessions > 0 ? Math.round(totalDuration / totalSessions) : 0,
+    topStudents,
+  };
+}

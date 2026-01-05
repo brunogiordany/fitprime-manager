@@ -2554,3 +2554,127 @@ export const cardioLogs = mysqlTable("cardio_logs", {
 
 export type CardioLog = typeof cardioLogs.$inferSelect;
 export type InsertCardioLog = typeof cardioLogs.$inferInsert;
+
+
+// ==================== FITNESS INTEGRATIONS (Integrações com Apps Fitness) ====================
+export const fitnessIntegrations = mysqlTable("fitness_integrations", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Tipo de integração
+  provider: mysqlEnum("provider", [
+    "strava",
+    "garmin",
+    "apple_health",
+    "google_fit",
+    "fitbit",
+    "polar",
+    "suunto",
+    "coros",
+    "manual_import" // Importação manual de arquivo
+  ]).notNull(),
+  
+  // Status da conexão
+  status: mysqlEnum("status", ["connected", "disconnected", "expired", "error"]).default("disconnected").notNull(),
+  
+  // Tokens OAuth (Strava, Garmin, etc)
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  
+  // Dados do atleta na plataforma
+  externalAthleteId: varchar("externalAthleteId", { length: 100 }), // ID do atleta no Strava/Garmin
+  externalUsername: varchar("externalUsername", { length: 100 }),
+  externalProfileUrl: varchar("externalProfileUrl", { length: 500 }),
+  
+  // Configurações de sincronização
+  autoSync: boolean("autoSync").default(true), // Sincronizar automaticamente
+  syncActivities: boolean("syncActivities").default(true), // Sincronizar atividades
+  lastSyncAt: timestamp("lastSyncAt"),
+  lastSyncStatus: mysqlEnum("lastSyncStatus", ["success", "partial", "failed"]),
+  lastSyncError: text("lastSyncError"),
+  
+  // Scopes autorizados
+  authorizedScopes: text("authorizedScopes"), // JSON array de scopes
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FitnessIntegration = typeof fitnessIntegrations.$inferSelect;
+export type InsertFitnessIntegration = typeof fitnessIntegrations.$inferInsert;
+
+// ==================== SYNCED ACTIVITIES (Atividades Sincronizadas) ====================
+export const syncedActivities = mysqlTable("synced_activities", {
+  id: int("id").autoincrement().primaryKey(),
+  integrationId: int("integrationId").notNull().references(() => fitnessIntegrations.id),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  cardioLogId: int("cardioLogId").references(() => cardioLogs.id), // Vinculado ao cardio_log criado
+  
+  // ID externo da atividade
+  externalActivityId: varchar("externalActivityId", { length: 100 }).notNull(),
+  provider: mysqlEnum("provider", [
+    "strava",
+    "garmin",
+    "apple_health",
+    "google_fit",
+    "fitbit",
+    "polar",
+    "suunto",
+    "coros",
+    "manual_import"
+  ]).notNull(),
+  
+  // Dados da atividade
+  activityName: varchar("activityName", { length: 255 }),
+  activityType: varchar("activityType", { length: 100 }), // Tipo original (Run, Ride, etc)
+  sportType: varchar("sportType", { length: 100 }), // Tipo específico (TrailRun, MountainBikeRide, etc)
+  
+  // Data e hora
+  startDate: timestamp("startDate").notNull(),
+  startDateLocal: timestamp("startDateLocal"),
+  timezone: varchar("timezone", { length: 100 }),
+  
+  // Métricas
+  distanceMeters: decimal("distanceMeters", { precision: 10, scale: 2 }),
+  movingTimeSeconds: int("movingTimeSeconds"),
+  elapsedTimeSeconds: int("elapsedTimeSeconds"),
+  totalElevationGain: decimal("totalElevationGain", { precision: 8, scale: 2 }),
+  
+  // Velocidade
+  averageSpeed: decimal("averageSpeed", { precision: 6, scale: 2 }), // m/s
+  maxSpeed: decimal("maxSpeed", { precision: 6, scale: 2 }), // m/s
+  
+  // Frequência cardíaca
+  averageHeartrate: int("averageHeartrate"),
+  maxHeartrate: int("maxHeartrate"),
+  
+  // Calorias
+  calories: int("calories"),
+  
+  // Cadência (corrida/bike)
+  averageCadence: decimal("averageCadence", { precision: 5, scale: 1 }),
+  
+  // Potência (bike)
+  averageWatts: int("averageWatts"),
+  maxWatts: int("maxWatts"),
+  
+  // Localização
+  startLatlng: varchar("startLatlng", { length: 50 }), // "lat,lng"
+  endLatlng: varchar("endLatlng", { length: 50 }), // "lat,lng"
+  
+  // Dados brutos
+  rawData: json("rawData"), // JSON completo da API original
+  
+  // Status
+  syncStatus: mysqlEnum("syncStatus", ["synced", "converted", "ignored", "error"]).default("synced"),
+  convertedAt: timestamp("convertedAt"), // Quando foi convertido para cardio_log
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SyncedActivity = typeof syncedActivities.$inferSelect;
+export type InsertSyncedActivity = typeof syncedActivities.$inferInsert;

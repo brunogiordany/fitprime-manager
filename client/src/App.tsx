@@ -26,6 +26,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import StudentWorkoutLog from "./pages/StudentWorkoutLog";
 import StudentWorkoutView from "./pages/StudentWorkoutView";
 import Reports from "./pages/Reports";
+import CardioReports from "./pages/CardioReports";
 import PendingChanges from "./pages/PendingChanges";
 import Invite from "./pages/Invite";
 import StudentLogin from "./pages/StudentLogin";
@@ -127,6 +128,7 @@ function Router() {
       <Route path="/configuracoes" component={Settings} />
       <Route path="/lixeira" component={Trash} />
       <Route path="/relatorios" component={Reports} />
+      <Route path="/relatorios-cardio" component={CardioReports} />
       <Route path="/alteracoes-pendentes" component={PendingChanges} />
       <Route path="/portal-preview" component={PortalPreview} />
       <Route path="/acessos-aluno" component={StudentAccess} />
