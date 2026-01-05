@@ -511,6 +511,53 @@ export default function AdminEmailTemplates() {
                   </ScrollArea>
                 </CardContent>
               </Card>
+
+              {/* Card de Variáveis Disponíveis - Sempre Visível */}
+              <Card className="mt-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Code className="h-5 w-5 text-primary" />
+                    Variáveis Disponíveis
+                  </CardTitle>
+                  <CardDescription>
+                    Clique para copiar. Use no assunto ou conteúdo dos emails.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[300px] pr-4">
+                    <div className="space-y-4">
+                      {VARIABLE_CATEGORIES.map((category) => (
+                        <div key={category}>
+                          <h4 className="text-sm font-semibold mb-2 text-primary flex items-center gap-2">
+                            {category === "Aluno" && "👤"}
+                            {category === "Personal" && "💪"}
+                            {category === "Links" && "🔗"}
+                            {category === "Sessão" && "📅"}
+                            {category === "Pagamento" && "💰"}
+                            {category === "Sistema" && "⚙️"}
+                            {category}
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {ALL_VARIABLES.filter(v => v.category === category).map((v) => (
+                              <Button
+                                key={v.name}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyVariable(v.name)}
+                                className="text-xs h-auto py-1 px-2 hover:bg-primary/10 hover:border-primary/50"
+                                title={v.description}
+                              >
+                                <Copy className="h-3 w-3 mr-1 opacity-50" />
+                                <span className="font-mono">{`{{${v.name}}}`}</span>
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Detalhes/Editor */}

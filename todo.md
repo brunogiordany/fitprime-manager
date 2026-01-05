@@ -3455,3 +3455,4 @@
 - [x] Adicionar seção com lista completa de variáveis disponíveis na página de Templates de Email
 - [x] Criar editor visual simplificado para editar templates sem código HTML
 
+- [x] Adicionar lista de variáveis de email em local estratégico e visível na página de Templates de Email

@@ -1,0 +1,21 @@
+# Implementação do Card de Variáveis de Email
+
+## Status: CONCLUÍDO
+
+## O que foi implementado:
+- Card "Variáveis Disponíveis" adicionado abaixo da lista de templates (coluna esquerda)
+- Card sempre visível, independente de ter template selecionado
+- Variáveis organizadas por categoria com ícones:
+  - 👤 Aluno (studentName, studentEmail, studentPhone)
+  - 💪 Personal (personalName, personalEmail, personalPhone, businessName)
+  - 🔗 Links (inviteLink, loginLink, resetLink, dashboardLink, activationLink)
+  - 📅 Sessão (sessionDate, sessionTime, sessionDuration, workoutName)
+  - 💰 Pagamento (paymentAmount, paymentDueDate, planName, paymentLink)
+  - ⚙️ Sistema (verificationCode, currentDate, appName)
+- Cada variável é um botão clicável que copia para a área de transferência
+- ScrollArea para permitir rolagem dentro do card (altura de 300px)
+- Tooltip com descrição da variável ao passar o mouse
+
+## Localização:
+- Página: /admin/emails (Templates de Email)
+- Posição: Abaixo do card "Templates Disponíveis", na coluna esquerda (lg:col-span-1)
