@@ -256,15 +256,14 @@ export default function AdminEmailTemplates() {
                 <RefreshCw className={`h-4 w-4 mr-2 ${templatesLoading ? "animate-spin" : ""}`} />
                 Atualizar
               </Button>
-              {(!templates || templates.length === 0) && (
-                <Button
-                  onClick={() => seedMutation.mutate()}
-                  disabled={seedMutation.isPending}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Criar Templates Padrão
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => seedMutation.mutate()}
+                disabled={seedMutation.isPending}
+              >
+                <Sparkles className={`h-4 w-4 mr-2 ${seedMutation.isPending ? "animate-pulse" : ""}`} />
+                {seedMutation.isPending ? "Atualizando..." : "Restaurar Padrões"}
+              </Button>
             </div>
           </div>
         </div>

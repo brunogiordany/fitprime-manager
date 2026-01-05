@@ -3426,3 +3426,27 @@
 - [x] Preview de email com variáveis substituídas
 - [x] Envio de email de teste
 - [x] Variáveis dinâmicas: {{studentName}}, {{personalName}}, {{inviteLink}}, etc.
+
+
+## Templates de Email Profissionais (v14.1)
+- [ ] Criar templates HTML profissionais com logo FitPrime
+- [ ] Template de Convite para Aluno (com emojis e design atraente)
+- [ ] Template de Boas-vindas ao Aluno
+- [ ] Template de Lembrete de Sessão
+- [ ] Template de Recuperação de Senha
+- [ ] Template de Lembrete de Pagamento
+- [ ] Template de Ativação de Compra
+- [ ] Testar envio de email para brunogiordany@gmail.com
+
+
+## Templates de Email Profissionais (v4.2)
+- [x] Adicionar logo FitPrime no cabeçalho de todos os emails
+- [x] Melhorar textos com emojis e design visual dark mode
+- [x] Criar design profissional para template de Convite
+- [x] Criar design profissional para template de Boas-vindas
+- [x] Criar design profissional para template de Lembrete de Sessão
+- [x] Criar design profissional para template de Recuperação de Senha
+- [x] Criar design profissional para template de Lembrete de Pagamento
+- [x] Criar design profissional para template de Ativação de Compra
+- [x] Adicionar botão "Restaurar Padrões" na página de admin emails
+- [x] Testar envio de email para brunogiordany@gmail.com

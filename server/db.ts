@@ -5660,6 +5660,9 @@ export async function upsertEmailTemplate(templateKey: string, data: Omit<Insert
   }
 }
 
+// URL da logo do FitPrime para emails
+const FITPRIME_LOGO_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/BpkckIHoWxDQNokC.png';
+
 // Seed templates padrão
 export async function seedDefaultEmailTemplates(): Promise<void> {
   const defaultTemplates: InsertEmailTemplate[] = [
@@ -5667,7 +5670,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'invite',
       name: 'Convite para Aluno',
       description: 'Email enviado quando o personal convida um novo aluno para a plataforma',
-      subject: '{{personalName}} convidou você para o FitPrime',
+      subject: '💪 {{personalName}} te convidou para treinar juntos!',
       senderType: 'convites',
       variables: JSON.stringify([
         { name: 'studentName', description: 'Nome do aluno' },
@@ -5685,41 +5688,89 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">💪</span>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.2);">
+      <!-- Ícone de Convite -->
+      <div style="text-align: center; margin-bottom: 32px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
+          <span style="font-size: 36px;">💌</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Bem-vindo ao FitPrime!</h1>
       </div>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{studentName}}</strong>,
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 28px; text-align: center; font-weight: 700;">
+        Você foi convidado! 🎉
+      </h1>
+      <p style="color: #94a3b8; font-size: 16px; text-align: center; margin: 0 0 32px;">
+        Uma nova jornada fitness te espera
       </p>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        <strong>{{personalName}}</strong> convidou você para acessar o Portal do Aluno do FitPrime. 
-        Lá você poderá ver seus treinos, acompanhar sua evolução e muito mais!
-      </p>
+      <!-- Mensagem Principal -->
+      <div style="background: rgba(16, 185, 129, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 32px; border-left: 4px solid #10b981;">
+        <p style="color: #e2e8f0; font-size: 18px; line-height: 1.7; margin: 0;">
+          Olá <strong style="color: #10b981;">{{studentName}}</strong>! 👋
+        </p>
+        <p style="color: #cbd5e1; font-size: 16px; line-height: 1.7; margin: 16px 0 0;">
+          <strong style="color: #ffffff;">{{personalName}}</strong> está te convidando para fazer parte do <strong style="color: #10b981;">FitPrime</strong>!
+        </p>
+      </div>
       
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{{inviteLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-          Criar minha conta
+      <!-- Benefícios -->
+      <div style="margin-bottom: 32px;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px;">O que você terá acesso:</p>
+        <div style="display: grid; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📱</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Seus treinos personalizados na palma da mão</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📊</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Acompanhe sua evolução com gráficos</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📅</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Agenda de sessões sempre atualizada</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">💬</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Comunicação direta com seu personal</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botão CTA -->
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="{{inviteLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 700; font-size: 18px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">
+          🚀 Criar Minha Conta Grátis
         </a>
       </div>
       
-      <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
-        <a href="{{inviteLink}}" style="color: #10b981;">{{inviteLink}}</a>
+      <!-- Link alternativo -->
+      <p style="color: #64748b; font-size: 13px; line-height: 1.6; text-align: center;">
+        Se o botão não funcionar, copie e cole este link:<br>
+        <a href="{{inviteLink}}" style="color: #10b981; word-break: break-all;">{{inviteLink}}</a>
       </p>
-      
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-      
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-        Este link expira em 7 dias. Se você não solicitou este convite, ignore este email.
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 12px; margin: 0 0 8px;">
+        ⏰ Este convite expira em <strong style="color: #94a3b8;">7 dias</strong>
       </p>
+      <p style="color: #475569; font-size: 11px; margin: 0;">
+        Se você não conhece {{personalName}}, ignore este email.
+      </p>
+      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Transformando treinos em resultados
+        </p>
+      </div>
     </div>
   </div>
 </body>
@@ -5730,7 +5781,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'welcome',
       name: 'Boas-vindas ao Aluno',
       description: 'Email enviado após o aluno criar sua conta com sucesso',
-      subject: 'Bem-vindo ao FitPrime! 🎉',
+      subject: '🎉 Bem-vindo ao FitPrime, {{studentName}}! Sua jornada começa agora',
       senderType: 'convites',
       variables: JSON.stringify([
         { name: 'studentName', description: 'Nome do aluno' },
@@ -5746,42 +5797,90 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">🎉</span>
-        </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Cadastro Realizado!</h1>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.2);">
+      <!-- Confetti Animation -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 48px;">🎉🎊🎉</div>
       </div>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{studentName}}</strong>,
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 32px; text-align: center; font-weight: 700;">
+        Parabéns, {{studentName}}!
+      </h1>
+      <p style="color: #10b981; font-size: 18px; text-align: center; margin: 0 0 32px; font-weight: 600;">
+        Sua conta foi criada com sucesso! ✅
       </p>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Sua conta no FitPrime foi criada com sucesso! Agora você pode acessar o Portal do Aluno 
-        para ver seus treinos, acompanhar sua evolução e muito mais.
-      </p>
+      <!-- Card de Sucesso -->
+      <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); border-radius: 16px; padding: 32px; margin-bottom: 32px; border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div style="text-align: center;">
+          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
+            <span style="font-size: 40px;">✓</span>
+          </div>
+          <p style="color: #e2e8f0; font-size: 16px; line-height: 1.7; margin: 0;">
+            Agora você faz parte da <strong style="color: #10b981;">família FitPrime</strong>!
+            Prepare-se para uma jornada incrível de transformação.
+          </p>
+        </div>
+      </div>
       
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{{loginLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-          Acessar Portal do Aluno
+      <!-- Próximos Passos -->
+      <div style="margin-bottom: 32px;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; text-align: center;">📝 Próximos Passos</p>
+        <div style="display: grid; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <div style="width: 32px; height: 32px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold;">1</span>
+            </div>
+            <span style="color: #e2e8f0; font-size: 15px;">Acesse o Portal do Aluno</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <div style="width: 32px; height: 32px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold;">2</span>
+            </div>
+            <span style="color: #e2e8f0; font-size: 15px;">Complete sua anamnese</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <div style="width: 32px; height: 32px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
+              <span style="color: white; font-weight: bold;">3</span>
+            </div>
+            <span style="color: #e2e8f0; font-size: 15px;">Confira seus treinos personalizados</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botão CTA -->
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="{{loginLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 700; font-size: 18px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
+          📱 Acessar Meu Portal
         </a>
       </div>
       
-      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 16px; margin: 20px 0;">
-        <p style="color: #166534; font-size: 14px; margin: 0;">
-          <strong>Próximo passo:</strong> Complete sua anamnese para que seu personal possa criar treinos personalizados para você!
+      <!-- Dica -->
+      <div style="background: rgba(251, 191, 36, 0.1); border-radius: 12px; padding: 16px; border-left: 4px solid #fbbf24;">
+        <p style="color: #fbbf24; font-size: 14px; margin: 0;">
+          <strong>💡 Dica:</strong> Salve este email! Você pode precisar do link de acesso no futuro.
         </p>
       </div>
-      
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-      
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-        Guarde este email para referência futura.
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 16px;">
+        Dúvidas? Fale com seu personal trainer!
       </p>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Transformando treinos em resultados
+        </p>
+      </div>
     </div>
   </div>
 </body>
@@ -5792,7 +5891,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'session_reminder',
       name: 'Lembrete de Sessão',
       description: 'Email enviado para lembrar o aluno de uma sessão agendada',
-      subject: '📅 Lembrete: Treino {{sessionDate}} às {{sessionTime}}',
+      subject: '⏰ {{studentName}}, seu treino é HOJE! Não esqueça 💪',
       senderType: 'avisos',
       variables: JSON.stringify([
         { name: 'studentName', description: 'Nome do aluno' },
@@ -5812,47 +5911,86 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">⏰</span>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.2);">
+      <!-- Ícone de Alarme -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.4); animation: pulse 2s infinite;">
+          <span style="font-size: 48px;">⏰</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Lembrete de Treino</h1>
       </div>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{studentName}}</strong>,
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 28px; text-align: center; font-weight: 700;">
+        Ei, {{studentName}}! 👋
+      </h1>
+      <p style="color: #fbbf24; font-size: 20px; text-align: center; margin: 0 0 32px; font-weight: 600;">
+        Seu treino está chegando!
       </p>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Não esqueça do seu treino com <strong>{{personalName}}</strong>!
-      </p>
-      
-      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-        <p style="color: #166534; font-size: 16px; margin: 0;">
-          📅 {{sessionDate}}
+      <!-- Card de Horário -->
+      <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 2px solid rgba(16, 185, 129, 0.3); text-align: center;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 16px;">📅 Data e Horário</p>
+        <p style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0 0 8px;">
+          {{sessionDate}}
         </p>
-        <p style="color: #166534; font-size: 24px; font-weight: 600; margin: 10px 0 0;">
-          ⏰ {{sessionTime}}
-        </p>
-      </div>
-      
-      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 20px 0;">
-        <p style="color: #92400e; font-size: 14px; margin: 0;">
-          <strong>Dicas para o treino:</strong><br>
-          • Hidrate-se bem antes<br>
-          • Use roupas confortáveis<br>
-          • Chegue 5 minutos antes
+        <div style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; padding: 16px 32px; display: inline-block; margin-top: 12px;">
+          <p style="color: #ffffff; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 2px;">
+            {{sessionTime}}
+          </p>
+        </div>
+        <p style="color: #94a3b8; font-size: 16px; margin: 16px 0 0;">
+          com <strong style="color: #10b981;">{{personalName}}</strong>
         </p>
       </div>
       
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      <!-- Checklist -->
+      <div style="margin-bottom: 32px;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; text-align: center;">✅ Checklist pré-treino</p>
+        <div style="display: grid; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">💧</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Hidrate-se bem (beba água!)</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">👕</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Separe roupas confortáveis</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">🍌</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Faça um lanche leve 1h antes</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">⏱️</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Chegue 5 minutos antes</span>
+          </div>
+        </div>
+      </div>
       
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-        FitPrime - Seu parceiro de treinos 💪
+      <!-- Mensagem Motivacional -->
+      <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.1)); border-radius: 16px; padding: 24px; border-left: 4px solid #8b5cf6; text-align: center;">
+        <p style="color: #c4b5fd; font-size: 16px; margin: 0; font-style: italic;">
+          "💪 Cada treino te deixa mais perto do seu objetivo. Vamos juntos!"
+        </p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">
+        Precisa remarcar? Fale com {{personalName}}
       </p>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Transformando treinos em resultados
+        </p>
+      </div>
     </div>
   </div>
 </body>
@@ -5863,7 +6001,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'password_reset',
       name: 'Recuperação de Senha',
       description: 'Email com código de verificação para recuperar senha',
-      subject: '🔐 Código de Recuperação de Senha - FitPrime',
+      subject: '🔐 Seu código de recuperação FitPrime',
       senderType: 'sistema',
       variables: JSON.stringify([
         { name: 'studentName', description: 'Nome do aluno' },
@@ -5879,46 +6017,72 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">🔐</span>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.2);">
+      <!-- Ícone de Segurança -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);">
+          <span style="font-size: 40px;">🔐</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Recuperação de Senha</h1>
       </div>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{studentName}}</strong>,
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 28px; text-align: center; font-weight: 700;">
+        Recuperação de Senha
+      </h1>
+      <p style="color: #94a3b8; font-size: 16px; text-align: center; margin: 0 0 32px;">
+        Olá {{studentName}}, recebemos sua solicitação
       </p>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Recebemos uma solicitação para redefinir a senha da sua conta no FitPrime. Use o código abaixo para continuar:
-      </p>
-      
-      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 2px solid #10b981; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center;">
-        <p style="color: #166534; font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 1px;">
-          Seu código de verificação
+      <!-- Código de Verificação -->
+      <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.1)); border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 2px solid rgba(99, 102, 241, 0.3); text-align: center;">
+        <p style="color: #a5b4fc; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 16px;">
+          🔑 Seu código de verificação
         </p>
-        <p style="color: #10b981; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: monospace;">
-          {{code}}
+        <div style="background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: 16px; padding: 24px; display: inline-block;">
+          <p style="color: #ffffff; font-size: 48px; font-weight: 700; margin: 0; letter-spacing: 12px; font-family: 'Courier New', monospace;">
+            {{code}}
+          </p>
+        </div>
+        <p style="color: #94a3b8; font-size: 14px; margin: 16px 0 0;">
+          Digite este código na tela de recuperação
         </p>
       </div>
       
-      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
-        ⏱️ Este código expira em <strong>15 minutos</strong>
-      </p>
+      <!-- Timer -->
+      <div style="background: rgba(251, 191, 36, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 24px; border-left: 4px solid #fbbf24; text-align: center;">
+        <p style="color: #fbbf24; font-size: 16px; margin: 0;">
+          <strong>⏱️ Atenção:</strong> Este código expira em <strong>15 minutos</strong>
+        </p>
+      </div>
       
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-      
-      <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
-        Se você não solicitou a recuperação de senha, ignore este email. Sua conta permanece segura.
+      <!-- Aviso de Segurança -->
+      <div style="background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 16px; border-left: 4px solid #ef4444;">
+        <p style="color: #fca5a5; font-size: 14px; margin: 0;">
+          <strong>🚨 Segurança:</strong> Nunca compartilhe este código com ninguém. Nossa equipe nunca pedirá seu código.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">
+        Não solicitou esta recuperação? Ignore este email.
       </p>
-      
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-        FitPrime - Seu parceiro de treinos 💪
+      <p style="color: #475569; font-size: 12px; margin: 0 0 24px;">
+        Sua conta permanece segura.
       </p>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Transformando treinos em resultados
+        </p>
+      </div>
     </div>
   </div>
 </body>
@@ -5929,7 +6093,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'payment_reminder',
       name: 'Lembrete de Pagamento',
       description: 'Email enviado para lembrar o aluno de um pagamento pendente',
-      subject: '💰 Lembrete: Pagamento vence em {{daysUntil}} dias',
+      subject: '💳 {{studentName}}, seu pagamento vence em {{daysUntil}} dias',
       senderType: 'cobranca',
       variables: JSON.stringify([
         { name: 'studentName', description: 'Nome do aluno' },
@@ -5955,44 +6119,84 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">💰</span>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(245, 158, 11, 0.3);">
+      <!-- Ícone de Pagamento -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.4);">
+          <span style="font-size: 40px;">💳</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Lembrete de Pagamento</h1>
       </div>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{studentName}}</strong>,
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 28px; text-align: center; font-weight: 700;">
+        Lembrete de Pagamento 📅
+      </h1>
+      <p style="color: #fbbf24; font-size: 18px; text-align: center; margin: 0 0 32px; font-weight: 600;">
+        Vence em {{daysUntil}} dias
       </p>
       
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Este é um lembrete amigável de que seu pagamento do plano com <strong>{{personalName}}</strong> vence em breve.
-      </p>
-      
-      <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #f59e0b;">
-        <h3 style="color: #92400e; margin: 0 0 12px; font-size: 18px;">📋 Detalhes</h3>
-        <p style="color: #92400e; margin: 0; font-size: 16px;">
-          <strong>Plano:</strong> {{planName}}<br>
-          <strong>Valor:</strong> {{amount}}<br>
-          <strong>Vencimento:</strong> {{dueDate}}
+      <!-- Mensagem -->
+      <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+        <p style="color: #e2e8f0; font-size: 16px; line-height: 1.7; margin: 0;">
+          Olá <strong style="color: #10b981;">{{studentName}}</strong>! 👋
+        </p>
+        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.7; margin: 12px 0 0;">
+          Este é um lembrete amigável sobre o pagamento do seu plano de treinos com <strong style="color: #ffffff;">{{personalName}}</strong>.
         </p>
       </div>
       
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{{portalLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-          Ver Detalhes no Portal
+      <!-- Card de Detalhes -->
+      <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1)); border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 2px solid rgba(245, 158, 11, 0.3);">
+        <p style="color: #fbbf24; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px; text-align: center;">📋 Detalhes do Pagamento</p>
+        
+        <div style="display: grid; gap: 16px;">
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8; font-size: 14px;">🏆 Plano</span>
+            <span style="color: #ffffff; font-size: 16px; font-weight: 600;">{{planName}}</span>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8; font-size: 14px;">💰 Valor</span>
+            <span style="color: #10b981; font-size: 20px; font-weight: 700;">{{amount}}</span>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8; font-size: 14px;">📅 Vencimento</span>
+            <span style="color: #fbbf24; font-size: 16px; font-weight: 600;">{{dueDate}}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botão CTA -->
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="{{portalLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 700; font-size: 18px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
+          💳 Pagar Agora
         </a>
       </div>
       
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-      
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-        FitPrime - Seu parceiro de treinos 💪
+      <!-- Dica -->
+      <div style="background: rgba(16, 185, 129, 0.1); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+        <p style="color: #6ee7b7; font-size: 14px; margin: 0;">
+          <strong>💡 Dica:</strong> Mantenha seus pagamentos em dia para não perder nenhum treino!
+        </p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">
+        Dúvidas sobre o pagamento? Fale com {{personalName}}
       </p>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Transformando treinos em resultados
+        </p>
+      </div>
     </div>
   </div>
 </body>
@@ -6003,7 +6207,7 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
       templateKey: 'purchase_activation',
       name: 'Ativação de Compra',
       description: 'Email enviado após a compra para o personal ativar sua conta',
-      subject: '🎉 Compra confirmada! Ative sua conta FitPrime',
+      subject: '🚀 Parabéns {{customerName}}! Sua conta FitPrime está pronta',
       senderType: 'cobranca',
       variables: JSON.stringify([
         { name: 'customerName', description: 'Nome do cliente' },
@@ -6023,58 +6227,107 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 36px;">🎉</span>
+    <!-- Header com Logo -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="${FITPRIME_LOGO_URL}" alt="FitPrime Manager" style="height: 60px; width: auto;">
+    </div>
+    
+    <div style="background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 24px; padding: 48px 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.2);">
+      <!-- Confetti e Celebração -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 56px;">🎉🚀🎉</div>
+      </div>
+      
+      <!-- Título -->
+      <h1 style="color: #ffffff; margin: 0 0 8px; font-size: 32px; text-align: center; font-weight: 700;">
+        Compra Confirmada!
+      </h1>
+      <p style="color: #10b981; font-size: 20px; text-align: center; margin: 0 0 32px; font-weight: 600;">
+        Bem-vindo à família FitPrime, {{customerName}}! 🌟
+      </p>
+      
+      <!-- Card de Sucesso -->
+      <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 2px solid rgba(16, 185, 129, 0.3);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
+            <span style="font-size: 40px;">✓</span>
+          </div>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Compra Confirmada!</h1>
-        <p style="color: #6b7280; margin: 10px 0 0; font-size: 16px;">Bem-vindo ao FitPrime</p>
-      </div>
-      
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Olá <strong>{{customerName}}</strong>,
-      </p>
-      
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        Sua compra foi processada com sucesso! Agora você tem acesso completo ao FitPrime, 
-        a plataforma que vai revolucionar a forma como você gerencia seus alunos.
-      </p>
-      
-      <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #10b981;">
-        <h3 style="color: #166534; margin: 0 0 12px; font-size: 18px;">📋 Detalhes da Compra</h3>
-        <p style="color: #166534; margin: 0; font-size: 16px;">
-          <strong>Plano:</strong> {{planName}}<br>
-          <strong>Valor:</strong> {{amount}}/mês
+        <p style="color: #e2e8f0; font-size: 16px; line-height: 1.7; margin: 0; text-align: center;">
+          Sua compra foi processada com sucesso! Agora você tem acesso completo ao <strong style="color: #10b981;">FitPrime Manager</strong>.
         </p>
       </div>
       
-      <div style="text-align: center; margin: 32px 0;">
-        <p style="color: #4b5563; font-size: 14px; margin-bottom: 16px;">
-          Clique no botão abaixo para ativar sua conta e começar a usar:
+      <!-- Detalhes da Compra -->
+      <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 32px;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px; text-align: center;">💳 Detalhes da Compra</p>
+        <div style="display: grid; gap: 12px;">
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8; font-size: 14px;">🏆 Plano</span>
+            <span style="color: #ffffff; font-size: 16px; font-weight: 600;">{{planName}}</span>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8; font-size: 14px;">💰 Investimento</span>
+            <span style="color: #10b981; font-size: 20px; font-weight: 700;">{{amount}}/mês</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- O que você terá acesso -->
+      <div style="margin-bottom: 32px;">
+        <p style="color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; text-align: center;">✨ O que você terá acesso:</p>
+        <div style="display: grid; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">👥</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Gestão completa de alunos</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📊</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Dashboard com métricas em tempo real</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📅</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Agenda inteligente de sessões</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">💳</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Cobranças automáticas</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; display: flex; align-items: center;">
+            <span style="font-size: 24px; margin-right: 12px;">📱</span>
+            <span style="color: #e2e8f0; font-size: 15px;">Portal exclusivo para seus alunos</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botão CTA -->
+      <div style="text-align: center; margin: 40px 0;">
+        <p style="color: #94a3b8; font-size: 14px; margin: 0 0 16px;">
+          Clique no botão abaixo para começar:
         </p>
-        <a href="{{activationLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+        <a href="{{activationLink}}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 20px 56px; border-radius: 12px; font-weight: 700; font-size: 20px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);">
           🚀 Ativar Minha Conta
         </a>
       </div>
       
-      <div style="background-color: #fef3c7; border-radius: 8px; padding: 16px; margin: 24px 0;">
-        <p style="color: #92400e; font-size: 14px; margin: 0;">
-          <strong>⚠️ Importante:</strong> Este link expira em 7 dias. Se você já tem uma conta, 
-          basta fazer login normalmente que seu plano será ativado automaticamente.
+      <!-- Aviso -->
+      <div style="background: rgba(251, 191, 36, 0.1); border-radius: 12px; padding: 16px; border-left: 4px solid #fbbf24;">
+        <p style="color: #fbbf24; font-size: 14px; margin: 0;">
+          <strong>⚠️ Importante:</strong> Este link expira em 7 dias. Se já tem conta, faça login normalmente.
         </p>
       </div>
-      
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-      
-      <div style="text-align: center;">
-        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px;">
-          Precisa de ajuda? Responda este email ou acesse nosso suporte.
-        </p>
-        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-          FitPrime - Gestão inteligente para Personal Trainers 💪
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; padding: 24px;">
+      <p style="color: #64748b; font-size: 14px; margin: 0 0 8px;">
+        Dúvidas? Responda este email - estamos aqui para ajudar! 💬
+      </p>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          💪 FitPrime Manager - Gestão inteligente para Personal Trainers
         </p>
       </div>
     </div>
