@@ -1657,47 +1657,47 @@ export default function Schedule() {
 
         {/* Modal de Preview de Sessões em Lote */}
         <Dialog open={showBatchPreview} onOpenChange={setShowBatchPreview}>
-          <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0">
+          <DialogContent className="max-w-2xl h-[70vh] sm:h-[75vh] flex flex-col p-0 overflow-hidden">
             {/* Header fixo */}
-            <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
-              <DialogTitle className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 text-emerald-500" />
+            <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b flex-shrink-0 bg-background">
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
                 Preview das Sessões
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm mt-1">
                 Confira as {batchPreviewSessions.length} sessões que serão criadas antes de confirmar
               </DialogDescription>
-            </DialogHeader>
+            </div>
             
-            {/* Conteúdo scrollável - ocupa todo espaço disponível */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-2 pb-4">
+            {/* Conteúdo scrollável - ocupa espaço restante */}
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-3 sm:py-4">
+              <div className="space-y-2">
                 {batchPreviewSessions.map((session, index) => (
                   <div 
                     key={index} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    className="flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
                           {format(session.date, 'dd')}
                         </span>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-xs sm:text-sm truncate">
                           {format(session.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                           {session.time} - {newSession.duration} min
                           {session.workoutName && (
-                            <span className="ml-2 text-emerald-600 dark:text-emerald-400">
+                            <span className="ml-1 sm:ml-2 text-emerald-600 dark:text-emerald-400">
                               • {session.workoutName} {session.workoutDay && `(${session.workoutDay})`}
                             </span>
                           )}
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 flex-shrink-0 ml-2">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 flex-shrink-0 ml-2 text-[10px] sm:text-xs px-1.5 sm:px-2">
                       #{index + 1}
                     </Badge>
                   </div>
@@ -1705,27 +1705,27 @@ export default function Schedule() {
               </div>
             </div>
 
-            {/* Footer fixo - sempre visível no rodapé */}
-            <div className="px-6 pb-6 pt-4 border-t space-y-3 flex-shrink-0 bg-background shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                <p className="text-sm text-amber-700 dark:text-amber-400">
-                  <AlertCircle className="h-4 w-4 inline mr-1" />
+            {/* Footer fixo no rodapé - nunca será cortado */}
+            <div className="flex-shrink-0 border-t bg-background px-4 sm:px-6 py-3 sm:py-4 space-y-3">
+              <div className="p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400">
+                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
                   Após confirmar, todas as {batchPreviewSessions.length} sessões serão criadas automaticamente.
                 </p>
               </div>
               
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button variant="outline" onClick={() => setShowBatchPreview(false)}>
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+                <Button variant="outline" onClick={() => setShowBatchPreview(false)} className="w-full sm:w-auto text-sm">
                   Voltar e Editar
                 </Button>
                 <Button 
                   onClick={handleCreateSession} 
                   disabled={createSessionMutation.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto text-sm"
                 >
                   {createSessionMutation.isPending ? "Criando..." : `Confirmar ${batchPreviewSessions.length} Sessões`}
                 </Button>
-              </DialogFooter>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
