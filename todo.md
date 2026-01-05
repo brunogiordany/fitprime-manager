@@ -3403,3 +3403,9 @@
 - [x] Adicionar seção de configuração DNS do Resend no painel admin
 - [x] Mostrar registros DNS necessários para configurar domínio
 - [x] Incluir instruções de configuração
+
+## Correções SEO Landing Page (v4.4.4)
+- [x] Adicionar título H1 na página inicial
+- [x] Adicionar títulos H2 nas seções
+- [x] Adicionar palavras-chave relevantes
+- [x] Ajustar título da página (30-60 caracteres)

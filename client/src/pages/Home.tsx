@@ -100,6 +100,11 @@ export default function Home() {
       setLocation('/dashboard');
     }
   }, [loading, isAuthenticated, setLocation]);
+  
+  // SEO: Definir título da página
+  useEffect(() => {
+    document.title = "FitPrime Manager - Sistema de Gestão para Personal Trainers";
+  }, []);
 
   if (loading) {
     return (
@@ -142,9 +147,9 @@ export default function Home() {
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Mais tempo para treinar,{" "}
+              Sistema de Gestão para Personal Trainers:{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
-                menos tempo no celular
+                Mais Tempo para Treinar
               </span>
             </h1>
             
@@ -227,7 +232,7 @@ export default function Home() {
               Tudo que você precisa
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Um app completo para você <span className="text-emerald-600">brilhar</span>
+              Funcionalidades do Sistema para Personal Trainer
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Cada funcionalidade foi pensada para facilitar sua vida e impressionar seus alunos.
@@ -317,7 +322,7 @@ export default function Home() {
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Sua rotina vai <span className="text-emerald-600">mudar</span>
+              Gestão de Alunos e Treinos <span className="text-emerald-600">Simplificada</span>
             </h2>
             <p className="text-gray-600">Veja como o FitPrime transforma seu dia a dia</p>
           </div>
@@ -383,7 +388,7 @@ export default function Home() {
               Histórias reais
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Quem usa, <span className="text-emerald-600">recomenda</span>
+              Depoimentos de Personal Trainers
             </h2>
           </div>
 
@@ -442,8 +447,8 @@ export default function Home() {
                 Para Atletas e Entusiastas
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Não é personal?{" "}
-                <span className="text-purple-400">Sem problema!</span>
+                App de Treino para Atletas e{" "}
+                <span className="text-purple-400">Fisiculturistas</span>
               </h2>
               <p className="text-gray-300 mb-6">
                 Se você é fisiculturista, atleta ou simplesmente ama treinar e quer ter controle total 
@@ -499,9 +504,9 @@ export default function Home() {
             Oferta especial de lançamento
           </Badge>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Invista no seu <span className="text-emerald-600">crescimento</span>
-          </h2>
+<h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Preços do Sistema para Personal Trainer
+            </h2>
           
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Menos que o valor de uma sessão de treino para organizar toda sua carreira.
@@ -629,7 +634,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-gray-50">
         <div className="container max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Perguntas Frequentes</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Perguntas Frequentes sobre o FitPrime</h2>
           </div>
 
           <div className="space-y-4">
@@ -676,7 +681,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-gradient-to-br from-emerald-600 to-teal-700">
         <div className="container max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Pronto para transformar sua carreira?
+            Comece Agora com o Melhor Sistema para Personal Trainer
           </h2>
           <p className="text-emerald-100 mb-8 text-lg">
             Junte-se a mais de 500 personal trainers que já organizaram sua vida com o FitPrime.
