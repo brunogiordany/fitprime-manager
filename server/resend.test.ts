@@ -23,7 +23,7 @@ describe('Resend API Integration', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'FitPrime <onboarding@resend.dev>',
+        from: 'FitPrime Manager <noreply@fitprimemanager.online>',
         to: 'delivered@resend.dev', // Resend's test email address
         subject: 'FitPrime - Teste de Email',
         html: '<h1>Teste de Email</h1><p>Este é um email de teste do FitPrime.</p>',

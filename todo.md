@@ -3409,3 +3409,9 @@
 - [x] Adicionar títulos H2 nas seções
 - [x] Adicionar palavras-chave relevantes
 - [x] Ajustar título da página (30-60 caracteres)
+
+## Configuração de Email com Domínio Próprio (v4.4.5)
+- [x] Identificar todos os pontos de envio de email no sistema
+- [x] Atualizar remetente para noreply@fitprimemanager.online
+- [x] Atualizar remetente de cobranças para cobranca@fitprimemanager.online
+- [x] Testar envio de emails com novo domínio

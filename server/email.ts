@@ -5,13 +5,23 @@
  * Note: For production, you need to configure RESEND_API_KEY in environment
  * For now, we'll use a placeholder that logs emails to console
  */
-
 export interface EmailPayload {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  from?: string;
 }
+
+// Remetentes de email por tipo
+export const EMAIL_SENDERS = {
+  default: 'FitPrime Manager <noreply@fitprimemanager.online>',
+  convites: 'FitPrime Convites <convites@fitprimemanager.online>',
+  avisos: 'FitPrime Avisos <avisos@fitprimemanager.online>',
+  cobranca: 'FitPrime Cobranças <cobranca@fitprimemanager.online>',
+  sistema: 'FitPrime Sistema <sistema@fitprimemanager.online>',
+  contato: 'FitPrime Contato <contato@fitprimemanager.online>',
+};
 
 /**
  * Send an email using Resend API
@@ -34,7 +44,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
 
   try {
     const emailData = {
-      from: 'FitPrime <onboarding@resend.dev>',
+      from: payload.from || EMAIL_SENDERS.default,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
@@ -145,6 +155,7 @@ Se você não solicitou este convite, ignore este email.
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.convites,
   });
 }
 
@@ -225,6 +236,7 @@ Guarde este email para referência futura.
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.convites,
   });
 }
 
@@ -325,6 +337,7 @@ Bons treinos! 💪
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.avisos,
   });
 }
 
@@ -431,6 +444,7 @@ Em caso de dúvidas, entre em contato com seu personal trainer.
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.cobranca,
   });
 }
 
@@ -539,6 +553,7 @@ FitPrime - Seu parceiro de treinos 💪
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.avisos,
   });
 }
 
@@ -631,6 +646,7 @@ FitPrime - Seu parceiro de treinos 💪
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.sistema,
   });
 }
 
@@ -750,6 +766,7 @@ FitPrime - Gestão inteligente para Personal Trainers 💪
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.cobranca,
   });
 }
 
@@ -834,5 +851,6 @@ FitPrime - Gestão inteligente para Personal Trainers 💪
     subject,
     html,
     text,
+    from: EMAIL_SENDERS.cobranca,
   });
 }
