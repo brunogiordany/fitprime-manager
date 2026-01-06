@@ -107,6 +107,9 @@ export default function Workouts() {
   const [showPdfExportModal, setShowPdfExportModal] = useState(false);
   const [showAnalysisHistoryModal, setShowAnalysisHistoryModal] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [regeneratingExercise, setRegeneratingExercise] = useState<{dayIndex: number, exIndex: number} | null>(null);
+  const [showCardioKcalModal, setShowCardioKcalModal] = useState(false);
+  const [cardioKcalRecommendation, setCardioKcalRecommendation] = useState<any>(null);
   const [newWorkout, setNewWorkout] = useState({
     name: "",
     description: "",
@@ -233,6 +236,97 @@ export default function Workouts() {
       // Silencioso - não precisa de feedback
     },
   });
+
+  // Mutation para regenerar exercício individual
+  const regenerateExerciseMutation = trpc.workouts.regenerateExercise.useMutation({
+    onSuccess: (data) => {
+      if (regeneratingExercise && aiPreview) {
+        const { dayIndex, exIndex } = regeneratingExercise;
+        const newPreview = { ...aiPreview };
+        const newDays = [...newPreview.preview.days];
+        const newExercises = [...newDays[dayIndex].exercises];
+        newExercises[exIndex] = data.exercise;
+        newDays[dayIndex] = { ...newDays[dayIndex], exercises: newExercises };
+        newPreview.preview = { ...newPreview.preview, days: newDays };
+        setAiPreview(newPreview);
+        toast.success(`Exercício substituído: ${data.exercise.name}`, {
+          description: data.reason,
+        });
+      }
+      setRegeneratingExercise(null);
+    },
+    onError: (error) => {
+      if (error.message?.includes('CREF')) {
+        setShowCrefPopup(true);
+      } else {
+        toast.error("Erro ao regenerar exercício: " + error.message);
+      }
+      setRegeneratingExercise(null);
+    },
+  });
+
+  // Mutation para gerar recomendação de cardio e kcal
+  const generateCardioKcalMutation = trpc.workouts.generateCardioAndKcal.useMutation({
+    onSuccess: (data) => {
+      setCardioKcalRecommendation(data);
+      setShowCardioKcalModal(true);
+      toast.success("Recomendação gerada com sucesso!");
+    },
+    onError: (error) => {
+      if (error.message?.includes('CREF')) {
+        setShowCrefPopup(true);
+      } else {
+        toast.error("Erro ao gerar recomendação: " + error.message);
+      }
+    },
+  });
+
+  // Função para regenerar exercício individual
+  const handleRegenerateExercise = (dayIndex: number, exIndex: number) => {
+    if (!aiPreview || !selectedStudent) return;
+    
+    const day = aiPreview.preview.days[dayIndex];
+    const exercise = day.exercises[exIndex];
+    const otherExercises = day.exercises
+      .filter((_: any, i: number) => i !== exIndex)
+      .map((e: any) => ({ name: e.name, muscleGroup: e.muscleGroup }));
+    
+    setRegeneratingExercise({ dayIndex, exIndex });
+    
+    regenerateExerciseMutation.mutate({
+      studentId: parseInt(selectedStudent),
+      currentExercise: {
+        name: exercise.name,
+        muscleGroup: exercise.muscleGroup,
+        sets: exercise.sets,
+        reps: exercise.reps,
+        restSeconds: exercise.restSeconds,
+        notes: exercise.notes || '',
+      },
+      dayName: day.name,
+      otherExercisesInDay: otherExercises,
+      workoutGoal: aiPreview.preview.goal,
+      workoutDifficulty: aiPreview.preview.difficulty,
+    });
+  };
+
+  // Função para gerar cardio e kcal
+  const handleGenerateCardioKcal = () => {
+    if (!selectedStudent) {
+      toast.error("Selecione um aluno primeiro");
+      return;
+    }
+    
+    generateCardioKcalMutation.mutate({
+      studentId: parseInt(selectedStudent),
+      workoutPreview: aiPreview ? {
+        name: aiPreview.preview.name,
+        goal: aiPreview.preview.goal,
+        difficulty: aiPreview.preview.difficulty,
+        daysCount: aiPreview.preview.days.length,
+      } : undefined,
+    });
+  };
 
   // Query para histórico de análises
   const { data: analysisHistory, refetch: refetchHistory } = trpc.workouts.getAnalysisHistory.useQuery(
@@ -655,6 +749,20 @@ export default function Workouts() {
                                           <Button
                                             variant="ghost"
                                             size="icon"
+                                            className="h-6 w-6 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                            onClick={() => handleRegenerateExercise(dayIndex, exIndex)}
+                                            disabled={regeneratingExercise?.dayIndex === dayIndex && regeneratingExercise?.exIndex === exIndex}
+                                            title="Gerar novo exercício com IA"
+                                          >
+                                            {regeneratingExercise?.dayIndex === dayIndex && regeneratingExercise?.exIndex === exIndex ? (
+                                              <Loader2 className="h-3 w-3 animate-spin" />
+                                            ) : (
+                                              <Sparkles className="h-3 w-3" />
+                                            )}
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
                                             className="h-6 w-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                             onClick={() => setEditingExercise({ dayIndex, exIndex, exercise: { ...ex } })}
                                             title="Editar exercício"
@@ -690,34 +798,55 @@ export default function Workouts() {
                     {/* Botões fixos no rodapé - SEMPRE VISÍVEIS */}
                     <div className="border-t bg-background px-3 sm:px-6 py-3 sm:py-4 flex-shrink-0">
                       <p className="text-xs sm:text-sm text-muted-foreground text-center mb-2 sm:mb-3">
-                        Revise o treino acima. Após salvar, você poderá editar os exercícios.
+                        Revise o treino acima. Clique em <Sparkles className="h-3 w-3 inline text-purple-600" /> para gerar novo exercício.
                       </p>
-                      <div className="flex gap-2 sm:gap-3">
+                      <div className="flex flex-col gap-2 sm:gap-3">
+                        {/* Botão de Cardio e Kcal */}
                         <Button 
                           variant="outline" 
-                          onClick={() => setAiPreview(null)}
-                          className="flex-1 text-xs sm:text-sm"
+                          onClick={handleGenerateCardioKcal}
+                          disabled={generateCardioKcalMutation.isPending}
+                          className="w-full text-xs sm:text-sm border-orange-200 text-orange-700 hover:bg-orange-50"
                         >
-                          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                          Gerar Novo
-                        </Button>
-                        <Button 
-                          onClick={handleSaveAIWorkout}
-                          disabled={saveAIMutation.isPending}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs sm:text-sm"
-                        >
-                          {saveAIMutation.isPending ? (
+                          {generateCardioKcalMutation.isPending ? (
                             <>
                               <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
-                              Salvando...
+                              Calculando...
                             </>
                           ) : (
                             <>
-                              <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Salvar e Editar
+                              <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              Gerar Cardio e Kcal
                             </>
                           )}
                         </Button>
+                        <div className="flex gap-2 sm:gap-3">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setAiPreview(null)}
+                            className="flex-1 text-xs sm:text-sm"
+                          >
+                            <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            Gerar Novo
+                          </Button>
+                          <Button 
+                            onClick={handleSaveAIWorkout}
+                            disabled={saveAIMutation.isPending}
+                            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs sm:text-sm"
+                          >
+                            {saveAIMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
+                                Salvando...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                Salvar e Editar
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </>
@@ -2165,6 +2294,167 @@ export default function Workouts() {
                 ))
               )}
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Recomendação de Cardio e Kcal */}
+        <Dialog open={showCardioKcalModal} onOpenChange={setShowCardioKcalModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-orange-600" />
+                Recomendação de Cardio e Nutrição
+              </DialogTitle>
+              <DialogDescription>
+                Plano personalizado para {cardioKcalRecommendation?.studentName}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {cardioKcalRecommendation && (
+              <div className="space-y-4">
+                {/* Resumo */}
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 border border-orange-100">
+                  <p className="text-sm font-medium text-orange-800 mb-2">Resumo da Estratégia</p>
+                  <p className="text-sm text-muted-foreground">{cardioKcalRecommendation.recommendation.summary}</p>
+                </div>
+                
+                {/* Cardio */}
+                <Card className="border-blue-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-blue-100">
+                        <Zap className="h-4 w-4 text-blue-600" />
+                      </div>
+                      Cardio Recomendado
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-blue-50 rounded-lg p-3 text-center">
+                        <p className="text-2xl font-bold text-blue-700">{cardioKcalRecommendation.recommendation.cardio.sessionsPerWeek}x</p>
+                        <p className="text-xs text-muted-foreground">por semana</p>
+                      </div>
+                      <div className="bg-blue-50 rounded-lg p-3 text-center">
+                        <p className="text-2xl font-bold text-blue-700">{cardioKcalRecommendation.recommendation.cardio.minutesPerSession}</p>
+                        <p className="text-xs text-muted-foreground">minutos/sessão</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Tipos recomendados:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {cardioKcalRecommendation.recommendation.cardio.recommendedTypes.map((type: string, i: number) => (
+                          <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-xs space-y-1">
+                      <p><strong>Intensidade:</strong> {cardioKcalRecommendation.recommendation.cardio.intensity}</p>
+                      <p><strong>Quando:</strong> {cardioKcalRecommendation.recommendation.cardio.timing}</p>
+                      {cardioKcalRecommendation.recommendation.cardio.notes && (
+                        <p className="text-muted-foreground italic">{cardioKcalRecommendation.recommendation.cardio.notes}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Nutrição */}
+                <Card className="border-green-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-green-100">
+                        <Target className="h-4 w-4 text-green-600" />
+                      </div>
+                      Meta Nutricional Diária
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                      <p className="text-3xl font-bold text-green-700">{cardioKcalRecommendation.recommendation.nutrition.dailyCalories}</p>
+                      <p className="text-sm text-muted-foreground">kcal/dia</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-red-50 rounded-lg p-2 text-center">
+                        <p className="text-lg font-bold text-red-600">{cardioKcalRecommendation.recommendation.nutrition.proteinGrams}g</p>
+                        <p className="text-[10px] text-muted-foreground">Proteína</p>
+                      </div>
+                      <div className="bg-amber-50 rounded-lg p-2 text-center">
+                        <p className="text-lg font-bold text-amber-600">{cardioKcalRecommendation.recommendation.nutrition.carbsGrams}g</p>
+                        <p className="text-[10px] text-muted-foreground">Carboidratos</p>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-2 text-center">
+                        <p className="text-lg font-bold text-purple-600">{cardioKcalRecommendation.recommendation.nutrition.fatGrams}g</p>
+                        <p className="text-[10px] text-muted-foreground">Gorduras</p>
+                      </div>
+                    </div>
+                    <div className="text-xs space-y-1">
+                      <p><strong>Refeições:</strong> {cardioKcalRecommendation.recommendation.nutrition.mealFrequency}x ao dia</p>
+                      <p><strong>Hidratação:</strong> {cardioKcalRecommendation.recommendation.nutrition.hydration}</p>
+                      {cardioKcalRecommendation.recommendation.nutrition.notes && (
+                        <p className="text-muted-foreground italic">{cardioKcalRecommendation.recommendation.nutrition.notes}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Projeção */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                  <p className="text-sm font-medium text-purple-800 mb-2">Projeção de Resultados</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Balanço semanal:</p>
+                      <p className={`font-bold ${cardioKcalRecommendation.recommendation.weeklyCalorieDeficitOrSurplus < 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                        {cardioKcalRecommendation.recommendation.weeklyCalorieDeficitOrSurplus > 0 ? '+' : ''}
+                        {cardioKcalRecommendation.recommendation.weeklyCalorieDeficitOrSurplus} kcal
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Mudança estimada:</p>
+                      <p className="font-bold text-purple-700">{cardioKcalRecommendation.recommendation.estimatedWeeklyWeightChange}/semana</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Tempo estimado para o objetivo:</p>
+                      <p className="font-bold text-purple-700">{cardioKcalRecommendation.recommendation.timeToGoal}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Avisos */}
+                {cardioKcalRecommendation.recommendation.warnings?.length > 0 && (
+                  <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <p className="text-sm font-medium text-yellow-800 mb-2">Avisos Importantes</p>
+                    <ul className="text-xs text-yellow-700 space-y-1">
+                      {cardioKcalRecommendation.recommendation.warnings.map((warning: string, i: number) => (
+                        <li key={i}>• {warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCardioKcalModal(false)}
+                    className="flex-1"
+                  >
+                    Fechar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Copiar para clipboard
+                      const text = `RECOMENDAÇÃO DE CARDIO E NUTRIÇÃO\n\n${cardioKcalRecommendation.recommendation.summary}\n\nCARDIO:\n- ${cardioKcalRecommendation.recommendation.cardio.sessionsPerWeek}x por semana\n- ${cardioKcalRecommendation.recommendation.cardio.minutesPerSession} minutos por sessão\n- Tipos: ${cardioKcalRecommendation.recommendation.cardio.recommendedTypes.join(', ')}\n- Intensidade: ${cardioKcalRecommendation.recommendation.cardio.intensity}\n\nNUTRIÇÃO:\n- ${cardioKcalRecommendation.recommendation.nutrition.dailyCalories} kcal/dia\n- Proteína: ${cardioKcalRecommendation.recommendation.nutrition.proteinGrams}g\n- Carboidratos: ${cardioKcalRecommendation.recommendation.nutrition.carbsGrams}g\n- Gorduras: ${cardioKcalRecommendation.recommendation.nutrition.fatGrams}g\n- ${cardioKcalRecommendation.recommendation.nutrition.mealFrequency} refeições/dia\n- Hidratação: ${cardioKcalRecommendation.recommendation.nutrition.hydration}\n\nPROJEÇÃO:\n- Mudança semanal: ${cardioKcalRecommendation.recommendation.estimatedWeeklyWeightChange}\n- Tempo para objetivo: ${cardioKcalRecommendation.recommendation.timeToGoal}`;
+                      navigator.clipboard.writeText(text);
+                      toast.success("Recomendação copiada!");
+                    }}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Texto
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

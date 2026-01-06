@@ -4342,6 +4342,339 @@ Lembre-se: texto limpo, sem markdown, com emojis, fácil de ler.`
         return { id: workoutId, name: workout.name };
       }),
     
+    // Regenerar exercício individual com IA
+    regenerateExercise: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        currentExercise: z.object({
+          name: z.string(),
+          muscleGroup: z.string(),
+          sets: z.number(),
+          reps: z.string(),
+          restSeconds: z.number(),
+          notes: z.string().optional(),
+        }),
+        dayName: z.string(),
+        otherExercisesInDay: z.array(z.object({
+          name: z.string(),
+          muscleGroup: z.string(),
+        })),
+        workoutGoal: z.string().optional(),
+        workoutDifficulty: z.string().optional(),
+        customPrompt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o personal tem CREF cadastrado
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.cref) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Para gerar exercícios com IA, é necessário cadastrar seu CREF nas configurações.' 
+          });
+        }
+        
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese do aluno
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        
+        // Montar contexto do aluno
+        const studentContext = {
+          genero: student.gender === 'male' ? 'masculino' : student.gender === 'female' ? 'feminino' : 'não informado',
+          objetivo: anamnesis?.mainGoal || input.workoutGoal || 'geral',
+          nivel: anamnesis?.exerciseExperience || input.workoutDifficulty || 'intermediário',
+          restricoes: anamnesis?.trainingRestrictions || 'nenhuma informada',
+          enfasesMusculares: anamnesis?.muscleEmphasis || 'nenhuma específica',
+          localTreino: anamnesis?.trainingLocation || 'academia',
+        };
+        
+        // Lista de exercícios já presentes no dia para evitar repetição
+        const existingExercises = input.otherExercisesInDay.map(e => e.name).join(', ');
+        
+        const systemPrompt = `Você é um personal trainer experiente e certificado. Sua tarefa é sugerir UM exercício alternativo para substituir o exercício atual.
+
+Você DEVE retornar um JSON válido no seguinte formato:
+{
+  "name": "Nome do Exercício",
+  "muscleGroup": "Grupo Muscular",
+  "sets": 3,
+  "reps": "10-12",
+  "restSeconds": 60,
+  "notes": "Observações sobre execução ou variação",
+  "reason": "Breve explicação de por que este exercício é uma boa alternativa"
+}
+
+REGRAS CRÍTICAS:
+1. O exercício DEVE trabalhar o mesmo grupo muscular: ${input.currentExercise.muscleGroup}
+2. NÃO repita exercícios já presentes no treino: ${existingExercises || 'nenhum'}
+3. Considere o nível do aluno: ${studentContext.nivel}
+4. Respeite as restrições: ${studentContext.restricoes}
+5. Considere o local de treino: ${studentContext.localTreino}
+6. Adapte ao gênero: ${studentContext.genero}
+7. Mantenha coerência com o objetivo: ${studentContext.objetivo}
+8. Se houver ênfases musculares (${studentContext.enfasesMusculares}), priorize exercícios que trabalhem essas áreas
+9. Sugira uma variação diferente mas igualmente eficaz`;
+        
+        const userPrompt = `Preciso de um exercício alternativo para substituir:
+
+Exercício atual: ${input.currentExercise.name}
+Grupo muscular: ${input.currentExercise.muscleGroup}
+Séries: ${input.currentExercise.sets}
+Repetições: ${input.currentExercise.reps}
+Descanso: ${input.currentExercise.restSeconds}s
+
+Dia do treino: ${input.dayName}
+Outros exercícios já no dia: ${existingExercises || 'nenhum ainda'}
+
+${input.customPrompt ? `Instrução adicional do personal: ${input.customPrompt}` : ''}
+
+Retorne APENAS o JSON, sem texto adicional.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'exercise_suggestion',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  muscleGroup: { type: 'string' },
+                  sets: { type: 'integer' },
+                  reps: { type: 'string' },
+                  restSeconds: { type: 'integer' },
+                  notes: { type: 'string' },
+                  reason: { type: 'string' },
+                },
+                required: ['name', 'muscleGroup', 'sets', 'reps', 'restSeconds', 'notes', 'reason'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar exercício alternativo' });
+        }
+        
+        const newExercise = JSON.parse(content);
+        
+        return {
+          exercise: {
+            name: newExercise.name,
+            muscleGroup: newExercise.muscleGroup,
+            sets: newExercise.sets,
+            reps: newExercise.reps,
+            restSeconds: newExercise.restSeconds,
+            notes: newExercise.notes,
+          },
+          reason: newExercise.reason,
+        };
+      }),
+    
+    // Gerar recomendação de cardio e kcal baseado no objetivo
+    generateCardioAndKcal: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        workoutPreview: z.object({
+          name: z.string(),
+          goal: z.string(),
+          difficulty: z.string(),
+          daysCount: z.number(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o personal tem CREF cadastrado
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.cref) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Para gerar recomendações com IA, é necessário cadastrar seu CREF nas configurações.' 
+          });
+        }
+        
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar anamnese e medidas
+        const [anamnesis, measurements, cardioStats] = await Promise.all([
+          db.getAnamnesisByStudentId(input.studentId),
+          db.getMeasurementsByStudentId(input.studentId),
+          db.getCardioStats(input.studentId, ctx.personal.id, 30),
+        ]);
+        
+        const latestMeasurement = measurements[0];
+        
+        // Calcular idade
+        const age = student.birthDate 
+          ? Math.floor((Date.now() - new Date(student.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) 
+          : null;
+        
+        // Montar contexto do aluno
+        const studentInfo = {
+          nome: student.name,
+          genero: student.gender === 'male' ? 'masculino' : student.gender === 'female' ? 'feminino' : 'não informado',
+          idade: age || 'não informada',
+          peso: latestMeasurement?.weight || 'não informado',
+          altura: latestMeasurement?.height || 'não informada',
+          objetivo: anamnesis?.mainGoal || input.workoutPreview?.goal || 'geral',
+          nivelAtividade: anamnesis?.exerciseExperience || 'intermediário',
+          frequenciaTreino: anamnesis?.weeklyFrequency || input.workoutPreview?.daysCount || 3,
+          restricoes: anamnesis?.trainingRestrictions || 'nenhuma',
+          gorduraCorporal: latestMeasurement?.bodyFat || 'não informado',
+        };
+        
+        // Info de cardio atual
+        const cardioInfo = cardioStats && cardioStats.totalSessions > 0 ? {
+          sessoesUltimos30Dias: cardioStats.totalSessions,
+          tempoTotalMinutos: cardioStats.totalDuration || 0,
+          caloriasQueimadas: cardioStats.totalCalories || 0,
+          tiposRealizados: cardioStats.byType ? Object.keys(cardioStats.byType) : [],
+        } : null;
+        
+        const systemPrompt = `Você é um personal trainer e nutricionista esportivo experiente. Sua tarefa é criar uma recomendação personalizada de cardio e consumo calórico diário para o aluno atingir seu objetivo.
+
+Você DEVE retornar um JSON válido no seguinte formato:
+{
+  "cardio": {
+    "sessionsPerWeek": 3,
+    "minutesPerSession": 30,
+    "recommendedTypes": ["caminhada", "bicicleta"],
+    "intensity": "moderada",
+    "timing": "após o treino de musculação ou em dias alternados",
+    "notes": "Observações específicas sobre o cardio"
+  },
+  "nutrition": {
+    "dailyCalories": 2000,
+    "proteinGrams": 150,
+    "carbsGrams": 200,
+    "fatGrams": 70,
+    "mealFrequency": 5,
+    "hydration": "3 litros de água por dia",
+    "notes": "Observações sobre a dieta"
+  },
+  "weeklyCalorieDeficitOrSurplus": -3500,
+  "estimatedWeeklyWeightChange": "-0.5kg",
+  "timeToGoal": "12-16 semanas",
+  "summary": "Resumo executivo da estratégia em 2-3 frases",
+  "warnings": ["Lista de alertas ou cuidados importantes"]
+}
+
+REGRAS CRÍTICAS:
+1. CALCULE a TMB (Taxa Metabólica Basal) usando a fórmula de Mifflin-St Jeor se peso e altura disponíveis
+2. AJUSTE as calorias baseado no objetivo:
+   - Emagrecimento: déficit de 300-500 kcal/dia
+   - Hipertrofia/Bulking: superávit de 200-400 kcal/dia
+   - Recomposição: leve déficit ou manutenção
+   - Manutenção: calorias de manutenção
+3. CONSIDERE o cardio atual do aluno para não sobrecarregar
+4. ADAPTE a intensidade do cardio ao nível de experiência
+5. RESPEITE as restrições físicas informadas
+6. Seja realista nas estimativas de tempo para atingir o objetivo
+7. Proteína: 1.6-2.2g/kg para hipertrofia, 1.2-1.6g/kg para emagrecimento
+8. Se dados de peso/altura não disponíveis, use estimativas conservadoras e indique isso`;
+        
+        const userPrompt = `Crie uma recomendação de cardio e nutrição para este aluno:
+
+Dados do Aluno:
+${JSON.stringify(studentInfo, null, 2)}
+
+Histórico de Cardio (últimos 30 dias):
+${cardioInfo ? JSON.stringify(cardioInfo, null, 2) : 'Nenhum cardio registrado'}
+
+${input.workoutPreview ? `Treino atual/planejado:
+- Nome: ${input.workoutPreview.name}
+- Objetivo: ${input.workoutPreview.goal}
+- Dificuldade: ${input.workoutPreview.difficulty}
+- Dias por semana: ${input.workoutPreview.daysCount}` : ''}
+
+Retorne APENAS o JSON, sem texto adicional.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'cardio_nutrition_recommendation',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  cardio: {
+                    type: 'object',
+                    properties: {
+                      sessionsPerWeek: { type: 'integer' },
+                      minutesPerSession: { type: 'integer' },
+                      recommendedTypes: { type: 'array', items: { type: 'string' } },
+                      intensity: { type: 'string' },
+                      timing: { type: 'string' },
+                      notes: { type: 'string' },
+                    },
+                    required: ['sessionsPerWeek', 'minutesPerSession', 'recommendedTypes', 'intensity', 'timing', 'notes'],
+                    additionalProperties: false,
+                  },
+                  nutrition: {
+                    type: 'object',
+                    properties: {
+                      dailyCalories: { type: 'integer' },
+                      proteinGrams: { type: 'integer' },
+                      carbsGrams: { type: 'integer' },
+                      fatGrams: { type: 'integer' },
+                      mealFrequency: { type: 'integer' },
+                      hydration: { type: 'string' },
+                      notes: { type: 'string' },
+                    },
+                    required: ['dailyCalories', 'proteinGrams', 'carbsGrams', 'fatGrams', 'mealFrequency', 'hydration', 'notes'],
+                    additionalProperties: false,
+                  },
+                  weeklyCalorieDeficitOrSurplus: { type: 'integer' },
+                  estimatedWeeklyWeightChange: { type: 'string' },
+                  timeToGoal: { type: 'string' },
+                  summary: { type: 'string' },
+                  warnings: { type: 'array', items: { type: 'string' } },
+                },
+                required: ['cardio', 'nutrition', 'weeklyCalorieDeficitOrSurplus', 'estimatedWeeklyWeightChange', 'timeToGoal', 'summary', 'warnings'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== 'string') {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar recomendações' });
+        }
+        
+        const recommendation = JSON.parse(content);
+        
+        return {
+          recommendation,
+          studentId: input.studentId,
+          studentName: student.name,
+          generatedAt: new Date().toISOString(),
+        };
+      }),
+    
     // Duplicar treino para outro aluno
     duplicate: personalProcedure
       .input(z.object({

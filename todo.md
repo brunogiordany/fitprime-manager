@@ -3522,3 +3522,20 @@
   - [ ] Indicador de treinos pendentes de sincronização
   - [x] Sincronização automática ao voltar online
 - [ ] Indicadores visuais globais de status offline/pendentes
+
+
+## Melhorias na Geração de Treinos com IA (Janeiro 2026)
+- [ ] Adicionar botão "Gerar Novo" em cada exercício individual no preview do treino gerado
+- [ ] Revisar e otimizar o prompt de geração de treinos para máxima qualidade
+- [ ] Criar gerador inteligente de cardio baseado no objetivo do aluno
+- [ ] Criar calculadora de kcal diárias baseada no objetivo e treino
+- [ ] Integrar sugestões de cardio e kcal no fluxo de geração de treino
+
+
+## Melhorias na Geração de Treinos com IA (v5.4)
+- [x] Botão de regenerar exercício individual com IA (ícone sparkles roxo)
+- [x] Endpoint regenerateExercise no backend com contexto completo do aluno
+- [x] Botão "Gerar Cardio e Kcal" no preview do treino gerado
+- [x] Endpoint generateCardioAndKcal com cálculo de TMB e macros
+- [x] Modal completo de recomendação de cardio e nutrição
+- [x] Botão de copiar recomendação para clipboard
