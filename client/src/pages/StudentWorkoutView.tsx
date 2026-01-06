@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getCachedWorkoutById, CachedWorkout } from "@/lib/offlineStorage";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,8 @@ import {
   Play,
   Info,
   Lightbulb,
-  Send
+  Send,
+  CloudOff
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 
@@ -111,11 +113,55 @@ export default function StudentWorkoutView() {
     }
   }, [setLocation]);
 
+  // Estado para treino do cache
+  const [cachedWorkout, setCachedWorkout] = useState<CachedWorkout | null>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [loadingCache, setLoadingCache] = useState(false);
+  
   // Buscar detalhes do treino com dias e exercícios
-  const { data: workout, isLoading } = trpc.studentPortal.workout.useQuery(
+  const { data: serverWorkout, isLoading: isLoadingServer } = trpc.studentPortal.workout.useQuery(
     { id: workoutId },
-    { enabled: workoutId > 0 && !!studentData?.id }
+    { enabled: workoutId > 0 && !!studentData?.id && !isOffline }
   );
+  
+  // Usar treino do servidor ou do cache
+  const workout = isOffline ? cachedWorkout : (serverWorkout || cachedWorkout);
+  const isLoading = isOffline ? loadingCache : isLoadingServer;
+  
+  // Carregar do cache se offline
+  useEffect(() => {
+    const loadFromCache = async () => {
+      if (workoutId > 0) {
+        setLoadingCache(true);
+        try {
+          const cached = await getCachedWorkoutById(workoutId);
+          if (cached) {
+            setCachedWorkout(cached);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar treino do cache:', error);
+        } finally {
+          setLoadingCache(false);
+        }
+      }
+    };
+    
+    loadFromCache();
+  }, [workoutId]);
+  
+  // Listener de online/offline
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Expandir o primeiro dia quando carregar
   useEffect(() => {
@@ -201,21 +247,40 @@ export default function StudentWorkoutView() {
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setLocation("/meu-portal")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="font-bold text-lg">{workout.name}</h1>
-              <p className="text-sm text-gray-500">Detalhes do treino</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setLocation("/meu-portal")}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="font-bold text-lg">{workout.name}</h1>
+                <p className="text-sm text-gray-500">Detalhes do treino</p>
+              </div>
             </div>
+            {/* Indicador offline */}
+            {isOffline && (
+              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                <CloudOff className="h-3 w-3 mr-1" />
+                Offline
+              </Badge>
+            )}
           </div>
         </div>
       </header>
+      
+      {/* Banner offline */}
+      {isOffline && cachedWorkout && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2">
+          <div className="container mx-auto flex items-center gap-2 text-sm text-amber-700">
+            <CloudOff className="h-4 w-4" />
+            <span>Você está offline. Exibindo treino salvo em cache.</span>
+          </div>
+        </div>
+      )}
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Info do Treino */}

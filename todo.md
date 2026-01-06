@@ -3501,3 +3501,11 @@
 - [x] Indicadores visuais de status offline/sync
 - [x] Sincronização automática ao voltar online
 - [x] Testes unitários do sistema offline
+
+## Cache de Treinos Offline (v4.4)
+- [x] Expandir offlineStorage.ts para suportar cache de treinos
+- [x] Pré-carregar treinos do aluno ao fazer login no Portal
+- [x] Armazenar treinos completos (dias, exercícios) no IndexedDB
+- [x] Exibir treinos do cache quando offline
+- [x] Indicador visual de "treino em cache" vs "treino online"
+- [x] Sincronização automática quando voltar online

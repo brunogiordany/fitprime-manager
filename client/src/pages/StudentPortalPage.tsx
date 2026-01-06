@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useWorkoutCache } from "@/hooks/useWorkoutCache";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,10 @@ import {
   BarChart3,
   Camera,
   Sparkles,
-  Trash2
+  Trash2,
+  CloudOff,
+  RefreshCw,
+  Download
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
@@ -267,11 +271,32 @@ export default function StudentPortalPage() {
     { enabled: !!studentData?.id }
   );
 
-  // Buscar treinos do aluno
-  const { data: workouts } = trpc.studentPortal.workouts.useQuery(
+  // Buscar treinos do aluno com cache offline
+  const { data: serverWorkouts } = trpc.studentPortal.workouts.useQuery(
     undefined,
     { enabled: !!studentData?.id }
   );
+  
+  // Hook de cache de treinos para acesso offline
+  const {
+    cachedWorkouts,
+    isOffline,
+    hasCachedWorkouts,
+    isCaching,
+    lastCacheDate,
+    refreshCache,
+    cacheWorkouts
+  } = useWorkoutCache(studentData?.id);
+  
+  // Usar treinos do servidor se online, ou do cache se offline
+  const workouts = isOffline ? cachedWorkouts : (serverWorkouts || cachedWorkouts);
+  
+  // Cachear treinos automaticamente quando carregados do servidor
+  useEffect(() => {
+    if (serverWorkouts && serverWorkouts.length > 0 && !isOffline) {
+      cacheWorkouts(serverWorkouts);
+    }
+  }, [serverWorkouts, isOffline, cacheWorkouts]);
 
   // Buscar cobranças do aluno (usando endpoint do portal que valida o aluno logado)
   const { data: charges } = trpc.studentPortal.charges.useQuery(
@@ -839,22 +864,82 @@ export default function StudentPortalPage() {
             ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Meus Treinos</CardTitle>
-                <CardDescription>Treinos criados pelo seu personal trainer</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Meus Treinos</CardTitle>
+                    <CardDescription>Treinos criados pelo seu personal trainer</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* Indicador de status offline/cache */}
+                    {isOffline ? (
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                        <CloudOff className="h-3 w-3 mr-1" />
+                        Offline
+                      </Badge>
+                    ) : hasCachedWorkouts ? (
+                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                        <Download className="h-3 w-3 mr-1" />
+                        Em cache
+                      </Badge>
+                    ) : null}
+                    {/* Botão de atualizar cache */}
+                    {!isOffline && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={refreshCache}
+                        disabled={isCaching}
+                        className="h-8 w-8 p-0"
+                        title="Atualizar cache de treinos"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isCaching ? 'animate-spin' : ''}`} />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {/* Informação de última sincronização */}
+                {lastCacheDate && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Última sincronização: {format(lastCacheDate, "dd/MM 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
+                {/* Banner de modo offline */}
+                {isOffline && hasCachedWorkouts && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                    <CloudOff className="h-4 w-4 text-amber-600" />
+                    <p className="text-sm text-amber-700">
+                      Você está offline. Exibindo treinos salvos em cache.
+                    </p>
+                  </div>
+                )}
                 {workouts && workouts.length > 0 ? (
                   <div className="space-y-4">
                     {workouts.map((workout) => (
-                      <div key={workout.id} className="p-4 border rounded-lg">
+                      <div key={workout.id} className="p-4 border rounded-lg hover:border-emerald-200 transition-colors">
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold">{workout.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{workout.name}</h3>
+                            {/* Indicador de treino em cache */}
+                            {(workout as any).cachedAt && (
+                              <span className="text-xs text-gray-400" title="Disponível offline">
+                                📥
+                              </span>
+                            )}
+                          </div>
                           <Badge variant={workout.status === 'active' ? 'default' : 'secondary'}>
                             {workout.status === 'active' ? 'Ativo' : 'Inativo'}
                           </Badge>
                         </div>
                         {workout.description && (
                           <p className="text-sm text-gray-600 mb-3">{workout.description}</p>
+                        )}
+                        {/* Mostrar quantidade de dias/exercícios se disponível */}
+                        {(workout as any).days && (workout as any).days.length > 0 && (
+                          <p className="text-xs text-gray-400 mb-2">
+                            {(workout as any).days.length} dia(s) • {(workout as any).days.reduce((acc: number, d: any) => acc + (d.exercises?.length || 0), 0)} exercício(s)
+                          </p>
                         )}
                         <Button 
                           variant="outline" 
@@ -867,6 +952,12 @@ export default function StudentPortalPage() {
                         </Button>
                       </div>
                     ))}
+                  </div>
+                ) : isOffline && !hasCachedWorkouts ? (
+                  <div className="text-center py-8">
+                    <CloudOff className="h-12 w-12 text-amber-300 mx-auto mb-4" />
+                    <p className="text-amber-600 font-medium">Sem conexão</p>
+                    <p className="text-sm text-gray-400">Conecte-se à internet para carregar seus treinos pela primeira vez</p>
                   </div>
                 ) : (
                   <div className="text-center py-8">
