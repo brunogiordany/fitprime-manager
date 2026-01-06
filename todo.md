@@ -3483,3 +3483,21 @@
 - [x] Botão X de fechar sempre visível e acessível
 - [x] Scroll interno no conteúdo do modal
 - [x] Footer fixo com botões de ação
+
+## Modo Offline (v4.3)
+- [ ] Service Worker para cache de assets e páginas
+- [ ] IndexedDB para armazenamento local de treinos pendentes
+- [ ] Fila de sincronização para enviar dados quando online
+- [ ] Indicador visual de status offline/online
+- [ ] Indicador de treinos pendentes de sincronização
+- [ ] Sincronização automática ao recuperar conexão
+- [ ] Notificação de sucesso/erro na sincronização
+
+
+## Modo Offline (v4.3)
+- [x] Service Worker configurado com vite-plugin-pwa
+- [x] Sistema de armazenamento local com IndexedDB
+- [x] Hook useOfflineSync para gerenciar sincronização
+- [x] Indicadores visuais de status offline/sync
+- [x] Sincronização automática ao voltar online
+- [x] Testes unitários do sistema offline
