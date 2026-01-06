@@ -609,3 +609,203 @@ export async function cacheWorkouts(workouts: any[]): Promise<void> {
   
   await tx.done;
 }
+
+// ==================== REGISTROS DE TREINO OFFLINE (PERSONAL + ALUNO) ====================
+
+// Tipos para registros de treino offline
+export interface OfflineWorkoutSet {
+  id: string; // ID temporário offline
+  exerciseName: string;
+  muscleGroup?: string;
+  setNumber: number;
+  weight?: number;
+  reps?: number;
+  rpe?: number;
+  setType: string;
+  notes?: string;
+  completed: boolean;
+}
+
+export interface OfflineTrainingLog {
+  id: string; // ID temporário offline
+  studentId: number;
+  workoutId?: number;
+  workoutDayId?: number;
+  date: string; // ISO date string
+  startTime?: string;
+  endTime?: string;
+  duration?: number;
+  feeling?: string;
+  notes?: string;
+  status: 'in_progress' | 'completed';
+  sets: OfflineWorkoutSet[];
+  createdAt: number;
+  source: 'personal' | 'student'; // Quem criou o registro
+  synced: boolean;
+}
+
+// Salvar registro de treino completo offline (com séries)
+export async function saveTrainingLogOffline(log: Omit<OfflineTrainingLog, 'id' | 'createdAt' | 'synced'>): Promise<string> {
+  const database = await initOfflineDB();
+  const id = generateOfflineId();
+  
+  const fullLog: OfflineTrainingLog = {
+    ...log,
+    id,
+    createdAt: Date.now(),
+    synced: false
+  };
+  
+  await database.put('pendingWorkoutLogs', {
+    id,
+    type: 'create',
+    data: fullLog,
+    createdAt: Date.now(),
+    retryCount: 0
+  });
+  
+  return id;
+}
+
+// Atualizar registro de treino offline (adicionar série, etc)
+export async function updateTrainingLogOffline(id: string, updates: Partial<OfflineTrainingLog>): Promise<void> {
+  const database = await initOfflineDB();
+  const existing = await database.get('pendingWorkoutLogs', id);
+  
+  if (existing) {
+    existing.data = { ...existing.data, ...updates };
+    await database.put('pendingWorkoutLogs', existing);
+  }
+}
+
+// Adicionar série a um registro de treino offline
+export async function addSetToOfflineLog(logId: string, set: Omit<OfflineWorkoutSet, 'id'>): Promise<string> {
+  const database = await initOfflineDB();
+  const existing = await database.get('pendingWorkoutLogs', logId);
+  
+  if (!existing) {
+    throw new Error('Registro de treino não encontrado');
+  }
+  
+  const setId = generateOfflineId();
+  const newSet: OfflineWorkoutSet = {
+    ...set,
+    id: setId
+  };
+  
+  existing.data.sets = [...(existing.data.sets || []), newSet];
+  await database.put('pendingWorkoutLogs', existing);
+  
+  return setId;
+}
+
+// Atualizar série em um registro de treino offline
+export async function updateSetInOfflineLog(logId: string, setId: string, updates: Partial<OfflineWorkoutSet>): Promise<void> {
+  const database = await initOfflineDB();
+  const existing = await database.get('pendingWorkoutLogs', logId);
+  
+  if (!existing) {
+    throw new Error('Registro de treino não encontrado');
+  }
+  
+  existing.data.sets = (existing.data.sets || []).map((s: OfflineWorkoutSet) => 
+    s.id === setId ? { ...s, ...updates } : s
+  );
+  await database.put('pendingWorkoutLogs', existing);
+}
+
+// Remover série de um registro de treino offline
+export async function removeSetFromOfflineLog(logId: string, setId: string): Promise<void> {
+  const database = await initOfflineDB();
+  const existing = await database.get('pendingWorkoutLogs', logId);
+  
+  if (!existing) {
+    throw new Error('Registro de treino não encontrado');
+  }
+  
+  existing.data.sets = (existing.data.sets || []).filter((s: OfflineWorkoutSet) => s.id !== setId);
+  await database.put('pendingWorkoutLogs', existing);
+}
+
+// Finalizar treino offline
+export async function completeOfflineTrainingLog(logId: string, endTime?: string): Promise<void> {
+  const database = await initOfflineDB();
+  const existing = await database.get('pendingWorkoutLogs', logId);
+  
+  if (!existing) {
+    throw new Error('Registro de treino não encontrado');
+  }
+  
+  const startTime = existing.data.startTime ? new Date(existing.data.startTime).getTime() : existing.data.createdAt;
+  const endTimeMs = endTime ? new Date(endTime).getTime() : Date.now();
+  const duration = Math.round((endTimeMs - startTime) / 60000); // em minutos
+  
+  existing.data.status = 'completed';
+  existing.data.endTime = endTime || new Date().toISOString();
+  existing.data.duration = duration;
+  
+  await database.put('pendingWorkoutLogs', existing);
+}
+
+// Obter registro de treino offline por ID
+export async function getOfflineTrainingLog(id: string): Promise<OfflineTrainingLog | null> {
+  const database = await initOfflineDB();
+  const log = await database.get('pendingWorkoutLogs', id);
+  return log?.data || null;
+}
+
+// Obter todos os registros de treino offline (não sincronizados)
+export async function getAllOfflineTrainingLogs(source?: 'personal' | 'student'): Promise<OfflineTrainingLog[]> {
+  const database = await initOfflineDB();
+  const logs = await database.getAllFromIndex('pendingWorkoutLogs', 'by-createdAt');
+  
+  const offlineLogs = logs
+    .filter(l => l.data && typeof l.data === 'object' && 'source' in l.data)
+    .map(l => l.data as OfflineTrainingLog);
+  
+  if (source) {
+    return offlineLogs.filter(l => l.source === source);
+  }
+  
+  return offlineLogs;
+}
+
+// Obter contagem de registros pendentes por fonte
+export async function getPendingCountBySource(): Promise<{ personal: number; student: number; total: number }> {
+  const database = await initOfflineDB();
+  const logs = await database.getAll('pendingWorkoutLogs');
+  
+  let personal = 0;
+  let student = 0;
+  
+  for (const log of logs) {
+    if (log.data && typeof log.data === 'object' && 'source' in log.data) {
+      if (log.data.source === 'personal') personal++;
+      else if (log.data.source === 'student') student++;
+    } else {
+      // Registros antigos sem source são considerados do personal
+      personal++;
+    }
+  }
+  
+  const cardioLogs = await database.count('pendingCardioLogs');
+  const syncQueue = await database.count('syncQueue');
+  
+  return {
+    personal: personal + cardioLogs,
+    student,
+    total: personal + student + cardioLogs + syncQueue
+  };
+}
+
+// Verificar se há treino em andamento offline
+export async function getInProgressOfflineLog(source: 'personal' | 'student', studentId?: number): Promise<OfflineTrainingLog | null> {
+  const logs = await getAllOfflineTrainingLogs(source);
+  
+  const inProgress = logs.find(l => 
+    l.status === 'in_progress' && 
+    (!studentId || l.studentId === studentId)
+  );
+  
+  return inProgress || null;
+}

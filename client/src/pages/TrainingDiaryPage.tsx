@@ -39,8 +39,13 @@ import {
   Footprints,
   Waves,
   Mountain,
-  Zap
+  Zap,
+  CloudOff,
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from "lucide-react";
+import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { toast } from "sonner";
 
 // Tipos de série
@@ -165,6 +170,9 @@ interface ExerciseData {
 
 export default function TrainingDiaryPage() {
   const { user } = useAuth();
+  
+  // Hook para modo offline
+  const offlineTraining = useOfflineTraining({ source: 'personal' });
 
   const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
@@ -546,10 +554,11 @@ export default function TrainingDiaryPage() {
     setCurrentExercises([]);
   };
   
-  const handleCreateLog = () => {
+  const handleCreateLog = async () => {
     console.log('=== handleCreateLog INICIADO ===');
     console.log('newLog:', newLog);
     console.log('currentExercises:', currentExercises);
+    console.log('isOnline:', offlineTraining.isOnline);
     
     if (!newLog.studentId || newLog.studentId <= 0) {
       console.log('Validation failed: studentId missing or invalid', newLog.studentId);
@@ -561,6 +570,50 @@ export default function TrainingDiaryPage() {
       console.log('Validation failed: trainingDate missing');
       toast.error("Selecione a data do treino");
       return;
+    }
+    
+    // Se estiver offline, salvar localmente
+    if (!offlineTraining.isOnline) {
+      console.log('Offline mode: saving locally');
+      try {
+        // Converter exercícios para formato offline
+        const offlineSets = currentExercises.flatMap(ex => 
+          ex.sets.map(s => ({
+            exerciseName: ex.exerciseName,
+            muscleGroup: ex.muscleGroup,
+            setNumber: s.setNumber,
+            weight: s.weight,
+            reps: s.reps,
+            rpe: s.rpe,
+            setType: s.setType || 'working',
+            notes: s.notes,
+            completed: !!s.isCompleted,
+          }))
+        );
+        
+        await offlineTraining.startOfflineTraining({
+          studentId: newLog.studentId,
+          workoutId: newLog.workoutId || undefined,
+          workoutDayId: newLog.workoutDayId || undefined,
+          date: newLog.trainingDate,
+        });
+        
+        // Adicionar séries
+        for (const set of offlineSets) {
+          await offlineTraining.addOfflineSet(set);
+        }
+        
+        // Finalizar treino
+        await offlineTraining.completeOfflineTraining(newLog.feeling, newLog.notes);
+        
+        setShowNewLogModal(false);
+        resetNewLog();
+        return;
+      } catch (error) {
+        console.error('Erro ao salvar offline:', error);
+        toast.error('Erro ao salvar treino offline');
+        return;
+      }
     }
     
     console.log('Validation passed, calling createLog.mutate');
@@ -728,12 +781,58 @@ export default function TrainingDiaryPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Banner de Status Offline */}
+        {!offlineTraining.isOnline && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-700">
+                <WifiOff className="h-5 w-5" />
+                <span className="font-medium">Modo Offline</span>
+                <span className="text-sm">- Os registros serão salvos localmente</span>
+              </div>
+              {offlineTraining.pendingCount.personal > 0 && (
+                <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                  {offlineTraining.pendingCount.personal} pendente(s)
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Banner de Registros Pendentes (quando online) */}
+        {offlineTraining.isOnline && offlineTraining.pendingCount.personal > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-700">
+                <CloudOff className="h-5 w-5" />
+                <span className="font-medium">{offlineTraining.pendingCount.personal} registro(s) aguardando sincronização</span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                onClick={() => offlineTraining.syncPendingLogs()}
+                disabled={offlineTraining.isSyncing}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${offlineTraining.isSyncing ? 'animate-spin' : ''}`} />
+                {offlineTraining.isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Dumbbell className="h-6 w-6 text-primary" />
               Diário de Treino do Maromba
+              {/* Indicador de status de conexão */}
+              {offlineTraining.isOnline ? (
+                <Wifi className="h-4 w-4 text-green-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-amber-500" />
+              )}
             </h1>
             <p className="text-muted-foreground">
               Registre e acompanhe a evolução dos treinos dos seus alunos

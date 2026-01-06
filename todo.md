@@ -3490,7 +3490,7 @@
 - [ ] Fila de sincronização para enviar dados quando online
 - [ ] Indicador visual de status offline/online
 - [ ] Indicador de treinos pendentes de sincronização
-- [ ] Sincronização automática ao recuperar conexão
+- [x] Sincronização automática ao recuperar conexão
 - [ ] Notificação de sucesso/erro na sincronização
 
 
@@ -3509,3 +3509,16 @@
 - [x] Exibir treinos do cache quando offline
 - [x] Indicador visual de "treino em cache" vs "treino online"
 - [x] Sincronização automática quando voltar online
+
+## Modo de Treino Offline Completo (v4.5)
+- [x] Expandir offlineStorage para registros de treino do personal
+- [ ] Atualizar useOfflineSync para sincronizar registros de ambos os perfis
+- [ ] Modo offline no Diário do Maromba (Personal)
+  - [ ] Salvar registros localmente quando offline
+  - [ ] Indicador de treinos pendentes de sincronização
+  - [x] Sincronização automática ao voltar online
+- [ ] Modo offline no Portal do Aluno
+  - [ ] Salvar registros de treino localmente quando offline
+  - [ ] Indicador de treinos pendentes de sincronização
+  - [x] Sincronização automática ao voltar online
+- [ ] Indicadores visuais globais de status offline/pendentes

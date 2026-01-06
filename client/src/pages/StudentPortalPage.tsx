@@ -58,8 +58,11 @@ import {
   Trash2,
   CloudOff,
   RefreshCw,
-  Download
+  Download,
+  Wifi,
+  WifiOff
 } from "lucide-react";
+import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -114,6 +117,12 @@ interface AnamnesisData {
 export default function StudentPortalPage() {
   const [, setLocation] = useLocation();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
+  
+  // Hook para modo offline do aluno
+  const offlineTraining = useOfflineTraining({ 
+    source: 'student', 
+    studentId: studentData?.id 
+  });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEditingAnamnesis, setIsEditingAnamnesis] = useState(false);
   const [anamnesisForm, setAnamnesisForm] = useState<Partial<AnamnesisData>>({});
@@ -677,6 +686,46 @@ export default function StudentPortalPage() {
       onLogout={handleLogout}
     >
       <div className="space-y-6">
+        {/* Banner de Status Offline */}
+        {!offlineTraining.isOnline && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-700">
+                <WifiOff className="h-5 w-5" />
+                <span className="font-medium">Modo Offline</span>
+                <span className="text-sm">- Seus treinos serão salvos localmente</span>
+              </div>
+              {offlineTraining.pendingCount.student > 0 && (
+                <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                  {offlineTraining.pendingCount.student} pendente(s)
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Banner de Registros Pendentes (quando online) */}
+        {offlineTraining.isOnline && offlineTraining.pendingCount.student > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-700">
+                <CloudOff className="h-5 w-5" />
+                <span className="font-medium">{offlineTraining.pendingCount.student} treino(s) aguardando sincronização</span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                onClick={() => offlineTraining.syncPendingLogs()}
+                disabled={offlineTraining.isSyncing}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${offlineTraining.isSyncing ? 'animate-spin' : ''}`} />
+                {offlineTraining.isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {/* Profile Progress - Esconde quando perfil está completo (anamnese + medidas) */}
         {!isProfileComplete && (
           <Card 
@@ -3122,13 +3171,57 @@ export default function StudentPortalPage() {
               Cancelar
             </Button>
             <Button
-              onClick={() => {
+              onClick={async () => {
                 if (!selectedSession?.workoutInfo) return;
+                
+                const trainingDate = new Date(selectedSession.scheduledAt).toISOString().split('T')[0];
+                
+                // Se estiver offline, salvar localmente
+                if (!offlineTraining.isOnline && studentData?.id) {
+                  try {
+                    // Converter exercícios para formato offline
+                    const offlineSets = diaryExercises.flatMap(ex => 
+                      ex.sets.filter((s: any) => s.weight || s.reps).map((s: any, idx: number) => ({
+                        exerciseName: ex.exerciseName,
+                        muscleGroup: ex.muscleGroup,
+                        setNumber: idx + 1,
+                        weight: parseFloat(s.weight) || undefined,
+                        reps: parseInt(s.reps) || undefined,
+                        setType: s.setType || 'working',
+                        notes: ex.notes,
+                        completed: !!ex.completed,
+                      }))
+                    );
+                    
+                    await offlineTraining.startOfflineTraining({
+                      studentId: studentData.id,
+                      workoutId: selectedSession.workoutId || undefined,
+                      date: trainingDate,
+                    });
+                    
+                    for (const set of offlineSets) {
+                      await offlineTraining.addOfflineSet(set);
+                    }
+                    
+                    await offlineTraining.completeOfflineTraining(diaryFeeling, diaryNotes);
+                    
+                    setShowDiaryModal(false);
+                    setSelectedSession(null);
+                    setDiaryExercises([]);
+                    setDiaryNotes("");
+                    setDiaryFeeling("");
+                    return;
+                  } catch (error) {
+                    console.error('Erro ao salvar offline:', error);
+                    toast.error('Erro ao salvar treino offline');
+                    return;
+                  }
+                }
                 
                 createWorkoutLogMutation.mutate({
                   workoutId: selectedSession.workoutId || 0,
                   workoutDayId: 0,
-                  trainingDate: new Date(selectedSession.scheduledAt).toISOString().split('T')[0],
+                  trainingDate,
                   duration: diaryDuration,
                   notes: diaryNotes + (diaryFeeling ? ` | Sentimento: ${diaryFeeling}` : ''),
                   exercises: diaryExercises.map((ex) => ({
@@ -3165,10 +3258,12 @@ export default function StudentPortalPage() {
             >
               {createWorkoutLogMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : !offlineTraining.isOnline ? (
+                <CloudOff className="h-4 w-4 mr-2" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Salvar Treino
+              {!offlineTraining.isOnline ? 'Salvar Offline' : 'Salvar Treino'}
             </Button>
           </div>
         </DialogContent>
@@ -3402,12 +3497,56 @@ export default function StudentPortalPage() {
               Cancelar
             </Button>
             <Button
-              onClick={() => {
+              onClick={async () => {
                 // Validar que tem pelo menos um exercício com nome
                 const validExercises = manualDiaryExercises.filter(ex => ex.exerciseName.trim());
                 if (validExercises.length === 0) {
                   toast.error('Adicione pelo menos um exercício');
                   return;
+                }
+                
+                // Se estiver offline, salvar localmente
+                if (!offlineTraining.isOnline && studentData?.id) {
+                  try {
+                    // Converter exercícios para formato offline
+                    const offlineSets = validExercises.flatMap(ex => 
+                      ex.sets.filter((s: any) => s.weight || s.reps).map((s: any, idx: number) => ({
+                        exerciseName: ex.exerciseName,
+                        setNumber: idx + 1,
+                        weight: s.weight ? parseFloat(s.weight) : undefined,
+                        reps: s.reps ? parseInt(s.reps) : undefined,
+                        setType: s.setType || 'working',
+                        notes: ex.notes,
+                        completed: true,
+                      }))
+                    );
+                    
+                    await offlineTraining.startOfflineTraining({
+                      studentId: studentData.id,
+                      date: manualDiaryDate,
+                    });
+                    
+                    for (const set of offlineSets) {
+                      await offlineTraining.addOfflineSet(set);
+                    }
+                    
+                    await offlineTraining.completeOfflineTraining(manualDiaryFeeling, manualDiaryNotes);
+                    
+                    setShowManualDiaryModal(false);
+                    setManualDiaryExercises([{
+                      exerciseName: '',
+                      sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
+                      notes: '',
+                      isExpanded: true
+                    }]);
+                    setManualDiaryNotes('');
+                    setManualDiaryFeeling('');
+                    return;
+                  } catch (error) {
+                    console.error('Erro ao salvar offline:', error);
+                    toast.error('Erro ao salvar treino offline');
+                    return;
+                  }
                 }
                 
                 createManualWorkoutLogMutation.mutate({
@@ -3432,10 +3571,12 @@ export default function StudentPortalPage() {
             >
               {createManualWorkoutLogMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : !offlineTraining.isOnline ? (
+                <CloudOff className="h-4 w-4 mr-2" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Salvar Treino
+              {!offlineTraining.isOnline ? 'Salvar Offline' : 'Salvar Treino'}
             </Button>
           </div>
         </DialogContent>
