@@ -1757,7 +1757,7 @@ export default function TrainingDiaryPage() {
         
         {/* Modal: Novo Registro */}
         <Dialog open={showNewLogModal} onOpenChange={setShowNewLogModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Dumbbell className="h-5 w-5" />
@@ -1768,6 +1768,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
+            <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
             <div className="space-y-6">
               {/* Informações básicas */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2146,8 +2147,9 @@ export default function TrainingDiaryPage() {
                 />
               </div>
             </div>
+            </div>
             
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 flex-shrink-0 border-t pt-4 mt-4">
               <Button type="button" variant="outline" onClick={() => setShowNewLogModal(false)}>
                 Cancelar
               </Button>
@@ -2170,7 +2172,7 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -2204,6 +2206,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
+            <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -2546,8 +2549,9 @@ export default function TrainingDiaryPage() {
                 )}
               </div>
             )}
+            </div>
             
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
               {logDetail?.status === 'in_progress' && (
                 <>
                   <Button variant="outline" onClick={() => setShowLogDetailModal(false)}>
@@ -2576,7 +2580,7 @@ export default function TrainingDiaryPage() {
             resetNewLog();
           }
         }}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Dumbbell className="h-5 w-5" />
@@ -2594,6 +2598,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
+            <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
             <div className="space-y-6">
               {/* Informações básicas */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -3142,8 +3147,9 @@ export default function TrainingDiaryPage() {
                 />
               </div>
             </div>
+            </div>
             
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => setShowSessionLogModal(false)}>
                 Cancelar
               </Button>

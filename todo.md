@@ -3475,3 +3475,11 @@
 - [x] Bug UX: Preview das Sessões - botão tampado pela preview do treino (precisa ajustar layout)
 - [x] Bug: Diário do Maromba - encavalamento de informações no mobile (iPhone 15 Pro Max)
 - [x] Planos mensais pré-definidos de fábrica (1x a 6x semana) - IMPLEMENTADO
+
+## Correções de UX Mobile (v4.2)
+- [x] BUG: Modal de registro do Diário do Maromba com UX quebrada no mobile (muito grande, sem botão X, sem scroll)
+- [x] BUG: Mesmo problema no Portal do Aluno
+- [x] Corrigir DialogContent para suporte mobile (full screen com safe area)
+- [x] Botão X de fechar sempre visível e acessível
+- [x] Scroll interno no conteúdo do modal
+- [x] Footer fixo com botões de ação

@@ -2527,7 +2527,7 @@ export default function StudentPortalPage() {
       
       {/* Modal de Registro de Treino */}
       <Dialog open={showDiaryModal} onOpenChange={setShowDiaryModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl sm:max-w-3xl flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Dumbbell className="h-5 w-5 text-emerald-500" />
@@ -2543,6 +2543,7 @@ export default function StudentPortalPage() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           <div className="space-y-6 py-4">
             {/* Barra de Progresso */}
             {diaryExercises.length > 0 && (
@@ -3023,8 +3024,9 @@ export default function StudentPortalPage() {
               />
             </div>
           </div>
+          </div>
           
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setShowDiaryModal(false)}>
               Cancelar
             </Button>
@@ -3083,7 +3085,7 @@ export default function StudentPortalPage() {
 
       {/* Modal de Registro Manual de Treino */}
       <Dialog open={showManualDiaryModal} onOpenChange={setShowManualDiaryModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />
@@ -3094,6 +3096,7 @@ export default function StudentPortalPage() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           <div className="space-y-6">
             {/* Data e Duração */}
             <div className="grid grid-cols-2 gap-4">
@@ -3301,8 +3304,9 @@ export default function StudentPortalPage() {
               />
             </div>
           </div>
+          </div>
           
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex justify-end gap-2 flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setShowManualDiaryModal(false)}>
               Cancelar
             </Button>
@@ -3351,7 +3355,7 @@ export default function StudentPortalPage() {
         setShowWorkoutLogModal(open);
         if (!open) setEditingWorkoutLog(null);
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-emerald-500" />
@@ -3362,6 +3366,7 @@ export default function StudentPortalPage() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           {editingWorkoutLog && (
             <EditWorkoutLogForm
               log={editingWorkoutLog}
@@ -3371,6 +3376,7 @@ export default function StudentPortalPage() {
               }}
             />
           )}
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -3441,7 +3447,7 @@ export default function StudentPortalPage() {
       
       {/* Modal: Novo Cardio */}
       <Dialog open={showCardioModal} onOpenChange={setShowCardioModal}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg sm:max-w-lg flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Heart className="h-5 w-5 text-red-500" />
@@ -3452,6 +3458,7 @@ export default function StudentPortalPage() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           <div className="space-y-4">
             {/* Data */}
             <div>
@@ -3629,8 +3636,9 @@ export default function StudentPortalPage() {
               />
             </div>
           </div>
+          </div>
           
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex justify-end gap-2 flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setShowCardioModal(false)}>
               Cancelar
             </Button>
