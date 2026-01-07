@@ -3577,3 +3577,24 @@
 - [x] Posicionado abaixo do card do Plano e acima de "Análise de Evolução Pendente"
 - [x] Usa endpoint trainingDiary.dashboard existente
 
+
+## Melhorias Dashboard de Treinos v15.1
+
+### Métricas Adicionais no Dashboard
+- [x] Média de treinos por semana
+- [x] Comparativo com mês anterior (% variação)
+- [x] Ranking dos alunos mais ativos (top 5)
+- [x] Indicadores de tendência (setas up/down)
+
+### Exportar Relatório de Evolução em PDF
+- [x] Botão "Exportar PDF" no Dashboard de Treinos
+- [x] PDF com gráficos de evolução do aluno selecionado
+- [x] Incluir: dados pessoais, métricas de treino, gráfico de volume
+- [x] Período customizável (último mês, 3 meses, 6 meses)
+
+### Sistema de Alertas de Inatividade
+- [x] Detectar alunos inativos (sem treino há X dias)
+- [x] Card de alerta no Dashboard mostrando alunos inativos
+- [x] Configuração de dias de tolerância (padrão: 7 dias)
+- [x] Ação rápida para enviar mensagem ao aluno inativo
+

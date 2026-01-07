@@ -1391,6 +1391,20 @@ export const appRouter = router({
     todaySessions: personalProcedure.query(async ({ ctx }) => {
       return await db.getTodaySessions(ctx.personal.id);
     }),
+    
+    // Alunos inativos (sem treino há X dias)
+    inactiveStudents: personalProcedure
+      .input(z.object({
+        inactiveDays: z.number().default(7),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getInactiveStudents(ctx.personal.id, input?.inactiveDays || 7);
+      }),
+    
+    // Estatísticas de atividade dos alunos
+    activityStats: personalProcedure.query(async ({ ctx }) => {
+      return await db.getStudentsActivityStats(ctx.personal.id);
+    }),
   }),
 
   // ==================== CHAT (Personal side) ====================
@@ -9779,6 +9793,106 @@ Retorne APENAS o JSON no formato especificado.`;
         } catch (e) {
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao processar análise' });
         }
+      }),
+    
+    // Exportar relatório de evolução em PDF
+    exportEvolutionPDF: personalProcedure
+      .input(z.object({
+        studentId: z.number().optional(),
+        period: z.enum(['30', '90', '180', '365']).default('90'),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateTrainingEvolutionPDF } = await import('./pdf/trainingEvolutionReport');
+        const db = await import('./db');
+        
+        // Calcular datas baseado no período
+        const periodDays = parseInt(input.period);
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - periodDays);
+        
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        // Buscar dados do aluno (se especificado)
+        let studentData: { name: string; email: string | null; phone: string | null } = { name: 'Todos os Alunos', email: null, phone: null };
+        if (input.studentId) {
+          const student = await db.getStudentById(input.studentId, ctx.personal.id);
+          if (!student) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+          }
+          studentData = { name: student.name, email: student.email || null, phone: student.phone || null };
+        }
+        
+        // Buscar dashboard de treinos
+        const dashboard = await db.getTrainingDashboard(ctx.personal.id, {
+          studentId: input.studentId,
+          startDate: startDateStr,
+          endDate: endDateStr,
+        });
+        
+        if (!dashboard) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Dados de treino não encontrados' });
+        }
+        
+        // Buscar análise por grupo muscular
+        const muscleGroups = await db.getMuscleGroupAnalysis(ctx.personal.id, {
+          studentId: input.studentId,
+          startDate: startDateStr,
+          endDate: endDateStr,
+        });
+        
+        // Calcular métricas estendidas
+        const { workoutsByMonth = [] } = dashboard;
+        const currentMonth = workoutsByMonth[workoutsByMonth.length - 1]?.count || 0;
+        const previousMonth = workoutsByMonth[workoutsByMonth.length - 2]?.count || 0;
+        const monthVariation = previousMonth > 0 
+          ? Math.round(((currentMonth - previousMonth) / previousMonth) * 100)
+          : currentMonth > 0 ? 100 : 0;
+        const avgPerWeek = currentMonth / 4;
+        
+        const extendedMetrics = {
+          avgPerWeek,
+          currentMonth,
+          previousMonth,
+          monthVariation,
+        };
+        
+        // Gerar label do período
+        const periodLabels: Record<string, string> = {
+          '30': 'Último mês',
+          '90': 'Últimos 3 meses',
+          '180': 'Últimos 6 meses',
+          '365': 'Último ano',
+        };
+        const periodLabel = periodLabels[input.period] || `Últimos ${input.period} dias`;
+        
+        // Preparar info do personal para o PDF
+        const personalInfo = {
+          businessName: ctx.personal.businessName,
+          logoUrl: ctx.personal.logoUrl,
+        };
+        
+        // Gerar PDF
+        const pdfBuffer = await generateTrainingEvolutionPDF(
+          studentData as any,
+          dashboard as any,
+          muscleGroups as any[],
+          periodLabel,
+          personalInfo,
+          extendedMetrics
+        );
+        
+        // Retornar como base64
+        const filename = input.studentId 
+          ? `${studentData.name.replace(/\s+/g, '_')}_evolucao_treinos_${startDateStr}_${endDateStr}.pdf`
+          : `evolucao_treinos_geral_${startDateStr}_${endDateStr}.pdf`;
+        
+        return {
+          filename,
+          data: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        };
       }),
   }),
 

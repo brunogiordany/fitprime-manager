@@ -6342,3 +6342,156 @@ export async function seedDefaultEmailTemplates(): Promise<void> {
     await upsertEmailTemplate(template.templateKey, template);
   }
 }
+
+
+// ==================== ALUNOS INATIVOS ====================
+export async function getInactiveStudents(personalId: number, inactiveDays: number = 7) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - inactiveDays);
+  
+  // Buscar todos os alunos ativos
+  const activeStudents = await db.select({
+    id: students.id,
+    name: students.name,
+    email: students.email,
+    phone: students.phone,
+    status: students.status,
+    createdAt: students.createdAt,
+  })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      eq(students.status, 'active'),
+      isNull(students.deletedAt)
+    ));
+  
+  // Para cada aluno, buscar o último treino registrado
+  const studentsWithLastWorkout = await Promise.all(
+    activeStudents.map(async (student) => {
+      // Buscar último workout log
+      const lastWorkoutLog = await db.select({
+        trainingDate: workoutLogs.trainingDate,
+      })
+        .from(workoutLogs)
+        .where(and(
+          eq(workoutLogs.studentId, student.id),
+          eq(workoutLogs.status, 'completed')
+        ))
+        .orderBy(desc(workoutLogs.trainingDate))
+        .limit(1);
+      
+      const lastWorkoutDate = lastWorkoutLog.length > 0 
+        ? new Date(lastWorkoutLog[0].trainingDate)
+        : null;
+      
+      // Calcular dias de inatividade
+      let daysInactive = 0;
+      if (lastWorkoutDate) {
+        daysInactive = Math.floor((Date.now() - lastWorkoutDate.getTime()) / (1000 * 60 * 60 * 24));
+      } else {
+        // Se nunca treinou, calcular desde a criação
+        daysInactive = Math.floor((Date.now() - new Date(student.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+      }
+      
+      return {
+        ...student,
+        lastWorkoutDate,
+        daysInactive,
+        neverTrained: lastWorkoutLog.length === 0,
+      };
+    })
+  );
+  
+  // Filtrar apenas os inativos (mais de X dias sem treinar)
+  const inactiveStudents = studentsWithLastWorkout
+    .filter(s => s.daysInactive >= inactiveDays)
+    .sort((a, b) => b.daysInactive - a.daysInactive);
+  
+  return inactiveStudents;
+}
+
+// Buscar estatísticas de atividade dos alunos
+export async function getStudentsActivityStats(personalId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Buscar todos os alunos ativos
+  const activeStudents = await db.select({
+    id: students.id,
+    name: students.name,
+    createdAt: students.createdAt,
+  })
+    .from(students)
+    .where(and(
+      eq(students.personalId, personalId),
+      eq(students.status, 'active'),
+      isNull(students.deletedAt)
+    ));
+  
+  // Para cada aluno, buscar estatísticas de treino
+  const studentsWithStats = await Promise.all(
+    activeStudents.map(async (student) => {
+      // Buscar todos os workout logs do aluno
+      const logs = await db.select({
+        trainingDate: workoutLogs.trainingDate,
+        totalVolume: workoutLogs.totalVolume,
+      })
+        .from(workoutLogs)
+        .where(and(
+          eq(workoutLogs.studentId, student.id),
+          eq(workoutLogs.status, 'completed')
+        ))
+        .orderBy(desc(workoutLogs.trainingDate));
+      
+      const lastWorkoutDate = logs.length > 0 
+        ? new Date(logs[0].trainingDate)
+        : null;
+      
+      // Calcular treinos no último mês
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const workoutsLastMonth = logs.filter(l => 
+        new Date(l.trainingDate) >= oneMonthAgo
+      ).length;
+      
+      // Calcular volume total
+      const totalVolume = logs.reduce((sum, l) => 
+        sum + parseFloat(l.totalVolume?.toString() || '0'), 0
+      );
+      
+      return {
+        id: student.id,
+        name: student.name,
+        totalWorkouts: logs.length,
+        workoutsLastMonth,
+        totalVolume: Math.round(totalVolume),
+        lastWorkoutDate,
+        avgWorkoutsPerWeek: workoutsLastMonth / 4,
+      };
+    })
+  );
+  
+  // Ordenar por treinos no último mês (mais ativos primeiro)
+  const rankedStudents = studentsWithStats
+    .sort((a, b) => b.workoutsLastMonth - a.workoutsLastMonth);
+  
+  // Calcular estatísticas gerais
+  const totalStudents = activeStudents.length;
+  const activeThisMonth = studentsWithStats.filter(s => s.workoutsLastMonth > 0).length;
+  const inactiveThisMonth = totalStudents - activeThisMonth;
+  const avgWorkoutsPerStudent = totalStudents > 0
+    ? studentsWithStats.reduce((sum, s) => sum + s.workoutsLastMonth, 0) / totalStudents
+    : 0;
+  
+  return {
+    totalStudents,
+    activeThisMonth,
+    inactiveThisMonth,
+    avgWorkoutsPerStudent: Math.round(avgWorkoutsPerStudent * 10) / 10,
+    topStudents: rankedStudents.slice(0, 5),
+    allStudents: rankedStudents,
+  };
+}
