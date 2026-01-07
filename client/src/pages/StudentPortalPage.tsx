@@ -2553,20 +2553,54 @@ export default function StudentPortalPage() {
                                   <div>
                                     <p className="text-sm text-gray-500 mb-2">Ênfases musculares</p>
                                     <div className="flex flex-wrap gap-2">
-                                      {anamnesis.muscleEmphasis.split(',').map((muscle, i) => (
-                                        <Badge key={i} variant="outline" className="bg-purple-100 border-purple-300 text-purple-700">
-                                          {muscle.trim()}
-                                        </Badge>
-                                      ))}
+                                      {(() => {
+                                        try {
+                                          // Tentar parsear como JSON array
+                                          const parsed = JSON.parse(anamnesis.muscleEmphasis);
+                                          if (Array.isArray(parsed)) {
+                                            return parsed.map((muscle: string, i: number) => (
+                                              <Badge key={i} variant="outline" className="bg-purple-100 border-purple-300 text-purple-700">
+                                                {muscle}
+                                              </Badge>
+                                            ));
+                                          }
+                                        } catch {
+                                          // Se não for JSON, usar split por vírgula
+                                        }
+                                        return anamnesis.muscleEmphasis.split(',').map((muscle: string, i: number) => (
+                                          <Badge key={i} variant="outline" className="bg-purple-100 border-purple-300 text-purple-700">
+                                            {muscle.trim()}
+                                          </Badge>
+                                        ));
+                                      })()}
                                     </div>
                                   </div>
                                 )}
                                 {anamnesis?.trainingRestrictions && (
                                   <div>
                                     <p className="text-sm text-gray-500 mb-2">Restrições de treino</p>
-                                    <p className="text-sm text-red-700 bg-red-50 p-2 rounded border border-red-200">
-                                      {anamnesis.trainingRestrictions}
-                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {(() => {
+                                        try {
+                                          // Tentar parsear como JSON array
+                                          const parsed = JSON.parse(anamnesis.trainingRestrictions);
+                                          if (Array.isArray(parsed)) {
+                                            return parsed.map((restriction: string, i: number) => (
+                                              <Badge key={i} variant="outline" className="bg-red-100 border-red-300 text-red-700">
+                                                {restriction}
+                                              </Badge>
+                                            ));
+                                          }
+                                        } catch {
+                                          // Se não for JSON, mostrar como texto
+                                        }
+                                        return (
+                                          <p className="text-sm text-red-700 bg-red-50 p-2 rounded border border-red-200">
+                                            {anamnesis.trainingRestrictions}
+                                          </p>
+                                        );
+                                      })()}
+                                    </div>
                                   </div>
                                 )}
                               </div>

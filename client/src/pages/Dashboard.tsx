@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import StudentDashboardCard from "@/components/StudentDashboardCard";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -48,6 +49,7 @@ export default function Dashboard() {
   const { data: todaySessions, isLoading: sessionsLoading } = trpc.dashboard.todaySessions.useQuery();
   const { data: studentsNeedingAnalysis } = trpc.students.needsAnalysis.useQuery();
   const { data: subscription } = trpc.subscription.info.useQuery();
+  const { data: students, isLoading: studentsLoading } = trpc.students.list.useQuery();
   const utils = trpc.useUtils();
   
   // Determinar plano atual baseado na subscription ou número de alunos
@@ -303,6 +305,12 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Dashboard de Treinos dos Alunos */}
+        <StudentDashboardCard 
+          students={(students || []).map(s => ({ id: s.id, name: s.name }))} 
+          isLoading={studentsLoading} 
+        />
 
         {/* Alunos que Precisam de Análise */}
         {studentsNeedingAnalysis && studentsNeedingAnalysis.length > 0 && (

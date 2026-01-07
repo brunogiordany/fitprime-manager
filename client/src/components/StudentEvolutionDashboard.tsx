@@ -91,6 +91,7 @@ interface StudentEvolutionDashboardProps {
 }
 
 export function StudentEvolutionDashboard({ studentId, measurements = [] }: StudentEvolutionDashboardProps) {
+  const utils = trpc.useUtils();
   const [activeTab, setActiveTab] = useState<"overview" | "photos">("overview");
   
   // Estados para comparação de fotos
@@ -136,6 +137,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
   });
 
   // Mutation para criar nova medida
+  const [isSavingMeasurement, setIsSavingMeasurement] = useState(false);
   const createMeasurementMutation = trpc.studentPortal.addMeasurement.useMutation({
     onSuccess: () => {
       toast.success("Medida registrada com sucesso!");
@@ -144,9 +146,13 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
         weight: '', bodyFat: '', chest: '', waist: '', hip: '',
         rightArm: '', leftArm: '', rightThigh: '', leftThigh: '',
       });
+      // Invalidar cache para atualizar a lista de medidas
+      utils.studentPortal.measurements.invalidate();
+      setIsSavingMeasurement(false);
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao registrar medida");
+      setIsSavingMeasurement(false);
     }
   });
 
@@ -844,6 +850,8 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
             <Button 
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
+                if (isSavingMeasurement || createMeasurementMutation.isPending) return;
+                setIsSavingMeasurement(true);
                 createMeasurementMutation.mutate({
                   measureDate: new Date().toISOString().split('T')[0],
                   weight: newMeasurement.weight || undefined,
@@ -857,7 +865,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                   leftThigh: newMeasurement.leftThigh || undefined,
                 });
               }}
-              disabled={createMeasurementMutation.isPending}
+              disabled={isSavingMeasurement || createMeasurementMutation.isPending}
             >
               {createMeasurementMutation.isPending ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" />Salvando...</>

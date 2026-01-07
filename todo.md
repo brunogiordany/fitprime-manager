@@ -3539,3 +3539,41 @@
 - [x] Endpoint generateCardioAndKcal com cálculo de TMB e macros
 - [x] Modal completo de recomendação de cardio e nutrição
 - [x] Botão de copiar recomendação para clipboard
+
+
+## Pendências Críticas - 06/01/2026
+
+### BUGS A CORRIGIR
+- [ ] P1: Duplicação de Medidas - Ao registrar medida no Portal do Aluno (Evolução > Novas Medidas), está duplicando/triplicando
+- [ ] P2: Sincronização de Anamnese - Alterações feitas no Personal não aparecem no Portal do Aluno (frequência, ênfases musculares, restrições, cardio)
+- [ ] P3: Circunferências no Portal do Aluno - Não aparecem para editar na anamnese, só em Evolução > Novas Medidas
+
+### FEATURES A IMPLEMENTAR
+- [ ] P4: Dashboard do Aluno no Personal - Colocar a dashboard do Portal do Aluno no topo do Dashboard do Personal com filtro por aluno (posição: abaixo do card do Plano, acima da Análise de Evolução Pendente)
+
+
+## Correções Críticas - 06/01/2026
+
+### P1 - Duplicação de Medidas no Portal do Aluno
+- [x] Adicionado proteção contra clique duplo no botão de salvar medida
+- [x] Adicionado invalidação de cache após criar medida (evita duplicação visual)
+- [x] Botão desabilitado durante o salvamento com texto "Salvando..."
+
+### P2 - Sincronização de Anamnese entre Personal e Aluno
+- [x] Corrigido parsing de muscleEmphasis e trainingRestrictions no Portal do Aluno
+- [x] Campos agora suportam tanto JSON arrays quanto strings separadas por vírgula
+- [x] Função parseArrayField criada para tratar ambos os formatos
+
+### P3 - Circunferências no Portal do Aluno
+- [x] Verificado que circunferências são dados de medidas, não de anamnese
+- [x] Circunferências já disponíveis em Evolução > Novas Medidas e Histórico
+- [x] Design correto: anamnese = dados estáticos, medidas = dados que mudam
+
+### P4 - Dashboard do Aluno no Portal do Personal
+- [x] Criado componente StudentDashboardCard
+- [x] Exibe: Total de Treinos, Volume Total, Total de Séries, Total de Reps
+- [x] Filtro por aluno (dropdown "Todos os Alunos" ou aluno específico)
+- [x] Gráfico de Treinos por Mês
+- [x] Posicionado abaixo do card do Plano e acima de "Análise de Evolução Pendente"
+- [x] Usa endpoint trainingDiary.dashboard existente
+
