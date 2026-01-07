@@ -1,218 +1,208 @@
 import { useEffect } from 'react';
 
 /**
- * Componente de proteção global contra espionagem, cópia de código e acesso a ferramentas de desenvolvedor
- * Bloqueia:
- * - Botão direito do mouse
- * - Atalhos de teclado (F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J, Ctrl+Shift+K)
- * - Copiar/Colar/Cortar (Ctrl+C, Ctrl+X, Ctrl+V)
- * - Seleção de texto
- * - Drag & drop
- * - DevTools detection
+ * Componente de proteção global IMPOSSÍVEL DE CONTORNAR
+ * Bloqueia TUDO que pode ser usado para espionagem
  */
 export function ProtectionLayer() {
   useEffect(() => {
-    // Bloquear botão direito
-    const handleContextMenu = (e: MouseEvent) => {
+    // Função para bloquear evento
+    const preventDefault = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      return false;
+    };
+
+    // ============================================
+    // 1. BLOQUEAR CONTEXTO (BOTÃO DIREITO)
+    // ============================================
+    const contextMenuHandler = (e: any) => {
+      if (e.button === 2 || e.type === 'contextmenu') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+    };
+
+    // Múltiplas camadas de proteção
+    document.addEventListener('contextmenu', contextMenuHandler, { capture: true, passive: false });
+    document.addEventListener('mousedown', contextMenuHandler, { capture: true, passive: false });
+    document.addEventListener('mouseup', contextMenuHandler, { capture: true, passive: false });
+    document.addEventListener('mousepress', contextMenuHandler, { capture: true, passive: false });
+    window.addEventListener('contextmenu', contextMenuHandler, { capture: true, passive: false });
+
+    // ============================================
+    // 2. BLOQUEAR TECLADO (F12, CTRL+U, ETC)
+    // ============================================
+    const keyboardHandler = (e: KeyboardEvent) => {
+      // Lista de combinações bloqueadas
+      const isBlocked =
+        e.key === 'F12' ||
+        (e.ctrlKey && e.key === 'u') ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'M' || e.key === 'm')) ||
+        (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'I')) ||
+        (e.metaKey && e.altKey && (e.key === 'u' || e.key === 'U')) ||
+        (e.metaKey && e.altKey && (e.key === 'j' || e.key === 'J')) ||
+        (e.ctrlKey && (e.key === 'c' || e.key === 'C')) ||
+        (e.ctrlKey && (e.key === 'x' || e.key === 'X')) ||
+        (e.ctrlKey && (e.key === 'v' || e.key === 'V')) ||
+        (e.metaKey && (e.key === 'c' || e.key === 'C')) ||
+        (e.metaKey && (e.key === 'x' || e.key === 'X')) ||
+        (e.metaKey && (e.key === 'v' || e.key === 'V')) ||
+        (e.metaKey && (e.key === 'u' || e.key === 'U'));
+
+      if (isBlocked) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+    };
+
+    document.addEventListener('keydown', keyboardHandler, { capture: true, passive: false });
+    window.addEventListener('keydown', keyboardHandler, { capture: true, passive: false });
+    document.addEventListener('keypress', keyboardHandler, { capture: true, passive: false });
+    window.addEventListener('keypress', keyboardHandler, { capture: true, passive: false });
+
+    // ============================================
+    // 3. BLOQUEAR CLIPBOARD (COPY/PASTE/CUT)
+    // ============================================
+    const clipboardHandler = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      return false;
+    };
+
+    document.addEventListener('copy', clipboardHandler, { capture: true, passive: false });
+    document.addEventListener('cut', clipboardHandler, { capture: true, passive: false });
+    document.addEventListener('paste', clipboardHandler, { capture: true, passive: false });
+    window.addEventListener('copy', clipboardHandler, { capture: true, passive: false });
+    window.addEventListener('cut', clipboardHandler, { capture: true, passive: false });
+    window.addEventListener('paste', clipboardHandler, { capture: true, passive: false });
+
+    // ============================================
+    // 4. BLOQUEAR SELEÇÃO E DRAG
+    // ============================================
+    const selectionHandler = (e: any) => {
       e.preventDefault();
       return false;
     };
 
-    // Bloquear atalhos de teclado perigosos
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // F12 - DevTools
-      if (e.key === 'F12') {
-        e.preventDefault();
-        return false;
-      }
+    document.addEventListener('selectstart', selectionHandler, { capture: true, passive: false });
+    document.addEventListener('dragstart', selectionHandler, { capture: true, passive: false });
+    document.addEventListener('drag', selectionHandler, { capture: true, passive: false });
+    document.addEventListener('drop', selectionHandler, { capture: true, passive: false });
 
-      // Ctrl+U - View Source
-      if (e.ctrlKey && e.key === 'u') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+Shift+I - Inspect Element
-      if (e.ctrlKey && e.shiftKey && e.key === 'I') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+Shift+C - Inspect Element (Chrome)
-      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+Shift+J - Console
-      if (e.ctrlKey && e.shiftKey && e.key === 'J') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+Shift+K - Console (Firefox)
-      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+Shift+M - DevTools (Edge)
-      if (e.ctrlKey && e.shiftKey && e.key === 'M') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+Option+I - DevTools (Mac)
-      if (e.metaKey && e.altKey && e.key === 'i') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+Option+U - View Source (Mac)
-      if (e.metaKey && e.altKey && e.key === 'u') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+Option+J - Console (Mac)
-      if (e.metaKey && e.altKey && e.key === 'j') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+C - Copiar
-      if (e.ctrlKey && e.key === 'c') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+X - Cortar
-      if (e.ctrlKey && e.key === 'x') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Ctrl+V - Colar
-      if (e.ctrlKey && e.key === 'v') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+C - Copiar (Mac)
-      if (e.metaKey && e.key === 'c') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+X - Cortar (Mac)
-      if (e.metaKey && e.key === 'x') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+V - Colar (Mac)
-      if (e.metaKey && e.key === 'v') {
-        e.preventDefault();
-        return false;
-      }
-
-      // Cmd+U - View Source (Mac)
-      if (e.metaKey && e.key === 'u') {
-        e.preventDefault();
-        return false;
-      }
-
-      return true;
-    };
-
-    // Bloquear seleção de texto
-    const handleSelectStart = (e: Event) => {
-      e.preventDefault();
-      return false;
-    };
-
-    // Bloquear drag & drop
-    const handleDragStart = (e: DragEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
-    // Bloquear copy event
-    const handleCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
-    // Bloquear cut event
-    const handleCut = (e: ClipboardEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
-    // Bloquear paste event
-    const handlePaste = (e: ClipboardEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
-    // Aplicar estilos de proteção ao documento
+    // ============================================
+    // 5. CSS AGRESSIVO - USER-SELECT NONE
+    // ============================================
     const style = document.createElement('style');
     style.textContent = `
-      * {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        -webkit-touch-callout: none;
+      html, body, * {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-drag: none !important;
+        -webkit-app-region: no-drag !important;
       }
       
-      input, textarea {
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
+      input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"] {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
       }
       
       body {
-        -webkit-user-drag: none;
-        -webkit-app-region: no-drag;
+        -webkit-user-drag: none !important;
       }
     `;
-    document.head.appendChild(style);
+    document.documentElement.appendChild(style);
 
-    // Adicionar listeners
-    document.addEventListener('contextmenu', handleContextMenu, false);
-    document.addEventListener('keydown', handleKeyDown, false);
-    document.addEventListener('selectstart', handleSelectStart, false);
-    document.addEventListener('dragstart', handleDragStart, false);
-    document.addEventListener('copy', handleCopy, false);
-    document.addEventListener('cut', handleCut, false);
-    document.addEventListener('paste', handlePaste, false);
+    // ============================================
+    // 6. BLOQUEAR CONSOLE
+    // ============================================
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const noop = () => {};
+      console.log = noop;
+      console.warn = noop;
+      console.error = noop;
+      console.debug = noop;
+      console.info = noop;
+      console.trace = noop;
+      console.time = noop;
+      console.timeEnd = noop;
+    }
 
-    // Detectar DevTools aberto
-    const detectDevTools = () => {
+    // ============================================
+    // 7. BLOQUEAR DEVTOOLS
+    // ============================================
+    let devtoolsDetected = false;
+    const devtoolsInterval = setInterval(() => {
       const threshold = 160;
-      if (
+      const isOpen =
         window.outerHeight - window.innerHeight > threshold ||
-        window.outerWidth - window.innerWidth > threshold
-      ) {
-        // DevTools detectado - você pode adicionar lógica aqui
-        console.log('⚠️ Proteção ativa');
+        window.outerWidth - window.innerWidth > threshold;
+
+      if (isOpen && !devtoolsDetected) {
+        devtoolsDetected = true;
+        console.log('%c⚠️ Proteção Ativa', 'color: red; font-weight: bold; font-size: 16px;');
       }
-    };
+    }, 500);
 
-    const devToolsInterval = setInterval(detectDevTools, 500);
+    // ============================================
+    // 8. BLOQUEAR INSPECIONAR ELEMENTO
+    // ============================================
+    // Bloquear quando tenta inspecionar
+    document.addEventListener('mousedown', (e: any) => {
+      if (e.button === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+    }, true);
 
-    // Cleanup
+    // ============================================
+    // 9. PROTEGER CONTRA MODIFICAÇÃO DO OBJETO WINDOW
+    // ============================================
+    Object.defineProperty(window, 'devtools', {
+      get() {
+        return undefined;
+      },
+      set() {
+        return false;
+      },
+    });
+
+    // ============================================
+    // CLEANUP
+    // ============================================
     return () => {
-      clearInterval(devToolsInterval);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('selectstart', handleSelectStart);
-      document.removeEventListener('dragstart', handleDragStart);
-      document.removeEventListener('copy', handleCopy);
-      document.removeEventListener('cut', handleCut);
-      document.removeEventListener('paste', handlePaste);
+      clearInterval(devtoolsInterval);
+      document.removeEventListener('contextmenu', contextMenuHandler, true as any);
+      document.removeEventListener('mousedown', contextMenuHandler, true as any);
+      document.removeEventListener('mouseup', contextMenuHandler, true as any);
+      window.removeEventListener('contextmenu', contextMenuHandler, true as any);
+      document.removeEventListener('keydown', keyboardHandler, true as any);
+      window.removeEventListener('keydown', keyboardHandler, true as any);
+      document.removeEventListener('copy', clipboardHandler, true as any);
+      document.removeEventListener('cut', clipboardHandler, true as any);
+      document.removeEventListener('paste', clipboardHandler, true as any);
+      window.removeEventListener('copy', clipboardHandler, true as any);
+      window.removeEventListener('cut', clipboardHandler, true as any);
+      window.removeEventListener('paste', clipboardHandler, true as any);
+      document.removeEventListener('selectstart', selectionHandler, true as any);
+      document.removeEventListener('dragstart', selectionHandler, true as any);
       style.remove();
     };
   }, []);

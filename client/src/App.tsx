@@ -43,6 +43,7 @@ import PricingPage from "./pages/PricingPage";
 import LandingPagePro from "./pages/LandingPagePro";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
+import { ProtectionLayer } from "./components/ProtectionLayer";
 import QuizPage from "@/pages/QuizPage";
 import QuizPage2 from "@/pages/QuizPage2";
 import DynamicPricingPage from "@/pages/DynamicPricingPage";
@@ -171,6 +172,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
+          <ProtectionLayer />
           <Router />
           <InstallPrompt />
           <IOSInstallInstructions />

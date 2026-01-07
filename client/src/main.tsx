@@ -7,7 +7,6 @@ import superjson from "superjson";
 import App from "./App";
 
 import { OfflineProvider } from "./contexts/OfflineContext";
-import { ProtectionLayer } from "./components/ProtectionLayer";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -101,7 +100,6 @@ createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <OfflineProvider>
-        <ProtectionLayer />
         <App />
       </OfflineProvider>
     </QueryClientProvider>
