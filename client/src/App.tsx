@@ -44,6 +44,7 @@ import LandingPagePro from "./pages/LandingPagePro";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 import QuizPage from "@/pages/QuizPage";
+import QuizPage2 from "@/pages/QuizPage2";
 import DynamicPricingPage from "@/pages/DynamicPricingPage";
 import CompletePricingPage from "@/pages/CompletePricingPage";
 import AdminFunnelDashboard from "@/pages/AdminFunnelDashboard";
@@ -74,6 +75,7 @@ function Router() {
       {/* Public routes */}
       <Route path="/" component={LandingPagePro} />
       <Route path="/quiz" component={QuizPage} />
+      <Route path="/quiz-2" component={QuizPage2} />
       <Route path="/pricing" component={DynamicPricingPage} />
       <Route path="/pricing-complete" component={CompletePricingPage} />
       <Route path="/checkout" component={CheckoutPage} />
