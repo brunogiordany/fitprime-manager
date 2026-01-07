@@ -13,6 +13,7 @@ import { nanoid } from "nanoid";
 import { handleStripeWebhook } from "../stripe/webhook";
 import { handleCaktoWebhook } from "../cakto/webhook";
 import { getHealthStatus } from "./healthCheck";
+import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -82,6 +83,11 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // Adicionar middlewares de segurança
+  app.use(securityHeaders);
+  app.use(blockSearchEngineAccess);
+  app.use(noCacheHeaders);
   
   // File upload endpoint
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });

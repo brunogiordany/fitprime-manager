@@ -1,0 +1,79 @@
+# Proteção contra espionagem e indexação indevida
+# Bloqueia site: queries no Google e outros search engines
+
+User-agent: *
+Disallow: /quiz
+Disallow: /quiz-2
+Disallow: /checkout
+Disallow: /admin
+Disallow: /api
+Disallow: /login
+Disallow: /login-aluno
+Disallow: /login-personal
+Disallow: /cadastro-trial
+Disallow: /ativar-conta
+Disallow: /convite
+Disallow: /portal
+Disallow: /meu-portal
+Disallow: /portal-aluno
+Disallow: /dashboard
+Disallow: /relatorios
+Disallow: /relatorios-cardio
+Disallow: /evolucao
+Disallow: /suporte
+Disallow: /admin-panel
+Disallow: /*.json$
+Disallow: /*.js$
+Disallow: /*.css$
+
+# Bloquear bots de espionagem específicos
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot-Site-Audit
+Disallow: /
+
+User-agent: SemrushBot-BA
+Disallow: /
+
+User-agent: SemrushBot-SiteAudit
+Disallow: /
+
+User-agent: SemrushBot-CT
+Disallow: /
+
+User-agent: SemrushBot-PPC
+Disallow: /
+
+# Permitir apenas Google e Bing indexar a landing page
+User-agent: Googlebot
+Allow: /
+Disallow: /quiz
+Disallow: /quiz-2
+Disallow: /checkout
+Disallow: /admin
+Disallow: /api
+Disallow: /login
+Disallow: /portal
+
+User-agent: Bingbot
+Allow: /
+Disallow: /quiz
+Disallow: /quiz-2
+Disallow: /checkout
+Disallow: /admin
+Disallow: /api
+Disallow: /login
+Disallow: /portal
+
+# Sitemap
+Sitemap: https://fitprimemanager.com/sitemap.xml

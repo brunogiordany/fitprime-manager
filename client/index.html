@@ -8,6 +8,13 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
     <title>FitPrime Manager - Sistema de Gestão para Personal Trainers</title>
     
+    <!-- Proteção contra espionagem e indexação -->
+    <meta name="robots" content="index, follow, noarchive, noimageindex, nosnippet" />
+    <meta name="googlebot" content="index, follow, noarchive, noimageindex, nosnippet" />
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    
     <!-- SEO Meta Tags -->
     <meta name="keywords" content="personal trainer, gestão de alunos, sistema para personal, app personal trainer, software academia, treinos online, cobranças personal, agenda personal trainer" />
     
@@ -35,6 +42,35 @@
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    
+    <!-- Proteção contra ferramentas de desenvolvedor -->
+    <script>
+      // Detectar e bloquear DevTools
+      (function() {
+        let devtools = { open: false };
+        const threshold = 160;
+
+        setInterval(function() {
+          if (window.outerHeight - window.innerHeight > threshold ||
+              window.outerWidth - window.innerWidth > threshold) {
+            if (!devtools.open) {
+              devtools.open = true;
+              console.log('%c⚠️ Proteção ativa', 'color: red; font-size: 16px; font-weight: bold;');
+            }
+          } else {
+            devtools.open = false;
+          }
+        }, 500);
+      })();
+
+      // Bloquear console em produção
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        console.log = function() {};
+        console.warn = function() {};
+        console.error = function() {};
+        console.debug = function() {};
+      }
+    </script>
     
     <!-- Service Worker Registration -->
     <script>
