@@ -227,7 +227,7 @@ async function handleActivation(result: {
     });
     
     // Send welcome email with activation link
-    const baseUrl = process.env.VITE_APP_URL || 'https://fitprime.com.br';
+    const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
     const activationLink = `${baseUrl}/ativar-conta/${activationToken}`;
     
     await sendPurchaseActivationEmail(
