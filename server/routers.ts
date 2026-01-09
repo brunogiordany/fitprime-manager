@@ -2758,6 +2758,44 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { measurements, ...anamnesisData } = input;
+        
+        // Converter waterIntake de string para número decimal
+        // O campo no banco é decimal(4,2), então precisa ser um número
+        if ((anamnesisData as any).waterIntake) {
+          const waterMap: Record<string, string> = {
+            'less_1l': '0.5',
+            '1_2l': '1.5',
+            '2_3l': '2.5',
+            '3_4l': '3.5',
+            'more_4l': '4.5',
+            '1l': '1.0',
+            '2l': '2.0',
+            '3l': '3.0',
+            '4l': '4.0',
+          };
+          const mapped = waterMap[(anamnesisData as any).waterIntake];
+          if (mapped) {
+            (anamnesisData as any).waterIntake = mapped;
+          } else {
+            const parsed = parseFloat((anamnesisData as any).waterIntake);
+            if (!isNaN(parsed)) {
+              (anamnesisData as any).waterIntake = parsed.toFixed(2);
+            } else {
+              delete (anamnesisData as any).waterIntake;
+            }
+          }
+        }
+        
+        // Converter targetWeight de string para número decimal
+        if ((anamnesisData as any).targetWeight) {
+          const parsed = parseFloat((anamnesisData as any).targetWeight);
+          if (!isNaN(parsed)) {
+            (anamnesisData as any).targetWeight = parsed.toFixed(2);
+          } else {
+            delete (anamnesisData as any).targetWeight;
+          }
+        }
+        
         const existing = await db.getAnamnesisByStudentId(input.studentId);
         
         let anamnesisId: number;
@@ -7933,6 +7971,47 @@ Acesse Alterações Pendentes para aprovar ou rejeitar.`,
       }))
       .mutation(async ({ ctx, input }) => {
         const { measurements, ...anamnesisData } = input;
+        
+        // Converter waterIntake de string para número decimal
+        // O campo no banco é decimal(4,2), então precisa ser um número
+        // Valores como "1_2l", "less_1l", "2l" precisam ser convertidos
+        if (anamnesisData.waterIntake) {
+          const waterMap: Record<string, string> = {
+            'less_1l': '0.5',
+            '1_2l': '1.5',
+            '2_3l': '2.5',
+            '3_4l': '3.5',
+            'more_4l': '4.5',
+            '1l': '1.0',
+            '2l': '2.0',
+            '3l': '3.0',
+            '4l': '4.0',
+          };
+          const mapped = waterMap[anamnesisData.waterIntake];
+          if (mapped) {
+            (anamnesisData as any).waterIntake = mapped;
+          } else {
+            // Se já é um número válido, manter
+            const parsed = parseFloat(anamnesisData.waterIntake);
+            if (!isNaN(parsed)) {
+              (anamnesisData as any).waterIntake = parsed.toFixed(2);
+            } else {
+              // Se não conseguir converter, remover o campo
+              delete (anamnesisData as any).waterIntake;
+            }
+          }
+        }
+        
+        // Converter targetWeight de string para número decimal se necessário
+        if (anamnesisData.targetWeight) {
+          const parsed = parseFloat(anamnesisData.targetWeight);
+          if (!isNaN(parsed)) {
+            (anamnesisData as any).targetWeight = parsed.toFixed(2);
+          } else {
+            delete (anamnesisData as any).targetWeight;
+          }
+        }
+        
         const existing = await db.getAnamnesisByStudentId(ctx.student.id);
         
         let anamnesisId: number;

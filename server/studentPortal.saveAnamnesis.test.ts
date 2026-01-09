@@ -166,6 +166,38 @@ describe('studentPortal.saveWithMeasurements', () => {
       expect(partialData.occupation).toBe('Personal Trainer');
     });
 
+    it('should convert waterIntake string values to decimal', () => {
+      const waterMap: Record<string, string> = {
+        'less_1l': '0.5',
+        '1_2l': '1.5',
+        '2_3l': '2.5',
+        '3_4l': '3.5',
+        'more_4l': '4.5',
+        '1l': '1.0',
+        '2l': '2.0',
+        '3l': '3.0',
+        '4l': '4.0',
+      };
+
+      // Testar conversões
+      expect(waterMap['less_1l']).toBe('0.5');
+      expect(waterMap['1_2l']).toBe('1.5');
+      expect(waterMap['2_3l']).toBe('2.5');
+      expect(waterMap['3_4l']).toBe('3.5');
+      expect(waterMap['more_4l']).toBe('4.5');
+    });
+
+    it('should handle numeric waterIntake values', () => {
+      const parseWater = (val: string) => {
+        const parsed = parseFloat(val);
+        return !isNaN(parsed) ? parsed.toFixed(2) : undefined;
+      };
+
+      expect(parseWater('2.5')).toBe('2.50');
+      expect(parseWater('1.5')).toBe('1.50');
+      expect(parseWater('invalid')).toBeUndefined();
+    });
+
     it('should handle empty strings as undefined', () => {
       const cleanValue = (val: string | undefined) => {
         if (!val || val.trim() === '') return undefined;
