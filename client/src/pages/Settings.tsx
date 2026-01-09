@@ -1,5 +1,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,10 +35,32 @@ import {
 import { PLANS } from "@/../../shared/plans";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 export default function Settings() {
+  const [, setLocation] = useLocation();
+  const searchString = useSearch();
+  
+  // Extrair tab da URL
+  const tabFromUrl = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get('tab') || 'perfil';
+  }, [searchString]);
+  
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+  
+  // Atualizar tab quando URL mudar
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
+  
+  // Atualizar URL quando tab mudar
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setLocation(`/configuracoes?tab=${tab}`);
+  };
+  
   const [profile, setProfile] = useState({
     businessName: "",
     phone: "",
@@ -210,8 +234,35 @@ export default function Settings() {
           </p>
         </div>
 
-        {/* Profile Settings */}
-        <Card>
+        {/* Navegação por Tabs */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
+            <TabsTrigger value="perfil" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Perfil</span>
+            </TabsTrigger>
+            <TabsTrigger value="whatsapp" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </TabsTrigger>
+            <TabsTrigger value="notificacoes" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notificações</span>
+            </TabsTrigger>
+            <TabsTrigger value="plano" className="flex items-center gap-2">
+              <Crown className="h-4 w-4" />
+              <span className="hidden sm:inline">Plano</span>
+            </TabsTrigger>
+            <TabsTrigger value="seguranca" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Segurança</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Perfil */}
+          <TabsContent value="perfil" className="space-y-6 mt-6">
+            {/* Profile Settings */}
+            <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
@@ -407,7 +458,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
+          {/* Tab: WhatsApp */}
+          <TabsContent value="whatsapp" className="space-y-6 mt-6">
         {/* WhatsApp Integration */}
         <Card>
           <CardHeader>
@@ -559,7 +613,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
+          {/* Tab: Notificações */}
+          <TabsContent value="notificacoes" className="space-y-6 mt-6">
         {/* Notifications */}
         <Card>
           <CardHeader>
@@ -612,7 +669,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
+          {/* Tab: Plano */}
+          <TabsContent value="plano" className="space-y-6 mt-6">
         {/* Plano e Assinatura */}
         <Card className="border-emerald-200">
           <CardHeader>
@@ -834,7 +894,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
+          {/* Tab: Segurança */}
+          <TabsContent value="seguranca" className="space-y-6 mt-6">
         {/* Security */}
         <Card>
           <CardHeader>
@@ -865,6 +928,8 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Modal de Upgrade com Proration */}
