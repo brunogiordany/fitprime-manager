@@ -3569,7 +3569,16 @@ Você DEVE retornar um JSON válido no seguinte formato:
         }
       ]
     }
-  ]
+  ],
+  "cardioRecommendation": {
+    "sessionsPerWeek": 3,
+    "minutesPerSession": 20,
+    "types": ["caminhada", "bicicleta"],
+    "intensity": "moderada",
+    "timing": "após o treino ou em dias alternados",
+    "notes": "Observações sobre o cardio",
+    "benefits": "Benefícios específicos para o objetivo do aluno"
+  }
 }
 
 REGRAS CRÍTICAS - GÊNERO:
@@ -3596,20 +3605,29 @@ REGRAS CRÍTICAS - FREQUÊNCIA SEMANAL:
 - Se não informada, use 3 dias como padrão
 
 REGRAS CRÍTICAS - ATIVIDADES AERÓBICAS/CARDIO:
+- SEMPRE INCLUA cardioRecommendation no JSON, mesmo para bulking/hipertrofia
+- CARDIO É OBRIGATÓRIO para saúde cardiovascular, independente do objetivo:
+  * Melhora a capacidade cardíaca e pulmonar
+  * Evita ofegância durante os treinos de musculção
+  * Melhora a recuperação entre séries
+  * Reduz risco de doenças cardiovasculares
+  * Melhora a qualidade do sono
+- ADAPTE a intensidade e frequência ao objetivo:
+  * Emagrecimento/Cutting: 4-5x semana, 30-45min, intensidade moderada-alta
+  * Hipertrofia/Bulking: 2-3x semana, 15-20min, intensidade baixa-moderada (para não atrapalhar ganho de massa)
+  * Recomposição: 3-4x semana, 20-30min, intensidade moderada
+  * Condicionamento: 4-5x semana, 30-45min, variando intensidades
 - ANALISE O HISTÓRICO DE CARDIO fornecido para tomar decisões:
   * Se o aluno tem muitas sessões de cardio registradas (>8 por mês): ele já faz cardio regularmente
   * Se tem poucas sessões (<4 por mês): considere sugerir mais cardio
   * Se não tem registros: verifique na anamnese se faz cardio
 - Se o aluno JÁ FAZ cardio regularmente:
-  * NÃO adicione cardio extra no treino de musculação
+  * Ajuste a recomendação para complementar o que ele já faz
   * Considere que ele já tem gasto calórico adicional
   * Ajuste o volume de treino para não sobrecarregar
   * Se faz muitas atividades aeróbicas, reduza volume de pernas
   * Analise os tipos de cardio que ele faz e adapte o treino
-- Se o aluno NÃO FAZ cardio e o objetivo é emagrecimento:
-  * Sugira incluir cardio leve ao final do treino (10-15 min)
-  * Ou sugira HIIT em dias alternados
-- INTEGRAÇÃO CARDIO + MUSCULAÇÃO:
+- INTEGRAÇÃO CARDIO + MUSCULÇÃO:
   * Se faz corrida/caminhada: reduza volume de quadríceps e panturrilha
   * Se faz natação: reduza volume de ombros e costas
   * Se faz ciclismo: reduza volume de pernas
@@ -3715,8 +3733,22 @@ Retorne APENAS o JSON, sem texto adicional.`;
                       additionalProperties: false,
                     },
                   },
+                  cardioRecommendation: {
+                    type: 'object',
+                    properties: {
+                      sessionsPerWeek: { type: 'integer' },
+                      minutesPerSession: { type: 'integer' },
+                      types: { type: 'array', items: { type: 'string' } },
+                      intensity: { type: 'string' },
+                      timing: { type: 'string' },
+                      notes: { type: 'string' },
+                      benefits: { type: 'string' },
+                    },
+                    required: ['sessionsPerWeek', 'minutesPerSession', 'types', 'intensity', 'timing', 'notes', 'benefits'],
+                    additionalProperties: false,
+                  },
                 },
-                required: ['name', 'description', 'goal', 'difficulty', 'type', 'days'],
+                required: ['name', 'description', 'goal', 'difficulty', 'type', 'days', 'cardioRecommendation'],
                 additionalProperties: false,
               },
             },
@@ -4857,6 +4889,109 @@ Retorne APENAS o JSON, sem texto adicional.`;
           generatedWorkoutId: input.workoutId,
         });
         return { success: true };
+      }),
+    
+    // Exportar treino em PDF com dashboard de recomendações
+    exportWorkoutPDF: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        workoutId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateWorkoutPDF } = await import('./pdf/workoutReport');
+        
+        // Buscar dados do aluno
+        const student = await db.getStudentById(input.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Aluno não encontrado' });
+        }
+        
+        // Buscar treino
+        const workout = await db.getWorkoutById(input.workoutId);
+        if (!workout) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Treino não encontrado' });
+        }
+        
+        // Buscar dias e exercícios do treino
+        const days = await db.getWorkoutDaysByWorkoutId(input.workoutId);
+        const daysWithExercises = await Promise.all(
+          days.map(async (day) => {
+            const exercises = await db.getExercisesByWorkoutDayId(day.id);
+            return {
+              dayName: day.name || `Dia ${(day.order ?? 0) + 1}`,
+              exercises: exercises.map(e => ({
+                name: e.name,
+                muscleGroup: e.muscleGroup,
+                sets: e.sets,
+                reps: e.reps,
+                weight: e.weight,
+                restTime: e.restSeconds,
+                notes: e.notes,
+              })),
+            };
+          })
+        );
+        
+        // Buscar anamnese e medidas
+        const [anamnesis, measurements] = await Promise.all([
+          db.getAnamnesisByStudentId(input.studentId),
+          db.getMeasurementsByStudentId(input.studentId),
+        ]);
+        
+        const latestMeasurement = measurements[0];
+        
+        // Preparar dados
+        const studentData = {
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          birthDate: student.birthDate,
+          gender: student.gender,
+        };
+        
+        const measurementData = latestMeasurement ? {
+          weight: latestMeasurement.weight,
+          height: latestMeasurement.height,
+          bodyFat: latestMeasurement.bodyFat,
+        } : null;
+        
+        const anamnesisData = anamnesis ? {
+          mainGoal: anamnesis.mainGoal,
+          targetWeight: (anamnesis as any).targetWeight,
+          lifestyle: anamnesis.lifestyle,
+          weeklyFrequency: anamnesis.weeklyFrequency,
+          sessionDuration: anamnesis.sessionDuration,
+          doesCardio: (anamnesis as any).doesCardio,
+        } : null;
+        
+        const workoutData = {
+          name: workout.name,
+          description: workout.description,
+          type: workout.type,
+          difficulty: workout.difficulty,
+          days: daysWithExercises,
+        };
+        
+        const personalInfo = {
+          businessName: ctx.personal.businessName,
+          logoUrl: ctx.personal.logoUrl,
+        };
+        
+        // Gerar PDF
+        const pdfBuffer = await generateWorkoutPDF(
+          studentData,
+          measurementData,
+          anamnesisData,
+          workoutData,
+          personalInfo
+        );
+        
+        // Retornar como base64
+        return {
+          filename: `${student.name.replace(/\s+/g, '_')}_treino_${workout.name.replace(/\s+/g, '_')}.pdf`,
+          data: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        };
       }),
   }),
 

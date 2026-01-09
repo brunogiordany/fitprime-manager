@@ -345,7 +345,11 @@ export async function getStudentsByPersonalId(personalId: number, filters?: { st
   const db = await getDb();
   if (!db) return [];
   
-  const conditions = [eq(students.personalId, personalId)];
+  // Sempre excluir alunos deletados (soft delete)
+  const conditions = [
+    eq(students.personalId, personalId),
+    isNull(students.deletedAt)
+  ];
   
   // Filtros especiais para conta criada/não criada
   if (filters?.status === 'no_account') {

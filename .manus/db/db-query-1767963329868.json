@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, name, email, status, deletedAt FROM students WHERE name LIKE '%Julimar%' OR name LIKE '%bruno%' LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, status, deletedAt FROM students WHERE name LIKE '%Julimar%' OR name LIKE '%bruno%' LIMIT 10",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com",
+      "status": "active",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "email": "brunogiordanyps@gmail.com",
+      "status": "active",
+      "deletedAt": "2026-01-09 12:47:18"
+    },
+    {
+      "id": "120001",
+      "name": "Julimar vieira",
+      "email": "pedrosavieira17@gmail.com",
+      "status": "active",
+      "deletedAt": "2026-01-09 12:47:36"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tstatus\tdeletedAt\n1\tBruno\tbrunogiordany@gmail.com\tactive\tNULL\n90001\tbruno ps\tbrunogiordanyps@gmail.com\tactive\t2026-01-09 12:47:18\n120001\tJulimar vieira\tpedrosavieira17@gmail.com\tactive\t2026-01-09 12:47:36\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

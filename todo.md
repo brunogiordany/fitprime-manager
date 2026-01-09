@@ -3646,3 +3646,14 @@
 - [ ] Implementar sistema de afiliados no backend
 - [ ] Criar interface de gerenciamento de afiliados
 - [ ] Configurar comissões e rastreamento
+
+## Correções v4.8
+- [x] BUG: Alunos excluídos (Julimar e Bruno ps) ainda aparecem na lista - verificar soft delete
+- [ ] Exportar treino do aluno em PDF com dashboard de recomendações (macros, meta de peso, cardio)
+- [x] Verificar/adicionar recomendação de cardio na geração de treino por IA (importante para saúde cardiovascular)
+
+
+## Correções v4.8
+- [x] BUG: Alunos excluídos (Julimar e Bruno ps) ainda aparecem na lista - verificar soft delete
+- [x] Exportar treino do aluno em PDF com dashboard de recomendações
+- [x] Verificar/adicionar recomendação de cardio na geração de treino por IA

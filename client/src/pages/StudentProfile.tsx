@@ -458,6 +458,34 @@ export default function StudentProfile() {
     },
   });
 
+  // Exportar treino em PDF com dashboard
+  const exportWorkoutPDFMutation = trpc.workouts.exportWorkoutPDF.useMutation({
+    onSuccess: (data) => {
+      // Criar blob e fazer download
+      const byteCharacters = atob(data.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: data.contentType });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = data.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Treino exportado com sucesso!");
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao exportar treino: " + error.message);
+    },
+  });
+
   // Análise por IA do aluno
   const aiAnalysisMutation = trpc.trainingDiary.aiAnalysis.useMutation({
     onSuccess: (data: any) => {
@@ -1708,23 +1736,42 @@ export default function StudentProfile() {
                     {workouts.map((workout) => (
                       <div 
                         key={workout.id} 
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                        onClick={() => setLocation(`/treinos/${workout.id}`)}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50"
                       >
-                        <div>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => setLocation(`/treinos/${workout.id}`)}
+                        >
                           <p className="font-medium">{workout.name}</p>
                           <p className="text-sm text-muted-foreground">
                             {workout.description || 'Sem descrição'}
                           </p>
                         </div>
-                        <Badge className={
-                          workout.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          workout.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                        }>
-                          {workout.status === 'active' ? 'Ativo' :
-                           workout.status === 'completed' ? 'Concluído' : 'Inativo'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={
+                            workout.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                            workout.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }>
+                            {workout.status === 'active' ? 'Ativo' :
+                             workout.status === 'completed' ? 'Concluído' : 'Inativo'}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              exportWorkoutPDFMutation.mutate({ studentId, workoutId: workout.id });
+                            }}
+                            disabled={exportWorkoutPDFMutation.isPending}
+                          >
+                            {exportWorkoutPDFMutation.isPending ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
