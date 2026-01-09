@@ -3624,3 +3624,15 @@
 - [x] BUG CRÍTICO: Portal do Aluno - Erro ao salvar anamnese (mainGoal enum incompleto)
 - [x] Adicionar seção de Medidas Corporais na anamnese do Portal do Aluno (peso, altura, circunferências)
 - [x] Reorganizar Configurações com navegação por abas e fazer Ver Plano ir direto para a seção correta
+
+## Correções Urgentes - Automações WhatsApp (v4.4)
+- [ ] BUG CRÍTICO: Variáveis não substituídas nas mensagens ({hora}, {valor}, {vencimento} aparecem como código)
+- [ ] BUG CRÍTICO: Automações não disparam automaticamente (só funciona envio manual)
+
+
+## Correções Urgentes - Automações WhatsApp (v4.7)
+- [x] BUG: Variáveis não substituídas nas mensagens ({hora}, {valor}, {vencimento})
+- [x] BUG: Automações não disparam automaticamente (só manual)
+- [x] Criar worker de automações que roda a cada 15 minutos
+- [x] Substituir todas as variáveis: {nome}, {telefone}, {email}, {hora}, {data_sessao}, {valor}, {vencimento}, {ano}, {data_aniversario}
+- [x] Processar automaticamente: lembretes de sessão, lembretes de pagamento, pagamentos em atraso, aniversários

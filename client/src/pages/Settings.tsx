@@ -894,12 +894,12 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-          </TabsContent>
+        </TabsContent>
 
-          {/* Tab: Segurança */}
-          <TabsContent value="seguranca" className="space-y-6 mt-6">
-        {/* Security */}
-        <Card>
+        {/* Tab: Segurança */}
+        <TabsContent value="seguranca" className="space-y-6 mt-6">
+          {/* Security */}
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
@@ -926,9 +926,9 @@ export default function Settings() {
               <p>• Rate limiting para prevenir ataques de força bruta</p>
               <p>• Logs de auditoria para todas as ações sensíveis</p>
             </div>
-          </CardContent>
-        </Card>
-          </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
         </Tabs>
       </div>
 

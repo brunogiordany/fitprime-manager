@@ -6348,11 +6348,25 @@ Retorne APENAS o JSON, sem texto adicional.`;
         
         for (const student of students) {
           try {
+            // Buscar dados adicionais para substituição de variáveis
+            const charges = await db.getChargesByStudentId(student.id);
+            const pendingCharge = charges.find(c => c.status === 'pending' || c.status === 'overdue');
+            const sessions = await db.getSessionsByStudentId(student.id);
+            const nextSession = sessions.find(s => new Date(s.scheduledAt) > new Date() && s.status === 'scheduled');
+            
             // Substituir variáveis na mensagem
             let message = automation.messageTemplate
               .replace(/{nome}/g, student.name)
               .replace(/{telefone}/g, student.phone || '')
-              .replace(/{email}/g, student.email || '');
+              .replace(/{email}/g, student.email || '')
+              // Variáveis de sessão
+              .replace(/{hora}/g, nextSession ? new Date(nextSession.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '')
+              .replace(/{data_sessao}/g, nextSession ? new Date(nextSession.scheduledAt).toLocaleDateString('pt-BR') : '')
+              // Variáveis de pagamento
+              .replace(/{valor}/g, pendingCharge ? Number(pendingCharge.amount).toFixed(2).replace('.', ',') : '')
+              .replace(/{vencimento}/g, pendingCharge && pendingCharge.dueDate ? new Date(pendingCharge.dueDate).toLocaleDateString('pt-BR') : '')
+              // Variáveis de data
+              .replace(/{ano}/g, new Date().getFullYear().toString());
             
             // Adicionar variáveis específicas por tipo de automação
             if (automation.trigger === 'birthday') {
@@ -6432,11 +6446,30 @@ Retorne APENAS o JSON, sem texto adicional.`;
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'WhatsApp não configurado. Configure nas Configurações.' });
         }
         
+        // Buscar dados adicionais para substituição de variáveis
+        const charges = await db.getChargesByStudentId(student.id);
+        const pendingCharge = charges.find(c => c.status === 'pending' || c.status === 'overdue');
+        const sessions = await db.getSessionsByStudentId(student.id);
+        const nextSession = sessions.find(s => new Date(s.scheduledAt) > new Date() && s.status === 'scheduled');
+        
         // Substituir variáveis na mensagem
         let message = automation.messageTemplate
           .replace(/{nome}/g, student.name)
           .replace(/{telefone}/g, student.phone || '')
-          .replace(/{email}/g, student.email || '');
+          .replace(/{email}/g, student.email || '')
+          // Variáveis de sessão
+          .replace(/{hora}/g, nextSession ? new Date(nextSession.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '')
+          .replace(/{data_sessao}/g, nextSession ? new Date(nextSession.scheduledAt).toLocaleDateString('pt-BR') : '')
+          // Variáveis de pagamento
+          .replace(/{valor}/g, pendingCharge ? Number(pendingCharge.amount).toFixed(2).replace('.', ',') : '')
+          .replace(/{vencimento}/g, pendingCharge && pendingCharge.dueDate ? new Date(pendingCharge.dueDate).toLocaleDateString('pt-BR') : '')
+          // Variáveis de data
+          .replace(/{ano}/g, new Date().getFullYear().toString());
+        
+        // Adicionar variáveis específicas por tipo de automação
+        if (automation.trigger === 'birthday') {
+          message = message.replace(/{data_aniversario}/g, student.birthDate ? new Date(student.birthDate).toLocaleDateString('pt-BR') : '');
+        }
         
         const { sendWhatsAppMessage } = await import('./stevo');
         const result = await sendWhatsAppMessage({

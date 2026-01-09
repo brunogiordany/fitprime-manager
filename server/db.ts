@@ -194,6 +194,10 @@ export async function getAllPersonals() {
       userName: users.name,
       userEmail: users.email,
       userCpf: users.cpf,
+      // Campos para automações WhatsApp
+      evolutionApiKey: personals.evolutionApiKey,
+      evolutionInstance: personals.evolutionInstance,
+      stevoServer: personals.stevoServer,
     })
     .from(personals)
     .leftJoin(users, eq(personals.userId, users.id))

@@ -14,6 +14,7 @@ import { handleStripeWebhook } from "../stripe/webhook";
 import { handleCaktoWebhook } from "../cakto/webhook";
 import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
+import { startAutomationWorker } from "../automationWorker";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -254,6 +255,9 @@ Formato de resposta:
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Iniciar worker de automações WhatsApp (executa a cada 15 minutos)
+    startAutomationWorker(15);
   });
 }
 
