@@ -4662,18 +4662,27 @@ Você DEVE retornar um JSON válido no seguinte formato:
 }
 
 REGRAS CRÍTICAS:
-1. CALCULE a TMB (Taxa Metabólica Basal) usando a fórmula de Mifflin-St Jeor se peso e altura disponíveis
-2. AJUSTE as calorias baseado no objetivo:
-   - Emagrecimento: déficit de 300-500 kcal/dia
-   - Hipertrofia/Bulking: superávit de 200-400 kcal/dia
-   - Recomposição: leve déficit ou manutenção
-   - Manutenção: calorias de manutenção
-3. CONSIDERE o cardio atual do aluno para não sobrecarregar
-4. ADAPTE a intensidade do cardio ao nível de experiência
-5. RESPEITE as restrições físicas informadas
-6. Seja realista nas estimativas de tempo para atingir o objetivo
-7. Proteína: 1.6-2.2g/kg para hipertrofia, 1.2-1.6g/kg para emagrecimento
-8. Se dados de peso/altura não disponíveis, use estimativas conservadoras e indique isso`;
+1. CALCULE a TMB (Taxa Metabólica Basal) usando a fórmula de Mifflin-St Jeor:
+   - Homens: (10 × peso) + (6.25 × altura) - (5 × idade) + 5
+   - Mulheres: (10 × peso) + (6.25 × altura) - (5 × idade) - 161
+2. CALCULE o TDEE usando os fatores de atividade EXATOS:
+   - Sedentário (1-2x/semana): fator 1.2
+   - Levemente ativo (2-3x/semana): fator 1.375
+   - Moderadamente ativo (3-5x/semana): fator 1.55
+   - Muito ativo (6x/semana): fator 1.725
+   - Extremamente ativo (6-7x + trabalho físico): fator 1.9
+3. AJUSTE as calorias baseado no objetivo:
+   - Emagrecimento (weight_loss): déficit de 500 kcal/dia
+   - Hipertrofia/Bulking (muscle_gain): superávit de 300 kcal/dia
+   - Condicionamento/Saúde (conditioning/health): manutenção
+   - Performance esportiva (sports): superávit de 200 kcal/dia
+4. CONSIDERE o cardio atual do aluno para não sobrecarregar
+5. ADAPTE a intensidade do cardio ao nível de experiência
+6. RESPEITE as restrições físicas informadas
+7. Seja realista nas estimativas de tempo para atingir o objetivo
+8. Proteína: 2.0g/kg para hipertrofia, 1.8g/kg para emagrecimento, 1.6g/kg para manutenção
+9. Se dados de peso/altura não disponíveis, use estimativas conservadoras e indique isso
+10. Se idade não informada, assuma 30 anos`;
         
         const userPrompt = `Crie uma recomendação de cardio e nutrição para este aluno:
 
@@ -4751,11 +4760,37 @@ Retorne APENAS o JSON, sem texto adicional.`;
         
         const recommendation = JSON.parse(content);
         
+        // Salvar a recomendação no banco de dados
+        await db.createAiRecommendation({
+          studentId: input.studentId,
+          personalId: ctx.personal.id,
+          type: 'cardio_nutrition',
+          cardioSessionsPerWeek: recommendation.cardio?.sessionsPerWeek,
+          cardioMinutesPerSession: recommendation.cardio?.minutesPerSession,
+          cardioTypes: recommendation.cardio?.recommendedTypes,
+          cardioIntensity: recommendation.cardio?.intensity,
+          cardioTiming: recommendation.cardio?.timing,
+          cardioNotes: recommendation.cardio?.notes,
+          dailyCalories: recommendation.nutrition?.dailyCalories,
+          proteinGrams: recommendation.nutrition?.proteinGrams,
+          carbsGrams: recommendation.nutrition?.carbsGrams,
+          fatGrams: recommendation.nutrition?.fatGrams,
+          mealFrequency: recommendation.nutrition?.mealFrequency,
+          hydration: recommendation.nutrition?.hydration,
+          nutritionNotes: recommendation.nutrition?.notes,
+          weeklyCalorieDeficitOrSurplus: recommendation.weeklyCalorieDeficitOrSurplus,
+          estimatedWeeklyWeightChange: recommendation.estimatedWeeklyWeightChange,
+          timeToGoal: recommendation.timeToGoal,
+          summary: recommendation.summary,
+          warnings: recommendation.warnings,
+        });
+        
         return {
           recommendation,
           studentId: input.studentId,
           studentName: student.name,
           generatedAt: new Date().toISOString(),
+          saved: true,
         };
       }),
     
@@ -9159,6 +9194,114 @@ Seja motivador mas realista e profissional.`;
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro não encontrado' });
         }
         return log;
+      }),
+    
+    // Exportar treino em PDF (para o aluno)
+    exportWorkoutPDF: studentProcedure
+      .input(z.object({
+        workoutId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateWorkoutPDF } = await import('./pdf/workoutReport');
+        
+        // Buscar dados do aluno
+        const student = ctx.student;
+        
+        // Buscar treino
+        const workout = await db.getWorkoutById(input.workoutId);
+        if (!workout || workout.studentId !== student.id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Treino não encontrado' });
+        }
+        
+        // Buscar dias e exercícios do treino
+        const days = await db.getWorkoutDaysByWorkoutId(input.workoutId);
+        const daysWithExercises = await Promise.all(
+          days.map(async (day) => {
+            const exercises = await db.getExercisesByWorkoutDayId(day.id);
+            return {
+              dayName: day.name || `Dia ${(day.order ?? 0) + 1}`,
+              exercises: exercises.map(e => ({
+                name: e.name,
+                muscleGroup: e.muscleGroup,
+                sets: e.sets,
+                reps: e.reps,
+                weight: e.weight,
+                restTime: e.restSeconds,
+                notes: e.notes,
+              })),
+            };
+          })
+        );
+        
+        // Buscar anamnese e medidas
+        const [anamnesis, measurements] = await Promise.all([
+          db.getAnamnesisByStudentId(student.id),
+          db.getMeasurementsByStudentId(student.id),
+        ]);
+        
+        const latestMeasurement = measurements[0];
+        
+        // Preparar dados
+        const studentData = {
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          birthDate: null,
+          gender: student.gender,
+        };
+        
+        const measurementData = latestMeasurement ? {
+          weight: latestMeasurement.weight,
+          height: latestMeasurement.height,
+          bodyFat: latestMeasurement.bodyFat,
+        } : null;
+        
+        const anamnesisData = anamnesis ? {
+          mainGoal: anamnesis.mainGoal,
+          targetWeight: (anamnesis as any).targetWeight,
+          lifestyle: anamnesis.lifestyle,
+          weeklyFrequency: anamnesis.weeklyFrequency,
+          sessionDuration: anamnesis.sessionDuration,
+          doesCardio: (anamnesis as any).doesCardio,
+        } : null;
+        
+        const workoutData = {
+          name: workout.name,
+          description: workout.description,
+          type: workout.type,
+          difficulty: workout.difficulty,
+          days: daysWithExercises,
+        };
+        
+        // Buscar personal para logo (personalId é o ID do personal, não do user)
+        const personalData = await db.getDb().then(async (database) => {
+          if (!database) return null;
+          const { personals } = await import('../drizzle/schema');
+          const { eq } = await import('drizzle-orm');
+          const [result] = await database.select().from(personals).where(eq(personals.id, student.personalId));
+          return result;
+        });
+        const personal = personalData;
+        const personalInfo = {
+          businessName: personal?.businessName || null,
+          logoUrl: personal?.logoUrl || null,
+        };
+        
+        // Gerar PDF
+        const pdfBuffer = await generateWorkoutPDF(
+          studentData,
+          measurementData,
+          anamnesisData,
+          workoutData,
+          personalInfo
+        );
+        
+        // Retornar como base64
+        return {
+          filename: `${student.name.replace(/\s+/g, '_')}_treino_${workout.name.replace(/\s+/g, '_')}.pdf`,
+          data: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        };
       }),
   }),
   

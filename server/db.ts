@@ -52,6 +52,7 @@ import {
   adminActivityLog, InsertAdminActivityLog, AdminActivityLog,
   cardioLogs, InsertCardioLog, CardioLog,
   emailTemplates, InsertEmailTemplate, EmailTemplate,
+  aiRecommendations, InsertAiRecommendation, AiRecommendation,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { logError, notifyOAuthFailure } from './_core/healthCheck';
@@ -6570,4 +6571,109 @@ export async function getStudentsActivityStats(personalId: number) {
     topStudents: rankedStudents.slice(0, 5),
     allStudents: rankedStudents,
   };
+}
+
+
+// ==================== AI RECOMMENDATIONS ====================
+export async function createAiRecommendation(data: {
+  studentId: number;
+  personalId: number;
+  type?: 'cardio_nutrition' | 'workout' | 'diet';
+  cardioSessionsPerWeek?: number;
+  cardioMinutesPerSession?: number;
+  cardioTypes?: string[];
+  cardioIntensity?: string;
+  cardioTiming?: string;
+  cardioNotes?: string;
+  dailyCalories?: number;
+  proteinGrams?: number;
+  carbsGrams?: number;
+  fatGrams?: number;
+  mealFrequency?: number;
+  hydration?: string;
+  nutritionNotes?: string;
+  weeklyCalorieDeficitOrSurplus?: number;
+  estimatedWeeklyWeightChange?: string;
+  timeToGoal?: string;
+  summary?: string;
+  warnings?: string[];
+}) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Desativar recomendações anteriores do mesmo tipo
+  await db.update(aiRecommendations)
+    .set({ isActive: false })
+    .where(and(
+      eq(aiRecommendations.studentId, data.studentId),
+      eq(aiRecommendations.type, data.type || 'cardio_nutrition'),
+      eq(aiRecommendations.isActive, true)
+    ));
+  
+  const [result] = await db.insert(aiRecommendations).values({
+    studentId: data.studentId,
+    personalId: data.personalId,
+    type: data.type || 'cardio_nutrition',
+    cardioSessionsPerWeek: data.cardioSessionsPerWeek,
+    cardioMinutesPerSession: data.cardioMinutesPerSession,
+    cardioTypes: data.cardioTypes ? JSON.stringify(data.cardioTypes) : null,
+    cardioIntensity: data.cardioIntensity,
+    cardioTiming: data.cardioTiming,
+    cardioNotes: data.cardioNotes,
+    dailyCalories: data.dailyCalories,
+    proteinGrams: data.proteinGrams,
+    carbsGrams: data.carbsGrams,
+    fatGrams: data.fatGrams,
+    mealFrequency: data.mealFrequency,
+    hydration: data.hydration,
+    nutritionNotes: data.nutritionNotes,
+    weeklyCalorieDeficitOrSurplus: data.weeklyCalorieDeficitOrSurplus,
+    estimatedWeeklyWeightChange: data.estimatedWeeklyWeightChange,
+    timeToGoal: data.timeToGoal,
+    summary: data.summary,
+    warnings: data.warnings ? JSON.stringify(data.warnings) : null,
+    isActive: true,
+  });
+  
+  return result.insertId;
+}
+
+export async function getActiveAiRecommendation(studentId: number, type: 'cardio_nutrition' | 'workout' | 'diet' = 'cardio_nutrition') {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [recommendation] = await db.select()
+    .from(aiRecommendations)
+    .where(and(
+      eq(aiRecommendations.studentId, studentId),
+      eq(aiRecommendations.type, type),
+      eq(aiRecommendations.isActive, true)
+    ))
+    .orderBy(desc(aiRecommendations.createdAt))
+    .limit(1);
+  
+  if (!recommendation) return null;
+  
+  return {
+    ...recommendation,
+    cardioTypes: recommendation.cardioTypes ? JSON.parse(recommendation.cardioTypes) : [],
+    warnings: recommendation.warnings ? JSON.parse(recommendation.warnings) : [],
+  };
+}
+
+export async function getAiRecommendationHistory(studentId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const recommendations = await db.select()
+    .from(aiRecommendations)
+    .where(eq(aiRecommendations.studentId, studentId))
+    .orderBy(desc(aiRecommendations.createdAt))
+    .limit(limit);
+  
+  return recommendations.map(r => ({
+    ...r,
+    cardioTypes: r.cardioTypes ? JSON.parse(r.cardioTypes) : [],
+    warnings: r.warnings ? JSON.parse(r.warnings) : [],
+  }));
 }

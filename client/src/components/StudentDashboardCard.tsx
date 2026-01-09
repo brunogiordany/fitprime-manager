@@ -33,23 +33,32 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
   // Mutation para exportar PDF
   const exportPDFMutation = trpc.trainingDiary.exportEvolutionPDF.useMutation({
     onSuccess: (data) => {
-      // Criar blob e fazer download
-      const byteCharacters = atob(data.data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      try {
+        // Criar blob e fazer download
+        const byteCharacters = atob(data.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = data.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Erro ao processar PDF:', error);
+        alert('Erro ao gerar PDF. Tente novamente.');
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = data.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+    },
+    onError: (error) => {
+      console.error('Erro ao exportar PDF:', error);
+      alert('Erro ao exportar PDF: ' + error.message);
     },
   });
   

@@ -591,7 +591,7 @@
 
 ## Bugs Reportados (v4.7)
 - [x] Botão "Enviar Acesso" na lista de alunos não abre modal/tela
-- [ ] Erro ao finalizar cadastro via link de convite (convite já usado)
+- [x] Erro ao finalizar cadastro via link de convite (convite já usado)
 - [x] Aluno não recebe email de confirmação/acesso após cadastro
 - [x] Implementar envio de email com link de login para o aluno
 - [x] Modal de convite com link copiável e botão WhatsApp
@@ -3657,3 +3657,12 @@
 - [x] BUG: Alunos excluídos (Julimar e Bruno ps) ainda aparecem na lista - verificar soft delete
 - [x] Exportar treino do aluno em PDF com dashboard de recomendações
 - [x] Verificar/adicionar recomendação de cardio na geração de treino por IA
+
+
+## Bugs Reportados (09/01/2026)
+- [x] Botão Exportar PDF no Dashboard de Treinos não funciona - CORRIGIDO (adicionado tratamento de erro e feedback)
+- [x] Exportar treino em PDF no Portal do Aluno - ADICIONADO (botão na lista de treinos)
+- [x] Cardio gerado pela IA sumia ao fechar modal - CORRIGIDO (agora salva automaticamente no banco de dados)
+- [x] Valores de kcal divergentes entre IA e Dashboard (2800 vs 3612) - CORRIGIDO (alinhado fórmulas de Mifflin-St Jeor e fatores de atividade)
+- [x] Criar tabela ai_recommendations para armazenar recomendações de cardio/nutrição
+- [x] Recomendações de cardio/nutrição agora são salvas automaticamente e podem ser consultadas pelo aluno

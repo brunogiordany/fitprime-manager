@@ -428,6 +428,39 @@ export default function StudentPortalPage() {
     },
   });
 
+  // Mutation para exportar treino em PDF
+  const exportWorkoutPDFMutation = trpc.studentPortal.exportWorkoutPDF.useMutation({
+    onSuccess: (data) => {
+      try {
+        // Criar blob e fazer download
+        const byteCharacters = atob(data.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: data.contentType });
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = data.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success("Treino exportado com sucesso!");
+      } catch (error) {
+        console.error('Erro ao processar PDF:', error);
+        toast.error('Erro ao gerar PDF. Tente novamente.');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao exportar treino");
+    },
+  });
+
   // Função para resetar o formulário de cardio
   const resetCardioForm = () => {
     setCardioForm({
@@ -1053,15 +1086,32 @@ export default function StudentPortalPage() {
                             {(workout as any).days.length} dia(s) • {(workout as any).days.reduce((acc: number, d: any) => acc + (d.exercises?.length || 0), 0)} exercício(s)
                           </p>
                         )}
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full mt-2"
-                          onClick={() => setLocation(`/meu-portal/treino/${workout.id}`)}
-                        >
-                          <Dumbbell className="h-4 w-4 mr-2" />
-                          Ver Treino
-                        </Button>
+                        <div className="flex gap-2 mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => setLocation(`/meu-portal/treino/${workout.id}`)}
+                          >
+                            <Dumbbell className="h-4 w-4 mr-2" />
+                            Ver Treino
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              exportWorkoutPDFMutation.mutate({ workoutId: workout.id });
+                            }}
+                            disabled={exportWorkoutPDFMutation.isPending}
+                          >
+                            {exportWorkoutPDFMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>

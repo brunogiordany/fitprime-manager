@@ -2447,12 +2447,15 @@ export default function Workouts() {
                       navigator.clipboard.writeText(text);
                       toast.success("Recomendação copiada!");
                     }}
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+                    className="flex-1"
                   >
                     <Copy className="h-4 w-4 mr-2" />
-                    Copiar Texto
+                    Copiar
                   </Button>
                 </div>
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  A recomendação de cardio foi salva automaticamente no perfil do aluno.
+                </p>
               </div>
             )}
           </DialogContent>

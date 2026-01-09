@@ -2700,3 +2700,49 @@ export const emailTemplates = mysqlTable("email_templates", {
 
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+
+// ==================== AI CARDIO/NUTRITION RECOMMENDATIONS ====================
+export const aiRecommendations = mysqlTable("ai_recommendations", {
+  id: int("id").autoincrement().primaryKey(),
+  studentId: int("studentId").notNull().references(() => students.id),
+  personalId: int("personalId").notNull().references(() => personals.id),
+  
+  // Tipo de recomendação
+  type: mysqlEnum("type", ["cardio_nutrition", "workout", "diet"]).default("cardio_nutrition").notNull(),
+  
+  // Cardio
+  cardioSessionsPerWeek: int("cardioSessionsPerWeek"),
+  cardioMinutesPerSession: int("cardioMinutesPerSession"),
+  cardioTypes: text("cardioTypes"), // JSON array
+  cardioIntensity: varchar("cardioIntensity", { length: 50 }),
+  cardioTiming: varchar("cardioTiming", { length: 255 }),
+  cardioNotes: text("cardioNotes"),
+  
+  // Nutrição
+  dailyCalories: int("dailyCalories"),
+  proteinGrams: int("proteinGrams"),
+  carbsGrams: int("carbsGrams"),
+  fatGrams: int("fatGrams"),
+  mealFrequency: int("mealFrequency"),
+  hydration: varchar("hydration", { length: 100 }),
+  nutritionNotes: text("nutritionNotes"),
+  
+  // Projeções
+  weeklyCalorieDeficitOrSurplus: int("weeklyCalorieDeficitOrSurplus"),
+  estimatedWeeklyWeightChange: varchar("estimatedWeeklyWeightChange", { length: 50 }),
+  timeToGoal: varchar("timeToGoal", { length: 100 }),
+  
+  // Resumo e avisos
+  summary: text("summary"),
+  warnings: text("warnings"), // JSON array
+  
+  // Status
+  isActive: boolean("isActive").default(true).notNull(), // Se é a recomendação ativa atual
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiRecommendation = typeof aiRecommendations.$inferSelect;
+export type InsertAiRecommendation = typeof aiRecommendations.$inferInsert;
