@@ -1,0 +1,90 @@
+{
+  "query": "SELECT name, COUNT(*) as count FROM exercises GROUP BY name HAVING COUNT(*) > 1 ORDER BY count DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT name, COUNT(*) as count FROM exercises GROUP BY name HAVING COUNT(*) > 1 ORDER BY count DESC LIMIT 20;",
+  "rows": [
+    {
+      "name": "Mesa Flexora",
+      "count": "12"
+    },
+    {
+      "name": "Supino Inclinado com Halteres",
+      "count": "12"
+    },
+    {
+      "name": "Cadeira Extensora",
+      "count": "11"
+    },
+    {
+      "name": "Leg Press 45º",
+      "count": "10"
+    },
+    {
+      "name": "Panturrilha Sentado",
+      "count": "7"
+    },
+    {
+      "name": "Rosca Direta com Barra W",
+      "count": "7"
+    },
+    {
+      "name": "Agachamento Hack",
+      "count": "6"
+    },
+    {
+      "name": "Cadeira Flexora",
+      "count": "6"
+    },
+    {
+      "name": "Elevação Lateral com Halteres",
+      "count": "4"
+    },
+    {
+      "name": "Puxada Frontal na Máquina (Pegada Pronada)",
+      "count": "4"
+    },
+    {
+      "name": "Desenvolvimento de Ombro com Halteres (Sentado)",
+      "count": "4"
+    },
+    {
+      "name": "Supino Reto na Máquina (Smith ou Hammer)",
+      "count": "3"
+    },
+    {
+      "name": "Rosca Martelo com Halteres",
+      "count": "3"
+    },
+    {
+      "name": "Remada Unilateral com Halteres (Apoio no Banco)",
+      "count": "3"
+    },
+    {
+      "name": "Aquecimento: Bicicleta Ergométrica",
+      "count": "3"
+    },
+    {
+      "name": "Desenvolvimento Militar com Halteres (Sentado)",
+      "count": "3"
+    },
+    {
+      "name": "Face Pull (Polia Alta)",
+      "count": "3"
+    },
+    {
+      "name": "Tríceps Corda no Cross",
+      "count": "3"
+    },
+    {
+      "name": "Remada Sentada no Cabo (Pegada Neutra)",
+      "count": "3"
+    },
+    {
+      "name": "Prancha Abdominal",
+      "count": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tcount\nMesa Flexora\t12\nSupino Inclinado com Halteres\t12\nCadeira Extensora\t11\nLeg Press 45º\t10\nPanturrilha Sentado\t7\nRosca Direta com Barra W\t7\nAgachamento Hack\t6\nCadeira Flexora\t6\nElevação Lateral com Halteres\t4\nPuxada Frontal na Máquina (Pegada Pronada)\t4\nDesenvolvimento de Ombro com Halteres (Sentado)\t4\nSupino Reto na Máquina (Smith ou Hammer)\t3\nRosca Martelo com Halteres\t3\nRemada Unilateral com Halteres (Apoio no Banco)\t3\nAquecimento: Bicicleta Ergométrica\t3\nDesenvolvimento Militar com Halteres (Sentado)\t3\nFace Pull (Polia Alta)\t3\nTríceps Corda no Cross\t3\nRemada Sentada no Cabo (Pegada Neutra)\t3\nPrancha Abdominal\t3\n",
+  "stderr": "",
+  "execution_time_ms": 95
+}

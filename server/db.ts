@@ -3288,6 +3288,16 @@ export async function getExerciseProgressHistory(
 }
 
 // Buscar todos os exercícios únicos do aluno (para lista de evolução)
+// Função auxiliar para normalizar nomes de exercícios (usada em múltiplas funções)
+function normalizeExerciseNameHelper(name: string): string {
+  return name
+    .trim()
+    .replace(/\s+/g, ' ') // Substituir múltiplos espaços por um só
+    .replace(/\u00b0/g, '°') // Padronizar símbolo de grau
+    .replace(/\u00ba/g, '°') // Substituir ordinal masculino por grau
+    .replace(/\u00aa/g, '°'); // Substituir ordinal feminino por grau
+}
+
 export async function getUniqueExerciseNames(
   personalId: number,
   studentId?: number
@@ -3304,15 +3314,28 @@ export async function getUniqueExerciseNames(
     conditions.push(eq(workoutLogs.studentId, studentId));
   }
   
-  // Buscar todos os nomes de exercícios únicos
-  const exercises = await db.selectDistinct({
+  // Buscar todos os nomes de exercícios
+  const exercises = await db.select({
     exerciseName: workoutLogExercises.exerciseName,
   }).from(workoutLogExercises)
     .innerJoin(workoutLogs, eq(workoutLogExercises.workoutLogId, workoutLogs.id))
-    .where(and(...conditions))
-    .orderBy(asc(workoutLogExercises.exerciseName));
+    .where(and(...conditions));
   
-  return exercises.map(e => e.exerciseName).filter(Boolean);
+  // Normalizar e remover duplicatas usando Map
+  const exerciseMap = new Map<string, string>();
+  
+  for (const ex of exercises) {
+    if (ex.exerciseName) {
+      const normalizedKey = normalizeExerciseNameHelper(ex.exerciseName).toLowerCase();
+      if (!exerciseMap.has(normalizedKey)) {
+        exerciseMap.set(normalizedKey, normalizeExerciseNameHelper(ex.exerciseName));
+      }
+    }
+  }
+  
+  // Retornar nomes únicos ordenados
+  return Array.from(exerciseMap.values())
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 
 // ==================== SUGESTÕES DE AJUSTE DO ALUNO ====================
@@ -3664,10 +3687,13 @@ export async function getStudentMuscleGroupAnalysis(studentId: number, filters?:
     .sort((a, b) => b.volume - a.volume);
 }
 
-// Evolução de carga por exercício do aluno
+// Evolução de carga por exercício do aluno (com normalização para unificar duplicatas)
 export async function getStudentExerciseProgress(studentId: number, exerciseName: string, limit: number = 20) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  
+  // Normalizar o nome do exercício para busca
+  const normalizedSearchName = normalizeExerciseNameHelper(exerciseName).toLowerCase();
   
   // Buscar logs do aluno
   const logs = await db.select().from(workoutLogs)
@@ -3677,11 +3703,14 @@ export async function getStudentExerciseProgress(studentId: number, exerciseName
   const progress: { date: string; maxWeight: number; totalVolume: number; sets: number; reps: number }[] = [];
   
   for (const log of logs) {
-    const logExercises = await db.select().from(workoutLogExercises)
-      .where(and(
-        eq(workoutLogExercises.workoutLogId, log.id),
-        eq(workoutLogExercises.exerciseName, exerciseName)
-      ));
+    // Buscar todos os exercícios do log
+    const allLogExercises = await db.select().from(workoutLogExercises)
+      .where(eq(workoutLogExercises.workoutLogId, log.id));
+    
+    // Filtrar por nome normalizado (unifica duplicatas)
+    const logExercises = allLogExercises.filter(ex => 
+      ex.exerciseName && normalizeExerciseNameHelper(ex.exerciseName).toLowerCase() === normalizedSearchName
+    );
     
     for (const ex of logExercises) {
       const sets = await db.select().from(workoutLogSets).where(eq(workoutLogSets.workoutLogExerciseId, ex.id));
@@ -3715,7 +3744,9 @@ export async function getStudentExerciseProgress(studentId: number, exerciseName
   return progress.reverse(); // Ordenar do mais antigo para o mais recente
 }
 
-// Listar exercícios únicos do aluno
+// Usar normalizeExerciseNameHelper definida acima
+
+// Listar exercícios únicos do aluno (com normalização para evitar duplicatas)
 export async function getStudentUniqueExercises(studentId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -3724,7 +3755,8 @@ export async function getStudentUniqueExercises(studentId: number) {
   const logs = await db.select({ id: workoutLogs.id }).from(workoutLogs)
     .where(eq(workoutLogs.studentId, studentId));
   
-  const exerciseNames = new Set<string>();
+  // Usar Map para normalizar e manter o nome original mais comum
+  const exerciseMap = new Map<string, { name: string; count: number }>();
   
   for (const log of logs) {
     const logExercises = await db.select({ name: workoutLogExercises.exerciseName })
@@ -3733,12 +3765,23 @@ export async function getStudentUniqueExercises(studentId: number) {
     
     for (const ex of logExercises) {
       if (ex.name) {
-        exerciseNames.add(ex.name);
+        const normalizedName = normalizeExerciseNameHelper(ex.name).toLowerCase();
+        const existing = exerciseMap.get(normalizedName);
+        
+        if (existing) {
+          existing.count++;
+          // Manter o nome que aparece mais vezes
+        } else {
+          exerciseMap.set(normalizedName, { name: normalizeExerciseNameHelper(ex.name), count: 1 });
+        }
       }
     }
   }
   
-  return Array.from(exerciseNames).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  // Retornar apenas os nomes normalizados (sem duplicatas)
+  return Array.from(exerciseMap.values())
+    .map(e => e.name)
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 
 

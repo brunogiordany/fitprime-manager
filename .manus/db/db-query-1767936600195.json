@@ -1,0 +1,98 @@
+{
+  "query": "SELECT exerciseName, COUNT(*) as count FROM workout_log_exercises GROUP BY exerciseName HAVING COUNT(*) > 1 ORDER BY exerciseName LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT exerciseName, COUNT(*) as count FROM workout_log_exercises GROUP BY exerciseName HAVING COUNT(*) > 1 ORDER BY exerciseName LIMIT 30;",
+  "rows": [
+    {
+      "exerciseName": "Abdominal Crunch",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Agachamento Livre",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Cadeira Extensora",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Cadeira Flexora",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Desenvolvimento Máquina",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Leg Press 45°",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Leg Press 45º",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Mesa Flexora",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Panturrilha em Pé",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Prancha",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Pulldown",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Puxada Frontal",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Remada Baixa (Máquina)",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Remada Curvada",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Remada Unilateral",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Rosca Alternada",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Rosca Direta com Barra",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Rosca Direta Halteres",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Rosca Martelo",
+      "count": "3"
+    },
+    {
+      "exerciseName": "Stiff",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Supino Máquina",
+      "count": "2"
+    },
+    {
+      "exerciseName": "Tríceps Pulley (Corda)",
+      "count": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "exerciseName\tcount\nAbdominal Crunch\t2\nAgachamento Livre\t2\nCadeira Extensora\t2\nCadeira Flexora\t2\nDesenvolvimento Máquina\t2\nLeg Press 45°\t2\nLeg Press 45º\t3\nMesa Flexora\t2\nPanturrilha em Pé\t2\nPrancha\t2\nPulldown\t3\nPuxada Frontal\t3\nRemada Baixa (Máquina)\t2\nRemada Curvada\t3\nRemada Unilateral\t3\nRosca Alternada\t3\nRosca Direta com Barra\t3\nRosca Direta Halteres\t2\nRosca Martelo\t3\nStiff\t2\nSupino Máquina\t2\nTríceps Pulley (Corda)\t3\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT exerciseName, LENGTH(exerciseName) as len, HEX(exerciseName) as hex_name FROM workout_log_exercises WHERE exerciseName LIKE '%Leg Press%' GROUP BY exerciseName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT exerciseName, LENGTH(exerciseName) as len, HEX(exerciseName) as hex_name FROM workout_log_exercises WHERE exerciseName LIKE '%Leg Press%' GROUP BY exerciseName;",
+  "rows": [
+    {
+      "exerciseName": "Leg Press 45º",
+      "len": "14",
+      "hex_name": "4C6567205072657373203435C2BA"
+    },
+    {
+      "exerciseName": "Leg Press 45°",
+      "len": "14",
+      "hex_name": "4C6567205072657373203435C2B0"
+    }
+  ],
+  "messages": [],
+  "stdout": "exerciseName\tlen\thex_name\nLeg Press 45º\t14\t4C6567205072657373203435C2BA\nLeg Press 45°\t14\t4C6567205072657373203435C2B0\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

@@ -1,0 +1,16 @@
+{
+  "query": "SELECT DISTINCT exerciseName FROM workout_log_exercises WHERE LOWER(exerciseName) LIKE '%leg%press%' OR LOWER(exerciseName) LIKE '%legpress%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT DISTINCT exerciseName FROM workout_log_exercises WHERE LOWER(exerciseName) LIKE '%leg%press%' OR LOWER(exerciseName) LIKE '%legpress%';",
+  "rows": [
+    {
+      "exerciseName": "Leg Press 45°"
+    },
+    {
+      "exerciseName": "Leg Press 45º"
+    }
+  ],
+  "messages": [],
+  "stdout": "exerciseName\nLeg Press 45°\nLeg Press 45º\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}
