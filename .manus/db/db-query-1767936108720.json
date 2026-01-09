@@ -1,0 +1,25 @@
+{
+  "query": "SELECT * FROM pending_changes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM pending_changes;",
+  "rows": [
+    {
+      "id": "1",
+      "personalId": "1",
+      "studentId": "1",
+      "entityType": "workout",
+      "entityId": "360001",
+      "fieldName": "weight_change_exercise_360001",
+      "oldValue": "20",
+      "newValue": "25",
+      "status": "pending",
+      "requestedBy": "student",
+      "reviewedAt": "NULL",
+      "reviewNotes": "NULL",
+      "createdAt": "2026-01-09 05:21:44"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpersonalId\tstudentId\tentityType\tentityId\tfieldName\toldValue\tnewValue\tstatus\trequestedBy\treviewedAt\treviewNotes\tcreatedAt\n1\t1\t1\tworkout\t360001\tweight_change_exercise_360001\t20\t25\tpending\tstudent\tNULL\tNULL\t2026-01-09 05:21:44\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM pending_changes WHERE Field = 'entityType';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SHOW COLUMNS FROM pending_changes WHERE Field = 'entityType';",
+  "rows": [
+    {
+      "Field": "entityType",
+      "Type": "enum('student','anamnesis','measurement')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nentityType\tenum('student','anamnesis','measurement')\tNO\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

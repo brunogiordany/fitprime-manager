@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, studentId, personalId, name FROM workouts WHERE id = 360001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, studentId, personalId, name FROM workouts WHERE id = 360001;",
+  "rows": [
+    {
+      "id": "360001",
+      "studentId": "1",
+      "personalId": "1",
+      "name": "Programa de Hipertrofia Intermediário (5 Dias)"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstudentId\tpersonalId\tname\n360001\t1\t1\tPrograma de Hipertrofia Intermediário (5 Dias)\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

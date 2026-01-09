@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO pending_changes (personalId, studentId, entityType, entityId, fieldName, oldValue, newValue, status, requestedBy) VALUES (1, 1, 'workout', 360001, 'weight_change_exercise_360001', '20', '25', 'pending', 'student');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute INSERT INTO pending_changes (personalId, studentId, entityType, entityId, fieldName, oldValue, newValue, status, requestedBy) VALUES (1, 1, 'workout', 360001, 'weight_change_exercise_360001', '20', '25', 'pending', 'student');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 72
+}
