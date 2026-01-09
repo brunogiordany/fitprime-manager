@@ -528,7 +528,7 @@ export default function StudentPortalPage() {
       injuries: cleanValue(anamnesisForm.injuries),
       surgeries: cleanValue(anamnesisForm.surgeries),
       allergies: cleanValue(anamnesisForm.allergies),
-      mainGoal: cleanEnum(anamnesisForm.mainGoal, ['weight_loss', 'muscle_gain', 'conditioning', 'health', 'rehabilitation', 'sports', 'other']),
+      mainGoal: cleanEnum(anamnesisForm.mainGoal, ['weight_loss', 'muscle_gain', 'recomposition', 'conditioning', 'health', 'rehabilitation', 'sports', 'bulking', 'cutting', 'other']),
       secondaryGoals: cleanValue(anamnesisForm.secondaryGoals),
       targetWeight: cleanValue(anamnesisForm.targetWeight),
       exerciseExperience: cleanEnum(anamnesisForm.exerciseExperience, ['none', 'beginner', 'intermediate', 'advanced']),

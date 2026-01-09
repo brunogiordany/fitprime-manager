@@ -3598,3 +3598,27 @@
 - [x] Configuração de dias de tolerância (padrão: 7 dias)
 - [x] Ação rápida para enviar mensagem ao aluno inativo
 
+
+
+## Funil Quiz-3 (v4.2) - Nova Feature
+- [ ] Criar página de introdução do funil com logo FitPrime
+- [ ] Implementar quiz com 3 perguntas principais
+- [ ] Pergunta 1: Segmentação (Profissão/Situação)
+- [ ] Pergunta 2: Objetivo de faturamento
+- [ ] Pergunta 3: Comprometimento/Disposição
+- [ ] Criar página de processamento/carregamento
+- [ ] Adicionar página de resultados com social proof
+- [ ] Criar página de oferta com pricing
+- [ ] Implementar página de checkout/confirmação
+- [ ] Capturar respostas do quiz em banco de dados
+- [ ] Armazenar emails dos leads
+- [ ] Integrar com sistema de pagamento (Stripe)
+- [ ] Implementar garantia de 30 dias
+- [ ] Testes completos do fluxo de quiz
+- [ ] Validar captura de leads
+- [ ] Testar responsividade em mobile
+- [ ] Deploy do funil para produção
+
+
+## Correções Urgentes (v4.3)
+- [x] BUG CRÍTICO: Portal do Aluno - Erro ao salvar anamnese (mainGoal enum incompleto)
