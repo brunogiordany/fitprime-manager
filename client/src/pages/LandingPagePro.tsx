@@ -260,9 +260,10 @@ export default function LandingPagePro() {
     trackPageView('/');
   }, []);
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard (only if not on /pv01)
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    const currentPath = window.location.pathname;
+    if (!loading && isAuthenticated && currentPath !== '/pv01') {
       setLocation('/dashboard');
     }
   }, [loading, isAuthenticated, setLocation]);

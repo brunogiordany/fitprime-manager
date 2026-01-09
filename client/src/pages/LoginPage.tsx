@@ -133,7 +133,7 @@ export default function LoginPage() {
             <Button
               variant="ghost"
               className="w-full text-slate-400 hover:text-white"
-              onClick={() => setLocation("/")}
+              onClick={() => setLocation("/pv01")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar para o início

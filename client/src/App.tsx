@@ -74,7 +74,8 @@ function Router() {
   return (
     <Switch>
       {/* Public routes */}
-      <Route path="/" component={LandingPagePro} />
+      <Route path="/" component={LoginPage} />
+      <Route path="/pv01" component={LandingPagePro} />
       <Route path="/quiz" component={QuizPage} />
       <Route path="/quiz-2" component={QuizPage2} />
       <Route path="/pricing" component={DynamicPricingPage} />
@@ -85,7 +86,8 @@ function Router() {
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planospersonal" component={PricingPage} />
       <Route path="/convite/:token" component={Invite} />
-      <Route path="/login" component={LoginPage} />
+      {/* /login agora redireciona para / */}
+      <Route path="/login">{() => { window.location.replace('/'); return null; }}</Route>
       <Route path="/login-personal" component={PersonalLogin} />
       <Route path="/ativar-conta/:token" component={ActivateAccount} />
       <Route path="/login-aluno" component={StudentLogin} />
