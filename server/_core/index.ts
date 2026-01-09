@@ -12,6 +12,7 @@ import multer from "multer";
 import { nanoid } from "nanoid";
 import { handleStripeWebhook } from "../stripe/webhook";
 import { handleCaktoWebhook } from "../cakto/webhook";
+import { handlePaytWebhook } from "../payt/webhook";
 import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 import { startAutomationWorker } from "../automationWorker";
@@ -44,6 +45,9 @@ async function startServer() {
   
   // Cakto webhook - receives payment events from Cakto platform
   app.post('/api/cakto/webhook', express.json(), handleCaktoWebhook);
+  
+  // Payt webhook - receives payment events from Payt platform (afiliados e influenciadores)
+  app.post('/api/payt/webhook', express.json(), handlePaytWebhook);
   
   // Stevo webhook - receives WhatsApp messages
   app.post('/api/webhook/stevo', express.json(), async (req: any, res: any) => {

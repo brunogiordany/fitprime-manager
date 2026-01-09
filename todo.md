@@ -3666,3 +3666,12 @@
 - [x] Valores de kcal divergentes entre IA e Dashboard (2800 vs 3612) - CORRIGIDO (alinhado fórmulas de Mifflin-St Jeor e fatores de atividade)
 - [x] Criar tabela ai_recommendations para armazenar recomendações de cardio/nutrição
 - [x] Recomendações de cardio/nutrição agora são salvas automaticamente e podem ser consultadas pelo aluno
+
+## Integração Payt (Afiliados e Influenciadores) - v4.9
+- [x] Criar endpoint de webhook /api/payt/webhook
+- [x] Processar eventos: paid, subscription_activated, subscription_renewed, subscription_canceled
+- [x] Ativar conta do personal quando pagamento confirmado
+- [x] Enviar email de boas-vindas com link de ativação
+- [x] Documentar configuração do webhook na Payt
+- [ ] Criar links de checkout na Payt para cada plano
+- [x] Lógica de comissão: apenas primeiro pagamento vai para afiliado
