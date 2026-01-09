@@ -9,7 +9,7 @@ import type { Request, Response } from "express";
 import crypto from "crypto";
 import { CaktoWebhookPayload, processWebhookEvent } from "../cakto";
 import * as db from "../db";
-import { sendPurchaseActivationEmail } from "../email";
+import { sendPurchaseActivationEmail, sendSubscriptionConfirmationEmail } from "../email";
 import { PLANS } from "../../shared/plans";
 
 // Map Cakto offer ID to plan type
@@ -189,6 +189,20 @@ async function handleActivation(result: {
     }
     
     console.log("[Cakto Webhook] Access activated for user:", user.id);
+    
+    // Send confirmation email to existing user
+    try {
+      await sendSubscriptionConfirmationEmail(
+        result.customerEmail,
+        result.customerName || user.name || '',
+        plan?.name || 'Plano FitPrime',
+        result.amount,
+        periodEnd
+      );
+      console.log("[Cakto Webhook] Confirmation email sent to:", result.customerEmail);
+    } catch (emailError) {
+      console.error("[Cakto Webhook] Failed to send confirmation email:", emailError);
+    }
   } else {
     console.log("[Cakto Webhook] User not found, storing pending activation:", result.customerEmail);
     

@@ -986,3 +986,122 @@ FitPrime - Gestão inteligente para Personal Trainers 💪
     from: EMAIL_SENDERS.cobranca,
   });
 }
+
+
+
+/**
+ * Send subscription confirmation email to existing user after purchase
+ */
+export async function sendSubscriptionConfirmationEmail(
+  customerEmail: string,
+  customerName: string,
+  planName: string,
+  amount: number,
+  periodEnd: Date
+): Promise<boolean> {
+  const formattedAmount = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount);
+  
+  const formattedDate = periodEnd.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+  
+  // Try to get custom template from database
+  const customTemplate = await getEmailTemplate('subscription_confirmation', {
+    customerName: customerName || 'Personal',
+    planName,
+    amount: formattedAmount,
+    periodEnd: formattedDate,
+  });
+  
+  if (customTemplate) {
+    const senderKey = customTemplate.senderType as keyof typeof EMAIL_SENDERS;
+    return sendEmail({
+      to: customerEmail,
+      subject: customTemplate.subject,
+      html: customTemplate.html,
+      from: EMAIL_SENDERS[senderKey] || EMAIL_SENDERS.cobranca,
+    });
+  }
+  
+  // Fallback to default template
+  const subject = 'Assinatura ativada com sucesso!';
+  const displayName = customerName || 'Personal';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 36px;">&#10004;</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Assinatura Ativada!</h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Ola <strong>${displayName}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Sua assinatura do <strong>${planName}</strong> foi ativada com sucesso! 
+        Agora voce tem acesso a todos os recursos do seu plano.
+      </p>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h3 style="color: #166534; margin: 0 0 12px 0; font-size: 16px;">Detalhes da assinatura:</h3>
+        <p style="color: #166534; margin: 4px 0; font-size: 14px;"><strong>Plano:</strong> ${planName}</p>
+        <p style="color: #166534; margin: 4px 0; font-size: 14px;"><strong>Valor:</strong> ${formattedAmount}</p>
+        <p style="color: #166534; margin: 4px 0; font-size: 14px;"><strong>Valido ate:</strong> ${formattedDate}</p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://fitprimemanager.com/dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Acessar Dashboard
+        </a>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        Duvidas? Entre em contato conosco pelo email contato@fitprimemanager.online
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = `
+Ola ${displayName},
+
+Sua assinatura do ${planName} foi ativada com sucesso!
+
+Detalhes:
+- Plano: ${planName}
+- Valor: ${formattedAmount}
+- Valido ate: ${formattedDate}
+
+Acesse seu dashboard: https://fitprimemanager.com/dashboard
+
+Duvidas? Entre em contato conosco pelo email contato@fitprimemanager.online
+  `;
+
+  return sendEmail({
+    to: customerEmail,
+    subject,
+    html,
+    text,
+    from: EMAIL_SENDERS.cobranca,
+  });
+}

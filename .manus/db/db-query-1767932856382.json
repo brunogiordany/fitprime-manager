@@ -1,0 +1,27 @@
+{
+  "query": "SELECT * FROM users WHERE email = 'nutriliffee@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM users WHERE email = 'nutriliffee@gmail.com';",
+  "rows": [
+    {
+      "id": "2370320",
+      "openId": "local_apwDwsh4ryR3-4Ab",
+      "name": "nutri life teste2",
+      "email": "nutriliffee@gmail.com",
+      "loginMethod": "email",
+      "role": "personal",
+      "createdAt": "2026-01-04 22:53:05",
+      "updatedAt": "2026-01-05 02:53:24",
+      "lastSignedIn": "2026-01-05 02:53:24",
+      "phone": "15997612063",
+      "cpf": "NULL",
+      "birthDate": "NULL",
+      "cref": "NULL",
+      "passwordHash": "$2b$10$.efjrCYM1N6aAkFMNCSrAu0dZNtVfS5qISAHabdFjbyc/ufCxpWiy",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn\tphone\tcpf\tbirthDate\tcref\tpasswordHash\tdeletedAt\n2370320\tlocal_apwDwsh4ryR3-4Ab\tnutri life teste2\tnutriliffee@gmail.com\temail\tpersonal\t2026-01-04 22:53:05\t2026-01-05 02:53:24\t2026-01-05 02:53:24\t15997612063\tNULL\tNULL\tNULL\t$2b$10$.efjrCYM1N6aAkFMNCSrAu0dZNtVfS5qISAHabdFjbyc/ufCxpWiy\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

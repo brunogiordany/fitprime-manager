@@ -3636,3 +3636,13 @@
 - [x] Criar worker de automações que roda a cada 15 minutos
 - [x] Substituir todas as variáveis: {nome}, {telefone}, {email}, {hora}, {data_sessao}, {valor}, {vencimento}, {ano}, {data_aniversario}
 - [x] Processar automaticamente: lembretes de sessão, lembretes de pagamento, pagamentos em atraso, aniversários
+
+
+## Sistema de Afiliados Cakto (v4.8)
+- [x] Investigar API de afiliados da Cakto - Documentado em docs/cakto-afiliados.md
+- [ ] Testar fluxo de compra e envio de acesso ao pagante
+- [x] BUG: Usuário já cadastrado não recebe notificação após compra (email/WhatsApp) - Adicionado envio de email de confirmação
+- [ ] BUG: Testar fluxo com usuário novo (sem cadastro prévio)
+- [ ] Implementar sistema de afiliados no backend
+- [ ] Criar interface de gerenciamento de afiliados
+- [ ] Configurar comissões e rastreamento
