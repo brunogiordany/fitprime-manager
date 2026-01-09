@@ -1,0 +1,2 @@
+ALTER TABLE `message_log` ADD `sessionId` int;--> statement-breakpoint
+ALTER TABLE `message_log` ADD CONSTRAINT `message_log_sessionId_sessions_id_fk` FOREIGN KEY (`sessionId`) REFERENCES `sessions`(`id`) ON DELETE no action ON UPDATE no action;

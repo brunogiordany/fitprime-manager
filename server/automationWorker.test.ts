@@ -12,6 +12,7 @@ vi.mock('./db', () => ({
   getMessageLogByPersonalId: vi.fn(),
   createMessageLog: vi.fn(),
   createChatMessage: vi.fn(),
+  checkSessionReminderSent: vi.fn(), // Verificar se já enviou lembrete para sessão
 }));
 
 // Mock do stevo
@@ -69,6 +70,7 @@ describe('Automation Worker - Substituição de Variáveis', () => {
     vi.mocked(db.getSessionsByStudentId).mockResolvedValue([mockSession] as any);
     vi.mocked(db.getChargesByStudentId).mockResolvedValue([]);
     vi.mocked(db.getMessageLogByPersonalId).mockResolvedValue([]);
+    vi.mocked((db as any).checkSessionReminderSent).mockResolvedValue(false); // Não enviou ainda
     vi.mocked(sendWhatsAppMessage).mockResolvedValue({ success: true });
 
     // Importar e executar

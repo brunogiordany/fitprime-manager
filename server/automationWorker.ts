@@ -148,15 +148,13 @@ export async function processSessionReminders(): Promise<AutomationResult> {
             continue;
           }
           
-          // Verificar se já enviou lembrete para esta sessão hoje
-          const todayStart = new Date();
-          todayStart.setHours(0, 0, 0, 0);
-          const logs = await db.getMessageLogByPersonalId(personal.id, 100);
-          const alreadySent = logs.some(
-            log => log.log.studentId === student.id && 
-                   new Date(log.log.createdAt) >= todayStart &&
-                   log.log.message.includes('Lembrete') &&
-                   log.log.message.includes('treino')
+          // Verificar se já enviou lembrete para ESTA SESSÃO ESPECÍFICA com ESTA AUTOMAÇÃO
+          // Isso evita duplicações mesmo quando o worker roda múltiplas vezes
+          const alreadySent = await db.checkSessionReminderSent(
+            personal.id,
+            student.id,
+            session.id,
+            automation.id
           );
           
           if (alreadySent) continue;
@@ -181,10 +179,12 @@ export async function processSessionReminders(): Promise<AutomationResult> {
             await db.createMessageLog({
               personalId: personal.id,
               studentId: student.id,
+              automationId: automation.id,
               phone: student.phone,
               message,
               direction: 'outbound',
               status: sendResult.success ? 'sent' : 'failed',
+              sessionId: session.id, // Vincula ao ID da sessão para evitar duplicação
             });
             
             if (sendResult.success) {

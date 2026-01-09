@@ -1380,6 +1380,31 @@ export async function countMessagesSentToday(personalId: number, studentId: numb
   return result[0]?.count || 0;
 }
 
+// Verificar se já enviou lembrete para uma sessão específica com uma automação específica
+export async function checkSessionReminderSent(
+  personalId: number,
+  studentId: number,
+  sessionId: number,
+  automationId: number
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const result = await db.select({
+    count: sql<number>`count(*)`
+  }).from(messageLog)
+    .where(and(
+      eq(messageLog.personalId, personalId),
+      eq(messageLog.studentId, studentId),
+      eq(messageLog.sessionId, sessionId),
+      eq(messageLog.automationId, automationId),
+      eq(messageLog.direction, 'outbound'),
+      eq(messageLog.status, 'sent')
+    ));
+  
+  return (result[0]?.count || 0) > 0;
+}
+
 
 // ==================== WORKOUT LOG FUNCTIONS ====================
 export async function getWorkoutLogsByWorkoutId(workoutId: number) {

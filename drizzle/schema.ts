@@ -544,6 +544,7 @@ export const messageLog = mysqlTable("message_log", {
   studentId: int("studentId").notNull().references(() => students.id),
   automationId: int("automationId").references(() => automations.id),
   messageQueueId: int("messageQueueId").references(() => messageQueue.id),
+  sessionId: int("sessionId").references(() => sessions.id), // ID da sessão para evitar duplicação de lembretes
   direction: mysqlEnum("direction", ["outbound", "inbound"]).notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),
   message: text("message").notNull(),
