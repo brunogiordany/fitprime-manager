@@ -3622,3 +3622,4 @@
 
 ## Correções Urgentes (v4.3)
 - [x] BUG CRÍTICO: Portal do Aluno - Erro ao salvar anamnese (mainGoal enum incompleto)
+- [x] Adicionar seção de Medidas Corporais na anamnese do Portal do Aluno (peso, altura, circunferências)

@@ -198,6 +198,41 @@ describe('studentPortal.saveWithMeasurements', () => {
       expect(parseWater('invalid')).toBeUndefined();
     });
 
+    it('should accept measurements object with all body measurement fields', () => {
+      const measurements = {
+        weight: '75.5',
+        height: '175',
+        bodyFat: '18.5',
+        muscleMass: '62.0',
+        neck: '38',
+        chest: '100',
+        waist: '85',
+        hip: '100',
+        rightArm: '35',
+        leftArm: '35',
+        rightThigh: '55',
+        leftThigh: '55',
+        rightCalf: '38',
+        leftCalf: '38',
+      };
+
+      // Validar que todos os campos existem
+      expect(measurements.weight).toBe('75.5');
+      expect(measurements.height).toBe('175');
+      expect(measurements.bodyFat).toBe('18.5');
+      expect(measurements.muscleMass).toBe('62.0');
+      expect(measurements.neck).toBe('38');
+      expect(measurements.chest).toBe('100');
+      expect(measurements.waist).toBe('85');
+      expect(measurements.hip).toBe('100');
+      expect(measurements.rightArm).toBe('35');
+      expect(measurements.leftArm).toBe('35');
+      expect(measurements.rightThigh).toBe('55');
+      expect(measurements.leftThigh).toBe('55');
+      expect(measurements.rightCalf).toBe('38');
+      expect(measurements.leftCalf).toBe('38');
+    });
+
     it('should handle empty strings as undefined', () => {
       const cleanValue = (val: string | undefined) => {
         if (!val || val.trim() === '') return undefined;

@@ -60,7 +60,9 @@ import {
   RefreshCw,
   Download,
   Wifi,
-  WifiOff
+  WifiOff,
+  Ruler,
+  Scale
 } from "lucide-react";
 import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -114,6 +116,23 @@ interface AnamnesisData {
   muscleEmphasis: string | null;
 }
 
+interface MeasurementsForm {
+  weight: string;
+  height: string;
+  bodyFat: string;
+  muscleMass: string;
+  neck: string;
+  chest: string;
+  waist: string;
+  hip: string;
+  rightArm: string;
+  leftArm: string;
+  rightThigh: string;
+  leftThigh: string;
+  rightCalf: string;
+  leftCalf: string;
+}
+
 export default function StudentPortalPage() {
   const [, setLocation] = useLocation();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
@@ -126,6 +145,12 @@ export default function StudentPortalPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEditingAnamnesis, setIsEditingAnamnesis] = useState(false);
   const [anamnesisForm, setAnamnesisForm] = useState<Partial<AnamnesisData>>({});
+  const [measurementsForm, setMeasurementsForm] = useState<MeasurementsForm>({
+    weight: '', height: '', bodyFat: '', muscleMass: '',
+    neck: '', chest: '', waist: '', hip: '',
+    rightArm: '', leftArm: '', rightThigh: '', leftThigh: '',
+    rightCalf: '', leftCalf: '',
+  });
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showDiaryModal, setShowDiaryModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
@@ -502,6 +527,27 @@ export default function StudentPortalPage() {
         restrictionNotes: anamnesisAny.restrictionNotes || "",
         muscleEmphasis: anamnesisAny.muscleEmphasis || null,
       });
+      
+      // Carregar medidas mais recentes se existirem
+      if (measurements && measurements.length > 0) {
+        const latestMeasurement = measurements[0] as any;
+        setMeasurementsForm({
+          weight: latestMeasurement.weight || '',
+          height: latestMeasurement.height || '',
+          bodyFat: latestMeasurement.bodyFat || '',
+          muscleMass: latestMeasurement.muscleMass || '',
+          neck: latestMeasurement.neck || '',
+          chest: latestMeasurement.chest || '',
+          waist: latestMeasurement.waist || '',
+          hip: latestMeasurement.hip || '',
+          rightArm: latestMeasurement.rightArm || '',
+          leftArm: latestMeasurement.leftArm || '',
+          rightThigh: latestMeasurement.rightThigh || '',
+          leftThigh: latestMeasurement.leftThigh || '',
+          rightCalf: latestMeasurement.rightCalf || '',
+          leftCalf: latestMeasurement.leftCalf || '',
+        });
+      }
     }
     setIsEditingAnamnesis(true);
   };
@@ -578,6 +624,23 @@ export default function StudentPortalPage() {
         if (Array.isArray(val)) return JSON.stringify(val);
         return String(val);
       })(),
+      // Medidas corporais
+      measurements: {
+        weight: measurementsForm.weight || undefined,
+        height: measurementsForm.height || undefined,
+        bodyFat: measurementsForm.bodyFat || undefined,
+        muscleMass: measurementsForm.muscleMass || undefined,
+        neck: measurementsForm.neck || undefined,
+        chest: measurementsForm.chest || undefined,
+        waist: measurementsForm.waist || undefined,
+        hip: measurementsForm.hip || undefined,
+        rightArm: measurementsForm.rightArm || undefined,
+        leftArm: measurementsForm.leftArm || undefined,
+        rightThigh: measurementsForm.rightThigh || undefined,
+        leftThigh: measurementsForm.leftThigh || undefined,
+        rightCalf: measurementsForm.rightCalf || undefined,
+        leftCalf: measurementsForm.leftCalf || undefined,
+      },
     });
   };
 
@@ -2216,6 +2279,185 @@ export default function StudentPortalPage() {
                             placeholder="Ex: Halteres, Barra, Elásticos, Máquinas..."
                             className="bg-background"
                           />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Medidas Corporais */}
+                    <div className="p-4 rounded-lg border bg-cyan-50/30 dark:bg-cyan-950/10">
+                      <h3 className="font-semibold mb-4 flex items-center gap-2 text-cyan-600 dark:text-cyan-400">
+                        <Ruler className="h-4 w-4" />
+                        Medidas Corporais
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4">Essas medidas ajudam a acompanhar sua evolução física ao longo do tempo.</p>
+                      
+                      {/* Peso e Altura */}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm">Peso atual (kg)</Label>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              value={measurementsForm.weight}
+                              onChange={(e) => setMeasurementsForm({ ...measurementsForm, weight: e.target.value })}
+                              placeholder="Ex: 75.5"
+                              className="bg-background"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Altura (cm)</Label>
+                            <Input
+                              type="number"
+                              value={measurementsForm.height}
+                              onChange={(e) => setMeasurementsForm({ ...measurementsForm, height: e.target.value })}
+                              placeholder="Ex: 175"
+                              className="bg-background"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Composição Corporal */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm">% Gordura Corporal</Label>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              value={measurementsForm.bodyFat}
+                              onChange={(e) => setMeasurementsForm({ ...measurementsForm, bodyFat: e.target.value })}
+                              placeholder="Ex: 18.5"
+                              className="bg-background"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Massa Muscular (kg)</Label>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              value={measurementsForm.muscleMass}
+                              onChange={(e) => setMeasurementsForm({ ...measurementsForm, muscleMass: e.target.value })}
+                              placeholder="Ex: 62.0"
+                              className="bg-background"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Circunferências */}
+                        <div className="pt-4 border-t">
+                          <h4 className="text-sm font-medium mb-3 text-cyan-700 dark:text-cyan-300">Circunferências (cm)</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Pescoço</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.neck}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, neck: e.target.value })}
+                                placeholder="Ex: 38"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Peito</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.chest}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, chest: e.target.value })}
+                                placeholder="Ex: 100"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Cintura</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.waist}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, waist: e.target.value })}
+                                placeholder="Ex: 85"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Quadril</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.hip}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, hip: e.target.value })}
+                                placeholder="Ex: 100"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Braço D</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.rightArm}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, rightArm: e.target.value })}
+                                placeholder="Ex: 35"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Braço E</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.leftArm}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, leftArm: e.target.value })}
+                                placeholder="Ex: 35"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Coxa D</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.rightThigh}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, rightThigh: e.target.value })}
+                                placeholder="Ex: 55"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Coxa E</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.leftThigh}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, leftThigh: e.target.value })}
+                                placeholder="Ex: 55"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Panturrilha D</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.rightCalf}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, rightCalf: e.target.value })}
+                                placeholder="Ex: 38"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Panturrilha E</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.leftCalf}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, leftCalf: e.target.value })}
+                                placeholder="Ex: 38"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
