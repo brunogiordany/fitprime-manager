@@ -760,7 +760,16 @@ async function analyzeMessage(message: string, history: ConversationHistory[]): 
     
     const content = response.choices[0]?.message?.content;
     if (content && typeof content === "string") {
-      return JSON.parse(content);
+      try {
+        return JSON.parse(content);
+      } catch (parseError) {
+        // Tentar extrair JSON do texto
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        throw parseError;
+      }
     }
   } catch (error) {
     console.error("Error analyzing message:", error);

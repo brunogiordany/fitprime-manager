@@ -3675,3 +3675,4 @@
 - [x] Documentar configuração do webhook na Payt
 - [ ] Criar links de checkout na Payt para cada plano
 - [x] Lógica de comissão: apenas primeiro pagamento vai para afiliado
+- [x] BUG: Erro ao gerar treino com IA - 'Unexpected token N, Nao is not valid JSON' - IA retornando texto em vez de JSON

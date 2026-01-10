@@ -3760,7 +3760,31 @@ Retorne APENAS o JSON, sem texto adicional.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino com IA' });
         }
         
-        const workoutPlan = JSON.parse(content);
+        // Tentar extrair JSON da resposta (pode vir com texto adicional)
+        let workoutPlan;
+        try {
+          workoutPlan = JSON.parse(content);
+        } catch (parseError) {
+          // Se falhar, tentar extrair JSON do texto
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              workoutPlan = JSON.parse(jsonMatch[0]);
+            } catch (innerError) {
+              console.error('Erro ao parsear resposta da IA:', content.substring(0, 500));
+              throw new TRPCError({ 
+                code: 'INTERNAL_SERVER_ERROR', 
+                message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' 
+              });
+            }
+          } else {
+            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            throw new TRPCError({ 
+              code: 'INTERNAL_SERVER_ERROR', 
+              message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' 
+            });
+          }
+        }
         
         // Retornar o plano para preview (não salva automaticamente)
         return {
@@ -3953,7 +3977,24 @@ Retorne APENAS o JSON com a análise.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar análise' });
         }
         
-        const analysis = JSON.parse(content);
+        // Tentar extrair JSON da resposta (pode vir com texto adicional)
+        let analysis;
+        try {
+          analysis = JSON.parse(content);
+        } catch (parseError) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              analysis = JSON.parse(jsonMatch[0]);
+            } catch (innerError) {
+              console.error('Erro ao parsear análise da IA:', content.substring(0, 500));
+              throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+            }
+          } else {
+            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+          }
+        }
         
         // Salvar análise no histórico
         const analysisId = await db.createAiAnalysis({
@@ -4239,7 +4280,24 @@ Retorne APENAS o JSON.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino adaptado' });
         }
         
-        const workoutPlan = JSON.parse(content);
+        // Tentar extrair JSON da resposta (pode vir com texto adicional)
+        let workoutPlan;
+        try {
+          workoutPlan = JSON.parse(content);
+        } catch (parseError) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              workoutPlan = JSON.parse(jsonMatch[0]);
+            } catch (innerError) {
+              console.error('Erro ao parsear treino adaptado da IA:', content.substring(0, 500));
+              throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+            }
+          } else {
+            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+          }
+        }
         
         return {
           preview: workoutPlan,
@@ -4553,7 +4611,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar exercício alternativo' });
         }
         
-        const newExercise = JSON.parse(content);
+        // Tentar extrair JSON da resposta (pode vir com texto adicional)
+        let newExercise;
+        try {
+          newExercise = JSON.parse(content);
+        } catch (parseError) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              newExercise = JSON.parse(jsonMatch[0]);
+            } catch (innerError) {
+              console.error('Erro ao parsear exercício da IA:', content.substring(0, 500));
+              throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+            }
+          } else {
+            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+          }
+        }
         
         return {
           exercise: {
@@ -4758,7 +4833,24 @@ Retorne APENAS o JSON, sem texto adicional.`;
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar recomendações' });
         }
         
-        const recommendation = JSON.parse(content);
+        // Tentar extrair JSON da resposta (pode vir com texto adicional)
+        let recommendation;
+        try {
+          recommendation = JSON.parse(content);
+        } catch (parseError) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              recommendation = JSON.parse(jsonMatch[0]);
+            } catch (innerError) {
+              console.error('Erro ao parsear recomendações da IA:', content.substring(0, 500));
+              throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+            }
+          } else {
+            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' });
+          }
+        }
         
         // Salvar a recomendação no banco de dados
         await db.createAiRecommendation({
@@ -10158,7 +10250,18 @@ Retorne APENAS o JSON no formato especificado.`;
         }
         
         try {
-          const analysis = JSON.parse(content);
+          // Tentar extrair JSON da resposta (pode vir com texto adicional)
+          let analysis;
+          try {
+            analysis = JSON.parse(content);
+          } catch (parseError) {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              analysis = JSON.parse(jsonMatch[0]);
+            } else {
+              throw new Error('JSON não encontrado na resposta');
+            }
+          }
           
           // Atualizar lastAnalyzedAt do aluno
           await db.updateStudentLastAnalyzedAt(input.studentId);

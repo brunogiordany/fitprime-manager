@@ -825,7 +825,18 @@ Use alimentos brasileiros comuns e acessíveis. Seja específico nas quantidades
         }
         
         try {
-          const planData = JSON.parse(content as string);
+          // Tentar extrair JSON da resposta (pode vir com texto adicional)
+          let planData;
+          try {
+            planData = JSON.parse(content as string);
+          } catch (parseError) {
+            const jsonMatch = (content as string).match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              planData = JSON.parse(jsonMatch[0]);
+            } else {
+              throw new Error('JSON não encontrado na resposta');
+            }
+          }
           
           // Criar o plano no banco
           const [planResult] = await db.insert(mealPlans).values({
