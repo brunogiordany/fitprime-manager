@@ -68,6 +68,7 @@ import ActivateAccount from "./pages/ActivateAccount";
 import WhatsAppMessages from "./pages/WhatsAppMessages";
 import WhatsAppStats from "./pages/WhatsAppStats";
 import NutritionDashboard from "./pages/NutritionDashboard";
+import PresentationPage from "./pages/PresentationPage";
 import { FoodsPage, MealPlansPage, RecipesPage, PatientsPage, PatientDetailPage, AssessmentPage, ExamsPage, MealPlanDetailPage, AnamnesisPage, EvolutionPage, NutritionSettingsPage } from "./pages/nutrition";
 
 function Router() {
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/quiz-resultado-plano" component={QuizResultPlan} />
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planospersonal" component={PricingPage} />
+      <Route path="/apresentacao" component={PresentationPage} />
       <Route path="/convite/:token" component={Invite} />
       {/* /login agora redireciona para / */}
       <Route path="/login">{() => { window.location.replace('/'); return null; }}</Route>
