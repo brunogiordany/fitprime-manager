@@ -10649,6 +10649,126 @@ Retorne APENAS o JSON no formato especificado.`;
         );
       }),
     
+    // Buscar atividades preferidas da anamnese do aluno
+    preferredActivities: personalProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        if (!anamnesis) {
+          return { activities: [], doesCardio: false, frequency: 0, duration: 0 };
+        }
+        
+        // Parse cardioActivities com segurança
+        let activities: { activity: string; frequency: number; duration: number }[] = [];
+        const cardioActivitiesRaw = (anamnesis as any).cardioActivities;
+        
+        if (cardioActivitiesRaw) {
+          try {
+            const parsed = JSON.parse(cardioActivitiesRaw);
+            if (Array.isArray(parsed)) {
+              activities = parsed;
+            }
+          } catch {
+            // Se não for JSON válido, ignora
+          }
+        }
+        
+        // Calcular totais
+        const totalFrequency = activities.reduce((sum, a) => sum + (a.frequency || 0), 0);
+        const avgDuration = activities.length > 0 
+          ? Math.round(activities.reduce((sum, a) => sum + (a.duration || 0), 0) / activities.length)
+          : 0;
+        
+        return {
+          activities,
+          doesCardio: (anamnesis as any).doesCardio || false,
+          frequency: totalFrequency,
+          duration: avgDuration,
+        };
+      }),
+    
+    // Comparar frequência real vs planejada
+    complianceAnalysis: personalProcedure
+      .input(z.object({
+        studentId: z.number(),
+        days: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const days = input.days || 30;
+        
+        // Buscar anamnese para saber a frequência planejada
+        const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
+        
+        // Parse cardioActivities
+        let plannedActivities: { activity: string; frequency: number; duration: number }[] = [];
+        if (anamnesis && (anamnesis as any).cardioActivities) {
+          try {
+            const parsed = JSON.parse((anamnesis as any).cardioActivities);
+            if (Array.isArray(parsed)) {
+              plannedActivities = parsed;
+            }
+          } catch {
+            // Ignora erro de parse
+          }
+        }
+        
+        // Calcular frequência planejada semanal
+        const plannedWeeklyFrequency = plannedActivities.reduce((sum, a) => sum + (a.frequency || 0), 0);
+        const plannedAvgDuration = plannedActivities.length > 0
+          ? Math.round(plannedActivities.reduce((sum, a) => sum + (a.duration || 0), 0) / plannedActivities.length)
+          : 0;
+        
+        // Buscar registros reais do período
+        const stats = await db.getCardioStats(input.studentId, ctx.personal.id, days);
+        
+        // Calcular semanas no período
+        const weeks = Math.ceil(days / 7);
+        const actualWeeklyFrequency = (stats?.totalSessions || 0) / weeks;
+        const actualAvgDuration = stats?.avgDuration || 0;
+        
+        // Calcular compliance (aderência)
+        const frequencyCompliance = plannedWeeklyFrequency > 0 
+          ? Math.min(100, Math.round((actualWeeklyFrequency / plannedWeeklyFrequency) * 100))
+          : null;
+        const durationCompliance = plannedAvgDuration > 0
+          ? Math.min(100, Math.round((actualAvgDuration / plannedAvgDuration) * 100))
+          : null;
+        
+        // Comparar tipos de atividade
+        const plannedTypes = plannedActivities.map(a => a.activity);
+        const actualTypes = stats?.byType ? Object.keys(stats.byType) : [];
+        const matchingTypes = plannedTypes.filter(t => actualTypes.includes(t));
+        const typeCompliance = plannedTypes.length > 0
+          ? Math.round((matchingTypes.length / plannedTypes.length) * 100)
+          : null;
+        
+        return {
+          planned: {
+            weeklyFrequency: plannedWeeklyFrequency,
+            avgDuration: plannedAvgDuration,
+            activities: plannedActivities,
+          },
+          actual: {
+            weeklyFrequency: Math.round(actualWeeklyFrequency * 10) / 10,
+            avgDuration: actualAvgDuration,
+            totalSessions: stats?.totalSessions || 0,
+            byType: stats?.byType || {},
+          },
+          compliance: {
+            frequency: frequencyCompliance,
+            duration: durationCompliance,
+            types: typeCompliance,
+            overall: frequencyCompliance !== null && durationCompliance !== null
+              ? Math.round((frequencyCompliance + durationCompliance) / 2)
+              : null,
+          },
+          period: {
+            days,
+            weeks,
+          },
+        };
+      }),
+    
     // Exportar relatório de cardio em PDF
     exportPDF: personalProcedure
       .input(z.object({

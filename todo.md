@@ -3702,3 +3702,27 @@
   - [x] Campo para frequência semanal
   - [x] Campo para duração em minutos
   - [x] Interface para adicionar/remover atividades
+
+
+## Integração Cardio e Histórico de Evolução (v2025.01.11.3)
+- [ ] Integrar dados de cardio da anamnese com módulo de registro de atividades
+  - [ ] Mostrar atividades preferidas da anamnese no registro de cardio
+  - [ ] Pré-preencher tipo de atividade baseado na anamnese
+  - [ ] Comparar frequência real vs frequência planejada
+- [ ] Histórico de evolução para atividades de cardio
+  - [ ] Gráfico de evolução temporal (distância, tempo, calorias)
+  - [ ] Comparativo mensal de atividades
+  - [ ] Métricas de progresso (melhoria de pace, aumento de distância)
+  - [ ] Dashboard resumido de cardio no perfil do aluno
+
+
+## Integração Cardio e Histórico de Evolução (v4.3)
+- [x] Integrar dados de cardio da anamnese com módulo de registro de atividades
+  - [x] Criar query para buscar atividades preferidas da anamnese (preferredActivities)
+  - [x] Comparar frequência real vs planejada na anamnese (complianceAnalysis)
+  - [x] Exibir aderência ao plano no dashboard
+- [x] Adicionar histórico de evolução para atividades de cardio
+  - [x] Criar dashboard de evolução com gráficos (CardioEvolutionDashboard)
+  - [x] Mostrar progresso ao longo do tempo (duração, distância, calorias)
+  - [x] Comparar períodos (semana atual vs anterior)
+  - [x] Exibir aderência ao plano da anamnese com barras de progresso

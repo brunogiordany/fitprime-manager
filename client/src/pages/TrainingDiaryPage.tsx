@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { toast } from "sonner";
+import CardioEvolutionDashboard from "@/components/CardioEvolutionDashboard";
 
 // Tipos de série
 const SET_TYPES = [
@@ -1245,7 +1246,15 @@ export default function TrainingDiaryPage() {
           
           {/* Tab: Estatísticas Cardio */}
           <TabsContent value="cardio-stats" className="space-y-4">
-            <CardioStatsTab studentId={selectedStudentId} />
+            {selectedStudentId ? (
+              <CardioEvolutionDashboard 
+                studentId={parseInt(selectedStudentId)} 
+                studentName={students?.find((s: any) => s.id === parseInt(selectedStudentId))?.name}
+                period={30}
+              />
+            ) : (
+              <CardioStatsTab studentId={selectedStudentId} />
+            )}
           </TabsContent>
           
           {/* Tab: Dashboard */}
