@@ -137,7 +137,7 @@ export default function CardioEvolutionDashboard({
   // Preparar dados para gráfico de evolução
   const evolutionChartData = evolution?.map((item: any) => ({
     date: format(new Date(item.date), 'dd/MM', { locale: ptBR }),
-    sessoes: item.sessions,
+    sessoes: item.sessionCount,
     duracao: item.totalDuration,
     distancia: item.totalDistance || 0,
     calorias: item.totalCalories || 0,
@@ -146,7 +146,7 @@ export default function CardioEvolutionDashboard({
   // Preparar dados para gráfico de pizza por tipo
   const typeChartData = byType?.map((item: any, index: number) => ({
     name: CARDIO_TYPE_LABELS[item.type] || item.type,
-    value: item.sessions,
+    value: item.sessionCount || 0,
     duration: item.totalDuration,
     color: CHART_COLORS[index % CHART_COLORS.length],
   })) || [];

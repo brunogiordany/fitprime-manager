@@ -3726,3 +3726,4 @@
   - [x] Mostrar progresso ao longo do tempo (duração, distância, calorias)
   - [x] Comparar períodos (semana atual vs anterior)
   - [x] Exibir aderência ao plano da anamnese com barras de progresso
+- [x] Bug: Erro na aba Estat. Cardio do Diário de Treino ao selecionar aluno - item.sessions está undefined, deveria ser item.sessionCount
