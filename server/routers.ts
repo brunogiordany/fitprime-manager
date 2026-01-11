@@ -3755,30 +3755,51 @@ Retorne APENAS o JSON, sem texto adicional.`;
           },
         });
         
-        const content = response.choices[0]?.message?.content;
-        if (!content || typeof content !== 'string') {
-          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino com IA' });
+        const rawContent = response.choices[0]?.message?.content;
+        
+        // Extrair texto do content (pode ser string ou array de TextContent)
+        let content: string;
+        if (typeof rawContent === 'string') {
+          content = rawContent;
+        } else if (Array.isArray(rawContent)) {
+          // Se for array, extrair texto de cada elemento
+          content = rawContent
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('');
+        } else {
+          console.error('[generateWithAI] Content inválido:', typeof rawContent, rawContent);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino com IA - resposta inválida' });
         }
+        
+        if (!content) {
+          console.error('[generateWithAI] Content vazio');
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao gerar treino com IA - resposta vazia' });
+        }
+        
+        console.log('[generateWithAI] Content recebido (primeiros 500 chars):', content.substring(0, 500));
         
         // Tentar extrair JSON da resposta (pode vir com texto adicional)
         let workoutPlan;
         try {
           workoutPlan = JSON.parse(content);
         } catch (parseError) {
+          console.log('[generateWithAI] Parse direto falhou, tentando extrair JSON...');
           // Se falhar, tentar extrair JSON do texto
           const jsonMatch = content.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             try {
               workoutPlan = JSON.parse(jsonMatch[0]);
+              console.log('[generateWithAI] JSON extraído com sucesso');
             } catch (innerError) {
-              console.error('Erro ao parsear resposta da IA:', content.substring(0, 500));
+              console.error('[generateWithAI] Erro ao parsear JSON extraído:', content.substring(0, 500));
               throw new TRPCError({ 
                 code: 'INTERNAL_SERVER_ERROR', 
                 message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' 
               });
             }
           } else {
-            console.error('Resposta da IA não contém JSON válido:', content.substring(0, 500));
+            console.error('[generateWithAI] Não encontrou JSON na resposta:', content.substring(0, 500));
             throw new TRPCError({ 
               code: 'INTERNAL_SERVER_ERROR', 
               message: 'A IA retornou uma resposta inválida. Por favor, tente novamente.' 

@@ -1,0 +1,16 @@
+{
+  "query": "SELECT s.id, s.name, a.id as anamnesis_id, a.mainGoal \nFROM students s \nLEFT JOIN anamneses a ON s.id = a.studentId \nWHERE s.name LIKE '%Laura%' \nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.name, a.id as anamnesis_id, a.mainGoal \nFROM students s \nLEFT JOIN anamneses a ON s.id = a.studentId \nWHERE s.name LIKE '%Laura%' \nLIMIT 5;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Laura",
+      "anamnesis_id": "60001",
+      "mainGoal": "muscle_gain"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tanamnesis_id\tmainGoal\n30001\tLaura\t60001\tmuscle_gain\n",
+  "stderr": "",
+  "execution_time_ms": 403
+}

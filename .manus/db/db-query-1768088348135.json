@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, name, email, cref, LENGTH(cref) as cref_length FROM users WHERE email = 'brunogiordany@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, cref, LENGTH(cref) as cref_length FROM users WHERE email = 'brunogiordany@gmail.com';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno Giordany",
+      "email": "brunogiordany@gmail.com",
+      "cref": "076313-G/SP",
+      "cref_length": "11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tcref\tcref_length\n1\tBruno Giordany\tbrunogiordany@gmail.com\t076313-G/SP\t11\n",
+  "stderr": "",
+  "execution_time_ms": 391
+}
