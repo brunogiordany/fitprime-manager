@@ -3686,3 +3686,19 @@
 - [x] Aplicar safeJsonParse nos campos de anamnese do generateWithAI
 - [x] Criar testes unitários para safeJsonParse
 - [x] Todos os 15 testes passando
+
+
+## Melhorias Anamnese e Cardio (v2025.01.11.2)
+- [x] Validação do formulário de anamnese no frontend
+  - [x] Garantir que trainingRestrictions seja salvo como JSON array
+  - [x] Garantir que muscleEmphasis seja salvo como JSON array
+  - [x] Garantir que cardioActivities seja salvo como JSON array estruturado
+- [x] Script de migração de dados existentes
+  - [x] Converter texto livre para JSON em trainingRestrictions
+  - [x] Converter texto livre para JSON em muscleEmphasis
+  - [x] Converter texto livre para JSON estruturado em cardioActivities
+- [x] UX estruturada para atividades aeróbicas (já existia no código)
+  - [x] Campos para tipo de atividade (corrida, natação, ciclismo, etc)
+  - [x] Campo para frequência semanal
+  - [x] Campo para duração em minutos
+  - [x] Interface para adicionar/remover atividades

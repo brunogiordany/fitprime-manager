@@ -31,6 +31,21 @@ import { useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+// Função para fazer parse seguro de JSON (evita erro quando valor não é JSON válido)
+function safeJsonParse<T>(value: string | null | undefined, defaultValue: T): T {
+  if (!value) return defaultValue;
+  try {
+    const parsed = JSON.parse(value);
+    // Se o resultado não for um array quando esperamos array, retorna o valor como texto no array
+    if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
+      return defaultValue;
+    }
+    return parsed;
+  } catch {
+    return defaultValue;
+  }
+}
+
 export default function Anamnesis() {
   const [, setLocation] = useLocation();
   const params = useParams<{ studentId: string }>();
@@ -262,14 +277,14 @@ export default function Anamnesis() {
         supplements: anamnesis.supplements || "",
         dailyCalories: (anamnesis as any).dailyCalories?.toString() || "",
         doesCardio: (anamnesis as any).doesCardio || false,
-        cardioActivities: (anamnesis as any).cardioActivities ? JSON.parse((anamnesis as any).cardioActivities) : [],
-        trainingRestrictions: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
+        cardioActivities: safeJsonParse((anamnesis as any).cardioActivities, []),
+        trainingRestrictions: safeJsonParse(anamnesis.trainingRestrictions, []),
         restrictionNotes: anamnesis.restrictionNotes || "",
-        muscleEmphasis: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
+        muscleEmphasis: safeJsonParse(anamnesis.muscleEmphasis, []),
         weeklyFrequency: (anamnesis as any).weeklyFrequency?.toString() || "",
         sessionDuration: (anamnesis as any).sessionDuration?.toString() || "",
         trainingLocation: (anamnesis as any).trainingLocation || "",
-        availableEquipment: (anamnesis as any).availableEquipment ? JSON.parse((anamnesis as any).availableEquipment) : [],
+        availableEquipment: safeJsonParse((anamnesis as any).availableEquipment, []),
         preferredTime: (anamnesis as any).preferredTime || "",
         observations: anamnesis.observations || "",
       }));
