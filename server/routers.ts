@@ -22,6 +22,27 @@ import { activationRouter } from "./routers/activationRouter";
 import aiAssistant from "./aiAssistant";
 import { nutritionRouter } from "./routers/nutritionRouter";
 
+// Funcão para fazer parse seguro de JSON (evita erro quando valor não é JSON válido)
+function safeJsonParse<T>(value: string | null | undefined, defaultValue: T): T {
+  if (!value) return defaultValue;
+  try {
+    const parsed = JSON.parse(value);
+    // Se o resultado não for um array quando esperamos array, retorna o valor como texto no array
+    if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
+      // Se for string não vazia, coloca como item do array
+      return (typeof parsed === 'string' && parsed.trim()) ? [parsed] as T : defaultValue;
+    }
+    return parsed;
+  } catch {
+    // Se não é JSON válido mas é uma string não vazia, coloca como item do array
+    if (Array.isArray(defaultValue) && typeof value === 'string' && value.trim() && 
+        value.toLowerCase() !== 'nao' && value.toLowerCase() !== 'não') {
+      return [value] as T;
+    }
+    return defaultValue;
+  }
+}
+
 // Default plans to seed for new personals
 const DEFAULT_PLANS = [
   { name: 'Mensal 1x semana', description: 'Plano mensal com 1 treino por semana', type: 'recurring' as const, billingCycle: 'monthly' as const, sessionsPerWeek: 1, sessionDuration: 60, price: '0' },
@@ -3501,6 +3522,14 @@ Seja profissional, detalhado e motivador.`;
         // Buscar anamnese do aluno
         const anamnesis = await db.getAnamnesisByStudentId(input.studentId);
         
+        console.log('[generateWithAI] Aluno:', student.name, 'ID:', student.id);
+        console.log('[generateWithAI] Anamnese encontrada:', anamnesis ? 'Sim' : 'Nao');
+        if (anamnesis) {
+          console.log('[generateWithAI] Anamnese trainingRestrictions:', anamnesis.trainingRestrictions);
+          console.log('[generateWithAI] Anamnese muscleEmphasis:', anamnesis.muscleEmphasis);
+          console.log('[generateWithAI] Anamnese cardioActivities:', (anamnesis as any).cardioActivities);
+        }
+        
         // Buscar últimas medidas
         const measurements = await db.getMeasurementsByStudentId(input.studentId);
         const latestMeasurement = measurements[0];
@@ -3529,13 +3558,13 @@ Seja profissional, detalhado e motivador.`;
           equipamentosDisponiveis: anamnesis.availableEquipment,
           frequenciaSemanal: anamnesis.weeklyFrequency,
           duracaoSessao: anamnesis.sessionDuration,
-          restricoesTreino: anamnesis.trainingRestrictions ? JSON.parse(anamnesis.trainingRestrictions) : [],
+          restricoesTreino: safeJsonParse(anamnesis.trainingRestrictions, []),
           detalhesRestricoes: anamnesis.restrictionNotes,
-          enfasesMusculares: anamnesis.muscleEmphasis ? JSON.parse(anamnesis.muscleEmphasis) : [],
+          enfasesMusculares: safeJsonParse(anamnesis.muscleEmphasis, []),
           // Novos campos de nutrição e cardio
           consumoCaloricoDiario: (anamnesis as any).dailyCalories || null,
           fazCardio: (anamnesis as any).doesCardio || false,
-          atividadesAerobicas: (anamnesis as any).cardioActivities ? JSON.parse((anamnesis as any).cardioActivities) : [],
+          atividadesAerobicas: safeJsonParse((anamnesis as any).cardioActivities, []),
         } : null;
         
         const measurementInfo = latestMeasurement ? {

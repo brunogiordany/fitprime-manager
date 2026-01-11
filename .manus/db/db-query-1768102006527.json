@@ -1,0 +1,232 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ab_test_variants"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ab_tests"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "admin_activity_log"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_analysis_history"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_assistant_config"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_conversations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_memory"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_messages"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "ai_recommendations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "anamneses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "anamnesis_history"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "automations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "cakto_webhook_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "cardio_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "charges"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "chat_conversations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "chat_messages"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "chat_support_messages"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "email_templates"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "exercise_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "exercises"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "feature_flags"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "fitness_integrations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "foods"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "lab_exams"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "leads"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "materials"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_items"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_plan_days"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_plan_templates"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meal_plans"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "meals"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "measurements"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "message_log"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "message_queue"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_anamneses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_assessments"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_guidelines"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "nutrition_settings"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "packages"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "page_assets"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "page_blocks"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "password_reset_tokens"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "payments"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "pending_activations"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "pending_changes"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "personal_subscriptions"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "personals"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "photo_analyses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "photos"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "plans"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "quiz_responses"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "recipe_ingredients"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "recipes"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "session_feedback"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "sessions"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "site_pages"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "student_badges"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "student_invites"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "students"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "subscription_usage_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "synced_activities"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "system_settings"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "tracking_pixels"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "training_nutrition_profiles"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "users"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workout_days"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workout_log_exercises"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workout_log_sets"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workout_log_suggestions"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workout_logs"
+    },
+    {
+      "Tables_in_SFH8sqABSCK5KntMvXXcPM": "workouts"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_SFH8sqABSCK5KntMvXXcPM\n__drizzle_migrations\nab_test_variants\nab_tests\nadmin_activity_log\nai_analysis_history\nai_assistant_config\nai_conversations\nai_memory\nai_messages\nai_recommendations\nanamneses\nanamnesis_history\nautomations\ncakto_webhook_logs\ncardio_logs\ncharges\nchat_conversations\nchat_messages\nchat_support_messages\nemail_templates\nexercise_logs\nexercises\nfeature_flags\nfitness_integrations\nfoods\nlab_exams\nleads\nmaterials\nmeal_items\nmeal_plan_days\nmeal_plan_templates\nmeal_plans\nmeals\nmeasurements\nmessage_log\nmessage_queue\nnutrition_anamneses\nnutrition_assessments\nnutrition_guidelines\nnutrition_logs\nnutrition_settings\npackages\npage_assets\npage_blocks\npassword_reset_tokens\npayments\npending_activations\npending_changes\npersonal_subscriptions\npersonals\nphoto_analyses\nphotos\nplans\nquiz_responses\nrecipe_ingredients\nrecipes\nsession_feedback\nsessions\nsite_pages\nstudent_badges\nstudent_invites\nstudents\nsubscription_usage_logs\nsynced_activities\nsystem_settings\ntracking_pixels\ntraining_nutrition_profiles\nusers\nworkout_days\nworkout_log_exercises\nworkout_log_sets\nworkout_log_suggestions\nworkout_logs\nworkouts\n",
+  "stderr": "",
+  "execution_time_ms": 395
+}

@@ -1,0 +1,21 @@
+{
+  "query": "SELECT s.id, s.name, a.trainingRestrictions, a.muscleEmphasis, a.cardioActivities, a.mainGoal, a.exerciseExperience, a.injuries, a.medications\nFROM students s \nLEFT JOIN anamneses a ON s.id = a.studentId \nWHERE s.name LIKE '%Laura%' \nLIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.name, a.trainingRestrictions, a.muscleEmphasis, a.cardioActivities, a.mainGoal, a.exerciseExperience, a.injuries, a.medications\nFROM students s \nLEFT JOIN anamneses a ON s.id = a.studentId \nWHERE s.name LIKE '%Laura%' \nLIMIT 1;",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Laura",
+      "trainingRestrictions": "Nao",
+      "muscleEmphasis": "Não",
+      "cardioActivities": "Hipismo 1x semana 40min",
+      "mainGoal": "muscle_gain",
+      "exerciseExperience": "intermediate",
+      "injuries": "Não",
+      "medications": "Nao"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttrainingRestrictions\tmuscleEmphasis\tcardioActivities\tmainGoal\texerciseExperience\tinjuries\tmedications\n30001\tLaura\tNao\tNão\tHipismo 1x semana 40min\tmuscle_gain\tintermediate\tNão\tNao\n",
+  "stderr": "",
+  "execution_time_ms": 408
+}

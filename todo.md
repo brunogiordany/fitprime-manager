@@ -3677,3 +3677,12 @@
 - [x] Lógica de comissão: apenas primeiro pagamento vai para afiliado
 - [x] BUG: Erro ao gerar treino com IA - 'Unexpected token N, Nao is not valid JSON' - IA retornando texto em vez de JSON
 - [x] Criar rota /apresentacao com apresentação de slides integrada e links de checkout corretos
+
+
+## Correção Bug Geração IA - Laura (v2025.01.11)
+- [x] Investigar erro "Unexpected token 'N', 'Nao' is not valid JSON" na geração de treino
+- [x] Identificar campos problemáticos na anamnese da Laura (trainingRestrictions, muscleEmphasis, cardioActivities)
+- [x] Criar função safeJsonParse para tratar JSON inválido
+- [x] Aplicar safeJsonParse nos campos de anamnese do generateWithAI
+- [x] Criar testes unitários para safeJsonParse
+- [x] Todos os 15 testes passando

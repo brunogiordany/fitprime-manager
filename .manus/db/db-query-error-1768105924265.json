@@ -1,0 +1,8 @@
+{
+  "query": "SELECT s.id, s.name, a.training_restrictions, a.muscle_emphasis, a.cardio_activities, a.main_goal, a.exercise_experience \nFROM students s \nLEFT JOIN student_anamnesis a ON s.id = a.student_id \nWHERE s.name LIKE '%Laura%' \nLIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT s.id, s.name, a.training_restrictions, a.muscle_emphasis, a.cardio_activities, a.main_goal, a.exercise_experience \nFROM students s \nLEFT JOIN student_anamnesis a ON s.id = a.student_id \nWHERE s.name LIKE '%Laura%' \nLIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'sfh8sqabsck5kntmvxxcpm.student_anamnesis' doesn't exist"
+  ]
+}
