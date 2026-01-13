@@ -3824,3 +3824,11 @@
 - [ ] Testar cada link com Pixel Helper
 - [ ] Corrigir páginas sem Pixel funcionando
 
+
+## IDs Persistentes Cross-Session v5.2
+- [x] Criar sistema de fingerprint anônimo (browser + device)
+- [x] Armazenar ID em localStorage + IndexedDB + cookie (fallback triplo)
+- [x] Integrar ID persistente com Meta Conversions API (external_id)
+- [x] Rastrear jornada completa do cliente com ID único
+- [x] Sincronizar ID entre sessões e dispositivos (quando possível)
+

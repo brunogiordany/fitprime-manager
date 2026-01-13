@@ -7,7 +7,10 @@
  * - Deduplicação via event_id
  * - Captura de fbc, fbp, fbclid para matching avançado
  * - Parâmetros de usuário para melhor Event Match Quality
+ * - IDs persistentes cross-session para rastreamento avançado
  */
+
+import { getMetaTrackingParams, initPersistentId, trackJourneyEvent, getVisitorId } from './persistent-id';
 
 // Tipos para os eventos
 interface TrackingEvent {
@@ -227,10 +230,19 @@ function initFacebookPixel(pixelId: string): void {
     s.parentNode.insertBefore(t, s);
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   
-  // Inicializar com parâmetros avançados
+  // Inicializar com parâmetros avançados incluindo ID persistente
   const metaData = getMetaTrackingData();
-  (window as any).fbq('init', pixelId, {
-    external_id: localStorage.getItem('fitprime_user_id') || undefined,
+  
+  // Obter ID persistente para external_id
+  getMetaTrackingParams().then((persistentParams) => {
+    (window as any).fbq('init', pixelId, {
+      external_id: persistentParams.external_id,
+    });
+    console.log('[Facebook Pixel] External ID:', persistentParams.external_id);
+  }).catch(() => {
+    (window as any).fbq('init', pixelId, {
+      external_id: localStorage.getItem('fitprime_user_id') || undefined,
+    });
   });
   
   // PageView inicial com event_id para deduplicação
@@ -341,7 +353,7 @@ async function sendServerSideEvent(
         fn: userData?.firstName ? await hashSHA256(userData.firstName.toLowerCase().trim()) : undefined,
         ln: userData?.lastName ? await hashSHA256(userData.lastName.toLowerCase().trim()) : undefined,
         ct: userData?.city ? await hashSHA256(userData.city.toLowerCase().trim()) : undefined,
-        external_id: userData?.externalId || localStorage.getItem('fitprime_user_id') || undefined,
+        external_id: userData?.externalId || await getVisitorId() || localStorage.getItem('fitprime_user_id') || undefined,
       },
       custom_data: {
         ...params,
@@ -879,9 +891,19 @@ export function identifyUser(userData: UserData): void {
 // Inicializar automaticamente ao carregar
 if (isBrowser) {
   // Aguardar DOM estar pronto
-  if (document.readyState === 'complete') {
+  const initAll = async () => {
+    // Inicializar ID persistente primeiro
+    await initPersistentId();
+    // Depois inicializar pixels
     initializePixels();
+  };
+  
+  if (document.readyState === 'complete') {
+    initAll();
   } else {
-    window.addEventListener('load', initializePixels);
+    window.addEventListener('load', initAll);
   }
 }
+
+// Exportar funções do ID persistente para uso externo
+export { getVisitorId, trackJourneyEvent, getMetaTrackingParams } from './persistent-id';

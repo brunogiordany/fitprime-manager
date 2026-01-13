@@ -51,6 +51,11 @@ async function sendToMetaConversionsAPI(
 ): Promise<{ success: boolean; error?: string; fbtrace_id?: string; events_received?: number }> {
   try {
     // Preparar payload conforme documentação do Meta
+    // Hash do external_id se presente (recomendado pelo Meta para melhor matching)
+    const hashedExternalId = eventData.user_data?.external_id 
+      ? hashSHA256(eventData.user_data.external_id)
+      : undefined;
+    
     const payload = {
       data: [
         {
@@ -62,6 +67,8 @@ async function sendToMetaConversionsAPI(
           user_data: {
             ...eventData.user_data,
             client_ip_address: clientIp || eventData.user_data?.client_ip_address,
+            // external_id deve ser hashado para melhor Event Match Quality
+            external_id: hashedExternalId,
           },
           custom_data: eventData.custom_data,
         },
