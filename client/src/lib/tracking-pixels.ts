@@ -250,9 +250,28 @@ function trackFacebookEvent(event: TrackingEvent): void {
   
   const eventId = event.eventId || generateEventId();
   
-  // Mapear eventos para o padrão do Facebook
+  // Mapear eventos para o padrão do Facebook (eventos padrão do Meta)
+  // Referência: https://developers.facebook.com/docs/meta-pixel/reference
   const fbEventMap: Record<string, string> = {
+    // Eventos padrão do Meta
     'page_view': 'PageView',
+    'view_content': 'ViewContent',
+    'lead': 'Lead',
+    'complete_registration': 'CompleteRegistration',
+    'add_to_cart': 'AddToCart',
+    'initiate_checkout': 'InitiateCheckout',
+    'add_payment_info': 'AddPaymentInfo',
+    'purchase': 'Purchase',
+    'subscribe': 'Subscribe',
+    'start_trial': 'StartTrial',
+    'contact': 'Contact',
+    'search': 'Search',
+    'find_location': 'FindLocation',
+    'schedule': 'Schedule',
+    'submit_application': 'SubmitApplication',
+    'customize_product': 'CustomizeProduct',
+    'donate': 'Donate',
+    // Eventos legados/personalizados mapeados para eventos padrão
     'quiz_started': 'ViewContent',
     'quiz_completed': 'Lead',
     'trial_created': 'CompleteRegistration',
@@ -481,31 +500,246 @@ export function trackPixelEvent(
 }
 
 // Eventos específicos do funil com dados de usuário para melhor matching
+// Seguindo a documentação oficial do Meta: https://developers.facebook.com/docs/meta-pixel/reference
 export const pixelEvents = {
-  pageView: (page: string) => trackPixelEvent('page_view', { page, content_name: page }),
+  // ==================== EVENTOS PADRÃO DO META ====================
   
+  // PageView - Disparado automaticamente ao carregar qualquer página
+  pageView: (page: string) => trackPixelEvent('page_view', { 
+    page, 
+    content_name: page,
+    content_category: 'page',
+  }),
+  
+  // ViewContent - Quando visualiza uma página de produto/plano específico
+  viewContent: (params: {
+    contentId: string;
+    contentName: string;
+    contentType?: string;
+    contentCategory?: string;
+    value?: number;
+    currency?: string;
+  }) => trackPixelEvent('view_content', {
+    content_ids: [params.contentId],
+    content_name: params.contentName,
+    content_type: params.contentType || 'product',
+    content_category: params.contentCategory || 'plan',
+    value: params.value,
+    currency: params.currency || 'BRL',
+  }),
+  
+  // Lead - Quando um usuário demonstra interesse (completa quiz, formulário)
+  lead: (userData: UserData, params?: {
+    contentName?: string;
+    contentCategory?: string;
+    value?: number;
+  }) => trackPixelEvent('lead', {
+    content_name: params?.contentName || 'Lead Capture',
+    content_category: params?.contentCategory || 'lead',
+    value: params?.value || 0,
+    currency: 'BRL',
+  }, userData),
+  
+  // CompleteRegistration - Quando cria conta (trial ou paga)
+  completeRegistration: (userData: UserData, params?: {
+    contentName?: string;
+    status?: string;
+    value?: number;
+  }) => trackPixelEvent('complete_registration', {
+    content_name: params?.contentName || 'Registration',
+    status: params?.status || 'completed',
+    value: params?.value || 0,
+    currency: 'BRL',
+  }, userData),
+  
+  // AddToCart - Quando seleciona um plano
+  addToCart: (params: {
+    contentId: string;
+    contentName: string;
+    contentType?: string;
+    value: number;
+    currency?: string;
+    numItems?: number;
+  }) => trackPixelEvent('add_to_cart', {
+    content_ids: [params.contentId],
+    content_name: params.contentName,
+    content_type: params.contentType || 'product',
+    value: params.value,
+    currency: params.currency || 'BRL',
+    num_items: params.numItems || 1,
+  }),
+  
+  // InitiateCheckout - Quando inicia o processo de checkout
+  initiateCheckout: (params: {
+    contentIds: string[];
+    contentName?: string;
+    contentType?: string;
+    value: number;
+    currency?: string;
+    numItems?: number;
+  }, userData?: UserData) => trackPixelEvent('initiate_checkout', {
+    content_ids: params.contentIds,
+    content_name: params.contentName || 'Checkout',
+    content_type: params.contentType || 'product',
+    value: params.value,
+    currency: params.currency || 'BRL',
+    num_items: params.numItems || 1,
+  }, userData),
+  
+  // AddPaymentInfo - Quando adiciona informações de pagamento
+  addPaymentInfo: (params: {
+    contentIds?: string[];
+    contentCategory?: string;
+    value?: number;
+    currency?: string;
+  }, userData?: UserData) => trackPixelEvent('add_payment_info', {
+    content_ids: params.contentIds,
+    content_category: params.contentCategory || 'payment',
+    value: params.value,
+    currency: params.currency || 'BRL',
+  }, userData),
+  
+  // Purchase - Quando completa uma compra
+  purchase: (params: {
+    contentIds: string[];
+    contentName: string;
+    contentType?: string;
+    value: number;
+    currency?: string;
+    numItems?: number;
+    transactionId?: string;
+  }, userData?: UserData) => trackPixelEvent('purchase', {
+    content_ids: params.contentIds,
+    content_name: params.contentName,
+    content_type: params.contentType || 'product',
+    value: params.value,
+    currency: params.currency || 'BRL',
+    num_items: params.numItems || 1,
+    transaction_id: params.transactionId || generateEventId(),
+  }, userData),
+  
+  // Subscribe - Quando ativa uma assinatura recorrente
+  subscribe: (params: {
+    contentId: string;
+    contentName: string;
+    value: number;
+    currency?: string;
+    predictedLtv?: number;
+  }, userData?: UserData) => trackPixelEvent('subscribe', {
+    content_ids: [params.contentId],
+    content_name: params.contentName,
+    value: params.value,
+    currency: params.currency || 'BRL',
+    predicted_ltv: params.predictedLtv || params.value * 12,
+  }, userData),
+  
+  // StartTrial - Quando inicia período de teste
+  startTrial: (params: {
+    contentId?: string;
+    contentName?: string;
+    value?: number;
+    currency?: string;
+    predictedLtv?: number;
+  }, userData?: UserData) => trackPixelEvent('start_trial', {
+    content_ids: params.contentId ? [params.contentId] : undefined,
+    content_name: params.contentName || 'Trial',
+    value: params.value || 0,
+    currency: params.currency || 'BRL',
+    predicted_ltv: params.predictedLtv,
+  }, userData),
+  
+  // Contact - Quando clica em WhatsApp/contato
+  contact: (params?: {
+    contentName?: string;
+    contentCategory?: string;
+  }) => trackPixelEvent('contact', {
+    content_name: params?.contentName || 'Contact',
+    content_category: params?.contentCategory || 'contact',
+  }),
+  
+  // Search - Quando usa busca no site
+  search: (params: {
+    searchString: string;
+    contentCategory?: string;
+  }) => trackPixelEvent('search', {
+    search_string: params.searchString,
+    content_category: params.contentCategory || 'search',
+  }),
+  
+  // FindLocation - Quando busca localização (se aplicável)
+  findLocation: (params?: {
+    contentCategory?: string;
+  }) => trackPixelEvent('find_location', {
+    content_category: params?.contentCategory || 'location',
+  }),
+  
+  // Schedule - Quando agenda algo
+  schedule: (params?: {
+    contentName?: string;
+    contentCategory?: string;
+  }, userData?: UserData) => trackPixelEvent('schedule', {
+    content_name: params?.contentName || 'Schedule',
+    content_category: params?.contentCategory || 'schedule',
+  }, userData),
+  
+  // SubmitApplication - Quando envia formulário de interesse
+  submitApplication: (userData: UserData, params?: {
+    contentName?: string;
+    contentCategory?: string;
+  }) => trackPixelEvent('submit_application', {
+    content_name: params?.contentName || 'Application',
+    content_category: params?.contentCategory || 'application',
+  }, userData),
+  
+  // CustomizeProduct - Quando personaliza um produto/plano
+  customizeProduct: (params: {
+    contentId: string;
+    contentName: string;
+    contentType?: string;
+  }) => trackPixelEvent('customize_product', {
+    content_ids: [params.contentId],
+    content_name: params.contentName,
+    content_type: params.contentType || 'product',
+  }),
+  
+  // Donate - Se houver doação
+  donate: (params: {
+    value: number;
+    currency?: string;
+  }, userData?: UserData) => trackPixelEvent('donate', {
+    value: params.value,
+    currency: params.currency || 'BRL',
+  }, userData),
+  
+  // ==================== EVENTOS PERSONALIZADOS DO FITPRIME ====================
+  
+  // Quiz Started - Quando inicia o quiz
   quizStarted: (userData?: UserData) => trackPixelEvent('quiz_started', { 
     content_category: 'quiz',
     content_name: 'Qualification Quiz',
   }, userData),
   
+  // Quiz Completed - Quando completa o quiz
   quizCompleted: (score: number, userData?: UserData) => trackPixelEvent('quiz_completed', { 
     score,
     content_category: 'quiz',
     content_name: 'Quiz Completed',
   }, userData),
   
+  // Lead Captured - Quando captura dados do lead
   leadCaptured: (userData: UserData) => trackPixelEvent('form_submitted', {
     content_category: 'lead',
     content_name: 'Lead Form',
   }, userData),
   
+  // Trial Created - Quando cria conta trial (legacy, use startTrial)
   trialCreated: (email: string, userData?: UserData) => trackPixelEvent('trial_created', { 
     email,
     content_category: 'trial',
     content_name: 'Trial Registration',
   }, { ...userData, email }),
   
+  // Checkout Started - Quando inicia checkout (legacy, use initiateCheckout)
   checkoutStarted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('checkout_started', { 
     planId, 
     value, 
@@ -515,6 +749,7 @@ export const pixelEvents = {
     content_name: planId,
   }, userData),
   
+  // Checkout Completed - Quando completa checkout (legacy, use purchase)
   checkoutCompleted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('checkout_completed', { 
     planId, 
     value, 
@@ -525,6 +760,7 @@ export const pixelEvents = {
     transaction_id: generateEventId(),
   }, userData),
   
+  // Plan Selected - Quando seleciona um plano (legacy, use addToCart)
   planSelected: (planId: string, planName: string, value?: number) => trackPixelEvent('plan_selected', { 
     planId, 
     planName,
@@ -534,22 +770,80 @@ export const pixelEvents = {
     content_ids: [planId],
   }),
   
+  // Exit Intent Shown - Quando mostra popup de saída
   exitIntentShown: (page: string) => trackPixelEvent('exit_intent_shown', { 
     page,
     content_category: 'exit_intent',
   }),
   
+  // Exit Intent Converted - Quando converte no popup de saída
   exitIntentConverted: (page: string, userData?: UserData) => trackPixelEvent('exit_intent_converted', { 
     page,
     content_category: 'exit_intent',
   }, userData),
   
+  // Subscription Started - Quando inicia assinatura (legacy, use subscribe)
   subscriptionStarted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('subscription_started', {
     planId,
     value,
     currency: 'BRL',
-    predicted_ltv: value * 12, // LTV estimado de 12 meses
+    predicted_ltv: value * 12,
   }, userData),
+  
+  // WhatsApp Click - Quando clica no botão de WhatsApp
+  whatsappClick: (params?: {
+    page?: string;
+    buttonLocation?: string;
+  }) => trackPixelEvent('whatsapp_click', {
+    content_category: 'contact',
+    content_name: 'WhatsApp',
+    page: params?.page,
+    button_location: params?.buttonLocation,
+  }),
+  
+  // Video Play - Quando inicia um vídeo
+  videoPlay: (params: {
+    videoId?: string;
+    videoTitle?: string;
+    videoDuration?: number;
+  }) => trackPixelEvent('video_play', {
+    content_category: 'video',
+    content_name: params.videoTitle || 'Video',
+    video_id: params.videoId,
+    video_duration: params.videoDuration,
+  }),
+  
+  // Video Complete - Quando completa um vídeo
+  videoComplete: (params: {
+    videoId?: string;
+    videoTitle?: string;
+    videoDuration?: number;
+  }) => trackPixelEvent('video_complete', {
+    content_category: 'video',
+    content_name: params.videoTitle || 'Video',
+    video_id: params.videoId,
+    video_duration: params.videoDuration,
+  }),
+  
+  // Scroll Depth - Quando atinge profundidade de scroll
+  scrollDepth: (params: {
+    percentage: number;
+    page?: string;
+  }) => trackPixelEvent('scroll_depth', {
+    content_category: 'engagement',
+    scroll_percentage: params.percentage,
+    page: params.page,
+  }),
+  
+  // Time on Page - Quando passa tempo na página
+  timeOnPage: (params: {
+    seconds: number;
+    page?: string;
+  }) => trackPixelEvent('time_on_page', {
+    content_category: 'engagement',
+    time_seconds: params.seconds,
+    page: params.page,
+  }),
 };
 
 // Identificar usuário para matching avançado

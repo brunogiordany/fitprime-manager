@@ -2530,7 +2530,7 @@
 ## Reformulação Landing Page v6.5 - Fluxo de Leitura
 - [ ] CTAs levam para seção abaixo (não para quiz direto)
 - [ ] Renomear botões baseado na próxima seção para gerar curiosidade
-- [ ] Lead deve ler página toda para elevar nível de consciência
+- [x] Lead deve ler página toda para elevar nível de consciência
 - [ ] Sempre passar pelo quiz antes dos planos
 
 ## Tabela Comparativa - Correções
@@ -3788,4 +3788,17 @@
 - [ ] Capturar parâmetros avançados (fbclid, fbc, fbp)
 - [ ] Eventos: PageView, Lead, CompleteRegistration, InitiateCheckout, Purchase
 - [ ] Testar integração completa
+
+
+## Implementação Completa de Eventos Meta Pixel v5.0
+- [x] ViewContent - Páginas de produto/planos (/pricing, /planospersonal, /pv01)
+- [x] Lead - Ao completar quiz ou formulário de contato
+- [x] CompleteRegistration - Ao criar conta (trial ou paga)
+- [x] InitiateCheckout - Ao iniciar checkout
+- [x] AddToCart - Ao selecionar um plano
+- [ ] Purchase - Ao completar pagamento
+- [ ] Subscribe - Ao ativar assinatura
+- [ ] Contact - Ao clicar em WhatsApp/contato
+- [x] StartTrial - Ao iniciar período de teste
+- [ ] SubmitApplication - Ao enviar formulário de interesse
 

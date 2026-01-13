@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { trackPageView, trackTrialFormOpened, trackTrialFormSubmitted, trackTrialCreated } from "@/lib/analytics";
+import { pixelEvents } from "@/lib/tracking-pixels";
 import { toast } from "sonner";
 import { 
   CheckCircle2, 
@@ -49,6 +50,14 @@ export default function TrialSignupPage() {
   useEffect(() => {
     trackPageView('/cadastro-trial');
     trackTrialFormOpened('trial_signup_page');
+    // Meta Pixel - ViewContent para página de cadastro trial
+    pixelEvents.viewContent({
+      contentId: 'trial_signup',
+      contentName: 'Cadastro Trial',
+      contentType: 'product',
+      contentCategory: 'trial',
+      value: 0,
+    });
   }, []);
 
   // Formatação de data de nascimento
@@ -181,6 +190,26 @@ export default function TrialSignupPage() {
       
       trackTrialFormSubmitted();
       trackTrialCreated();
+      
+      // Meta Pixel - StartTrial e CompleteRegistration
+      const userData = {
+        email: formData.email,
+        phone: formData.phone,
+        firstName: formData.name.split(' ')[0],
+        lastName: formData.name.split(' ').slice(1).join(' '),
+      };
+      pixelEvents.startTrial({
+        contentId: 'trial_24h',
+        contentName: 'Trial 24 Horas',
+        value: 0,
+        predictedLtv: 97 * 12, // LTV estimado se converter para Starter
+      }, userData);
+      pixelEvents.completeRegistration(userData, {
+        contentName: 'Trial Registration',
+        status: 'completed',
+        value: 0,
+      });
+      
       toast.success("Conta criada com sucesso! Redirecionando para o login...");
       
       // Redirecionar imediatamente para a página de login

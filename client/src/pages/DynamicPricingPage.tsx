@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { trackPageView, trackPricingViewed, trackPlanSelected } from "@/lib/analytics";
+import { pixelEvents } from "@/lib/tracking-pixels";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -263,10 +264,17 @@ export default function DynamicPricingPage() {
   const [profile, setProfile] = useState<string>("beginner");
   const [quizResult, setQuizResult] = useState<any>(null);
 
-  // Tracking de page view
+  // Tracking de page view e ViewContent
   useEffect(() => {
     trackPageView('/pricing');
     trackPricingViewed('dynamic_pricing_page');
+    // Meta Pixel - ViewContent para página de preços
+    pixelEvents.viewContent({
+      contentId: 'pricing_page',
+      contentName: 'Página de Preços Dinâmica',
+      contentType: 'product_group',
+      contentCategory: 'pricing',
+    });
   }, []);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Shield, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { FITPRIME_PLANS, getPlanById, type FitPrimePlan } from "../../../shared/caktoPlans";
+import { pixelEvents } from "@/lib/tracking-pixels";
 
 export default function CheckoutPage() {
   const search = useSearch();
@@ -15,17 +16,31 @@ export default function CheckoutPage() {
   useEffect(() => {
     const params = new URLSearchParams(search);
     const urlPlan = params.get("plan");
+    let selectedPlan: FitPrimePlan | null = null;
+    
     if (urlPlan) {
       const foundPlan = getPlanById(urlPlan);
       if (foundPlan) {
-        setPlan(foundPlan);
+        selectedPlan = foundPlan;
       } else {
-        // Plano não encontrado, usar Starter como padrão
-        setPlan(FITPRIME_PLANS[1]);
+        selectedPlan = FITPRIME_PLANS[1];
       }
     } else {
-      // Sem plano especificado, usar Starter como padrão
-      setPlan(FITPRIME_PLANS[1]);
+      selectedPlan = FITPRIME_PLANS[1];
+    }
+    
+    setPlan(selectedPlan);
+    
+    // Meta Pixel - InitiateCheckout quando entra na página
+    if (selectedPlan) {
+      pixelEvents.initiateCheckout({
+        contentIds: [selectedPlan.id],
+        contentName: selectedPlan.name,
+        contentType: 'product',
+        value: selectedPlan.price,
+        currency: 'BRL',
+        numItems: 1,
+      });
     }
   }, [search]);
   
@@ -34,6 +49,14 @@ export default function CheckoutPage() {
       alert("Link de checkout não disponível para este plano. Entre em contato conosco.");
       return;
     }
+    
+    // Meta Pixel - AddPaymentInfo quando clica em finalizar
+    pixelEvents.addPaymentInfo({
+      contentIds: [plan.id],
+      contentCategory: 'subscription',
+      value: plan.price,
+      currency: 'BRL',
+    });
     
     setIsRedirecting(true);
     // Redirecionar para o checkout da Cakto

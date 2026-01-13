@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
+import { pixelEvents } from "@/lib/tracking-pixels";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -402,6 +403,16 @@ export default function CompletePricingPage() {
   const [, setLocation] = useLocation();
 
   const plans = PLANS_BY_PROFILE[profile] || PLANS_BY_PROFILE.starter;
+
+  // Meta Pixel - ViewContent para página de preços completa
+  useEffect(() => {
+    pixelEvents.viewContent({
+      contentId: 'pricing_complete',
+      contentName: 'Página de Preços Completa',
+      contentType: 'product_group',
+      contentCategory: 'pricing',
+    });
+  }, []);
 
   // Scroll suave para seção de planos
   const scrollToPlans = () => {

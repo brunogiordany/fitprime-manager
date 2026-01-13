@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import { pixelEvents } from "@/lib/tracking-pixels";
 
 // Tipos
 interface QuizOption {
@@ -386,6 +387,20 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
         recommendedPlan: quizResult.recommendedPlan,
         recommendedProfile: quizResult.painScore > 15 ? "high_pain" : quizResult.painScore > 10 ? "medium_pain" : "low_pain",
         totalScore: quizResult.painScore + quizResult.solutionScore,
+      });
+      
+      // Meta Pixel - Lead event quando completa o quiz
+      const userData = {
+        email: leadData.email,
+        phone: leadData.phone,
+        firstName: leadData.name.split(' ')[0],
+        lastName: leadData.name.split(' ').slice(1).join(' '),
+        city: leadData.city,
+      };
+      pixelEvents.lead(userData, {
+        contentName: 'Quiz Completed',
+        contentCategory: 'quiz',
+        value: quizResult.painScore + quizResult.solutionScore,
       });
 
       if (onComplete) {

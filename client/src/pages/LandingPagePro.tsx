@@ -41,6 +41,7 @@ import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { trackPageView, trackQuizStarted } from "@/lib/analytics";
+import { pixelEvents } from "@/lib/tracking-pixels";
 import ChatWidget from "@/components/ChatWidget";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 
@@ -255,9 +256,16 @@ export default function LandingPagePro() {
     animate();
   }, [calculosPersonalizados]);
 
-  // Tracking de page view
+  // Tracking de page view e ViewContent
   useEffect(() => {
     trackPageView('/');
+    // Meta Pixel - ViewContent para página de vendas
+    pixelEvents.viewContent({
+      contentId: 'landing_page_pro',
+      contentName: 'Página de Vendas Principal',
+      contentType: 'product_group',
+      contentCategory: 'sales_page',
+    });
   }, []);
 
   // Redirect authenticated users to dashboard (only if not on /pv01)
