@@ -3730,3 +3730,5 @@
 
 - [x] Bug: Dropdown de tipo de série muda sozinho após selecionar (Aquecimento vira Série Válida automaticamente)
 - [x] Bug: Falta botão de salvar novamente no registro do maromba após já ter salvo
+
+- [x] Criar página /quiz-trial que usa o quiz atual e redireciona para /cadastro-trial

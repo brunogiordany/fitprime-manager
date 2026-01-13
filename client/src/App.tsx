@@ -61,6 +61,7 @@ import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates";
 import QuizResultPlan from "./pages/QuizResultPlan";
+import QuizTrialPage from "./pages/QuizTrialPage";
 import LoginPage from "./pages/LoginPage";
 import PersonalLogin from "./pages/PersonalLogin";
 import AiAssistantSettings from "./pages/AiAssistantSettings";
@@ -84,6 +85,7 @@ function Router() {
       <Route path="/checkout" component={CheckoutPage} />
       <Route path="/quiz-resultado" component={QuizResultPage} />
       <Route path="/quiz-resultado-plano" component={QuizResultPlan} />
+      <Route path="/quiz-trial" component={QuizTrialPage} />
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planospersonal" component={PricingPage} />
       <Route path="/apresentacao" component={PresentationPage} />
