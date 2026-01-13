@@ -3802,3 +3802,10 @@
 - [x] StartTrial - Ao iniciar período de teste
 - [ ] SubmitApplication - Ao enviar formulário de interesse
 
+
+## Webhook Cakto e Dashboard de Eventos v5.0
+- [x] Webhook da Cakto para evento Purchase
+- [ ] Tabela pixel_events para armazenar eventos
+- [x] Dashboard de eventos do Pixel no admin
+- [ ] Métricas de taxa de sucesso da API
+

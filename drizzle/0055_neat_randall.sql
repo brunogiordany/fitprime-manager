@@ -1,0 +1,42 @@
+CREATE TABLE `pixel_events` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`eventId` varchar(64) NOT NULL,
+	`eventName` varchar(50) NOT NULL,
+	`eventSource` enum('pixel','api','webhook') NOT NULL DEFAULT 'pixel',
+	`userEmail` varchar(320),
+	`userPhone` varchar(20),
+	`userName` varchar(255),
+	`userCity` varchar(100),
+	`eventData` json,
+	`value` decimal(10,2),
+	`currency` varchar(3) DEFAULT 'BRL',
+	`contentId` varchar(100),
+	`contentName` varchar(255),
+	`contentType` varchar(50),
+	`sourceUrl` varchar(500),
+	`userAgent` varchar(500),
+	`ipAddress` varchar(45),
+	`fbclid` varchar(255),
+	`fbc` varchar(255),
+	`fbp` varchar(255),
+	`apiSent` boolean DEFAULT false,
+	`apiResponse` json,
+	`apiError` text,
+	`apiSentAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `pixel_events_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `webhook_logs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`source` varchar(50) NOT NULL,
+	`eventType` varchar(100) NOT NULL,
+	`payload` json NOT NULL,
+	`processed` boolean DEFAULT false,
+	`processedAt` timestamp,
+	`error` text,
+	`relatedUserId` int,
+	`relatedEmail` varchar(320),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `webhook_logs_id` PRIMARY KEY(`id`)
+);

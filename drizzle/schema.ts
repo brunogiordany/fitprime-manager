@@ -2752,3 +2752,71 @@ export const aiRecommendations = mysqlTable("ai_recommendations", {
 
 export type AiRecommendation = typeof aiRecommendations.$inferSelect;
 export type InsertAiRecommendation = typeof aiRecommendations.$inferInsert;
+
+
+// ==================== PIXEL EVENTS (Meta Pixel Tracking) ====================
+export const pixelEvents = mysqlTable("pixel_events", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Identificação do evento
+  eventId: varchar("eventId", { length: 64 }).notNull(), // ID único para deduplicação
+  eventName: varchar("eventName", { length: 50 }).notNull(), // PageView, Lead, Purchase, etc.
+  eventSource: mysqlEnum("eventSource", ["pixel", "api", "webhook"]).default("pixel").notNull(),
+  
+  // Dados do usuário (hashed)
+  userEmail: varchar("userEmail", { length: 320 }),
+  userPhone: varchar("userPhone", { length: 20 }),
+  userName: varchar("userName", { length: 255 }),
+  userCity: varchar("userCity", { length: 100 }),
+  
+  // Dados do evento
+  eventData: json("eventData"), // JSON com dados específicos do evento
+  value: decimal("value", { precision: 10, scale: 2 }), // Valor monetário (para Purchase, etc.)
+  currency: varchar("currency", { length: 3 }).default("BRL"),
+  contentId: varchar("contentId", { length: 100 }),
+  contentName: varchar("contentName", { length: 255 }),
+  contentType: varchar("contentType", { length: 50 }),
+  
+  // Rastreamento
+  sourceUrl: varchar("sourceUrl", { length: 500 }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  fbclid: varchar("fbclid", { length: 255 }), // Facebook Click ID
+  fbc: varchar("fbc", { length: 255 }), // Facebook Cookie
+  fbp: varchar("fbp", { length: 255 }), // Facebook Browser ID
+  
+  // Status da API
+  apiSent: boolean("apiSent").default(false),
+  apiResponse: json("apiResponse"), // Resposta da Conversions API
+  apiError: text("apiError"),
+  apiSentAt: timestamp("apiSentAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PixelEvent = typeof pixelEvents.$inferSelect;
+export type InsertPixelEvent = typeof pixelEvents.$inferInsert;
+
+// ==================== WEBHOOK LOGS (Cakto, Stripe, etc.) ====================
+export const webhookLogs = mysqlTable("webhook_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Identificação
+  source: varchar("source", { length: 50 }).notNull(), // cakto, stripe, etc.
+  eventType: varchar("eventType", { length: 100 }).notNull(), // payment.confirmed, subscription.created, etc.
+  
+  // Dados
+  payload: json("payload").notNull(), // Payload completo do webhook
+  
+  // Processamento
+  processed: boolean("processed").default(false),
+  processedAt: timestamp("processedAt"),
+  error: text("error"),
+  
+  // Relacionamento
+  relatedUserId: int("relatedUserId"),
+  relatedEmail: varchar("relatedEmail", { length: 320 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type WebhookLog = typeof webhookLogs.$inferSelect;
+export type InsertWebhookLog = typeof webhookLogs.$inferInsert;
