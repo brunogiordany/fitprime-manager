@@ -549,6 +549,32 @@ export async function processBirthdays(): Promise<AutomationResult> {
 }
 
 /**
+ * Processa notificações de trial expirando
+ */
+async function processTrialNotifications(): Promise<AutomationResult> {
+  const result: AutomationResult = { sent: 0, failed: 0, errors: [] };
+  
+  try {
+    // Import dinâmico para evitar dependência circular
+    const { processTrialNotifications: runTrialNotifications, ensureTrialNotificationColumn } = 
+      await import('./services/trialNotificationService');
+    
+    // Garantir que a coluna existe
+    await ensureTrialNotificationColumn();
+    
+    // Processar notificações
+    const { sent, errors } = await runTrialNotifications();
+    result.sent = sent;
+    result.failed = errors;
+  } catch (error: any) {
+    console.error('[AutomationWorker] Erro ao processar notificações de trial:', error);
+    result.errors.push(`Erro geral: ${error.message}`);
+  }
+  
+  return result;
+}
+
+/**
  * Executa todas as automações
  */
 export async function runAllAutomations(): Promise<{
@@ -556,6 +582,7 @@ export async function runAllAutomations(): Promise<{
   paymentReminders: AutomationResult;
   overduePayments: AutomationResult;
   birthdays: AutomationResult;
+  trialNotifications: AutomationResult;
   totalSent: number;
   totalFailed: number;
 }> {
@@ -565,9 +592,10 @@ export async function runAllAutomations(): Promise<{
   const paymentReminders = await processPaymentReminders();
   const overduePayments = await processOverduePayments();
   const birthdays = await processBirthdays();
+  const trialNotifications = await processTrialNotifications();
   
-  const totalSent = sessionReminders.sent + paymentReminders.sent + overduePayments.sent + birthdays.sent;
-  const totalFailed = sessionReminders.failed + paymentReminders.failed + overduePayments.failed + birthdays.failed;
+  const totalSent = sessionReminders.sent + paymentReminders.sent + overduePayments.sent + birthdays.sent + trialNotifications.sent;
+  const totalFailed = sessionReminders.failed + paymentReminders.failed + overduePayments.failed + birthdays.failed + trialNotifications.failed;
   
   console.log(`[AutomationWorker] Processamento concluído: ${totalSent} enviados, ${totalFailed} falhas`);
   
@@ -576,6 +604,7 @@ export async function runAllAutomations(): Promise<{
     paymentReminders,
     overduePayments,
     birthdays,
+    trialNotifications,
     totalSent,
     totalFailed,
   };
@@ -603,4 +632,5 @@ export default {
   processPaymentReminders,
   processOverduePayments,
   processBirthdays,
+  processTrialNotifications,
 };

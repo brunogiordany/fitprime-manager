@@ -3832,3 +3832,11 @@
 - [x] Rastrear jornada completa do cliente com ID único
 - [x] Sincronizar ID entre sessões e dispositivos (quando possível)
 
+
+## Agendador de Emails de Trial Expirando v5.3
+- [ ] Criar função para verificar trials expirando
+- [ ] Implementar envio de email 24h antes do trial expirar
+- [ ] Implementar envio de email 2h antes do trial expirar
+- [ ] Criar agendador automático no servidor
+- [ ] Evitar envio duplicado de emails
+
