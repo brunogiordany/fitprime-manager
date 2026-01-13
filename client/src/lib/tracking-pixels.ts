@@ -230,30 +230,51 @@ function initFacebookPixel(pixelId: string): void {
     s.parentNode.insertBefore(t, s);
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   
-  // Inicializar com parâmetros avançados incluindo ID persistente
-  const metaData = getMetaTrackingData();
+  // Aguardar fbq estar disponível antes de usar
+  const initWithRetry = async () => {
+    let retries = 0;
+    while (!((window as any).fbq) && retries < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      retries++;
+    }
+    
+    if (!((window as any).fbq)) {
+      console.warn('[Facebook Pixel] Falha ao carregar fbq');
+      return;
+    }
+    
+    // Inicializar com parâmetros avançados incluindo ID persistente
+    const metaData = getMetaTrackingData();
+    
+    // Obter ID persistente para external_id
+    try {
+      const persistentParams = await getMetaTrackingParams();
+      (window as any).fbq('init', pixelId, {
+        external_id: persistentParams.external_id,
+      });
+      console.log('[Facebook Pixel] External ID:', persistentParams.external_id);
+    } catch (e) {
+      (window as any).fbq('init', pixelId, {
+        external_id: localStorage.getItem('fitprime_user_id') || undefined,
+      });
+    }
+    
+    // Aguardar um pouco mais para garantir que init foi processado
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // PageView inicial com event_id para deduplicação
+    const pageViewEventId = generateEventId();
+    (window as any).fbq('track', 'PageView', {}, { eventID: pageViewEventId });
+    
+    // Enviar PageView também via server-side se configurado
+    sendServerSideEvent('PageView', {}, pageViewEventId);
+    
+    console.log('[Facebook Pixel] Inicializado com ID:', pixelId);
+    console.log('[Facebook Pixel] Meta tracking data:', metaData);
+    console.log('[Facebook Pixel] PageView disparado com sucesso');
+  };
   
-  // Obter ID persistente para external_id
-  getMetaTrackingParams().then((persistentParams) => {
-    (window as any).fbq('init', pixelId, {
-      external_id: persistentParams.external_id,
-    });
-    console.log('[Facebook Pixel] External ID:', persistentParams.external_id);
-  }).catch(() => {
-    (window as any).fbq('init', pixelId, {
-      external_id: localStorage.getItem('fitprime_user_id') || undefined,
-    });
-  });
-  
-  // PageView inicial com event_id para deduplicação
-  const pageViewEventId = generateEventId();
-  (window as any).fbq('track', 'PageView', {}, { eventID: pageViewEventId });
-  
-  // Enviar PageView também via server-side se configurado
-  sendServerSideEvent('PageView', {}, pageViewEventId);
-  
-  console.log('[Facebook Pixel] Inicializado com ID:', pixelId);
-  console.log('[Facebook Pixel] Meta tracking data:', metaData);
+  initWithRetry().catch(err => console.error('[Facebook Pixel] Erro na inicialização:', err));
 }
 
 // Enviar evento para Facebook Pixel com deduplicação

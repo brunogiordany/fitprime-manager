@@ -3840,3 +3840,8 @@
 - [ ] Criar agendador automático no servidor
 - [ ] Evitar envio duplicado de emails
 
+
+## Fix - IDs Persistentes e Pixel em Todas as Páginas v5.3
+- [x] Corrigir evento PageView do Meta Pixel
+- [x] Garantir IDs persistentes em todas as páginas automaticamente
+- [x] Criar wrapper automático para novas páginas

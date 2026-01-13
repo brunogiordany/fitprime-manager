@@ -1,11 +1,23 @@
 import { trpc } from "@/lib/trpc";
 import { initializePixels, savePixelConfig } from "@/lib/tracking-pixels";
+import { initPersistentId } from "@/lib/persistent-id";
+
+// Inicializar IDs persistentes cross-session (deve ser feito ANTES de qualquer coisa)
+if (typeof window !== 'undefined') {
+  initPersistentId().catch(err => console.warn('[Persistent ID] Erro na inicialização:', err));
+}
 
 // Inicializar Meta Pixel com as credenciais
 savePixelConfig({
   facebookPixelId: '898343203142628',
   serverSideEnabled: true,
 });
+
+// Inicializar tracking pixels automaticamente
+if (typeof window !== 'undefined') {
+  initializePixels();
+  console.log('[Tracking] Inicializado automaticamente em main.tsx');
+}
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
