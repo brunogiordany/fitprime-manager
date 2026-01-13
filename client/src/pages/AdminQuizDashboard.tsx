@@ -12,6 +12,7 @@ import {
   XCircle,
   Eye,
   MousePointer,
+  Eye as EyeIcon,
   CreditCard,
   BarChart3,
   Calendar,
@@ -407,7 +408,7 @@ export default function AdminQuizDashboard() {
                 </thead>
                 <tbody>
                   {responsesData?.responses?.map((response: any) => (
-                    <tr key={response.id} className="border-b hover:bg-gray-50">
+                    <tr key={response.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/admin/quiz/${response.id}`}>
                       <td className="py-2 px-3">
                         {new Date(response.createdAt).toLocaleDateString("pt-BR")}
                       </td>

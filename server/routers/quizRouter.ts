@@ -100,6 +100,22 @@ export const quizRouter = router({
       return { success: true };
     }),
 
+  // Buscar resposta por ID (admin)
+  getResponseById: adminProcedure
+    .input(z.object({
+      id: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const [response] = await db.execute(sql`
+        SELECT * FROM quiz_responses WHERE id = ${input.id}
+      `);
+      
+      return (response as any)[0] || null;
+    }),
+
   // Listar respostas (admin)
   listResponses: adminProcedure
     .input(z.object({

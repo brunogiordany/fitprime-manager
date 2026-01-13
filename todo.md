@@ -3732,3 +3732,9 @@
 - [x] Bug: Falta botão de salvar novamente no registro do maromba após já ter salvo
 
 - [x] Criar página /quiz-trial que usa o quiz atual e redireciona para /cadastro-trial
+
+## Melhorias Admin v4.2
+- [x] Criar página de detalhes do quiz no admin (anamnese do lead)
+- [x] Visualizar respostas completas do quiz para abordagem personalizada
+- [x] Corrigir Analytics Dashboard para mostrar dados reais do banco
+- [x] Corrigir Dashboard de Funil para mostrar dados reais do banco

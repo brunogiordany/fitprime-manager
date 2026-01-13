@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -125,6 +125,58 @@ export const trialRouter = router({
         isActive,
         trialEndsAt: trialEndsAt?.toISOString(),
         status: personal.subscriptionStatus,
+      };
+    }),
+
+  // Estatísticas de trials (admin)
+  getTrialStats: adminProcedure
+    .input(z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      let whereClause = sql`p.subscriptionStatus = 'trial'`;
+      
+      if (input.startDate) {
+        whereClause = sql`${whereClause} AND p.createdAt >= ${input.startDate}`;
+      }
+      if (input.endDate) {
+        whereClause = sql`${whereClause} AND p.createdAt <= ${input.endDate}`;
+      }
+
+      // Total de trials criados
+      const [totalResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM personals p WHERE ${whereClause}
+      `);
+      const total = (totalResult as any)?.count || 0;
+
+      // Trials ativos (ainda dentro do período)
+      const [activeResult] = await db.execute(sql`
+        SELECT COUNT(*) as count FROM personals p 
+        WHERE ${whereClause} AND p.trialEndsAt > NOW()
+      `);
+      const active = (activeResult as any)?.count || 0;
+
+      // Trials expirados
+      const expired = total - active;
+
+      // Trials por dia
+      const dailyTrials = await db.execute(sql`
+        SELECT DATE(p.createdAt) as date, COUNT(*) as count
+        FROM personals p
+        WHERE ${whereClause}
+        GROUP BY DATE(p.createdAt)
+        ORDER BY DATE(p.createdAt)
+      `);
+
+      return {
+        total,
+        active,
+        expired,
+        daily: (dailyTrials as any)[0] || [],
       };
     }),
 });

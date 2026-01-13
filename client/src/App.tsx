@@ -50,6 +50,7 @@ import DynamicPricingPage from "@/pages/DynamicPricingPage";
 import CompletePricingPage from "@/pages/CompletePricingPage";
 import AdminFunnelDashboard from "@/pages/AdminFunnelDashboard";
 import AdminQuizDashboard from "@/pages/AdminQuizDashboard";
+import AdminQuizDetail from "@/pages/AdminQuizDetail";
 import AdminExtraCharges from "@/pages/AdminExtraCharges";
 import CheckoutPage from "@/pages/CheckoutPage";
 import QuizResultPage from "@/pages/QuizResultPage";
@@ -148,6 +149,7 @@ function Router() {
       <Route path="/admin" component={AdminPanel} />
       <Route path="/admin/funil" component={AdminFunnelDashboard} />
       <Route path="/admin/quiz" component={AdminQuizDashboard} />
+      <Route path="/admin/quiz/:id" component={AdminQuizDetail} />
       <Route path="/admin/suporte" component={AdminSupportChat} />
       <Route path="/admin/extra-charges" component={AdminExtraCharges} />
       <Route path="/admin/analytics" component={AdminAnalyticsDashboard} />
