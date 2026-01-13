@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, leadName, leadEmail, leadPhone, leadCity, studentsCount, revenue, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i') as created FROM quiz_responses ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadName, leadEmail, leadPhone, leadCity, studentsCount, revenue, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i') as created FROM quiz_responses ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "240005",
+      "leadName": "Teste Manus",
+      "leadEmail": "teste@manus.com",
+      "leadPhone": "(11) 98765-4321",
+      "leadCity": "São Paulo",
+      "studentsCount": "15",
+      "revenue": "2000",
+      "created": "2026-01-13 13:25"
+    },
+    {
+      "id": "240004",
+      "leadName": "bruno teste",
+      "leadEmail": "brunoteste@gmail.com",
+      "leadPhone": "(15) 99761-2063",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "5000",
+      "created": "2026-01-13 13:19"
+    },
+    {
+      "id": "240003",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "50",
+      "revenue": "5000",
+      "created": "2026-01-13 12:00"
+    },
+    {
+      "id": "240002",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "NULL",
+      "revenue": "NULL",
+      "created": "2026-01-13 11:01"
+    },
+    {
+      "id": "240001",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "2000",
+      "created": "2026-01-13 10:47"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadName\tleadEmail\tleadPhone\tleadCity\tstudentsCount\trevenue\tcreated\n240005\tTeste Manus\tteste@manus.com\t(11) 98765-4321\tSão Paulo\t15\t2000\t2026-01-13 13:25\n240004\tbruno teste\tbrunoteste@gmail.com\t(15) 99761-2063\tNULL\t15\t5000\t2026-01-13 13:19\n240003\tNULL\tNULL\tNULL\tNULL\t50\t5000\t2026-01-13 12:00\n240002\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\t2026-01-13 11:01\n240001\tNULL\tNULL\tNULL\tNULL\t15\t2000\t2026-01-13 10:47\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

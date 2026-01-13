@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, leadName, leadEmail, leadPhone, leadCity, studentsCount, revenue, createdAt FROM quiz_responses ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadName, leadEmail, leadPhone, leadCity, studentsCount, revenue, createdAt FROM quiz_responses ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "240004",
+      "leadName": "bruno teste",
+      "leadEmail": "brunoteste@gmail.com",
+      "leadPhone": "(15) 99761-2063",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "5000",
+      "createdAt": "2026-01-13 13:19:08"
+    },
+    {
+      "id": "240003",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "50",
+      "revenue": "5000",
+      "createdAt": "2026-01-13 12:00:08"
+    },
+    {
+      "id": "240002",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "NULL",
+      "revenue": "NULL",
+      "createdAt": "2026-01-13 11:01:25"
+    },
+    {
+      "id": "240001",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "2000",
+      "createdAt": "2026-01-13 10:47:52"
+    },
+    {
+      "id": "210002",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "2000",
+      "createdAt": "2026-01-12 21:17:08"
+    },
+    {
+      "id": "210001",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "2000",
+      "createdAt": "2026-01-12 21:15:11"
+    },
+    {
+      "id": "180003",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "30",
+      "revenue": "10000",
+      "createdAt": "2026-01-07 21:25:08"
+    },
+    {
+      "id": "180002",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "15",
+      "revenue": "5000",
+      "createdAt": "2026-01-07 21:05:58"
+    },
+    {
+      "id": "180001",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "30",
+      "revenue": "10000",
+      "createdAt": "2026-01-07 20:22:23"
+    },
+    {
+      "id": "150002",
+      "leadName": "NULL",
+      "leadEmail": "NULL",
+      "leadPhone": "NULL",
+      "leadCity": "NULL",
+      "studentsCount": "50",
+      "revenue": "15000",
+      "createdAt": "2026-01-06 23:07:09"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadName\tleadEmail\tleadPhone\tleadCity\tstudentsCount\trevenue\tcreatedAt\n240004\tbruno teste\tbrunoteste@gmail.com\t(15) 99761-2063\tNULL\t15\t5000\t2026-01-13 13:19:08\n240003\tNULL\tNULL\tNULL\tNULL\t50\t5000\t2026-01-13 12:00:08\n240002\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\t2026-01-13 11:01:25\n240001\tNULL\tNULL\tNULL\tNULL\t15\t2000\t2026-01-13 10:47:52\n210002\tNULL\tNULL\tNULL\tNULL\t15\t2000\t2026-01-12 21:17:08\n210001\tNULL\tNULL\tNULL\tNULL\t15\t2000\t2026-01-12 21:15:11\n180003\tNULL\tNULL\tNULL\tNULL\t30\t10000\t2026-01-07 21:25:08\n180002\tNULL\tNULL\tNULL\tNULL\t15\t5000\t2026-01-07 21:05:58\n180001\tNULL\tNULL\tNULL\tNULL\t30\t10000\t2026-01-07 20:22:23\n150002\tNULL\tNULL\tNULL\tNULL\t50\t15000\t2026-01-06 23:07:09\n",
+  "stderr": "",
+  "execution_time_ms": 108
+}
