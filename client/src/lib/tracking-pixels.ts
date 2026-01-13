@@ -1,12 +1,37 @@
 /**
- * Tracking Pixels Integration
- * Integração com Google Analytics 4, Facebook Pixel e TikTok Ads
+ * Tracking Pixels Integration - Meta Ads Completo
+ * Integração com Google Analytics 4, Facebook Pixel + Conversions API, TikTok Ads
+ * 
+ * Seguindo as melhores práticas da documentação oficial do Meta:
+ * - Pixel (frontend) + Conversions API (backend) para redundância
+ * - Deduplicação via event_id
+ * - Captura de fbc, fbp, fbclid para matching avançado
+ * - Parâmetros de usuário para melhor Event Match Quality
  */
 
 // Tipos para os eventos
 interface TrackingEvent {
   name: string;
   params?: Record<string, any>;
+  eventId?: string; // Para deduplicação
+  userData?: UserData;
+}
+
+// Dados do usuário para matching (Meta Conversions API)
+interface UserData {
+  email?: string;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  externalId?: string;
+  clientIpAddress?: string;
+  clientUserAgent?: string;
+  fbc?: string; // Facebook Click ID
+  fbp?: string; // Facebook Browser ID
 }
 
 // Configuração dos pixels (será carregada do localStorage ou env)
@@ -14,6 +39,16 @@ interface PixelConfig {
   ga4Id?: string;
   facebookPixelId?: string;
   tiktokPixelId?: string;
+  // Configurações avançadas para Conversions API
+  facebookApiToken?: string;
+  tiktokApiToken?: string;
+  ga4ApiSecret?: string;
+  serverSideEnabled?: boolean;
+}
+
+// Gerar event_id único para deduplicação
+function generateEventId(): string {
+  return `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 }
 
 // Obter configuração dos pixels
@@ -42,6 +77,84 @@ export function savePixelConfig(config: PixelConfig): void {
 
 // Verificar se estamos no browser
 const isBrowser = typeof window !== 'undefined';
+
+// ==================== META TRACKING HELPERS ====================
+
+// Obter fbclid da URL (Facebook Click ID)
+function getFbclid(): string | null {
+  if (!isBrowser) return null;
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('fbclid');
+}
+
+// Obter ou criar fbc (Facebook Click Cookie)
+function getFbc(): string | null {
+  if (!isBrowser) return null;
+  
+  // Tentar obter do cookie
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === '_fbc') {
+      return value;
+    }
+  }
+  
+  // Se não existe mas temos fbclid, criar
+  const fbclid = getFbclid();
+  if (fbclid) {
+    const fbc = `fb.1.${Date.now()}.${fbclid}`;
+    // Salvar no cookie por 90 dias
+    document.cookie = `_fbc=${fbc}; max-age=${90 * 24 * 60 * 60}; path=/; SameSite=Lax`;
+    return fbc;
+  }
+  
+  return null;
+}
+
+// Obter ou criar fbp (Facebook Browser ID)
+function getFbp(): string {
+  if (!isBrowser) return '';
+  
+  // Tentar obter do cookie
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === '_fbp') {
+      return value;
+    }
+  }
+  
+  // Criar novo fbp
+  const fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1000000000)}`;
+  // Salvar no cookie por 90 dias
+  document.cookie = `_fbp=${fbp}; max-age=${90 * 24 * 60 * 60}; path=/; SameSite=Lax`;
+  return fbp;
+}
+
+// Salvar fbclid quando presente na URL
+function captureFbclid(): void {
+  if (!isBrowser) return;
+  
+  const fbclid = getFbclid();
+  if (fbclid) {
+    // Salvar no localStorage para uso posterior
+    localStorage.setItem('meta_fbclid', fbclid);
+    localStorage.setItem('meta_fbclid_time', Date.now().toString());
+    
+    // Garantir que fbc seja criado
+    getFbc();
+  }
+}
+
+// Obter dados de tracking do Meta
+export function getMetaTrackingData(): { fbc: string | null; fbp: string; fbclid: string | null } {
+  return {
+    fbc: getFbc(),
+    fbp: getFbp(),
+    fbclid: getFbclid() || localStorage.getItem('meta_fbclid'),
+  };
+}
 
 // ==================== GOOGLE ANALYTICS 4 ====================
 
@@ -77,15 +190,21 @@ function initGA4(measurementId: string): void {
 function trackGA4Event(event: TrackingEvent): void {
   if (!isBrowser || !(window as any).gtag) return;
   
-  (window as any).gtag('event', event.name, event.params);
+  (window as any).gtag('event', event.name, {
+    ...event.params,
+    event_id: event.eventId, // Para deduplicação com Measurement Protocol
+  });
   console.log('[GA4] Evento:', event.name, event.params);
 }
 
-// ==================== FACEBOOK PIXEL ====================
+// ==================== FACEBOOK PIXEL + CONVERSIONS API ====================
 
-// Inicializar Facebook Pixel
+// Inicializar Facebook Pixel com parâmetros avançados
 function initFacebookPixel(pixelId: string): void {
   if (!isBrowser || !pixelId) return;
+  
+  // Capturar fbclid se presente
+  captureFbclid();
   
   // Verificar se já foi inicializado
   if ((window as any).fbq) return;
@@ -108,38 +227,138 @@ function initFacebookPixel(pixelId: string): void {
     s.parentNode.insertBefore(t, s);
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   
-  (window as any).fbq('init', pixelId);
-  (window as any).fbq('track', 'PageView');
+  // Inicializar com parâmetros avançados
+  const metaData = getMetaTrackingData();
+  (window as any).fbq('init', pixelId, {
+    external_id: localStorage.getItem('fitprime_user_id') || undefined,
+  });
+  
+  // PageView inicial com event_id para deduplicação
+  const pageViewEventId = generateEventId();
+  (window as any).fbq('track', 'PageView', {}, { eventID: pageViewEventId });
+  
+  // Enviar PageView também via server-side se configurado
+  sendServerSideEvent('PageView', {}, pageViewEventId);
   
   console.log('[Facebook Pixel] Inicializado com ID:', pixelId);
+  console.log('[Facebook Pixel] Meta tracking data:', metaData);
 }
 
-// Enviar evento para Facebook Pixel
+// Enviar evento para Facebook Pixel com deduplicação
 function trackFacebookEvent(event: TrackingEvent): void {
   if (!isBrowser || !(window as any).fbq) return;
+  
+  const eventId = event.eventId || generateEventId();
   
   // Mapear eventos para o padrão do Facebook
   const fbEventMap: Record<string, string> = {
     'page_view': 'PageView',
-    'quiz_started': 'InitiateCheckout',
-    'quiz_completed': 'CompleteRegistration',
-    'trial_created': 'Lead',
-    'checkout_started': 'AddToCart',
+    'quiz_started': 'ViewContent',
+    'quiz_completed': 'Lead',
+    'trial_created': 'CompleteRegistration',
+    'checkout_started': 'InitiateCheckout',
     'checkout_completed': 'Purchase',
-    'plan_selected': 'AddToWishlist',
+    'plan_selected': 'AddToCart',
     'exit_intent_shown': 'ViewContent',
     'exit_intent_converted': 'Lead',
+    'form_submitted': 'Lead',
+    'subscription_started': 'Subscribe',
   };
   
   const fbEventName = fbEventMap[event.name] || event.name;
+  const isStandardEvent = !!fbEventMap[event.name];
   
-  if (fbEventMap[event.name]) {
-    (window as any).fbq('track', fbEventName, event.params);
+  // Adicionar parâmetros de valor se disponíveis
+  const params = {
+    ...event.params,
+    content_name: event.params?.content_name || event.name,
+  };
+  
+  // Enviar via Pixel (frontend)
+  if (isStandardEvent) {
+    (window as any).fbq('track', fbEventName, params, { eventID: eventId });
   } else {
-    (window as any).fbq('trackCustom', event.name, event.params);
+    (window as any).fbq('trackCustom', event.name, params, { eventID: eventId });
   }
   
-  console.log('[Facebook Pixel] Evento:', fbEventName, event.params);
+  // Enviar via Conversions API (backend) para deduplicação
+  sendServerSideEvent(fbEventName, params, eventId, event.userData);
+  
+  console.log('[Facebook Pixel] Evento:', fbEventName, 'ID:', eventId, params);
+}
+
+// Enviar evento via Conversions API (Server-Side)
+async function sendServerSideEvent(
+  eventName: string, 
+  params: Record<string, any>, 
+  eventId: string,
+  userData?: UserData
+): Promise<void> {
+  const config = getPixelConfig();
+  
+  // Verificar se server-side está habilitado
+  if (!config.serverSideEnabled || !config.facebookApiToken || !config.facebookPixelId) {
+    return;
+  }
+  
+  try {
+    const metaData = getMetaTrackingData();
+    
+    // Preparar dados do evento para a API
+    const eventData = {
+      event_name: eventName,
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: eventId,
+      event_source_url: window.location.href,
+      action_source: 'website',
+      user_data: {
+        client_ip_address: '', // Será preenchido pelo servidor
+        client_user_agent: navigator.userAgent,
+        fbc: metaData.fbc || undefined,
+        fbp: metaData.fbp || undefined,
+        // Dados do usuário se disponíveis
+        em: userData?.email ? await hashSHA256(userData.email.toLowerCase().trim()) : undefined,
+        ph: userData?.phone ? await hashSHA256(userData.phone.replace(/\D/g, '')) : undefined,
+        fn: userData?.firstName ? await hashSHA256(userData.firstName.toLowerCase().trim()) : undefined,
+        ln: userData?.lastName ? await hashSHA256(userData.lastName.toLowerCase().trim()) : undefined,
+        ct: userData?.city ? await hashSHA256(userData.city.toLowerCase().trim()) : undefined,
+        external_id: userData?.externalId || localStorage.getItem('fitprime_user_id') || undefined,
+      },
+      custom_data: {
+        ...params,
+        currency: params.currency || 'BRL',
+      },
+    };
+    
+    // Enviar para o backend que fará a chamada à API do Meta
+    // Usando fetch direto para o endpoint tRPC
+    const response = await fetch('/api/trpc/tracking.sendMetaEvent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ json: eventData }),
+    });
+    
+    if (response.ok) {
+      console.log('[Meta CAPI] Evento enviado:', eventName, eventId);
+    } else {
+      console.warn('[Meta CAPI] Erro ao enviar evento:', await response.text());
+    }
+  } catch (error) {
+    console.warn('[Meta CAPI] Erro:', error);
+  }
+}
+
+// Hash SHA256 para dados do usuário (requisito do Meta)
+async function hashSHA256(value: string): Promise<string> {
+  if (!value) return '';
+  
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ==================== TIKTOK PIXEL ====================
@@ -212,7 +431,10 @@ function trackTikTokEvent(event: TrackingEvent): void {
   
   const ttEventName = ttEventMap[event.name] || event.name;
   
-  (window as any).ttq.track(ttEventName, event.params);
+  (window as any).ttq.track(ttEventName, {
+    ...event.params,
+    event_id: event.eventId,
+  });
   
   console.log('[TikTok Pixel] Evento:', ttEventName, event.params);
 }
@@ -222,6 +444,9 @@ function trackTikTokEvent(event: TrackingEvent): void {
 // Inicializar todos os pixels configurados
 export function initializePixels(): void {
   const config = getPixelConfig();
+  
+  // Capturar fbclid se presente na URL
+  captureFbclid();
   
   if (config.ga4Id) {
     initGA4(config.ga4Id);
@@ -236,27 +461,126 @@ export function initializePixels(): void {
   }
 }
 
-// Enviar evento para todos os pixels
-export function trackPixelEvent(eventName: string, params?: Record<string, any>): void {
-  const event: TrackingEvent = { name: eventName, params };
+// Enviar evento para todos os pixels com deduplicação
+export function trackPixelEvent(
+  eventName: string, 
+  params?: Record<string, any>,
+  userData?: UserData
+): void {
+  const eventId = generateEventId();
+  const event: TrackingEvent = { 
+    name: eventName, 
+    params, 
+    eventId,
+    userData,
+  };
   
   trackGA4Event(event);
   trackFacebookEvent(event);
   trackTikTokEvent(event);
 }
 
-// Eventos específicos do funil
+// Eventos específicos do funil com dados de usuário para melhor matching
 export const pixelEvents = {
-  pageView: (page: string) => trackPixelEvent('page_view', { page }),
-  quizStarted: () => trackPixelEvent('quiz_started'),
-  quizCompleted: (score: number) => trackPixelEvent('quiz_completed', { score }),
-  trialCreated: (email: string) => trackPixelEvent('trial_created', { email }),
-  checkoutStarted: (planId: string, value: number) => trackPixelEvent('checkout_started', { planId, value, currency: 'BRL' }),
-  checkoutCompleted: (planId: string, value: number) => trackPixelEvent('checkout_completed', { planId, value, currency: 'BRL' }),
-  planSelected: (planId: string, planName: string) => trackPixelEvent('plan_selected', { planId, planName }),
-  exitIntentShown: (page: string) => trackPixelEvent('exit_intent_shown', { page }),
-  exitIntentConverted: (page: string) => trackPixelEvent('exit_intent_converted', { page }),
+  pageView: (page: string) => trackPixelEvent('page_view', { page, content_name: page }),
+  
+  quizStarted: (userData?: UserData) => trackPixelEvent('quiz_started', { 
+    content_category: 'quiz',
+    content_name: 'Qualification Quiz',
+  }, userData),
+  
+  quizCompleted: (score: number, userData?: UserData) => trackPixelEvent('quiz_completed', { 
+    score,
+    content_category: 'quiz',
+    content_name: 'Quiz Completed',
+  }, userData),
+  
+  leadCaptured: (userData: UserData) => trackPixelEvent('form_submitted', {
+    content_category: 'lead',
+    content_name: 'Lead Form',
+  }, userData),
+  
+  trialCreated: (email: string, userData?: UserData) => trackPixelEvent('trial_created', { 
+    email,
+    content_category: 'trial',
+    content_name: 'Trial Registration',
+  }, { ...userData, email }),
+  
+  checkoutStarted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('checkout_started', { 
+    planId, 
+    value, 
+    currency: 'BRL',
+    content_type: 'product',
+    content_ids: [planId],
+    content_name: planId,
+  }, userData),
+  
+  checkoutCompleted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('checkout_completed', { 
+    planId, 
+    value, 
+    currency: 'BRL',
+    content_type: 'product',
+    content_ids: [planId],
+    content_name: planId,
+    transaction_id: generateEventId(),
+  }, userData),
+  
+  planSelected: (planId: string, planName: string, value?: number) => trackPixelEvent('plan_selected', { 
+    planId, 
+    planName,
+    value,
+    currency: 'BRL',
+    content_type: 'product',
+    content_ids: [planId],
+  }),
+  
+  exitIntentShown: (page: string) => trackPixelEvent('exit_intent_shown', { 
+    page,
+    content_category: 'exit_intent',
+  }),
+  
+  exitIntentConverted: (page: string, userData?: UserData) => trackPixelEvent('exit_intent_converted', { 
+    page,
+    content_category: 'exit_intent',
+  }, userData),
+  
+  subscriptionStarted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('subscription_started', {
+    planId,
+    value,
+    currency: 'BRL',
+    predicted_ltv: value * 12, // LTV estimado de 12 meses
+  }, userData),
 };
+
+// Identificar usuário para matching avançado
+export function identifyUser(userData: UserData): void {
+  if (!isBrowser) return;
+  
+  // Salvar ID do usuário para uso em eventos futuros
+  if (userData.externalId) {
+    localStorage.setItem('fitprime_user_id', userData.externalId);
+  }
+  
+  // Identificar no Facebook Pixel
+  if ((window as any).fbq && userData.email) {
+    hashSHA256(userData.email.toLowerCase().trim()).then(hashedEmail => {
+      (window as any).fbq('init', getPixelConfig().facebookPixelId, {
+        em: hashedEmail,
+        external_id: userData.externalId,
+      });
+    });
+  }
+  
+  // Identificar no TikTok
+  if ((window as any).ttq && userData.email) {
+    (window as any).ttq.identify({
+      email: userData.email,
+      phone_number: userData.phone,
+    });
+  }
+  
+  console.log('[Tracking] Usuário identificado:', userData.externalId || userData.email);
+}
 
 // Inicializar automaticamente ao carregar
 if (isBrowser) {

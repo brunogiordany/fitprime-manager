@@ -3779,3 +3779,13 @@
 ## Pendências Futuras v4.9
 - [ ] Sistema de notificação para lembrar usuários quando o período de teste está prestes a expirar
 - [ ] Email do usuário pré-preenchido na tela de login após o redirecionamento do cadastro
+
+## Integração Meta Ads Completa v4.9
+- [x] Corrigir problema de colar nos campos de Pixel ID e API Key
+- [x] Implementar Meta Pixel no frontend com eventos avançados
+- [x] Implementar Conversions API no backend
+- [ ] Implementar deduplicação de eventos (event_id)
+- [ ] Capturar parâmetros avançados (fbclid, fbc, fbp)
+- [ ] Eventos: PageView, Lead, CompleteRegistration, InitiateCheckout, Purchase
+- [ ] Testar integração completa
+

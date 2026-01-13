@@ -21,6 +21,7 @@ import { sitePagesRouter, trackingPixelsRouter, abTestsRouter, pageBlocksRouter,
 import { activationRouter } from "./routers/activationRouter";
 import aiAssistant from "./aiAssistant";
 import { nutritionRouter } from "./routers/nutritionRouter";
+import { trackingRouter } from "./routers/trackingRouter";
 
 // Funcão para fazer parse seguro de JSON (evita erro quando valor não é JSON válido)
 function safeJsonParse<T>(value: string | null | undefined, defaultValue: T): T {
@@ -374,6 +375,7 @@ export const appRouter = router({
   activation: activationRouter,
   sitePages: sitePagesRouter,
   trackingPixels: trackingPixelsRouter,
+  tracking: trackingRouter,
   abTests: abTestsRouter,
   pageBlocks: pageBlocksRouter,
   pageAssets: pageAssetsRouter,
