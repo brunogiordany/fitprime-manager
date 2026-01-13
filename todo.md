@@ -3843,5 +3843,8 @@
 
 ## Fix - IDs Persistentes e Pixel em Todas as Páginas v5.3
 - [x] Corrigir evento PageView do Meta Pixel
+  - [x] Remover chamadas duplicadas do fbq no index.html
+  - [x] Disparar PageView de forma síncrona e imediata
+  - [x] Usar queue do fbq para garantir que eventos sejam enfileirados
 - [x] Garantir IDs persistentes em todas as páginas automaticamente
 - [x] Criar wrapper automático para novas páginas
