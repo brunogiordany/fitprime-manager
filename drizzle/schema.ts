@@ -1010,6 +1010,12 @@ export const quizResponses = mysqlTable("quiz_responses", {
   visitorId: varchar("visitorId", { length: 255 }).notNull(), // ID único do visitante (fingerprint ou UUID)
   sessionId: varchar("sessionId", { length: 255 }), // ID da sessão
   
+  // Dados de contato do lead (capturados antes do quiz)
+  leadName: varchar("leadName", { length: 255 }), // Nome do personal trainer
+  leadEmail: varchar("leadEmail", { length: 320 }), // Email do personal trainer
+  leadPhone: varchar("leadPhone", { length: 20 }), // Telefone/WhatsApp do personal trainer
+  leadCity: varchar("leadCity", { length: 100 }), // Cidade do personal trainer
+  
   // Dados de qualificação
   studentsCount: varchar("studentsCount", { length: 50 }), // none, 1_5, 6_15, 16_30, over_30
   revenue: varchar("revenue", { length: 50 }), // no_revenue, under_2k, 2k_5k, 5k_10k, over_10k

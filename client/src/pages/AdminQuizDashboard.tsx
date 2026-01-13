@@ -21,6 +21,9 @@ import {
   Loader2,
   PieChartIcon,
   Activity,
+  Eye,
+  User,
+  MessageCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -697,9 +700,10 @@ export default function AdminQuizDashboard() {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-2 px-3">Data</th>
+                        <th className="text-left py-2 px-3">Nome</th>
+                        <th className="text-left py-2 px-3">Contato</th>
                         <th className="text-left py-2 px-3">Alunos</th>
                         <th className="text-left py-2 px-3">Renda</th>
-                        <th className="text-left py-2 px-3">Ticket/Aluno</th>
                         <th className="text-left py-2 px-3">Perfil</th>
                         <th className="text-left py-2 px-3">Status</th>
                         <th className="text-left py-2 px-3">Ações</th>
@@ -711,6 +715,13 @@ export default function AdminQuizDashboard() {
                         const revenue = parseInt(response.revenue) || 0;
                         const ticket = students > 0 ? Math.round(revenue / students) : 0;
                         
+                        const openWhatsApp = (e: React.MouseEvent, phone: string) => {
+                          e.stopPropagation();
+                          const cleanPhone = phone.replace(/\D/g, "");
+                          const message = encodeURIComponent(`Olá! Vi que você fez o quiz do FitPrime e gostaria de conversar sobre como podemos ajudar seu negócio de personal trainer.`);
+                          window.open(`https://wa.me/55${cleanPhone}?text=${message}`, "_blank");
+                        };
+                        
                         return (
                           <tr 
                             key={response.id} 
@@ -720,14 +731,34 @@ export default function AdminQuizDashboard() {
                             <td className="py-2 px-3">
                               {new Date(response.createdAt).toLocaleDateString("pt-BR")}
                             </td>
+                            <td className="py-2 px-3">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-gray-400" />
+                                <span className="font-medium">
+                                  {response.leadName || <span className="text-gray-400 italic">Não informado</span>}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2 px-3">
+                              {response.leadPhone ? (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-7 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={(e) => openWhatsApp(e, response.leadPhone)}
+                                >
+                                  <MessageCircle className="h-4 w-4 mr-1" />
+                                  WhatsApp
+                                </Button>
+                              ) : (
+                                <span className="text-gray-400 text-xs">-</span>
+                              )}
+                            </td>
                             <td className="py-2 px-3 font-medium">
                               {STUDENTS_LABELS[response.studentsCount] || response.studentsCount || "-"}
                             </td>
                             <td className="py-2 px-3 font-medium text-green-600">
                               {REVENUE_LABELS[response.revenue] || (response.revenue ? `R$ ${response.revenue}` : "-")}
-                            </td>
-                            <td className="py-2 px-3 text-purple-600">
-                              {ticket > 0 ? `R$ ${ticket}` : "-"}
                             </td>
                             <td className="py-2 px-3">
                               <Badge variant="outline">
@@ -745,8 +776,17 @@ export default function AdminQuizDashboard() {
                               )}
                             </td>
                             <td className="py-2 px-3">
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `/admin/quiz/${response.id}`;
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Anamnese
                               </Button>
                             </td>
                           </tr>

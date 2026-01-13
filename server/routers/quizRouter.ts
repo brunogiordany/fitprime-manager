@@ -8,6 +8,12 @@ const saveQuizResponseSchema = z.object({
   visitorId: z.string(),
   sessionId: z.string(),
   
+  // Dados de contato do lead (capturados antes do quiz)
+  leadName: z.string().optional(),
+  leadEmail: z.string().optional(),
+  leadPhone: z.string().optional(),
+  leadCity: z.string().optional(),
+  
   // Respostas individuais
   studentsCount: z.string().optional(),
   revenue: z.string().optional(),
@@ -56,6 +62,7 @@ export const quizRouter = router({
       const result = await db.execute(sql`
         INSERT INTO quiz_responses (
           visitorId, sessionId, answers, 
+          leadName, leadEmail, leadPhone, leadCity,
           studentsCount, revenue, managementPain, timePain, retentionPain, billingPain, priority,
           allAnswers, recommendedProfile, recommendedPlan, totalScore, identifiedPains,
           isQualified, disqualificationReason,
@@ -63,6 +70,7 @@ export const quizRouter = router({
           userAgent, deviceType, browser, os, completedAt, createdAt
         ) VALUES (
           ${input.visitorId}, ${input.sessionId}, ${JSON.stringify(input.allAnswers || {})},
+          ${input.leadName || null}, ${input.leadEmail || null}, ${input.leadPhone || null}, ${input.leadCity || null},
           ${input.studentsCount || null}, ${input.revenue || null}, ${input.managementPain || null}, 
           ${input.timePain || null}, ${input.retentionPain || null}, ${input.billingPain || null}, ${input.priority || null},
           ${JSON.stringify(input.allAnswers || {})}, ${input.recommendedProfile || null}, ${input.recommendedPlan || null}, 

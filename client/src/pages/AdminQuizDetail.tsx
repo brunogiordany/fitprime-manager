@@ -195,7 +195,9 @@ export default function AdminQuizDetail() {
             </Button>
           </Link>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">Anamnese do Lead #{response.id}</h1>
+            <h1 className="text-2xl font-bold">
+              {response.leadName ? `Anamnese de ${response.leadName}` : `Anamnese do Lead #${response.id}`}
+            </h1>
             <p className="text-gray-600">
               Preenchido em {createdAt.toLocaleDateString("pt-BR")} às {createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
             </p>
@@ -217,6 +219,106 @@ export default function AdminQuizDetail() {
             )}
           </div>
         </div>
+
+        {/* Dados de Contato do Lead */}
+        {(response.leadName || response.leadEmail || response.leadPhone) && (
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
+                <User className="h-5 w-5" />
+                Dados do Personal Trainer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Nome</p>
+                  <p className="font-semibold text-gray-900 flex items-center gap-2">
+                    <User className="h-4 w-4 text-blue-600" />
+                    {response.leadName || "-"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Email</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-blue-600" />
+                    <p className="font-medium text-gray-900">{response.leadEmail || "-"}</p>
+                    {response.leadEmail && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6"
+                        onClick={() => copyToClipboard(response.leadEmail)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">WhatsApp</p>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-blue-600" />
+                    <p className="font-medium text-gray-900">{response.leadPhone || "-"}</p>
+                    {response.leadPhone && (
+                      <>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          onClick={() => copyToClipboard(response.leadPhone)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          onClick={() => openWhatsApp(response.leadPhone)}
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Cidade</p>
+                  <p className="font-medium text-gray-900 flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-blue-600" />
+                    {response.leadCity || "-"}
+                  </p>
+                </div>
+              </div>
+              {response.leadPhone && (
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => openWhatsApp(response.leadPhone)}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Enviar WhatsApp
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Aviso se não tem dados de contato */}
+        {!response.leadName && !response.leadEmail && !response.leadPhone && (
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-800">Dados de contato não capturados</p>
+                  <p className="text-sm text-amber-700">Este lead preencheu o quiz antes da atualização que captura nome, email e telefone.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Cards de Resumo */}
         <div className="grid md:grid-cols-4 gap-4">

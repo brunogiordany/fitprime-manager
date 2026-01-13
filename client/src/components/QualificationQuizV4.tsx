@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -15,7 +17,12 @@ import {
   Target,
   Sparkles,
   Heart,
-  Zap
+  Zap,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -38,6 +45,14 @@ interface QuizQuestion {
   icon: React.ReactNode;
   options: QuizOption[];
   multiple?: boolean;
+}
+
+// Dados de contato do lead
+interface LeadData {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
 }
 
 // Perguntas do Quiz - Funil de Dores
@@ -258,6 +273,9 @@ interface QuizResult {
 }
 
 export default function QualificationQuizV4({ onComplete }: QualificationQuizV4Props) {
+  const [showLeadForm, setShowLeadForm] = useState(true); // Começa com o formulário de lead
+  const [leadData, setLeadData] = useState<LeadData>({ name: "", email: "", phone: "", city: "" });
+  const [leadErrors, setLeadErrors] = useState<Partial<LeadData>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -270,6 +288,46 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
   const currentQuestion = QUIZ_QUESTIONS[currentStep];
   const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
   const isLastQuestion = currentStep === QUIZ_QUESTIONS.length - 1;
+
+  // Validar dados do lead
+  const validateLeadData = (): boolean => {
+    const errors: Partial<LeadData> = {};
+    
+    if (!leadData.name.trim()) {
+      errors.name = "Nome é obrigatório";
+    }
+    
+    if (!leadData.email.trim()) {
+      errors.email = "Email é obrigatório";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadData.email)) {
+      errors.email = "Email inválido";
+    }
+    
+    if (!leadData.phone.trim()) {
+      errors.phone = "WhatsApp é obrigatório";
+    } else if (leadData.phone.replace(/\D/g, '').length < 10) {
+      errors.phone = "WhatsApp inválido";
+    }
+    
+    setLeadErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Formatar telefone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  // Iniciar quiz após preencher dados
+  const handleStartQuiz = () => {
+    if (validateLeadData()) {
+      setShowLeadForm(false);
+    }
+  };
 
   // Categoria atual para estilo
   const getCategoryLabel = () => {
@@ -314,10 +372,14 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
       const quizResult = calculateResult(newAnswers);
       setResult(quizResult);
       
-      // Salvar no banco
+      // Salvar no banco com dados do lead
       saveQuizMutation.mutate({
         visitorId: `visitor_${Date.now()}`,
         sessionId,
+        leadName: leadData.name,
+        leadEmail: leadData.email,
+        leadPhone: leadData.phone,
+        leadCity: leadData.city,
         allAnswers: newAnswers,
         studentsCount: quizResult.currentStudents.toString(),
         revenue: quizResult.currentRevenue.toString(),
@@ -404,6 +466,124 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
     };
   };
 
+  // Tela de captura de dados do lead
+  if (showLeadForm) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8 px-4">
+        <div className="max-w-xl mx-auto">
+          <Card className="border-0 shadow-xl">
+            <CardContent className="p-8">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-10 h-10 text-emerald-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Descubra seu Plano Ideal
+                </h2>
+                <p className="text-gray-600">
+                  Responda algumas perguntas rápidas e descubra como o FitPrime pode transformar seu negócio
+                </p>
+              </div>
+
+              {/* Formulário */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <Label htmlFor="name" className="flex items-center gap-2 mb-2">
+                    <User className="w-4 h-4 text-gray-500" />
+                    Seu nome completo
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: João Silva"
+                    value={leadData.name}
+                    onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                    className={leadErrors.name ? "border-red-500" : ""}
+                  />
+                  {leadErrors.name && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="flex items-center gap-2 mb-2">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    Seu melhor email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Ex: joao@email.com"
+                    value={leadData.email}
+                    onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
+                    className={leadErrors.email ? "border-red-500" : ""}
+                  />
+                  {leadErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="flex items-center gap-2 mb-2">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    WhatsApp
+                  </Label>
+                  <Input
+                    id="phone"
+                    placeholder="(11) 99999-9999"
+                    value={leadData.phone}
+                    onChange={(e) => setLeadData({ ...leadData, phone: formatPhone(e.target.value) })}
+                    className={leadErrors.phone ? "border-red-500" : ""}
+                  />
+                  {leadErrors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.phone}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="city" className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    Cidade (opcional)
+                  </Label>
+                  <Input
+                    id="city"
+                    placeholder="Ex: São Paulo - SP"
+                    value={leadData.city}
+                    onChange={(e) => setLeadData({ ...leadData, city: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Benefícios */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                <h3 className="font-semibold text-emerald-800 mb-2">O que você vai descobrir:</h3>
+                <ul className="text-emerald-700 text-sm space-y-1">
+                  <li>✓ Quanto tempo você está perdendo com burocracia</li>
+                  <li>✓ Quanto dinheiro está deixando na mesa</li>
+                  <li>✓ Qual plano é ideal para seu momento</li>
+                  <li>✓ Como chegar na sua meta de renda</li>
+                </ul>
+              </div>
+
+              {/* CTA */}
+              <Button 
+                onClick={handleStartQuiz}
+                className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700 font-bold"
+              >
+                Começar Quiz Gratuito
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+
+              <p className="text-center text-gray-500 text-xs mt-4">
+                🔒 Seus dados estão seguros e não serão compartilhados
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // Tela de eliminação para quem não tem renda
   if (eliminated) {
     return (
@@ -482,7 +662,7 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
                   <AlertTriangle className="w-10 h-10 text-red-500" />
                 </div>
                 <h2 className="text-3xl font-black text-white mb-2">
-                  Você está SANGRANDO dinheiro
+                  {leadData.name.split(' ')[0]}, você está SANGRANDO dinheiro
                 </h2>
                 <p className="text-gray-400">
                   E provavelmente nem percebe...
@@ -550,7 +730,10 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
                       currentRevenue: result.currentRevenue,
                       goalRevenue: result.goalRevenue,
                       painScore: result.painScore,
-                      recommendedPlan: result.recommendedPlan
+                      recommendedPlan: result.recommendedPlan,
+                      leadName: leadData.name,
+                      leadEmail: leadData.email,
+                      leadPhone: leadData.phone,
                     }));
                     window.location.href = "/quiz-resultado-plano";
                   }}

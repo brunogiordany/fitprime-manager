@@ -3744,3 +3744,9 @@
   - [x] Gráfico de distribuição por quantidade de alunos
   - [x] Gráfico de distribuição por faixa de renda
   - [x] Visualização clara e interativa no dashboard do admin
+
+## Captura de Dados do Personal no Quiz v4.4
+- [x] Adicionar campos de contato no banco de dados (nome, email, telefone)
+- [x] Criar tela de captura de dados antes de iniciar o quiz
+- [x] Exibir dados do personal na página de anamnese do lead
+- [x] Adicionar botão de acesso rápido à anamnese na lista de leads
