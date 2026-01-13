@@ -3809,3 +3809,10 @@
 - [x] Dashboard de eventos do Pixel no admin
 - [ ] Métricas de taxa de sucesso da API
 
+
+## Novas Funcionalidades v5.1
+- [x] Sistema de notificação para trial expirando (email 24h antes e no dia)
+- [x] Email pré-preenchido no login após cadastro
+- [x] Alertas de conversão via webhook (email/notificação quando compra confirmada)
+- [x] Relatório de ROI/ROAS (cruzar gastos com anúncios e receita)
+

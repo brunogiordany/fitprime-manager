@@ -59,6 +59,7 @@ import AdminAnalyticsDashboard from "@/pages/AdminAnalyticsDashboard";
 import AdminPagesManager from "@/pages/AdminPagesManager";
 import AdminPixelsConfig from "@/pages/AdminPixelsConfig";
 import AdminPixelDashboard from "@/pages/AdminPixelDashboard";
+import AdminROIDashboard from "@/pages/AdminROIDashboard";
 import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates";
@@ -157,6 +158,7 @@ function Router() {
       <Route path="/admin/pages" component={AdminPagesManager} />
       <Route path="/admin/pixels" component={AdminPixelsConfig} />
       <Route path="/admin/pixel-dashboard" component={AdminPixelDashboard} />
+      <Route path="/admin/roi" component={AdminROIDashboard} />
       <Route path="/admin/editor/:pageId" component={AdminPageEditor} />
       <Route path="/admin/editor/new" component={AdminPageEditor} />
       <Route path="/admin/ab-testing" component={AdminABTesting} />

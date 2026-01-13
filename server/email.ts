@@ -1105,3 +1105,166 @@ Duvidas? Entre em contato conosco pelo email contato@fitprimemanager.online
     from: EMAIL_SENDERS.cobranca,
   });
 }
+
+
+/**
+ * Send trial expiring notification email
+ */
+export async function sendTrialExpiringEmail(
+  email: string,
+  name: string,
+  hoursRemaining: number,
+  upgradeLink: string
+): Promise<boolean> {
+  const isLastDay = hoursRemaining <= 24;
+  const subject = isLastDay 
+    ? '⚠️ Seu período de teste expira hoje!' 
+    : `⏰ Seu período de teste expira em ${Math.ceil(hoursRemaining / 24)} dias`;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: ${isLastDay ? '#ef4444' : '#f59e0b'}; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">${isLastDay ? '⚠️' : '⏰'}</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">
+          ${isLastDay ? 'Último dia de teste!' : 'Seu teste está acabando'}
+        </h1>
+      </div>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        Olá <strong>${name}</strong>,
+      </p>
+      
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+        ${isLastDay 
+          ? 'Seu período de teste gratuito do FitPrime <strong>expira hoje</strong>! Não perca acesso às funcionalidades que você já está usando.'
+          : `Seu período de teste gratuito do FitPrime expira em <strong>${Math.ceil(hoursRemaining / 24)} dias</strong>. Aproveite para conhecer todas as funcionalidades!`
+        }
+      </p>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h3 style="color: #166534; margin: 0 0 10px 0; font-size: 16px;">✅ O que você ganha ao assinar:</h3>
+        <ul style="color: #4b5563; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+          <li>Alunos ilimitados</li>
+          <li>Geração de treinos com IA</li>
+          <li>Cobranças automáticas</li>
+          <li>Agenda completa</li>
+          <li>Suporte prioritário</li>
+        </ul>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${upgradeLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          Assinar agora
+        </a>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; text-align: center;">
+        Tem dúvidas? Responda este email ou entre em contato pelo WhatsApp.
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime Manager - Sistema de Gestão para Personal Trainers
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject,
+    html,
+    from: EMAIL_SENDERS.avisos,
+  });
+}
+
+/**
+ * Send conversion alert email to admin
+ */
+export async function sendConversionAlertEmail(
+  adminEmail: string,
+  customerName: string,
+  customerEmail: string,
+  productName: string,
+  value: number,
+  paymentMethod: string
+): Promise<boolean> {
+  const subject = `🎉 Nova venda: ${customerName} - R$ ${value.toFixed(2)}`;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">🎉</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Nova Venda Confirmada!</h1>
+      </div>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Cliente:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600; text-align: right;">${customerName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Email:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; text-align: right;">${customerEmail}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Produto:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; text-align: right;">${productName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Pagamento:</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; text-align: right;">${paymentMethod}</td>
+          </tr>
+          <tr style="border-top: 1px solid #e5e7eb;">
+            <td style="padding: 12px 0 0 0; color: #1f2937; font-size: 18px; font-weight: 700;">Valor:</td>
+            <td style="padding: 12px 0 0 0; color: #10b981; font-size: 18px; font-weight: 700; text-align: right;">R$ ${value.toFixed(2)}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; text-align: center;">
+        Data: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        FitPrime Manager - Sistema de Gestão para Personal Trainers
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmail({
+    to: adminEmail,
+    subject,
+    html,
+    from: EMAIL_SENDERS.sistema,
+  });
+}

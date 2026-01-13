@@ -212,8 +212,9 @@ export default function TrialSignupPage() {
       
       toast.success("Conta criada com sucesso! Redirecionando para o login...");
       
-      // Redirecionar imediatamente para a página de login
-      setLocation("/");
+      // Redirecionar para a página de login com email pré-preenchido
+      const encodedEmail = encodeURIComponent(formData.email);
+      setLocation(`/?email=${encodedEmail}`);
     } catch (error: any) {
       if (error.message?.includes("CPF já cadastrado")) {
         setErrors({ cpf: "CPF já cadastrado. Faça login na sua conta existente." });

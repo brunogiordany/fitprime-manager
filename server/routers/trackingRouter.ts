@@ -198,7 +198,7 @@ async function sendPurchaseEvent(
 
   // Salvar evento no banco
   try {
-    await (await getDb()).insert(pixelEvents).values({
+    const _db = await getDb(); if (_db) await _db.insert(pixelEvents).values({
       eventId: eventId,
       eventName: "Purchase",
       eventSource: "webhook",
@@ -221,7 +221,7 @@ async function sendPurchaseEvent(
 
   // Atualizar status da API no banco
   try {
-    await (await getDb()).update(pixelEvents)
+    const _db = await getDb(); if (_db) await _db.update(pixelEvents)
       .set({
         apiSent: result.success,
         apiResponse: result as any,
@@ -257,7 +257,8 @@ export const trackingRouter = router({
 
       // Salvar evento no banco
       try {
-        await (await getDb()).insert(pixelEvents).values({
+        const dbInsert = await getDb();
+        if (dbInsert) await dbInsert.insert(pixelEvents).values({
           eventId: input.event_id,
           eventName: input.event_name,
           eventSource: "api",
@@ -281,7 +282,8 @@ export const trackingRouter = router({
 
       // Atualizar status da API no banco
       try {
-        await (await getDb()).update(pixelEvents)
+        const dbUpdate = await getDb();
+        if (dbUpdate) await dbUpdate.update(pixelEvents)
           .set({
             apiSent: result.success,
             apiResponse: result as any,
@@ -346,7 +348,7 @@ export const trackingRouter = router({
 
       // Salvar log do webhook
       try {
-        await (await getDb()).insert(webhookLogs).values({
+        const _db = await getDb(); if (_db) await _db.insert(webhookLogs).values({
           source: "cakto",
           eventType: input.event,
           payload: input as any,
@@ -375,7 +377,7 @@ export const trackingRouter = router({
 
           // Atualizar log como processado
           try {
-            await (await getDb()).update(webhookLogs)
+            const _db = await getDb(); if (_db) await _db.update(webhookLogs)
               .set({
                 processed: true,
                 processedAt: new Date(),
@@ -384,6 +386,23 @@ export const trackingRouter = router({
               .where(eq(webhookLogs.relatedEmail, customer.email));
           } catch (err) {
             console.error("[Webhook Log] Erro ao atualizar:", err);
+          }
+
+          // Enviar alerta de conversão por email para o admin
+          try {
+            const { sendConversionAlertEmail } = await import('../email');
+            const adminEmail = process.env.OWNER_EMAIL || 'admin@fitprimemanager.com';
+            await sendConversionAlertEmail(
+              adminEmail,
+              customer.name || 'Cliente',
+              customer.email,
+              product?.name || 'FitPrime Subscription',
+              payment.amount / 100,
+              payment.method || 'Não informado'
+            );
+            console.log('[Cakto Webhook] Alerta de conversão enviado para:', adminEmail);
+          } catch (emailErr) {
+            console.error('[Cakto Webhook] Erro ao enviar alerta de conversão:', emailErr);
           }
 
           return { success: true, purchase_event_sent: result.success };
@@ -453,14 +472,18 @@ export const trackingRouter = router({
         conditions.push(lte(pixelEvents.createdAt, new Date(input.endDate)));
       }
 
-      const events = await (await getDb()).select()
+      const _dbEvents = await getDb();
+      if (!_dbEvents) throw new Error('Database not available');
+      const events = await _dbEvents.select()
         .from(pixelEvents)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(pixelEvents.createdAt))
         .limit(input.limit)
         .offset(input.offset);
 
-      const totalResult = await (await getDb()).select({ count: sql<number>`count(*)` })
+      const dbTotal = await getDb();
+      if (!dbTotal) throw new Error('Database not available');
+      const totalResult = await dbTotal.select({ count: sql<number>`count(*)` })
         .from(pixelEvents)
         .where(conditions.length > 0 ? and(...conditions) : undefined);
 
@@ -488,12 +511,14 @@ export const trackingRouter = router({
       }
 
       // Total de eventos
-      const totalResult = await (await getDb()).select({ count: sql<number>`count(*)` })
+      const dbStats = await getDb();
+      if (!dbStats) throw new Error('Database not available');
+      const totalResult = await dbStats.select({ count: sql<number>`count(*)` })
         .from(pixelEvents)
         .where(conditions.length > 0 ? and(...conditions) : undefined);
 
       // Eventos por tipo
-      const eventsByType = await (await getDb()).select({
+      const eventsByType = await dbStats.select({
         eventName: pixelEvents.eventName,
         count: sql<number>`count(*)`,
       })
@@ -502,7 +527,7 @@ export const trackingRouter = router({
         .groupBy(pixelEvents.eventName);
 
       // Taxa de sucesso da API
-      const apiSuccessResult = await (await getDb()).select({
+      const apiSuccessResult = await dbStats.select({
         total: sql<number>`count(*)`,
         success: sql<number>`sum(case when apiSent = true then 1 else 0 end)`,
       })
@@ -515,7 +540,9 @@ export const trackingRouter = router({
         : 0;
 
       // Eventos por fonte
-      const eventsBySource = await (await getDb()).select({
+      const db = await getDb();
+      if (!db) throw new Error('Database not available');
+      const eventsBySource = await db.select({
         eventSource: pixelEvents.eventSource,
         count: sql<number>`count(*)`,
       })
@@ -524,7 +551,7 @@ export const trackingRouter = router({
         .groupBy(pixelEvents.eventSource);
 
       // Valor total de Purchase
-      const purchaseValueResult = await (await getDb()).select({
+      const purchaseValueResult = await db.select({
         total: sql<number>`sum(cast(value as decimal(10,2)))`,
       })
         .from(pixelEvents)
@@ -534,7 +561,7 @@ export const trackingRouter = router({
         ));
 
       // Eventos por dia (últimos 30 dias)
-      const eventsByDay = await (await getDb()).select({
+      const eventsByDay = await db.select({
         date: sql<string>`date(createdAt)`,
         count: sql<number>`count(*)`,
       })
@@ -569,7 +596,9 @@ export const trackingRouter = router({
         conditions.push(eq(webhookLogs.source, input.source));
       }
 
-      const logs = await (await getDb()).select()
+      const db2 = await getDb();
+      if (!db2) throw new Error('Database not available');
+      const logs = await db2.select()
         .from(webhookLogs)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(webhookLogs.createdAt))

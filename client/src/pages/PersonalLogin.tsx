@@ -90,6 +90,15 @@ export default function PersonalLogin() {
   });
   
   useEffect(() => {
+    // Check for email in URL params (from trial signup redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailFromUrl = urlParams.get('email');
+    if (emailFromUrl) {
+      setLoginForm(prev => ({ ...prev, email: decodeURIComponent(emailFromUrl) }));
+      // Clear the URL param without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+      return; // Don't override with saved email
+    }
     
     // Load saved email if "Remember me" was active
     const savedEmail = localStorage.getItem("personalRememberEmail");
