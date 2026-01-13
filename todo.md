@@ -3738,3 +3738,9 @@
 - [x] Visualizar respostas completas do quiz para abordagem personalizada
 - [x] Corrigir Analytics Dashboard para mostrar dados reais do banco
 - [x] Corrigir Dashboard de Funil para mostrar dados reais do banco
+
+## Gráficos Financeiros Admin v4.3
+- [x] Criar gráficos visuais de dados financeiros dos personal trainers
+  - [x] Gráfico de distribuição por quantidade de alunos
+  - [x] Gráfico de distribuição por faixa de renda
+  - [x] Visualização clara e interativa no dashboard do admin
