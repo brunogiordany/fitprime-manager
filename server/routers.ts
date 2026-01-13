@@ -9923,6 +9923,7 @@ Seja motivador mas realista e profissional.`;
         weight: z.number().optional(),
         reps: z.number().optional(),
         restTime: z.number().optional(),
+        setType: z.string().optional(),
         isDropSet: z.boolean().optional(),
         dropWeight: z.number().optional(),
         dropReps: z.number().optional(),
@@ -9935,7 +9936,7 @@ Seja motivador mas realista e profissional.`;
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, weight, dropWeight, restPauseWeight, ...rest } = input;
+        const { id, weight, dropWeight, restPauseWeight, setType, ...rest } = input;
         const db = await import('./db');
         const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
         await db.updateWorkoutLogSet(id, {
@@ -9943,6 +9944,7 @@ Seja motivador mas realista e profissional.`;
           weight: toDecimal(weight),
           dropWeight: toDecimal(dropWeight),
           restPauseWeight: toDecimal(restPauseWeight),
+          setType: setType as "warmup" | "feeler" | "working" | "drop" | "rest_pause" | "failure" | undefined,
         });
         return { success: true };
       }),

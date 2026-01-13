@@ -3727,3 +3727,6 @@
   - [x] Comparar períodos (semana atual vs anterior)
   - [x] Exibir aderência ao plano da anamnese com barras de progresso
 - [x] Bug: Erro na aba Estat. Cardio do Diário de Treino ao selecionar aluno - item.sessions está undefined, deveria ser item.sessionCount
+
+- [x] Bug: Dropdown de tipo de série muda sozinho após selecionar (Aquecimento vira Série Válida automaticamente)
+- [x] Bug: Falta botão de salvar novamente no registro do maromba após já ter salvo

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -479,8 +479,15 @@ export default function TrainingDiaryPage() {
   }, [showSessionLogModal, selectedSession, selectedWorkout]);
   
   // Efeito para carregar exercícios do treino selecionado
+  // Usamos useRef para controlar se já carregamos os exercícios para este workoutDayId
+  const lastLoadedDayIdRef = useRef<number | null>(null);
+  
   useEffect(() => {
-    if (dayExercises && dayExercises.length > 0) {
+    // Só carrega se:
+    // 1. Tem exercícios do dia
+    // 2. É um dia diferente do último carregado (evita sobrescrever ao re-render)
+    // 3. Não estamos editando um log existente (logDetail)
+    if (dayExercises && dayExercises.length > 0 && newLog.workoutDayId !== lastLoadedDayIdRef.current && !logDetail) {
       const exercises: ExerciseData[] = dayExercises.map((ex: any) => ({
         exerciseId: ex.id,
         exerciseName: ex.name,
@@ -501,8 +508,9 @@ export default function TrainingDiaryPage() {
         isExpanded: true,
       }));
       setCurrentExercises(exercises);
+      lastLoadedDayIdRef.current = newLog.workoutDayId;
     }
-  }, [dayExercises]);
+  }, [dayExercises, newLog.workoutDayId, logDetail]);
   
   // Efeito para carregar detalhes do log selecionado
   useEffect(() => {
@@ -553,6 +561,7 @@ export default function TrainingDiaryPage() {
       feeling: "",
     });
     setCurrentExercises([]);
+    lastLoadedDayIdRef.current = null; // Reset para permitir carregar novamente
   };
   
   const handleCreateLog = async () => {
@@ -2664,6 +2673,37 @@ export default function TrainingDiaryPage() {
                 <>
                   <Button variant="outline" onClick={() => setShowLogDetailModal(false)}>
                     Fechar
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => {
+                      // Salvar todas as séries atuais
+                      currentExercises.forEach((ex) => {
+                        ex.sets.forEach((set) => {
+                          if (set.id) {
+                            updateSet.mutate({
+                              id: set.id,
+                              weight: set.weight,
+                              reps: set.reps,
+                              restTime: set.restTime,
+                              setType: set.setType,
+                              isDropSet: set.isDropSet,
+                              dropWeight: set.dropWeight,
+                              dropReps: set.dropReps,
+                              isRestPause: set.isRestPause,
+                              restPauseWeight: set.restPauseWeight,
+                              restPauseReps: set.restPauseReps,
+                              restPausePause: set.restPausePause,
+                            });
+                          }
+                        });
+                      });
+                      toast.success("Alterações salvas!");
+                    }} 
+                    disabled={updateSet.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateSet.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                   <Button onClick={handleCompleteLog} disabled={completeLog.isPending}>
                     <CheckCircle2 className="h-4 w-4 mr-2" />
