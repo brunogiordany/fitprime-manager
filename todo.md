@@ -3770,3 +3770,12 @@
 - [x] Revisar /quiz-trial para garantir que dados apareçam no dashboard
 - [ ] Adicionar captura de dados de contato em todos os quizzes
 
+
+## Melhorias Dashboard Quiz v4.8
+- [x] Botão de exportar leads em CSV com todos os dados de contato
+- [x] Filtro por página de origem do quiz (/quiz, /quiz-2, /quiz-trial)
+- [ ] Notificação por email para admin quando novo lead completar quiz
+
+## Pendências Futuras v4.9
+- [ ] Sistema de notificação para lembrar usuários quando o período de teste está prestes a expirar
+- [ ] Email do usuário pré-preenchido na tela de login após o redirecionamento do cadastro

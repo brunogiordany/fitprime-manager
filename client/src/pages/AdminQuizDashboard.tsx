@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,7 @@ export default function AdminQuizDashboard() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [originFilter, setOriginFilter] = useState<string>("all");
 
   const { data: funnelStats, isLoading: loadingStats } = trpc.quiz.getFunnelStats.useQuery({
     startDate: startDate || undefined,
@@ -112,6 +113,16 @@ export default function AdminQuizDashboard() {
     startDate: startDate || undefined,
     endDate: endDate || undefined,
   });
+
+  // Filtrar respostas por origem - DEVE estar antes do early return
+  const filteredResponses = useMemo(() => {
+    if (!responsesData?.responses) return [];
+    if (originFilter === "all") return responsesData.responses;
+    return responsesData.responses.filter((r: any) => {
+      const landingPage = r.landingPage || "";
+      return landingPage === originFilter || landingPage.includes(originFilter.replace("/", ""));
+    });
+  }, [responsesData?.responses, originFilter]);
 
   if (loadingStats || loadingDaily) {
     return (
@@ -235,7 +246,7 @@ export default function AdminQuizDashboard() {
           </div>
           
           {/* Filtros */}
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
             <Input
               type="date"
               value={startDate}
@@ -251,8 +262,53 @@ export default function AdminQuizDashboard() {
               className="w-40"
               placeholder="Data final"
             />
+            <select
+              value={originFilter}
+              onChange={(e) => setOriginFilter(e.target.value)}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            >
+              <option value="all">Todas as origens</option>
+              <option value="/quiz">/quiz</option>
+              <option value="/quiz-2">/quiz-2</option>
+              <option value="/quiz-trial">/quiz-trial</option>
+            </select>
             <Button variant="outline" size="icon">
               <Filter className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => {
+                // Exportar CSV
+                const filteredData = filteredResponses || [];
+                const headers = ["Data", "Nome", "Email", "WhatsApp", "Cidade", "Alunos", "Renda", "Perfil", "Status", "Origem"];
+                const csvContent = [
+                  headers.join(","),
+                  ...filteredData.map((r: any) => [
+                    new Date(r.createdAt).toLocaleDateString("pt-BR"),
+                    `"${r.leadName || "Não informado"}"`,
+                    `"${r.leadEmail || "-"}"`,
+                    `"${r.leadPhone || "-"}"`,
+                    `"${r.leadCity || "-"}"`,
+                    STUDENTS_LABELS[r.studentsCount] || r.studentsCount || "-",
+                    REVENUE_LABELS[r.revenue] || r.revenue || "-",
+                    r.recommendedProfile === "high_pain" ? "Alta Dor" :
+                    r.recommendedProfile === "medium_pain" ? "Média Dor" :
+                    r.recommendedProfile === "low_pain" ? "Baixa Dor" : r.recommendedProfile || "-",
+                    r.isQualified ? "Qualificado" : "Desqualificado",
+                    `"${r.landingPage || "-"}"`
+                  ].join(","))
+                ].join("\n");
+                
+                const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `leads-quiz-${new Date().toISOString().split("T")[0]}.csv`;
+                link.click();
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Exportar CSV
             </Button>
           </div>
         </div>
@@ -691,7 +747,7 @@ export default function AdminQuizDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Últimas Respostas</span>
-                  <Badge variant="outline">{responsesData?.total || 0} total</Badge>
+                  <Badge variant="outline">{filteredResponses?.length || 0} total</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -706,11 +762,12 @@ export default function AdminQuizDashboard() {
                         <th className="text-left py-2 px-3">Renda</th>
                         <th className="text-left py-2 px-3">Perfil</th>
                         <th className="text-left py-2 px-3">Status</th>
+                        <th className="text-left py-2 px-3">Origem</th>
                         <th className="text-left py-2 px-3">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {responsesData?.responses?.map((response: any) => {
+                      {filteredResponses?.map((response: any) => {
                         const students = parseInt(response.studentsCount) || 0;
                         const revenue = parseInt(response.revenue) || 0;
                         const ticket = students > 0 ? Math.round(revenue / students) : 0;
@@ -774,6 +831,11 @@ export default function AdminQuizDashboard() {
                               ) : (
                                 <Badge className="bg-red-100 text-red-700">Desqualificado</Badge>
                               )}
+                            </td>
+                            <td className="py-2 px-3">
+                              <Badge variant="outline" className="text-xs">
+                                {response.landingPage || "-"}
+                              </Badge>
                             </td>
                             <td className="py-2 px-3">
                               <Button 
