@@ -3816,3 +3816,11 @@
 - [x] Alertas de conversão via webhook (email/notificação quando compra confirmada)
 - [x] Relatório de ROI/ROAS (cruzar gastos com anúncios e receita)
 
+
+## Verificação Meta Pixel em Todos os Links v5.2
+- [ ] Listar todos os links públicos do sistema
+- [x] Verificar inicialização do Pixel no App.tsx ou index.html
+- [ ] Garantir que fbq está sendo chamado em todas as páginas
+- [ ] Testar cada link com Pixel Helper
+- [ ] Corrigir páginas sem Pixel funcionando
+

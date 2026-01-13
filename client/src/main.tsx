@@ -1,4 +1,11 @@
 import { trpc } from "@/lib/trpc";
+import { initializePixels, savePixelConfig } from "@/lib/tracking-pixels";
+
+// Inicializar Meta Pixel com as credenciais
+savePixelConfig({
+  facebookPixelId: '898343203142628',
+  serverSideEnabled: true,
+});
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
