@@ -3754,3 +3754,19 @@
 ## Bug Fix - Cadastro Trial v4.5
 - [x] Corrigir redirecionamento após cadastro trial (tela branca -> login)
 
+
+## Email de Boas-Vindas para Alunos v4.6
+- [ ] Implementar envio de email de boas-vindas ao cadastrar aluno
+- [ ] Email deve ser enviado em nome do personal trainer do aluno
+
+
+## Pendências Anotadas v4.7
+- [ ] Sistema de notificação para lembrar usuários quando o período de teste está prestes a expirar
+- [ ] Email do usuário pré-preenchido na tela de login após o redirecionamento do cadastro
+
+## Revisão dos Quizzes v4.8
+- [ ] Revisar /quiz para garantir que dados apareçam no dashboard
+- [x] Revisar /quiz-2 para garantir que dados apareçam no dashboard  
+- [x] Revisar /quiz-trial para garantir que dados apareçam no dashboard
+- [ ] Adicionar captura de dados de contato em todos os quizzes
+

@@ -16,8 +16,14 @@ import {
   Sparkles,
   Heart,
   Zap,
-  Gift
+  Gift,
+  User,
+  Mail,
+  Phone,
+  MapPin
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { trackPageView, trackQuizCompleted } from "@/lib/analytics";
@@ -40,6 +46,14 @@ interface QuizQuestion {
   icon: React.ReactNode;
   options: QuizOption[];
   multiple?: boolean;
+}
+
+// Dados de contato do lead
+interface LeadData {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
 }
 
 // Perguntas do Quiz - Funil de Dores
@@ -255,6 +269,9 @@ interface QuizResult {
 }
 
 export default function QuizTrialPage() {
+  const [showLeadForm, setShowLeadForm] = useState(true); // Começa com o formulário de lead
+  const [leadData, setLeadData] = useState<LeadData>({ name: "", email: "", phone: "", city: "" });
+  const [leadErrors, setLeadErrors] = useState<Partial<LeadData>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -270,6 +287,38 @@ export default function QuizTrialPage() {
   useEffect(() => {
     trackPageView('/quiz-trial');
   }, []);
+
+  // Validar dados do lead
+  const validateLeadData = (): boolean => {
+    const errors: Partial<LeadData> = {};
+    
+    if (!leadData.name.trim()) {
+      errors.name = "Nome é obrigatório";
+    }
+    
+    if (!leadData.email.trim()) {
+      errors.email = "Email é obrigatório";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadData.email)) {
+      errors.email = "Email inválido";
+    }
+    
+    if (!leadData.phone.trim()) {
+      errors.phone = "WhatsApp é obrigatório";
+    } else if (leadData.phone.replace(/\D/g, '').length < 10) {
+      errors.phone = "WhatsApp inválido";
+    }
+    
+    setLeadErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Formatar telefone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
 
   const handleOptionClick = (optionId: string) => {
     if (currentQuestion.multiple) {
@@ -306,12 +355,18 @@ export default function QuizTrialPage() {
       const finalResult = calculateResult(newAnswers);
       setResult(finalResult);
       
-      // Salvar no banco
+      // Salvar no banco com dados do lead
       try {
         await saveQuizMutation.mutateAsync({
           visitorId: sessionId,
           sessionId,
+          leadName: leadData.name,
+          leadEmail: leadData.email,
+          leadPhone: leadData.phone,
+          leadCity: leadData.city,
           allAnswers: newAnswers,
+          studentsCount: finalResult.currentStudents.toString(),
+          revenue: finalResult.currentRevenue.toString(),
           recommendedPlan: finalResult.recommendedPlan,
           totalScore: finalResult.painScore + finalResult.solutionScore,
           isQualified: true,
@@ -399,6 +454,129 @@ export default function QuizTrialPage() {
   };
 
   const isLastQuestion = currentStep === QUIZ_QUESTIONS.length - 1;
+
+  // Tela de captura de dados do lead
+  if (showLeadForm) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+        <div className="max-w-lg mx-auto">
+          <Card className="border-0 shadow-xl bg-gray-800/50 backdrop-blur">
+            <CardContent className="p-8">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Gift className="w-8 h-8 text-emerald-500" />
+                </div>
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  Teste Grátis por 24 Horas
+                </h1>
+                <p className="text-gray-400">
+                  Responda algumas perguntas e ganhe acesso completo ao FitPrime
+                </p>
+              </div>
+
+              {/* Formulário */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <Label htmlFor="name" className="flex items-center gap-2 mb-2 text-gray-300">
+                    <User className="w-4 h-4 text-gray-500" />
+                    Seu nome completo
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: João Silva"
+                    value={leadData.name}
+                    onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                    className={cn("bg-gray-700/50 border-gray-600 text-white", leadErrors.name && "border-red-500")}
+                  />
+                  {leadErrors.name && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="flex items-center gap-2 mb-2 text-gray-300">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    Seu melhor email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Ex: joao@email.com"
+                    value={leadData.email}
+                    onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
+                    className={cn("bg-gray-700/50 border-gray-600 text-white", leadErrors.email && "border-red-500")}
+                  />
+                  {leadErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="flex items-center gap-2 mb-2 text-gray-300">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    WhatsApp
+                  </Label>
+                  <Input
+                    id="phone"
+                    placeholder="(11) 99999-9999"
+                    value={leadData.phone}
+                    onChange={(e) => setLeadData({ ...leadData, phone: formatPhone(e.target.value) })}
+                    className={cn("bg-gray-700/50 border-gray-600 text-white", leadErrors.phone && "border-red-500")}
+                  />
+                  {leadErrors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{leadErrors.phone}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="city" className="flex items-center gap-2 mb-2 text-gray-300">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    Cidade (opcional)
+                  </Label>
+                  <Input
+                    id="city"
+                    placeholder="Ex: São Paulo - SP"
+                    value={leadData.city}
+                    onChange={(e) => setLeadData({ ...leadData, city: e.target.value })}
+                    className="bg-gray-700/50 border-gray-600 text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Benefícios */}
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6">
+                <h3 className="font-semibold text-emerald-400 mb-2">O que você vai ganhar:</h3>
+                <ul className="text-emerald-300 text-sm space-y-1">
+                  <li>✓ 24 horas de acesso completo ao FitPrime</li>
+                  <li>✓ Crie treinos com IA ilimitados</li>
+                  <li>✓ Cadastre até 5 alunos</li>
+                  <li>✓ Sem cartão de crédito</li>
+                </ul>
+              </div>
+
+              {/* Botão */}
+              <Button 
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-lg font-semibold"
+                onClick={() => {
+                  if (validateLeadData()) {
+                    setShowLeadForm(false);
+                  }
+                }}
+              >
+                Começar Quiz
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+
+              <p className="text-center text-gray-500 text-xs mt-4">
+                Leva menos de 2 minutos • 100% gratuito
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // Tela de eliminação
   if (eliminated) {
