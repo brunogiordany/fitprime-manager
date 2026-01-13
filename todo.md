@@ -3750,3 +3750,7 @@
 - [x] Criar tela de captura de dados antes de iniciar o quiz
 - [x] Exibir dados do personal na página de anamnese do lead
 - [x] Adicionar botão de acesso rápido à anamnese na lista de leads
+
+## Bug Fix - Cadastro Trial v4.5
+- [x] Corrigir redirecionamento após cadastro trial (tela branca -> login)
+

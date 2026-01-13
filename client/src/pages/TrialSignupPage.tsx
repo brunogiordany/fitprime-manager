@@ -31,7 +31,6 @@ import {
 export default function TrialSignupPage() {
   const [, setLocation] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -180,15 +179,12 @@ export default function TrialSignupPage() {
         password: formData.password,
       });
       
-      setIsSuccess(true);
       trackTrialFormSubmitted();
       trackTrialCreated();
-      toast.success("Conta criada com sucesso!");
+      toast.success("Conta criada com sucesso! Redirecionando para o login...");
       
-      // Redirecionar após 3 segundos
-      setTimeout(() => {
-        setLocation("/login");
-      }, 3000);
+      // Redirecionar imediatamente para a página de login
+      setLocation("/");
     } catch (error: any) {
       if (error.message?.includes("CPF já cadastrado")) {
         setErrors({ cpf: "CPF já cadastrado. Faça login na sua conta existente." });
@@ -209,36 +205,7 @@ export default function TrialSignupPage() {
     { icon: Shield, text: "Sem compromisso" },
   ];
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardContent className="pt-8 pb-8">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Conta Criada!</h2>
-            <p className="text-gray-600 mb-6">
-              Seu teste gratuito de 24 horas foi ativado. Aproveite para explorar todas as funcionalidades!
-            </p>
-            <div className="bg-emerald-50 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-center gap-2 text-emerald-700">
-                <Clock className="w-5 h-5" />
-                <span className="font-medium">24 horas de acesso completo</span>
-              </div>
-            </div>
-            <Button 
-              onClick={() => setLocation("/login")} 
-              className="w-full bg-emerald-600 hover:bg-emerald-700"
-            >
-              Fazer Login
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Removido: tela de sucesso - agora redireciona direto para login
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
