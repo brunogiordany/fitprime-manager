@@ -3909,3 +3909,17 @@
   - Criada função safeDate() para criar Date de forma segura
   - Criada função safeDateFormat() para formatar datas de forma segura
   - Aplicadas em ambos os arquivos
+
+
+## Atualização de Planos v5.8
+- [x] Atualizar números de alunos por plano no caktoPlans.ts
+  - BEGINNER: 5 alunos, R$ 7,98/adicional
+  - STARTER: 15 alunos, R$ 6,46/adicional
+  - PRO: 25 alunos, R$ 5,88/adicional
+  - BUSINESS: 35 alunos, R$ 5,62/adicional
+  - PREMIUM: 55 alunos, R$ 5,40/adicional
+  - ENTERPRISE: 100 alunos, R$ 4,97/adicional
+- [x] Custo mínimo por aluno: R$ 4,97
+- [x] Recriar página 24 do PDF com números corretos
+- [x] Atualizar página 25 do PDF com link /quiz-trial
+- [x] Gerar PDF final corrigido
