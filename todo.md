@@ -3871,3 +3871,22 @@
 - [x] Conversions API já implementada no servidor (trackingRouter.ts)
 - [x] Testar com Pixel Helper - funcionando no ambiente de dev
 - [ ] Publicar para produção para funcionar no site principal
+
+
+## Fix - PageView Não Enviado para o Meta v5.6
+- [x] Pixel detectado mas evento PageView não ativado
+  - Causa: Script fbevents.js bloqueado por bloqueadores de anúncios/privacidade
+  - fbq.callMethod = undefined mesmo após script carregar
+- [x] Verificar se há erros de rede ou bloqueio
+  - Não há CSP, mas script não executa completamente
+  - Eventos ficam na fila (fbq.queue) mas não são processados
+- [x] Remover bloqueio de console que poderia interferir
+- [x] Remover inicialização duplicada do Pixel no tracking-pixels.ts
+- [x] Conversions API funcionando como fallback server-side
+- [ ] Testar em produção sem bloqueador de anúncios
+
+## Notas sobre Meta Pixel
+- O Pixel Helper pode mostrar warning quando bloqueadores estão ativos
+- A Conversions API envia eventos server-side independente do browser
+- Para testar corretamente, desativar bloqueadores de anúncios
+- Verificar no Events Manager do Meta se os eventos estão chegando via API

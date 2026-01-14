@@ -203,57 +203,50 @@ function trackGA4Event(event: TrackingEvent): void {
 // ==================== FACEBOOK PIXEL + CONVERSIONS API ====================
 
 // Inicializar Facebook Pixel com parâmetros avançados
+// NOTA: O código base do Pixel já está no index.html
+// Esta função apenas configura o tracking avançado e Conversions API
 function initFacebookPixel(pixelId: string): void {
   if (!isBrowser || !pixelId) return;
   
   // Capturar fbclid se presente
   captureFbclid();
   
-  // Verificar se já foi inicializado
-  if ((window as any).fbq) return;
+  console.log('[Facebook Pixel] Configurando tracking avançado...');
   
-  // Código do Facebook Pixel
-  (function(f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
-    if (f.fbq) return;
-    n = f.fbq = function() {
-      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-    };
-    if (!f._fbq) f._fbq = n;
-    n.push = n;
-    n.loaded = !0;
-    n.version = '2.0';
-    n.queue = [];
-    t = b.createElement(e);
-    t.async = !0;
-    t.src = v;
-    s = b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t, s);
-  })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+  // O Pixel já foi inicializado no index.html com fbq('init') e fbq('track', 'PageView')
+  // Aqui apenas configuramos o tracking avançado e enviamos via Conversions API
   
-  // Inicializar Pixel IMEDIATAMENTE (síncrono)
-  const pageViewEventId = generateEventId();
-  (window as any).fbq('init', pixelId);
-  (window as any).fbq('track', 'PageView', {}, { eventID: pageViewEventId });
-  console.log('[Facebook Pixel] Inicializado com ID:', pixelId);
-  console.log('[Facebook Pixel] PageView disparado com sucesso');
-  
-  // Setup avançado assíncrono (não bloqueia PageView)
+  // Setup avançado assíncrono
   const setupAdvanced = async () => {
+    // Aguardar o fbq estar disponível (carregado pelo index.html)
     let retries = 0;
-    while (!((window as any).fbq?.loaded) && retries < 50) {
+    while (!(window as any).fbq && retries < 50) {
       await new Promise(resolve => setTimeout(resolve, 100));
       retries++;
     }
+    
+    if (!(window as any).fbq) {
+      console.warn('[Facebook Pixel] fbq não encontrado após 5s');
+      return;
+    }
+    
     try {
       const metaData = getMetaTrackingData();
       const persistentParams = await getMetaTrackingParams();
+      
+      // Enviar PageView via Conversions API como redundância
+      // O PageView do browser já foi enviado pelo index.html
+      const pageViewEventId = generateEventId();
       sendServerSideEvent('PageView', {}, pageViewEventId);
+      
+      console.log('[Facebook Pixel] Tracking avançado configurado');
       console.log('[Facebook Pixel] Meta tracking:', metaData);
       console.log('[Facebook Pixel] External ID:', persistentParams.external_id);
     } catch (e) {
       console.warn('[Facebook Pixel] Erro setup:', e);
     }
   };
+  
   setupAdvanced().catch(err => console.error('[Facebook Pixel] Erro:', err));
 }
 
