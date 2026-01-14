@@ -3863,3 +3863,11 @@
   - [x] Criar hook useQuizTracking para gerenciar tracking do quiz
   - [x] Integrar tracking no QualificationQuizV4
   - [x] Rastrear início, progresso, respostas e conclusão do quiz
+
+
+## Fix - Meta Pixel Não Detectado pelo Pixel Helper v5.5
+- [x] Consultar documentação oficial do Meta Pixel
+- [x] Implementar script do Pixel corretamente no index.html (código base oficial)
+- [x] Conversions API já implementada no servidor (trackingRouter.ts)
+- [x] Testar com Pixel Helper - funcionando no ambiente de dev
+- [ ] Publicar para produção para funcionar no site principal
