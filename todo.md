@@ -3890,3 +3890,22 @@
 - A Conversions API envia eventos server-side independente do browser
 - Para testar corretamente, desativar bloqueadores de anúncios
 - Verificar no Events Manager do Meta se os eventos estão chegando via API
+
+## Bug - Diário de Treino "Invalid time value" v5.7
+- [ ] Erro "RangeError: Invalid time value" ao selecionar alunos Paulo ou Bruno
+- [ ] Identificar campo de data inválido nos dados do aluno
+- [ ] Adicionar tratamento para datas inválidas/nulas
+- [ ] Testar com os alunos problemáticos
+
+
+## Bug - Diário de Treino "Invalid time value" v5.7
+- [x] Erro RangeError: Invalid time value ao selecionar Paulo ou Bruno
+  - Causa: Datas inválidas sendo passadas para new Date() e format()
+- [x] Ocorre na página /diario-treino (aba Estat. Cardio)
+- [x] Investigar onde a data inválida está sendo usada
+  - TrainingDiaryPage.tsx: múltiplos locais
+  - CardioEvolutionDashboard.tsx: format(new Date(item.date))
+- [x] Corrigir tratamento de datas
+  - Criada função safeDate() para criar Date de forma segura
+  - Criada função safeDateFormat() para formatar datas de forma segura
+  - Aplicadas em ambos os arquivos

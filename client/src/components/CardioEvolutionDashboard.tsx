@@ -16,8 +16,35 @@ import {
   AlertCircle,
   BarChart3
 } from "lucide-react";
-import { format, subDays } from "date-fns";
+import { format, subDays, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+// Função helper para criar Date de forma segura (evita RangeError: Invalid time value)
+const safeDate = (dateValue: Date | string | null | undefined): Date => {
+  if (!dateValue) return new Date();
+  try {
+    const date = new Date(dateValue);
+    if (!isValid(date)) {
+      console.warn('[CardioEvolutionDashboard] Data inválida:', dateValue);
+      return new Date();
+    }
+    return date;
+  } catch (error) {
+    console.warn('[CardioEvolutionDashboard] Erro ao criar data:', dateValue, error);
+    return new Date();
+  }
+};
+
+// Função helper para formatar data de forma segura
+const safeDateFormat = (dateValue: Date | string | null | undefined, formatStr: string): string => {
+  const date = safeDate(dateValue);
+  try {
+    return format(date, formatStr, { locale: ptBR });
+  } catch (error) {
+    console.warn('[CardioEvolutionDashboard] Erro ao formatar data:', dateValue, error);
+    return 'Data inválida';
+  }
+};
 import {
   LineChart,
   Line,
@@ -136,7 +163,7 @@ export default function CardioEvolutionDashboard({
   
   // Preparar dados para gráfico de evolução
   const evolutionChartData = evolution?.map((item: any) => ({
-    date: format(new Date(item.date), 'dd/MM', { locale: ptBR }),
+    date: safeDateFormat(item.date, 'dd/MM'),
     sessoes: item.sessionCount,
     duracao: item.totalDuration,
     distancia: item.totalDistance || 0,

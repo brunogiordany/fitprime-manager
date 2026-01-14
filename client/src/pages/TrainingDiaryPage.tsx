@@ -118,6 +118,34 @@ const WEATHER_OPTIONS = [
   { value: "humid", label: "Úmido" },
 ];
 
+// Função helper para criar Date de forma segura (evita RangeError: Invalid time value)
+const safeDate = (dateValue: Date | string | null | undefined): Date => {
+  if (!dateValue) return new Date();
+  try {
+    const date = new Date(dateValue);
+    // Verifica se a data é válida
+    if (isNaN(date.getTime())) {
+      console.warn('[safeDate] Data inválida:', dateValue);
+      return new Date();
+    }
+    return date;
+  } catch (error) {
+    console.warn('[safeDate] Erro ao criar data:', dateValue, error);
+    return new Date();
+  }
+};
+
+// Função helper para formatar data de forma segura
+const safeDateFormat = (dateValue: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string => {
+  const date = safeDate(dateValue);
+  try {
+    return date.toLocaleDateString('pt-BR', options || { day: '2-digit', month: '2-digit', year: 'numeric' });
+  } catch (error) {
+    console.warn('[safeDateFormat] Erro ao formatar data:', dateValue, error);
+    return 'Data inválida';
+  }
+};
+
 // Interface para série
 // Interface para drop set individual
 interface DropData {
@@ -763,7 +791,7 @@ export default function TrainingDiaryPage() {
   };
   
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
+    return safeDate(date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -907,7 +935,7 @@ export default function TrainingDiaryPage() {
             {upcomingSessions && upcomingSessions.filter((s: any) => !s.hasWorkoutLog && s.status !== 'cancelled').length > 0 ? (
               <div className="grid gap-4">
                 {upcomingSessions.filter((s: any) => !s.hasWorkoutLog && s.status !== 'cancelled').map((session: any) => {
-                  const sessionDate = new Date(session.scheduledAt);
+                  const sessionDate = safeDate(session.scheduledAt);
                   const isToday = sessionDate.toDateString() === new Date().toDateString();
                   const isPast = sessionDate < new Date() && !isToday;
                   const statusColor = session.status === 'completed' ? 'bg-green-500' : 
@@ -924,7 +952,7 @@ export default function TrainingDiaryPage() {
                           studentId: session.studentId,
                           workoutId: session.workoutId || 0,
                           workoutDayId: 0,
-                          trainingDate: new Date(session.scheduledAt).toISOString().split('T')[0],
+                          trainingDate: safeDate(session.scheduledAt).toISOString().split('T')[0],
                           dayName: session.notes || `Sessão ${session.time}`,
                           startTime: session.time || '',
                           notes: '',
@@ -944,7 +972,7 @@ export default function TrainingDiaryPage() {
                                 <h3 className="font-semibold">{session.student?.name || 'Aluno'}</h3>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {session.notes || 'Sessão de treino'} • {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
+                                {session.notes || 'Sessão de treino'} • {safeDateFormat(session.scheduledAt)}
                               </p>
                               {session.time && (
                                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -1630,7 +1658,7 @@ export default function TrainingDiaryPage() {
                       // Filtrar por período
                       const now = new Date();
                       const filteredProgress = exerciseProgress.filter((item: any) => {
-                        const itemDate = new Date(item.date);
+                        const itemDate = safeDate(item.date);
                         const diffDays = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
                         switch (progressPeriod) {
                           case 'week': return diffDays <= 7;
@@ -1736,8 +1764,8 @@ export default function TrainingDiaryPage() {
                               </svg>
                               {/* Labels */}
                               <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-muted-foreground">
-                                <span>{new Date(filteredProgress[filteredProgress.length - 1]?.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
-                                <span>{new Date(filteredProgress[0]?.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                <span>{safeDateFormat(filteredProgress[filteredProgress.length - 1]?.date, { day: '2-digit', month: '2-digit' })}</span>
+                                <span>{safeDateFormat(filteredProgress[0]?.date, { day: '2-digit', month: '2-digit' })}</span>
                               </div>
                             </div>
                           </div>
@@ -1750,7 +1778,7 @@ export default function TrainingDiaryPage() {
                             </div>
                             <div className="divide-y max-h-[500px] overflow-y-auto">
                               {filteredProgress.map((item: any, index: number) => {
-                                const date = new Date(item.date);
+                                const date = safeDate(item.date);
                                 const isExpanded = expandedHistoryItem === index;
                                 return (
                                   <div key={index} className="bg-background">
@@ -2737,9 +2765,9 @@ export default function TrainingDiaryPage() {
               <DialogDescription>
                 {selectedSession && (
                   <span>
-                    {new Date(selectedSession.scheduledAt).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    {safeDateFormat(selectedSession?.scheduledAt, { weekday: 'long', day: 'numeric', month: 'long' })}
                     {' às '}
-                    {new Date(selectedSession.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    {selectedSession?.scheduledAt ? safeDate(selectedSession.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
                     {selectedSession.workoutId && ` • Treino ${selectedSession.workoutDayIndex !== null ? String.fromCharCode(65 + selectedSession.workoutDayIndex) : ''}`}
                   </span>
                 )}
@@ -2767,7 +2795,7 @@ export default function TrainingDiaryPage() {
                     />
                     <span className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {newLog.trainingDate ? new Date(newLog.trainingDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Selecionar data'}
+                      {newLog.trainingDate ? safeDateFormat(newLog.trainingDate + 'T12:00:00', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Selecionar data'}
                     </span>
                   </div>
                 </div>
