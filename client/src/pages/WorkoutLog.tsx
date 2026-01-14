@@ -33,8 +33,11 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
+import { ExerciseSubstitutionModal } from "@/components/ExerciseSubstitutionModal";
+import type { ExerciseAlternative } from "@shared/exercise-alternatives";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -44,6 +47,8 @@ import { ptBR } from "date-fns/locale";
 interface ExerciseLog {
   exerciseId: number;
   exerciseName: string;
+  originalExerciseName?: string; // Nome original antes da substituição
+  substitutedAt?: Date; // Quando foi substituído
   sets: {
     setNumber: number;
     weight: string;
@@ -62,6 +67,13 @@ export default function WorkoutLog() {
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
   const [sessionNotes, setSessionNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estado do modal de substituição de exercícios
+  const [substitutionModal, setSubstitutionModal] = useState<{
+    isOpen: boolean;
+    exerciseIndex: number;
+    exerciseName: string;
+  }>({ isOpen: false, exerciseIndex: -1, exerciseName: "" });
 
   // Fetch session details
   const { data: session, isLoading: sessionLoading } = trpc.sessions.getById.useQuery(
@@ -178,6 +190,47 @@ export default function WorkoutLog() {
       }
       return updated;
     });
+  };
+
+  // Função para abrir modal de substituição
+  const openSubstitutionModal = (exerciseIndex: number, exerciseName: string) => {
+    setSubstitutionModal({
+      isOpen: true,
+      exerciseIndex,
+      exerciseName,
+    });
+  };
+
+  // Função para substituir exercício
+  const handleSubstituteExercise = (newExercise: ExerciseAlternative) => {
+    const { exerciseIndex } = substitutionModal;
+    if (exerciseIndex < 0) return;
+
+    setExerciseLogs((prev) => {
+      const updated = [...prev];
+      const currentExercise = updated[exerciseIndex];
+      
+      // Salvar nome original se ainda não foi substituído
+      if (!currentExercise.originalExerciseName) {
+        currentExercise.originalExerciseName = currentExercise.exerciseName;
+      }
+      
+      // Atualizar com novo exercício
+      currentExercise.exerciseName = newExercise.name;
+      currentExercise.substitutedAt = new Date();
+      
+      // Adicionar nota sobre a substituição
+      const substitutionNote = `Substituído de: ${currentExercise.originalExerciseName}`;
+      if (!currentExercise.notes.includes(substitutionNote)) {
+        currentExercise.notes = currentExercise.notes 
+          ? `${currentExercise.notes} | ${substitutionNote}`
+          : substitutionNote;
+      }
+      
+      return updated;
+    });
+
+    toast.success(`Exercício substituído por: ${newExercise.name}`);
   };
 
   const handleSave = async () => {
@@ -364,20 +417,43 @@ export default function WorkoutLog() {
                           <Dumbbell className="h-4 w-4 text-emerald-600" />
                         </div>
                         <div>
-                          <h4 className="font-semibold">{exercise.exerciseName}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold">{exercise.exerciseName}</h4>
+                            {exercise.originalExerciseName && (
+                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                                Substituído
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {exercise.sets.filter(s => s.completed).length}/{exercise.sets.length} séries concluídas
+                            {exercise.originalExerciseName && (
+                              <span className="ml-2 text-xs text-amber-600">
+                                (Original: {exercise.originalExerciseName})
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addSet(exerciseIndex)}
-                      >
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openSubstitutionModal(exerciseIndex, exercise.exerciseName)}
+                          title="Substituir exercício"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Trocar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSet(exerciseIndex)}
+                        >
                         <Plus className="h-4 w-4 mr-1" />
-                        Série
-                      </Button>
+                          Série
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Sets Table */}
@@ -507,6 +583,14 @@ export default function WorkoutLog() {
           </Card>
         )}
       </div>
+
+      {/* Modal de Substituição de Exercícios */}
+      <ExerciseSubstitutionModal
+        isOpen={substitutionModal.isOpen}
+        onClose={() => setSubstitutionModal({ isOpen: false, exerciseIndex: -1, exerciseName: "" })}
+        currentExerciseName={substitutionModal.exerciseName}
+        onSubstitute={handleSubstituteExercise}
+      />
     </DashboardLayout>
   );
 }

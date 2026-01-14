@@ -3923,3 +3923,21 @@
 - [x] Recriar página 24 do PDF com números corretos
 - [x] Atualizar página 25 do PDF com link /quiz-trial
 - [x] Gerar PDF final corrigido
+
+
+## Substituição de Exercícios no Registro de Treino v5.9
+- [ ] Botão de substituir exercício ao lado de cada exercício no registro
+- [ ] Modal com lista de exercícios alternativos do mesmo grupo muscular
+- [ ] Sugestões inteligentes baseadas no grupo muscular do exercício original
+- [ ] Registro da substituição (qual exercício foi trocado e por qual)
+- [ ] Funcionar tanto no lado do Personal quanto no Portal do Aluno
+- [ ] Permitir editar séries, peso e repetições após substituição
+
+
+## Substituição de Exercícios Durante Treino v5.9
+- [x] Botão de substituir exercício em cada card de exercício
+- [x] Modal com sugestões de exercícios alternativos do mesmo grupo muscular
+- [x] Registro da substituição (exercício original e novo)
+- [x] Funcionar no lado do Personal (WorkoutLog.tsx)
+- [ ] Funcionar no Portal do Aluno (a implementar se necessário)
+- [x] Banco de dados de exercícios alternativos por grupo muscular (exercise-alternatives.ts)
