@@ -3848,3 +3848,18 @@
   - [x] Usar queue do fbq para garantir que eventos sejam enfileirados
 - [x] Garantir IDs persistentes em todas as páginas automaticamente
 - [x] Criar wrapper automático para novas páginas
+
+
+## Rastreamento Avançado Meta Pixel v5.4
+- [x] Rastreamento automático de navegação entre páginas (PageView em cada rota)
+  - [x] Criar hook usePageTracking para detectar mudanças de rota
+  - [x] Integrar hook no componente Router do App.tsx
+  - [x] Mapear rotas para nomes amigáveis
+- [x] Eventos customizados para cliques em CTAs (botões de ação)
+  - [x] Criar hook useCTATracking com tipos de CTAs
+  - [x] Função trackCTAClick para rastrear cliques
+  - [x] Funções específicas para quiz, planos, trial, checkout
+- [x] Eventos de progresso do quiz (cada etapa completada)
+  - [x] Criar hook useQuizTracking para gerenciar tracking do quiz
+  - [x] Integrar tracking no QualificationQuizV4
+  - [x] Rastrear início, progresso, respostas e conclusão do quiz
