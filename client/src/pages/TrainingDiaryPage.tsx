@@ -2449,29 +2449,48 @@ export default function TrainingDiaryPage() {
                 <div className="space-y-4">
                   {currentExercises.map((exercise, exIndex) => (
                     <Card key={exIndex} className="overflow-hidden">
-                      <CardHeader 
-                        className="p-3 cursor-pointer hover:bg-muted/50"
-                        onClick={() => toggleExerciseExpand(exIndex)}
-                      >
+                      <CardHeader className="p-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => toggleExerciseExpand(exIndex)}>
                             <span className="text-lg font-bold text-primary">{exIndex + 1}</span>
                             <div>
                               <h4 className="font-semibold">{exercise.exerciseName}</h4>
-                              {exercise.muscleGroup && (
+                              {exercise.originalExerciseName && (
+                                <p className="text-xs text-blue-600 flex items-center gap-1">
+                                  <RefreshCw className="h-3 w-3" />
+                                  Substituído de: {exercise.originalExerciseName}
+                                </p>
+                              )}
+                              {exercise.muscleGroup && !exercise.originalExerciseName && (
                                 <p className="text-xs text-muted-foreground">{exercise.muscleGroup}</p>
                               )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            {isEditing && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openSubstitutionModal(exIndex);
+                                }}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-7 px-2"
+                              >
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                                Trocar
+                              </Button>
+                            )}
                             <Badge variant="outline">
                               {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
                             </Badge>
-                            {exercise.isExpanded ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
+                            <div className="cursor-pointer" onClick={() => toggleExerciseExpand(exIndex)}>
+                              {exercise.isExpanded ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardHeader>

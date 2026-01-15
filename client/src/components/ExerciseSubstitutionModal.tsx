@@ -21,9 +21,8 @@ import {
   Search, 
   Dumbbell, 
   ArrowRight, 
-  Check,
-  Filter,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import {
   exerciseAlternatives,
@@ -125,148 +124,156 @@ export function ExerciseSubstitutionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Dumbbell className="h-5 w-5 text-primary" />
-            Substituir Exercício
-          </DialogTitle>
-          <DialogDescription>
-            Substituindo: <span className="font-semibold text-foreground">{currentExerciseName}</span>
-            {activeMuscleGroup && (
-              <Badge variant="outline" className="ml-2">
-                {activeMuscleGroup}
-              </Badge>
-            )}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="w-[95vw] max-w-lg sm:max-w-xl p-0 gap-0 overflow-hidden">
+        {/* Header fixo */}
+        <div className="p-4 pb-3 border-b bg-background">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Dumbbell className="h-5 w-5 text-primary flex-shrink-0" />
+              <span>Substituir Exercício</span>
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              <span className="text-muted-foreground">Substituindo: </span>
+              <span className="font-semibold text-foreground">{currentExerciseName}</span>
+              {activeMuscleGroup && (
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {activeMuscleGroup}
+                </Badge>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-4">
-          {/* Sugestões Inteligentes */}
-          {smartSuggestions.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-yellow-500" />
-                Sugestões Rápidas
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {smartSuggestions.map((exercise) => (
-                  <Button
-                    key={exercise.name}
-                    variant="outline"
-                    className="justify-start h-auto py-2 px-3 text-left"
-                    onClick={() => handleSelect(exercise)}
-                  >
-                    <div className="flex flex-col items-start gap-1 w-full">
-                      <span className="text-sm font-medium truncate w-full">
-                        {exercise.name}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Badge variant="secondary" className="text-xs">
+        {/* Conteúdo com scroll */}
+        <div className="flex flex-col max-h-[70vh] overflow-hidden">
+          <div className="p-4 space-y-3 flex-shrink-0">
+            {/* Sugestões Rápidas */}
+            {smartSuggestions.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <Sparkles className="h-3 w-3 text-yellow-500" />
+                  Sugestões Rápidas
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {smartSuggestions.map((exercise) => (
+                    <button
+                      key={exercise.name}
+                      className="flex items-center justify-between p-2.5 rounded-lg border hover:bg-accent transition-colors text-left"
+                      onClick={() => handleSelect(exercise)}
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-medium">{exercise.name}</span>
+                        <Badge variant="secondary" className="text-xs w-fit">
                           {equipmentLabels[exercise.equipment]}
                         </Badge>
                       </div>
-                    </div>
-                  </Button>
-                ))}
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Filtros */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
+            {/* Campo de busca */}
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar exercício..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 h-10"
               />
             </div>
             
-            <Select value={selectedMuscleGroup || activeMuscleGroup} onValueChange={setSelectedMuscleGroup}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Grupo Muscular" />
-              </SelectTrigger>
-              <SelectContent>
-                {exerciseAlternatives.map((group) => (
-                  <SelectItem key={group.muscleGroup} value={group.muscleGroup}>
-                    {group.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Filtros em linha */}
+            <div className="grid grid-cols-3 gap-2">
+              <Select value={selectedMuscleGroup || activeMuscleGroup} onValueChange={setSelectedMuscleGroup}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Grupo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {exerciseAlternatives.map((group) => (
+                    <SelectItem key={group.muscleGroup} value={group.muscleGroup}>
+                      {group.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={equipmentFilter} onValueChange={setEquipmentFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Equipamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(equipmentLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select value={equipmentFilter} onValueChange={setEquipmentFilter}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Equip." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {Object.entries(equipmentLabels).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Nível" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(difficultyLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Nível" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {Object.entries(difficultyLabels).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Lista de Exercícios */}
-          <ScrollArea className="h-[300px] rounded-md border p-2">
-            {filteredAlternatives.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                <Dumbbell className="h-8 w-8 mb-2 opacity-50" />
-                <p className="text-sm">Nenhum exercício encontrado</p>
-                <p className="text-xs">Tente ajustar os filtros</p>
+          {/* Lista de Exercícios com scroll */}
+          <div className="flex-1 overflow-hidden border-t">
+            <ScrollArea className="h-[200px]">
+              <div className="p-2">
+                {filteredAlternatives.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                    <Dumbbell className="h-8 w-8 mb-2 opacity-50" />
+                    <p className="text-sm">Nenhum exercício encontrado</p>
+                    <p className="text-xs">Tente ajustar os filtros</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {filteredAlternatives.map((exercise) => (
+                      <button
+                        key={exercise.name}
+                        className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors text-left"
+                        onClick={() => handleSelect(exercise)}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">{exercise.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant="secondary" className="text-xs">
+                              {equipmentLabels[exercise.equipment]}
+                            </Badge>
+                            <Badge className={`text-xs ${difficultyColors[exercise.difficulty]}`}>
+                              {difficultyLabels[exercise.difficulty]}
+                            </Badge>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredAlternatives.map((exercise) => (
-                  <button
-                    key={exercise.name}
-                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors text-left group"
-                    onClick={() => handleSelect(exercise)}
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium">{exercise.name}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {equipmentLabels[exercise.equipment]}
-                        </Badge>
-                        <Badge className={`text-xs ${difficultyColors[exercise.difficulty]}`}>
-                          {difficultyLabels[exercise.difficulty]}
-                        </Badge>
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
+            </ScrollArea>
+          </div>
 
-          {/* Contador */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              {filteredAlternatives.length} exercício(s) disponível(is)
+          {/* Footer fixo */}
+          <div className="p-3 border-t bg-background flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              {filteredAlternatives.length} exercício(s)
             </span>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="outline" size="sm" onClick={onClose}>
               Cancelar
             </Button>
           </div>

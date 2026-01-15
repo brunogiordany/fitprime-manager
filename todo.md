@@ -3966,6 +3966,8 @@
 - [x] Registrar substituição com nota automática
 - [x] Permitir escolher exercício alternativo do mesmo grupo muscular
 - [x] Mostrar indicador visual quando exercício foi substituído
+- [x] Corrigir layout/UX do modal de substituição (mobile-first)
+- [x] Adicionar botão Trocar no modal de detalhe do registro (registro em andamento)
 
 ### Relatório de Histórico de Substituições
 - [ ] Criar endpoint para buscar substituições de exercícios
