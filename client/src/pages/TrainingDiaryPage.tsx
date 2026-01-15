@@ -48,6 +48,8 @@ import {
 import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { toast } from "sonner";
 import CardioEvolutionDashboard from "@/components/CardioEvolutionDashboard";
+import { ExerciseSubstitutionModal } from "@/components/ExerciseSubstitutionModal";
+import type { ExerciseAlternative } from "@shared/exercise-alternatives";
 
 // Tipos de série
 const SET_TYPES = [
@@ -187,6 +189,8 @@ interface ExerciseData {
   id?: number;
   exerciseId?: number;
   exerciseName: string;
+  originalExerciseName?: string; // Nome original antes da substituição
+  substitutedAt?: Date; // Data/hora da substituição
   muscleGroup?: string;
   plannedSets?: number;
   plannedReps?: string;
@@ -217,6 +221,10 @@ export default function TrainingDiaryPage() {
   const [expandedHistoryItem, setExpandedHistoryItem] = useState<number | null>(null); // Item expandido no histórico
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Estados para substituição de exercícios
+  const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
+  const [substitutingExerciseIndex, setSubstitutingExerciseIndex] = useState<number | null>(null);
   
   // Estados para Cardio
   const [showCardioModal, setShowCardioModal] = useState(false);
@@ -576,6 +584,41 @@ export default function TrainingDiaryPage() {
       setCurrentExercises(exercises);
     }
   }, [logDetail]);
+  
+  // Funções para substituição de exercícios
+  const openSubstitutionModal = (exerciseIndex: number) => {
+    setSubstitutingExerciseIndex(exerciseIndex);
+    setShowSubstitutionModal(true);
+  };
+
+  const handleExerciseSubstitution = (newExercise: ExerciseAlternative) => {
+    if (substitutingExerciseIndex === null) return;
+    
+    setCurrentExercises((prev) => {
+      const updated = [...prev];
+      const currentExercise = updated[substitutingExerciseIndex];
+      
+      // Salvar nome original se ainda não foi substituído
+      const originalName = currentExercise.originalExerciseName || currentExercise.exerciseName;
+      
+      // Atualizar exercício
+      updated[substitutingExerciseIndex] = {
+        ...currentExercise,
+        exerciseName: newExercise.name,
+        originalExerciseName: originalName,
+        substitutedAt: new Date(),
+        notes: currentExercise.notes 
+          ? `${currentExercise.notes} | Substituído: ${originalName} → ${newExercise.name}`
+          : `Substituído: ${originalName} → ${newExercise.name}`,
+      };
+      
+      return updated;
+    });
+    
+    toast.success(`Exercício substituído para: ${newExercise.name}`);
+    setShowSubstitutionModal(false);
+    setSubstitutingExerciseIndex(null);
+  };
   
   const resetNewLog = () => {
     setNewLog({
@@ -2859,24 +2902,50 @@ export default function TrainingDiaryPage() {
                   <Label className="text-base font-semibold">Exercícios</Label>
                   {currentExercises.map((exercise, exIndex) => (
                     <Card key={exIndex}>
-                      <CardHeader className="p-3 cursor-pointer" onClick={() => {
-                        const updated = [...currentExercises];
-                        updated[exIndex].isExpanded = !updated[exIndex].isExpanded;
-                        setCurrentExercises(updated);
-                      }}>
+                      <CardHeader className="p-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 cursor-pointer flex-1" onClick={() => {
+                            const updated = [...currentExercises];
+                            updated[exIndex].isExpanded = !updated[exIndex].isExpanded;
+                            setCurrentExercises(updated);
+                          }}>
                             <Dumbbell className="h-4 w-4 text-primary" />
-                            <span className="font-medium">{exercise.exerciseName}</span>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{exercise.exerciseName}</span>
+                              {exercise.originalExerciseName && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <RefreshCw className="h-3 w-3" />
+                                  Substituído de: {exercise.originalExerciseName}
+                                </span>
+                              )}
+                            </div>
                             {exercise.muscleGroup && (
                               <Badge variant="outline" className="text-xs">{exercise.muscleGroup}</Badge>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openSubstitutionModal(exIndex);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-7 px-2"
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Trocar
+                            </Button>
                             <span className="text-sm text-muted-foreground">
                               {exercise.plannedSets}x{exercise.plannedReps}
                             </span>
-                            {exercise.isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            <div className="cursor-pointer" onClick={() => {
+                              const updated = [...currentExercises];
+                              updated[exIndex].isExpanded = !updated[exIndex].isExpanded;
+                              setCurrentExercises(updated);
+                            }}>
+                              {exercise.isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </div>
                           </div>
                         </div>
                       </CardHeader>
@@ -3789,6 +3858,18 @@ export default function TrainingDiaryPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        {/* Modal de Substituição de Exercício */}
+        <ExerciseSubstitutionModal
+          isOpen={showSubstitutionModal}
+          onClose={() => {
+            setShowSubstitutionModal(false);
+            setSubstitutingExerciseIndex(null);
+          }}
+          currentExerciseName={substitutingExerciseIndex !== null ? currentExercises[substitutingExerciseIndex]?.exerciseName || '' : ''}
+          currentMuscleGroup={substitutingExerciseIndex !== null ? currentExercises[substitutingExerciseIndex]?.muscleGroup : undefined}
+          onSubstitute={handleExerciseSubstitution}
+        />
       </div>
     </DashboardLayout>
   );

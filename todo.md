@@ -3941,3 +3941,42 @@
 - [x] Funcionar no lado do Personal (WorkoutLog.tsx)
 - [ ] Funcionar no Portal do Aluno (a implementar se necessário)
 - [x] Banco de dados de exercícios alternativos por grupo muscular (exercise-alternatives.ts)
+
+
+## Melhorias v6.0
+- [ ] Substituição de exercícios no Portal do Aluno
+  - [ ] Permitir que o aluno troque exercícios durante seu treino
+  - [ ] Usar o mesmo modal de substituição do Personal
+  - [ ] Registrar substituição nas notas do exercício
+- [ ] Histórico de substituições de exercícios
+  - [ ] Relatório mostrando quais exercícios são mais substituídos
+  - [ ] Mostrar por quais alternativas são substituídos
+  - [ ] Filtrar por aluno, período e grupo muscular
+- [ ] Cobrança de alunos extras na Cakto
+  - [ ] Verificar limite de alunos do plano atual
+  - [ ] Alertar quando personal exceder o limite
+  - [ ] Integrar cobrança automática por aluno extra
+
+
+## Novas Funcionalidades (v3.5)
+
+### Substituição de Exercícios no Modal de Registro de Treino (Personal)
+- [x] Adicionar botão "Trocar" em cada exercício no TrainingDiaryPage
+- [x] Reutilizar ExerciseSubstitutionModal existente
+- [x] Registrar substituição com nota automática
+- [x] Permitir escolher exercício alternativo do mesmo grupo muscular
+- [x] Mostrar indicador visual quando exercício foi substituído
+
+### Relatório de Histórico de Substituições
+- [ ] Criar endpoint para buscar substituições de exercícios
+- [ ] Dashboard com exercícios mais substituídos
+- [ ] Mostrar alternativas mais escolhidas por exercício
+- [ ] Filtros por período, aluno, grupo muscular
+- [ ] Exportar relatório em CSV
+
+### Cobrança Automática de Alunos Extras via Cakto
+- [ ] Detectar quando personal excede limite de alunos do plano
+- [ ] Calcular valor adicional baseado na tabela de preços por plano
+- [ ] Integrar com Cakto para cobrança automática
+- [ ] Notificar personal sobre cobrança adicional
+- [ ] Dashboard mostrando uso atual vs limite do plano

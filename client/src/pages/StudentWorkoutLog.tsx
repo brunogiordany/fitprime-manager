@@ -32,8 +32,11 @@ import {
   Plus,
   CheckCircle2,
   AlertCircle,
-  LogOut
+  LogOut,
+  RefreshCw
 } from "lucide-react";
+import { ExerciseSubstitutionModal } from "@/components/ExerciseSubstitutionModal";
+import type { ExerciseAlternative } from "@shared/exercise-alternatives";
 import { useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -44,6 +47,8 @@ import { getLoginUrl } from "@/const";
 interface ExerciseLog {
   exerciseId: number;
   exerciseName: string;
+  originalExerciseName?: string; // Nome original antes da substituição
+  substitutedAt?: Date; // Data/hora da substituição
   sets: {
     setNumber: number;
     weight: string;
@@ -64,6 +69,10 @@ export default function StudentWorkoutLog() {
   const [sessionNotes, setSessionNotes] = useState("");
   const [duration, setDuration] = useState("60");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estado para modal de substituição de exercício
+  const [substitutionModalOpen, setSubstitutionModalOpen] = useState(false);
+  const [substitutingExerciseIndex, setSubstitutingExerciseIndex] = useState<number | null>(null);
 
   // Buscar perfil do aluno
   const { data: profile, isLoading: profileLoading } = trpc.studentPortal.profile.useQuery(
@@ -147,6 +156,42 @@ export default function StudentWorkoutLog() {
       });
       return updated;
     });
+  };
+
+  // Abrir modal de substituição
+  const openSubstitutionModal = (exerciseIndex: number) => {
+    setSubstitutingExerciseIndex(exerciseIndex);
+    setSubstitutionModalOpen(true);
+  };
+
+  // Processar substituição de exercício
+  const handleExerciseSubstitution = (newExercise: ExerciseAlternative) => {
+    if (substitutingExerciseIndex === null) return;
+    
+    setExerciseLogs((prev) => {
+      const updated = [...prev];
+      const currentExercise = updated[substitutingExerciseIndex];
+      
+      // Salvar nome original se ainda não foi substituído
+      const originalName = currentExercise.originalExerciseName || currentExercise.exerciseName;
+      
+      // Atualizar exercício
+      updated[substitutingExerciseIndex] = {
+        ...currentExercise,
+        exerciseName: newExercise.name,
+        originalExerciseName: originalName,
+        substitutedAt: new Date(),
+        notes: currentExercise.notes 
+          ? `${currentExercise.notes} | Substituído: ${originalName} → ${newExercise.name}`
+          : `Substituído: ${originalName} → ${newExercise.name}`,
+      };
+      
+      return updated;
+    });
+    
+    toast.success(`Exercício substituído para: ${newExercise.name}`);
+    setSubstitutionModalOpen(false);
+    setSubstitutingExerciseIndex(null);
   };
 
   const handleSave = async () => {
@@ -391,15 +436,34 @@ export default function StudentWorkoutLog() {
                 {exerciseLogs.map((exercise, exerciseIndex) => (
                   <div key={exercise.exerciseId} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold text-lg">{exercise.exerciseName}</h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addSet(exerciseIndex)}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Série
-                      </Button>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="font-semibold text-lg">{exercise.exerciseName}</h4>
+                        {exercise.originalExerciseName && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <RefreshCw className="h-3 w-3" />
+                            Substituído de: {exercise.originalExerciseName}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openSubstitutionModal(exerciseIndex)}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Trocar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSet(exerciseIndex)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Série
+                        </Button>
+                      </div>
                     </div>
 
                     <Table>
