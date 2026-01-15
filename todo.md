@@ -3998,3 +3998,12 @@
 - [x] CTAs direcionando para /quiz-trial
 - [x] Design mobile-first com CTA acima da dobra
 - [x] Adicionar rota /pv02 no App.tsx
+
+
+### Landing Page Captura /pvcaptura01
+- [x] Criar componente LandingPageCaptura01.tsx
+- [x] Design dark com headline impactante
+- [x] 3 bullet points com checkmarks verdes
+- [x] Faixa vermelha com data/horário do evento
+- [x] Botão CTA verde para WhatsApp
+- [x] Adicionar rota /pvcaptura01 no App.tsx
