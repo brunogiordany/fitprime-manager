@@ -3990,3 +3990,11 @@
 - [x] Adicionar botão "Trocar" em cada exercício
 - [x] Mostrar indicador visual quando exercício foi substituído
 - [x] Adicionar modal de substituição no final do componente
+
+### Landing Page PV02 - AIDA de Alta Conversão
+- [x] Criar componente LandingPagePV02.tsx
+- [x] Estrutura AIDA: Atenção, Interesse, Desejo, Ação
+- [x] Copywriting persuasivo baseado nas funcionalidades do FitPrime
+- [x] CTAs direcionando para /quiz-trial
+- [x] Design mobile-first com CTA acima da dobra
+- [x] Adicionar rota /pv02 no App.tsx
