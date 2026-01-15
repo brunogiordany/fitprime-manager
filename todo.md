@@ -3982,3 +3982,11 @@
 - [ ] Integrar com Cakto para cobrança automática
 - [ ] Notificar personal sobre cobrança adicional
 - [ ] Dashboard mostrando uso atual vs limite do plano
+
+### Substituição de Exercícios no Portal do Aluno
+- [x] Adicionar import do ExerciseSubstitutionModal no StudentWorkoutLog
+- [x] Adicionar estados para controle do modal de substituição
+- [x] Adicionar funções para abrir modal e processar substituição
+- [x] Adicionar botão "Trocar" em cada exercício
+- [x] Mostrar indicador visual quando exercício foi substituído
+- [x] Adicionar modal de substituição no final do componente

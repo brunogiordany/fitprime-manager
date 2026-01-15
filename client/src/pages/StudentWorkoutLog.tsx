@@ -557,6 +557,18 @@ export default function StudentWorkoutLog() {
           </Card>
         )}
       </main>
+      
+      {/* Modal de Substituição de Exercício */}
+      <ExerciseSubstitutionModal
+        isOpen={substitutionModalOpen}
+        onClose={() => {
+          setSubstitutionModalOpen(false);
+          setSubstitutingExerciseIndex(null);
+        }}
+        currentExerciseName={substitutingExerciseIndex !== null ? exerciseLogs[substitutingExerciseIndex]?.exerciseName || '' : ''}
+        currentMuscleGroup={undefined}
+        onSubstitute={handleExerciseSubstitution}
+      />
     </div>
   );
 }
