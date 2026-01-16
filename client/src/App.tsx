@@ -43,6 +43,7 @@ import PricingPage from "./pages/PricingPage";
 import LandingPagePro from "./pages/LandingPagePro";
 import LandingPagePV02 from "./pages/LandingPagePV02";
 import LandingPageCaptura01 from "./pages/LandingPageCaptura01";
+import LandingPageCaptura02 from "./pages/LandingPageCaptura02";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import { InstallPrompt, IOSInstallInstructions } from "./components/InstallPrompt";
 import { ProtectionLayer } from "./components/ProtectionLayer";
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/pv01" component={LandingPagePro} />
       <Route path="/pv02" component={LandingPagePV02} />
       <Route path="/pvcaptura01" component={LandingPageCaptura01} />
+      <Route path="/pvcaptura02" component={LandingPageCaptura02} />
       <Route path="/quiz" component={QuizPage} />
       <Route path="/quiz-2" component={QuizPage2} />
       <Route path="/pricing" component={DynamicPricingPage} />

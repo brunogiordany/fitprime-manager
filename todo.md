@@ -4007,3 +4007,12 @@
 - [x] Faixa vermelha com data/horário do evento
 - [x] Botão CTA verde para WhatsApp
 - [x] Adicionar rota /pvcaptura01 no App.tsx
+
+
+### Landing Page Captura /pvcaptura02
+- [x] Criar componente LandingPageCaptura02.tsx
+- [x] Copy adaptada para Personal Trainer presencial
+- [x] Promessa financeira: R$3mil → R$25mil/mês
+- [x] Botão CTA visível above the fold (mobile-first)
+- [x] Faixa vermelha com data/horário
+- [x] Adicionar rota /pvcaptura02 no App.tsx
