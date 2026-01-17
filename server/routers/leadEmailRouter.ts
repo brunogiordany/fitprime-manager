@@ -557,12 +557,18 @@ export const leadEmailRouter = router({
 
 // Função para substituir variáveis no template
 function replaceTemplateVariables(content: string, lead: any): string {
+  // Usar a URL base do projeto (variável de ambiente ou URL pública)
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprime-manager.manus.space";
+  const unsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(lead.leadEmail || "")}`;
+  
   return content
     .replace(/\{\{leadName\}\}/g, lead.leadName || "Personal")
     .replace(/\{\{leadEmail\}\}/g, lead.leadEmail || "")
     .replace(/\{\{recommendedPlan\}\}/g, lead.recommendedPlan || "Pro")
     .replace(/\{\{studentsCount\}\}/g, lead.studentsCount?.toString() || "0")
-    .replace(/\{\{revenue\}\}/g, lead.revenue || "Não informado");
+    .replace(/\{\{revenue\}\}/g, lead.revenue || "Não informado")
+    .replace(/\{\{unsubscribeUrl\}\}/g, unsubscribeUrl)
+    .replace(/\{\{baseUrl\}\}/g, baseUrl);
 }
 
 // Templates de email padrão
@@ -601,7 +607,7 @@ function getWelcomeEmailTemplate(): string {
       </ul>
       
       <p style="text-align: center;">
-        <a href="https://fitprime.com.br/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+        <a href="{{baseUrl}}/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
       </p>
       
       <p>Qualquer dúvida, estamos aqui para ajudar!</p>
@@ -649,7 +655,7 @@ function getFollowup1Template(): string {
       <p>O teste é 100% gratuito por 7 dias, sem precisar de cartão de crédito.</p>
       
       <p style="text-align: center;">
-        <a href="https://fitprime.com.br/quiz-trial" class="cta">Quero Testar Grátis</a>
+        <a href="{{baseUrl}}/quiz-trial" class="cta">Quero Testar Grátis</a>
       </p>
       
       <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
@@ -699,7 +705,7 @@ function getFollowup2Template(): string {
       <p>O FitPrime automatiza tudo isso para você. Quer ver como funciona?</p>
       
       <p style="text-align: center;">
-        <a href="https://fitprime.com.br/quiz-trial" class="cta">Ver Demonstração</a>
+        <a href="{{baseUrl}}/quiz-trial" class="cta">Ver Demonstração</a>
       </p>
       
       <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
@@ -753,7 +759,7 @@ function getFollowup3Template(): string {
       </ul>
       
       <p style="text-align: center;">
-        <a href="https://fitprime.com.br/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+        <a href="{{baseUrl}}/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
       </p>
       
       <p>Se não for pra você, tudo bem. Mas se for, não deixe essa oportunidade passar.</p>

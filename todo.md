@@ -4049,3 +4049,19 @@
 - [ ] Sequência 3: Follow-up Lead Desqualificado (reengajamento)
 - [ ] Sequência 4: Não Converteu (lembrete após X dias)
 - [ ] Atualizar página de automação para carregar dados existentes
+
+
+### Correções Sistema de Emails (v4.7)
+- [ ] Corrigir links dos templates de email (usar domínio correto do projeto)
+- [ ] Unificar páginas de Automação de Emails e Templates de Email
+- [ ] Corrigir histórico de envios para exibir emails enviados
+- [ ] Remover página duplicada de Templates de Email do menu
+
+
+## Correções de Automação de Emails (v6.5)
+- [x] Corrigir erro de coluna startedAt no EmailWorker (adicionar colunas faltantes ao banco)
+- [x] Corrigir erro de coluna updatedAt no EmailWorker (adicionar colunas faltantes ao banco)
+- [x] Corrigir links nos templates de email para usar URL correta do projeto ({{baseUrl}})
+- [x] Atualizar replaceTemplateVariables para incluir baseUrl e unsubscribeUrl
+- [x] Verificar histórico de envios de emails (listSends funcionando)
+- [x] Manter páginas separadas: Templates de Email (sistema) e Automação de Emails (leads)

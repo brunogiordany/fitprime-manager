@@ -1,0 +1,190 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'quiz_responses' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'quiz_responses' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "sessionId"
+    },
+    {
+      "COLUMN_NAME": "answers"
+    },
+    {
+      "COLUMN_NAME": "recommendedPlan"
+    },
+    {
+      "COLUMN_NAME": "score"
+    },
+    {
+      "COLUMN_NAME": "profile"
+    },
+    {
+      "COLUMN_NAME": "studentCount"
+    },
+    {
+      "COLUMN_NAME": "revenue"
+    },
+    {
+      "COLUMN_NAME": "lostInfo"
+    },
+    {
+      "COLUMN_NAME": "adminTime"
+    },
+    {
+      "COLUMN_NAME": "churn"
+    },
+    {
+      "COLUMN_NAME": "billingIssues"
+    },
+    {
+      "COLUMN_NAME": "mainGoal"
+    },
+    {
+      "COLUMN_NAME": "completedAt"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "source"
+    },
+    {
+      "COLUMN_NAME": "utmSource"
+    },
+    {
+      "COLUMN_NAME": "utmMedium"
+    },
+    {
+      "COLUMN_NAME": "utmCampaign"
+    },
+    {
+      "COLUMN_NAME": "utmContent"
+    },
+    {
+      "COLUMN_NAME": "utmTerm"
+    },
+    {
+      "COLUMN_NAME": "referrer"
+    },
+    {
+      "COLUMN_NAME": "userAgent"
+    },
+    {
+      "COLUMN_NAME": "ipAddress"
+    },
+    {
+      "COLUMN_NAME": "deviceType"
+    },
+    {
+      "COLUMN_NAME": "browser"
+    },
+    {
+      "COLUMN_NAME": "os"
+    },
+    {
+      "COLUMN_NAME": "screenResolution"
+    },
+    {
+      "COLUMN_NAME": "language"
+    },
+    {
+      "COLUMN_NAME": "timezone"
+    },
+    {
+      "COLUMN_NAME": "country"
+    },
+    {
+      "COLUMN_NAME": "city"
+    },
+    {
+      "COLUMN_NAME": "converted"
+    },
+    {
+      "COLUMN_NAME": "convertedAt"
+    },
+    {
+      "COLUMN_NAME": "conversionType"
+    },
+    {
+      "COLUMN_NAME": "personalId"
+    },
+    {
+      "COLUMN_NAME": "notes"
+    },
+    {
+      "COLUMN_NAME": "visitorId"
+    },
+    {
+      "COLUMN_NAME": "studentsCount"
+    },
+    {
+      "COLUMN_NAME": "managementPain"
+    },
+    {
+      "COLUMN_NAME": "timePain"
+    },
+    {
+      "COLUMN_NAME": "retentionPain"
+    },
+    {
+      "COLUMN_NAME": "billingPain"
+    },
+    {
+      "COLUMN_NAME": "priority"
+    },
+    {
+      "COLUMN_NAME": "allAnswers"
+    },
+    {
+      "COLUMN_NAME": "recommendedProfile"
+    },
+    {
+      "COLUMN_NAME": "totalScore"
+    },
+    {
+      "COLUMN_NAME": "identifiedPains"
+    },
+    {
+      "COLUMN_NAME": "isQualified"
+    },
+    {
+      "COLUMN_NAME": "disqualificationReason"
+    },
+    {
+      "COLUMN_NAME": "landingPage"
+    },
+    {
+      "COLUMN_NAME": "leadName"
+    },
+    {
+      "COLUMN_NAME": "leadEmail"
+    },
+    {
+      "COLUMN_NAME": "leadPhone"
+    },
+    {
+      "COLUMN_NAME": "leadCity"
+    },
+    {
+      "COLUMN_NAME": "viewedPricing"
+    },
+    {
+      "COLUMN_NAME": "clickedCta"
+    },
+    {
+      "COLUMN_NAME": "selectedPlan"
+    },
+    {
+      "COLUMN_NAME": "convertedToTrial"
+    },
+    {
+      "COLUMN_NAME": "convertedToPaid"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nsessionId\nanswers\nrecommendedPlan\nscore\nprofile\nstudentCount\nrevenue\nlostInfo\nadminTime\nchurn\nbillingIssues\nmainGoal\ncompletedAt\ncreatedAt\nsource\nutmSource\nutmMedium\nutmCampaign\nutmContent\nutmTerm\nreferrer\nuserAgent\nipAddress\ndeviceType\nbrowser\nos\nscreenResolution\nlanguage\ntimezone\ncountry\ncity\nconverted\nconvertedAt\nconversionType\npersonalId\nnotes\nvisitorId\nstudentsCount\nmanagementPain\ntimePain\nretentionPain\nbillingPain\npriority\nallAnswers\nrecommendedProfile\ntotalScore\nidentifiedPains\nisQualified\ndisqualificationReason\nlandingPage\nleadName\nleadEmail\nleadPhone\nleadCity\nviewedPricing\nclickedCta\nselectedPlan\nconvertedToTrial\nconvertedToPaid\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

@@ -1,0 +1,32 @@
+{
+  "query": "SELECT * FROM email_sequences;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT * FROM email_sequences;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Boas-vindas",
+      "description": "Email enviado imediatamente após o lead completar o quiz",
+      "trigger": "quiz_completed",
+      "triggerDays": "0",
+      "isActive": "1",
+      "priority": "100",
+      "createdAt": "2026-01-17 12:31:51",
+      "updatedAt": "2026-01-17 12:31:51"
+    },
+    {
+      "id": "2",
+      "name": "Follow-up 7 dias",
+      "description": "Sequência de emails para leads que não converteram em 7 dias",
+      "trigger": "days_without_conversion",
+      "triggerDays": "7",
+      "isActive": "1",
+      "priority": "50",
+      "createdAt": "2026-01-17 12:31:51",
+      "updatedAt": "2026-01-17 12:31:51"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdescription\ttrigger\ttriggerDays\tisActive\tpriority\tcreatedAt\tupdatedAt\n1\tBoas-vindas\tEmail enviado imediatamente após o lead completar o quiz\tquiz_completed\t0\t1\t100\t2026-01-17 12:31:51\t2026-01-17 12:31:51\n2\tFollow-up 7 dias\tSequência de emails para leads que não converteram em 7 dias\tdays_without_conversion\t7\t1\t50\t2026-01-17 12:31:51\t2026-01-17 12:31:51\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

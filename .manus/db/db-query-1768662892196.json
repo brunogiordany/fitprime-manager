@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, leadName, leadEmail, createdAt FROM quiz_responses WHERE leadEmail IS NOT NULL ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadName, leadEmail, createdAt FROM quiz_responses WHERE leadEmail IS NOT NULL ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "360001",
+      "leadName": "CASSIO LUIZ MOTA REGO",
+      "leadEmail": "csluiz19@gmail.com",
+      "createdAt": "2026-01-17 01:45:33"
+    },
+    {
+      "id": "330007",
+      "leadName": "Brenno Ferreira",
+      "leadEmail": "brennoferreiraeducadorfisico@gmail.com",
+      "createdAt": "2026-01-16 22:20:25"
+    },
+    {
+      "id": "330006",
+      "leadName": "Diogo",
+      "leadEmail": "dmunhos59@gmail.com",
+      "createdAt": "2026-01-16 21:41:41"
+    },
+    {
+      "id": "330005",
+      "leadName": "Luiz",
+      "leadEmail": "luiz@gmail.com",
+      "createdAt": "2026-01-16 21:20:36"
+    },
+    {
+      "id": "330004",
+      "leadName": "Cássio Rêgo",
+      "leadEmail": "csluiz19@gmail.com",
+      "createdAt": "2026-01-16 21:20:35"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadName\tleadEmail\tcreatedAt\n360001\tCASSIO LUIZ MOTA REGO\tcsluiz19@gmail.com\t2026-01-17 01:45:33\n330007\tBrenno Ferreira\tbrennoferreiraeducadorfisico@gmail.com\t2026-01-16 22:20:25\n330006\tDiogo\tdmunhos59@gmail.com\t2026-01-16 21:41:41\n330005\tLuiz\tluiz@gmail.com\t2026-01-16 21:20:36\n330004\tCássio Rêgo\tcsluiz19@gmail.com\t2026-01-16 21:20:35\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

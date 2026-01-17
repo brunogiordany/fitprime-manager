@@ -26,7 +26,8 @@ const WORKER_INTERVAL = 5 * 60 * 1000;
 
 // Função para substituir variáveis no template
 function replaceTemplateVariables(content: string, lead: any): string {
-  const baseUrl = process.env.VITE_APP_URL || "https://fitprime.com.br";
+  // Usar a URL base do projeto (variável de ambiente ou URL pública)
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprime-manager.manus.space";
   const unsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(lead.leadEmail || "")}`;
   
   return content
@@ -35,7 +36,8 @@ function replaceTemplateVariables(content: string, lead: any): string {
     .replace(/\{\{recommendedPlan\}\}/g, lead.recommendedPlan || "Pro")
     .replace(/\{\{studentsCount\}\}/g, lead.studentsCount?.toString() || "0")
     .replace(/\{\{revenue\}\}/g, lead.revenue || "Não informado")
-    .replace(/\{\{unsubscribeUrl\}\}/g, unsubscribeUrl);
+    .replace(/\{\{unsubscribeUrl\}\}/g, unsubscribeUrl)
+    .replace(/\{\{baseUrl\}\}/g, baseUrl);
 }
 
 // Verificar se email está inscrito

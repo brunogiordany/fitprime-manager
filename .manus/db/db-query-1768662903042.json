@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, sequenceId, name, subject, delayDays, delayHours, position, isActive FROM lead_email_templates;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, sequenceId, name, subject, delayDays, delayHours, position, isActive FROM lead_email_templates;",
+  "rows": [
+    {
+      "id": "1",
+      "sequenceId": "1",
+      "name": "Email de Boas-vindas",
+      "subject": "{{leadName}}, bem-vindo ao FitPrime! 🎉",
+      "delayDays": "0",
+      "delayHours": "0",
+      "position": "1",
+      "isActive": "1"
+    },
+    {
+      "id": "2",
+      "sequenceId": "2",
+      "name": "Lembrete - Dia 1",
+      "subject": "{{leadName}}, você ainda está pensando?",
+      "delayDays": "0",
+      "delayHours": "0",
+      "position": "1",
+      "isActive": "1"
+    },
+    {
+      "id": "3",
+      "sequenceId": "2",
+      "name": "Dica de Gestão - Dia 3",
+      "subject": "3 dicas para dobrar sua retenção de alunos",
+      "delayDays": "3",
+      "delayHours": "0",
+      "position": "2",
+      "isActive": "1"
+    },
+    {
+      "id": "4",
+      "sequenceId": "2",
+      "name": "Última Chance - Dia 7",
+      "subject": "{{leadName}}, última chance de transformar sua carreira",
+      "delayDays": "7",
+      "delayHours": "0",
+      "position": "3",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsequenceId\tname\tsubject\tdelayDays\tdelayHours\tposition\tisActive\n1\t1\tEmail de Boas-vindas\t{{leadName}}, bem-vindo ao FitPrime! 🎉\t0\t0\t1\t1\n2\t2\tLembrete - Dia 1\t{{leadName}}, você ainda está pensando?\t0\t0\t1\t1\n3\t2\tDica de Gestão - Dia 3\t3 dicas para dobrar sua retenção de alunos\t3\t0\t2\t1\n4\t2\tÚltima Chance - Dia 7\t{{leadName}}, última chance de transformar sua carreira\t7\t0\t3\t1\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

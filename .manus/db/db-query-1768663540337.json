@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, leadEmail, subject, status, scheduledAt, sentAt FROM email_sends ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadEmail, subject, status, scheduledAt, sentAt FROM email_sends ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "5",
+      "leadEmail": "csluiz19@gmail.com",
+      "subject": "CASSIO LUIZ MOTA REGO, bem-vindo ao FitPrime! 🎉",
+      "status": "sent",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "sentAt": "2026-01-17 15:24:54"
+    },
+    {
+      "id": "4",
+      "leadEmail": "brennoferreiraeducadorfisico@gmail.com",
+      "subject": "Brenno Ferreira, bem-vindo ao FitPrime! 🎉",
+      "status": "sent",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "sentAt": "2026-01-17 15:24:53"
+    },
+    {
+      "id": "3",
+      "leadEmail": "dmunhos59@gmail.com",
+      "subject": "Diogo, bem-vindo ao FitPrime! 🎉",
+      "status": "sent",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "sentAt": "2026-01-17 15:24:51"
+    },
+    {
+      "id": "2",
+      "leadEmail": "luiz@gmail.com",
+      "subject": "Luiz, bem-vindo ao FitPrime! 🎉",
+      "status": "sent",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "sentAt": "2026-01-17 15:24:50"
+    },
+    {
+      "id": "1",
+      "leadEmail": "csluiz19@gmail.com",
+      "subject": "Cássio Rêgo, bem-vindo ao FitPrime! 🎉",
+      "status": "sent",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "sentAt": "2026-01-17 15:24:49"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadEmail\tsubject\tstatus\tscheduledAt\tsentAt\n5\tcsluiz19@gmail.com\tCASSIO LUIZ MOTA REGO, bem-vindo ao FitPrime! 🎉\tsent\t2026-01-17 15:24:47\t2026-01-17 15:24:54\n4\tbrennoferreiraeducadorfisico@gmail.com\tBrenno Ferreira, bem-vindo ao FitPrime! 🎉\tsent\t2026-01-17 15:24:47\t2026-01-17 15:24:53\n3\tdmunhos59@gmail.com\tDiogo, bem-vindo ao FitPrime! 🎉\tsent\t2026-01-17 15:24:47\t2026-01-17 15:24:51\n2\tluiz@gmail.com\tLuiz, bem-vindo ao FitPrime! 🎉\tsent\t2026-01-17 15:24:47\t2026-01-17 15:24:50\n1\tcsluiz19@gmail.com\tCássio Rêgo, bem-vindo ao FitPrime! 🎉\tsent\t2026-01-17 15:24:47\t2026-01-17 15:24:49\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}
