@@ -1085,6 +1085,14 @@ export const quizResponses = mysqlTable("quiz_responses", {
   browser: varchar("browser", { length: 100 }),
   os: varchar("os", { length: 100 }),
   
+  // Vinculação com personal
+  personalId: int("personalId").references(() => personals.id), // ID do personal se converteu
+  converted: boolean("converted").default(false), // Se converteu em personal cadastrado
+  
+  // Merge de duplicados
+  mergedIntoId: int("mergedIntoId"), // Se foi mesclado, ID do lead principal
+  mergedAt: timestamp("mergedAt"), // Data do merge
+  
   // Timestamps
   startedAt: timestamp("startedAt").defaultNow().notNull(), // Quando começou o quiz
   completedAt: timestamp("completedAt"), // Quando completou o quiz

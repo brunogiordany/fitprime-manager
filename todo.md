@@ -4190,3 +4190,21 @@
 - [x] Criar endpoint linkQuizData para vincular dados do quiz à conta existente
 - [x] Implementar modal de vinculação de dados do quiz no cadastro trial
 - [x] Atualizar personalId nos registros do quiz ao vincular
+
+
+## Unificação Automática de Leads Duplicados (v6.14)
+- [ ] Criar endpoint para detectar e listar leads duplicados por email/telefone
+- [ ] Implementar lógica de merge automático de leads duplicados
+- [ ] Adicionar job automático para unificar leads ao salvar novo registro
+- [ ] Adicionar interface para visualizar leads unificados no admin
+
+
+## Unificação Automática de Leads Duplicados (v6.13)
+- [x] Criar endpoint para detectar leads duplicados por email e telefone
+- [x] Criar endpoint para listar leads de um grupo duplicado
+- [x] Implementar endpoint de merge de leads duplicados
+- [x] Adicionar merge automático ao salvar novo lead no quiz
+- [x] Adicionar campos de merge no schema (mergedIntoId, mergedAt)
+- [x] Criar interface para visualizar grupos de leads duplicados
+- [x] Adicionar modal de mesclagem de leads
+- [x] Adicionar botão "Mesclar Todos" para unificar todos os duplicados de uma vez

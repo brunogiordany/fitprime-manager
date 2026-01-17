@@ -414,6 +414,13 @@
       "when": 1768670109455,
       "tag": "0058_condemned_layla_miller",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "5",
+      "when": 1768673299198,
+      "tag": "0059_worthless_salo",
+      "breakpoints": true
     }
   ]
 }

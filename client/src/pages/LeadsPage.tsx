@@ -45,6 +45,8 @@ import {
   ChevronRight,
   Eye,
   RefreshCw,
+  GitMerge,
+  AlertTriangle,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -87,6 +89,9 @@ interface Lead {
   personalId: number | null;
   personalStatus: string | null;
   personalName: string | null;
+  // Campos de merge
+  mergedIntoId: number | null;
+  mergedAt: string | null;
 }
 
 const studentsLabels: Record<string, string> = {
@@ -134,6 +139,8 @@ export default function LeadsPage() {
   const [utmCampaign, setUtmCampaign] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+  const [selectedDuplicate, setSelectedDuplicate] = useState<{ identifier: string; type: "email" | "phone" } | null>(null);
 
   // Buscar leads
   const { data: leadsData, isLoading, refetch } = trpc.quiz.listLeads.useQuery({
@@ -155,6 +162,36 @@ export default function LeadsPage() {
   const { data: funnelStats } = trpc.quiz.getFunnelStats.useQuery({
     startDate: startDate || undefined,
     endDate: endDate || undefined,
+  });
+
+  // Buscar leads duplicados
+  const { data: duplicatesData, refetch: refetchDuplicates } = trpc.quiz.getDuplicateLeads.useQuery(
+    undefined,
+    { enabled: showDuplicates }
+  );
+
+  // Buscar detalhes de um grupo de duplicados
+  const { data: duplicateDetails } = trpc.quiz.getDuplicateDetails.useQuery(
+    { identifier: selectedDuplicate?.identifier || "", type: selectedDuplicate?.type || "email" },
+    { enabled: !!selectedDuplicate }
+  );
+
+  // Mutation para mesclar leads
+  const mergeMutation = trpc.quiz.mergeLeads.useMutation({
+    onSuccess: () => {
+      refetch();
+      refetchDuplicates();
+      setSelectedDuplicate(null);
+    },
+  });
+
+  // Mutation para mesclar todos automaticamente
+  const autoMergeMutation = trpc.quiz.autoMergeAllDuplicates.useMutation({
+    onSuccess: (data) => {
+      refetch();
+      refetchDuplicates();
+      alert(`${data.totalMerged} lead(s) mesclado(s) em ${data.groupsMerged} grupo(s)`);
+    },
   });
 
   // Exportar leads
@@ -248,6 +285,14 @@ export default function LeadsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant={showDuplicates ? "default" : "outline"}
+              onClick={() => setShowDuplicates(!showDuplicates)}
+              className={showDuplicates ? "bg-amber-600 hover:bg-amber-700" : ""}
+            >
+              <GitMerge className="w-4 h-4 mr-2" />
+              {showDuplicates ? "Ocultar Duplicados" : "Ver Duplicados"}
+            </Button>
             <Button variant="outline" onClick={() => refetch()}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Atualizar
@@ -323,6 +368,157 @@ export default function LeadsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Seção de Leads Duplicados */}
+        {showDuplicates && (
+          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  Leads Duplicados
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetchDuplicates()}
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Atualizar
+                  </Button>
+                  {(duplicatesData as any)?.duplicates?.length > 0 && (
+                    <Button
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700"
+                      onClick={() => autoMergeMutation.mutate()}
+                      disabled={autoMergeMutation.isPending}
+                    >
+                      <GitMerge className="w-4 h-4 mr-2" />
+                      {autoMergeMutation.isPending ? "Mesclando..." : "Mesclar Todos"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!(duplicatesData as any)?.duplicates?.length ? (
+                <div className="text-center py-8 text-gray-500">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald-500" />
+                  <p className="font-medium">Nenhum lead duplicado encontrado!</p>
+                  <p className="text-sm">Todos os leads estão únicos no sistema.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    Encontrados {(duplicatesData as any)?.duplicates?.length || 0} grupos de leads duplicados.
+                    Clique em um grupo para ver detalhes e mesclar.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {((duplicatesData as any)?.duplicates || []).map((dup: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-white dark:bg-gray-800 rounded-lg border cursor-pointer hover:border-amber-400 transition-colors"
+                        onClick={() => setSelectedDuplicate({ identifier: dup.identifier, type: dup.type })}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant={dup.type === "email" ? "default" : "secondary"}>
+                            {dup.type === "email" ? <Mail className="w-3 h-3 mr-1" /> : <Phone className="w-3 h-3 mr-1" />}
+                            {dup.type === "email" ? "Email" : "Telefone"}
+                          </Badge>
+                          <span className="text-sm font-medium text-amber-600">{dup.count}x</span>
+                        </div>
+                        <p className="text-sm font-medium truncate">{dup.identifier}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Primeiro: {dup.firstDate ? format(new Date(dup.firstDate), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Modal de Detalhes de Duplicados */}
+        <Dialog open={!!selectedDuplicate} onOpenChange={() => setSelectedDuplicate(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <GitMerge className="w-5 h-5 text-amber-600" />
+                Mesclar Leads Duplicados
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Os seguintes leads serão mesclados. O lead mais antigo será mantido como principal
+                e os dados dos outros serão incorporados.
+              </p>
+              
+              {(duplicateDetails as any)?.leads?.length > 0 && (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {((duplicateDetails as any)?.leads || []).map((lead: any, idx: number) => (
+                        <TableRow key={lead.id} className={idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : ""}>
+                          <TableCell>
+                            {lead.id}
+                            {idx === 0 && <Badge className="ml-2 bg-emerald-600">Principal</Badge>}
+                          </TableCell>
+                          <TableCell>{lead.leadName || "-"}</TableCell>
+                          <TableCell>{lead.leadEmail || "-"}</TableCell>
+                          <TableCell>{lead.leadPhone || "-"}</TableCell>
+                          <TableCell>
+                            {format(new Date(lead.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>
+                            {lead.isQualified ? (
+                              <Badge className="bg-emerald-600">Qualificado</Badge>
+                            ) : (
+                              <Badge variant="destructive">Desqualificado</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setSelectedDuplicate(null)}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="bg-amber-600 hover:bg-amber-700"
+                      onClick={() => {
+                        const leads = ((duplicateDetails as any)?.leads || []);
+                        if (leads.length > 1) {
+                          const primaryId = leads[0].id;
+                          const secondaryIds = leads.slice(1).map((l: any) => l.id);
+                          mergeMutation.mutate({ primaryId, secondaryIds });
+                        }
+                      }}
+                      disabled={mergeMutation.isPending}
+                    >
+                      <GitMerge className="w-4 h-4 mr-2" />
+                      {mergeMutation.isPending ? "Mesclando..." : "Confirmar Mesclagem"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Filtros */}
         <Card>

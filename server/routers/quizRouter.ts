@@ -213,6 +213,104 @@ export const quizRouter = router({
       
       const insertId = (result as any)[0]?.insertId;
       
+      // Verificar e mesclar leads duplicados automaticamente
+      if (input.leadEmail || input.leadPhone) {
+        try {
+          // Buscar leads existentes com mesmo email ou telefone
+          let existingLeads: any[] = [];
+          
+          if (input.leadEmail) {
+            const emailMatches = await db.execute(sql`
+              SELECT id FROM quiz_responses 
+              WHERE leadEmail = ${input.leadEmail} 
+              AND id != ${insertId} 
+              AND mergedIntoId IS NULL
+              ORDER BY createdAt ASC
+            `);
+            existingLeads = [...existingLeads, ...((emailMatches as any)[0] || [])];
+          }
+          
+          if (input.leadPhone) {
+            const phoneMatches = await db.execute(sql`
+              SELECT id FROM quiz_responses 
+              WHERE leadPhone = ${input.leadPhone} 
+              AND id != ${insertId} 
+              AND mergedIntoId IS NULL
+              AND id NOT IN (${sql.raw(existingLeads.map((l: any) => l.id).join(',') || '0')})
+              ORDER BY createdAt ASC
+            `);
+            existingLeads = [...existingLeads, ...((phoneMatches as any)[0] || [])];
+          }
+          
+          if (existingLeads.length > 0) {
+            // O lead mais antigo é o principal
+            const primaryId = existingLeads[0].id;
+            const secondaryIds = [insertId, ...existingLeads.slice(1).map((l: any) => l.id)];
+            
+            // Buscar dados do lead principal para mesclar
+            const [primaryResult] = await db.execute(sql`
+              SELECT * FROM quiz_responses WHERE id = ${primaryId}
+            `);
+            const primary = (primaryResult as any)[0];
+            
+            // Buscar dados dos leads secundários
+            const secondaryResult = await db.execute(sql`
+              SELECT * FROM quiz_responses WHERE id IN (${sql.raw(secondaryIds.join(','))})
+            `);
+            const secondaries = (secondaryResult as any)[0] || [];
+            
+            // Mesclar dados - preencher campos vazios do principal
+            const fieldsToMerge = [
+              'leadName', 'leadPhone', 'leadCity', 'studentsCount', 'revenue',
+              'utmSource', 'utmMedium', 'utmCampaign', 'landingPage', 'deviceType', 'browser', 'os'
+            ];
+            
+            const updates: string[] = [];
+            for (const field of fieldsToMerge) {
+              if (!primary[field]) {
+                for (const secondary of secondaries) {
+                  if (secondary[field]) {
+                    const value = String(secondary[field]).replace(/'/g, "''");
+                    updates.push(`${field} = '${value}'`);
+                    break;
+                  }
+                }
+              }
+            }
+            
+            // Se algum secundário é qualificado ou convertido
+            const anyQualified = secondaries.some((s: any) => s.isQualified);
+            const anyConverted = secondaries.some((s: any) => s.converted);
+            const anyPersonalId = secondaries.find((s: any) => s.personalId)?.personalId;
+            
+            if (anyQualified && !primary.isQualified) updates.push('isQualified = 1');
+            if (anyConverted && !primary.converted) updates.push('converted = 1');
+            if (anyPersonalId && !primary.personalId) updates.push(`personalId = ${anyPersonalId}`);
+            
+            // Atualizar o lead principal
+            if (updates.length > 0) {
+              await db.execute(sql`
+                UPDATE quiz_responses 
+                SET ${sql.raw(updates.join(', '))}, updatedAt = NOW()
+                WHERE id = ${primaryId}
+              `);
+            }
+            
+            // Marcar leads secundários como mesclados
+            await db.execute(sql`
+              UPDATE quiz_responses 
+              SET mergedIntoId = ${primaryId}, mergedAt = NOW(), updatedAt = NOW()
+              WHERE id IN (${sql.raw(secondaryIds.join(','))})
+            `);
+            
+            console.log(`[Quiz] Lead ${insertId} mesclado automaticamente com lead principal ${primaryId}`);
+          }
+        } catch (mergeError) {
+          console.error('[Quiz] Erro ao mesclar leads duplicados:', mergeError);
+          // Não falhar o salvamento por causa do merge
+        }
+      }
+      
       // Enviar notificação por email para o admin (assíncrono, não bloqueia)
       sendNewLeadNotification({
         id: insertId,
@@ -683,5 +781,346 @@ export const quizRouter = router({
       `);
       
       return (leads as any)?.[0] || [];
+    }),
+
+  // Detectar leads duplicados por email ou telefone (admin)
+  getDuplicateLeads: adminProcedure
+    .query(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar duplicados por email
+      const emailDuplicates = await db.execute(sql`
+        SELECT 
+          leadEmail as identifier,
+          'email' as type,
+          COUNT(*) as count,
+          GROUP_CONCAT(id ORDER BY createdAt DESC) as ids,
+          MIN(createdAt) as firstSeen,
+          MAX(createdAt) as lastSeen
+        FROM quiz_responses 
+        WHERE leadEmail IS NOT NULL AND leadEmail != ''
+        GROUP BY leadEmail
+        HAVING COUNT(*) > 1
+        ORDER BY count DESC
+      `);
+      
+      // Buscar duplicados por telefone
+      const phoneDuplicates = await db.execute(sql`
+        SELECT 
+          leadPhone as identifier,
+          'phone' as type,
+          COUNT(*) as count,
+          GROUP_CONCAT(id ORDER BY createdAt DESC) as ids,
+          MIN(createdAt) as firstSeen,
+          MAX(createdAt) as lastSeen
+        FROM quiz_responses 
+        WHERE leadPhone IS NOT NULL AND leadPhone != ''
+        GROUP BY leadPhone
+        HAVING COUNT(*) > 1
+        ORDER BY count DESC
+      `);
+      
+      const emailDups = (emailDuplicates as any)[0] || [];
+      const phoneDups = (phoneDuplicates as any)[0] || [];
+      
+      // Combinar e remover duplicatas (mesmo lead pode aparecer em ambas as listas)
+      const allDuplicates = [...emailDups, ...phoneDups];
+      
+      return {
+        duplicates: allDuplicates,
+        stats: {
+          totalEmailDuplicates: emailDups.length,
+          totalPhoneDuplicates: phoneDups.length,
+          totalAffectedLeads: allDuplicates.reduce((sum: number, d: any) => sum + parseInt(d.count), 0),
+        },
+      };
+    }),
+
+  // Obter detalhes de um grupo de leads duplicados (admin)
+  getDuplicateDetails: adminProcedure
+    .input(z.object({
+      identifier: z.string(),
+      type: z.enum(["email", "phone"]),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const field = input.type === "email" ? "leadEmail" : "leadPhone";
+      
+      const leads = await db.execute(sql`
+        SELECT 
+          id, leadName, leadEmail, leadPhone, leadCity,
+          studentsCount, revenue, priority, isQualified, converted,
+          utmSource, utmMedium, utmCampaign, landingPage,
+          deviceType, browser, os, personalId,
+          createdAt, updatedAt
+        FROM quiz_responses 
+        WHERE ${sql.raw(field)} = ${input.identifier}
+        ORDER BY createdAt DESC
+      `);
+      
+      return (leads as any)[0] || [];
+    }),
+
+  // Mesclar leads duplicados (admin)
+  mergeLeads: adminProcedure
+    .input(z.object({
+      primaryId: z.number(),
+      secondaryIds: z.array(z.number()),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar o lead primário
+      const [primaryResult] = await db.execute(sql`
+        SELECT * FROM quiz_responses WHERE id = ${input.primaryId}
+      `);
+      const primary = (primaryResult as any)[0];
+      
+      if (!primary) {
+        throw new Error("Lead primário não encontrado");
+      }
+      
+      // Buscar leads secundários
+      const secondaryResult = await db.execute(sql`
+        SELECT * FROM quiz_responses WHERE id IN (${sql.raw(input.secondaryIds.join(","))})
+      `);
+      const secondaries = (secondaryResult as any)[0] || [];
+      
+      // Mesclar dados - preencher campos vazios do primário com dados dos secundários
+      const fieldsToMerge = [
+        'leadName', 'leadEmail', 'leadPhone', 'leadCity',
+        'studentsCount', 'revenue', 'utmSource', 'utmMedium', 'utmCampaign',
+        'landingPage', 'deviceType', 'browser', 'os'
+      ];
+      
+      const updates: string[] = [];
+      
+      for (const field of fieldsToMerge) {
+        if (!primary[field]) {
+          // Buscar primeiro valor não nulo dos secundários
+          for (const secondary of secondaries) {
+            if (secondary[field]) {
+              updates.push(`${field} = '${secondary[field]}'`);
+              break;
+            }
+          }
+        }
+      }
+      
+      // Se algum secundário é qualificado ou convertido, marcar o primário também
+      const anyQualified = secondaries.some((s: any) => s.isQualified);
+      const anyConverted = secondaries.some((s: any) => s.converted);
+      const anyPersonalId = secondaries.find((s: any) => s.personalId)?.personalId;
+      
+      if (anyQualified && !primary.isQualified) {
+        updates.push("isQualified = 1");
+      }
+      if (anyConverted && !primary.converted) {
+        updates.push("converted = 1");
+      }
+      if (anyPersonalId && !primary.personalId) {
+        updates.push(`personalId = ${anyPersonalId}`);
+      }
+      
+      // Atualizar o lead primário com os dados mesclados
+      if (updates.length > 0) {
+        await db.execute(sql`
+          UPDATE quiz_responses 
+          SET ${sql.raw(updates.join(", "))}, updatedAt = NOW()
+          WHERE id = ${input.primaryId}
+        `);
+      }
+      
+      // Marcar os leads secundários como mesclados (soft delete)
+      await db.execute(sql`
+        UPDATE quiz_responses 
+        SET 
+          mergedIntoId = ${input.primaryId},
+          mergedAt = NOW(),
+          updatedAt = NOW()
+        WHERE id IN (${sql.raw(input.secondaryIds.join(","))})
+      `);
+      
+      return {
+        success: true,
+        message: `${input.secondaryIds.length} lead(s) mesclado(s) com sucesso`,
+        primaryId: input.primaryId,
+        mergedCount: input.secondaryIds.length,
+      };
+    }),
+
+  // Unificar automaticamente todos os leads duplicados (admin)
+  autoMergeAllDuplicates: adminProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      let totalMerged = 0;
+      let groupsMerged = 0;
+      
+      // Buscar duplicados por email
+      const emailDuplicates = await db.execute(sql`
+        SELECT 
+          leadEmail as identifier,
+          GROUP_CONCAT(id ORDER BY createdAt ASC) as ids
+        FROM quiz_responses 
+        WHERE leadEmail IS NOT NULL AND leadEmail != '' AND mergedIntoId IS NULL
+        GROUP BY leadEmail
+        HAVING COUNT(*) > 1
+      `);
+      
+      const emailDups = (emailDuplicates as any)[0] || [];
+      
+      for (const dup of emailDups) {
+        const ids = dup.ids.split(",").map((id: string) => parseInt(id));
+        const primaryId = ids[0]; // O mais antigo é o primário
+        const secondaryIds = ids.slice(1);
+        
+        if (secondaryIds.length > 0) {
+          // Buscar o lead primário
+          const [primaryResult] = await db.execute(sql`
+            SELECT * FROM quiz_responses WHERE id = ${primaryId}
+          `);
+          const primary = (primaryResult as any)[0];
+          
+          // Buscar leads secundários
+          const secondaryResult = await db.execute(sql`
+            SELECT * FROM quiz_responses WHERE id IN (${sql.raw(secondaryIds.join(","))})
+          `);
+          const secondaries = (secondaryResult as any)[0] || [];
+          
+          // Mesclar dados
+          const fieldsToMerge = [
+            'leadName', 'leadPhone', 'leadCity',
+            'studentsCount', 'revenue', 'utmSource', 'utmMedium', 'utmCampaign',
+            'landingPage', 'deviceType', 'browser', 'os'
+          ];
+          
+          const updates: string[] = [];
+          
+          for (const field of fieldsToMerge) {
+            if (!primary[field]) {
+              for (const secondary of secondaries) {
+                if (secondary[field]) {
+                  updates.push(`${field} = '${secondary[field]}'`);
+                  break;
+                }
+              }
+            }
+          }
+          
+          const anyQualified = secondaries.some((s: any) => s.isQualified);
+          const anyConverted = secondaries.some((s: any) => s.converted);
+          const anyPersonalId = secondaries.find((s: any) => s.personalId)?.personalId;
+          
+          if (anyQualified && !primary.isQualified) updates.push("isQualified = 1");
+          if (anyConverted && !primary.converted) updates.push("converted = 1");
+          if (anyPersonalId && !primary.personalId) updates.push(`personalId = ${anyPersonalId}`);
+          
+          if (updates.length > 0) {
+            await db.execute(sql`
+              UPDATE quiz_responses 
+              SET ${sql.raw(updates.join(", "))}, updatedAt = NOW()
+              WHERE id = ${primaryId}
+            `);
+          }
+          
+          // Marcar secundários como mesclados
+          await db.execute(sql`
+            UPDATE quiz_responses 
+            SET mergedIntoId = ${primaryId}, mergedAt = NOW(), updatedAt = NOW()
+            WHERE id IN (${sql.raw(secondaryIds.join(","))})
+          `);
+          
+          totalMerged += secondaryIds.length;
+          groupsMerged++;
+        }
+      }
+      
+      // Buscar duplicados por telefone (que ainda não foram mesclados)
+      const phoneDuplicates = await db.execute(sql`
+        SELECT 
+          leadPhone as identifier,
+          GROUP_CONCAT(id ORDER BY createdAt ASC) as ids
+        FROM quiz_responses 
+        WHERE leadPhone IS NOT NULL AND leadPhone != '' AND mergedIntoId IS NULL
+        GROUP BY leadPhone
+        HAVING COUNT(*) > 1
+      `);
+      
+      const phoneDups = (phoneDuplicates as any)[0] || [];
+      
+      for (const dup of phoneDups) {
+        const ids = dup.ids.split(",").map((id: string) => parseInt(id));
+        const primaryId = ids[0];
+        const secondaryIds = ids.slice(1);
+        
+        if (secondaryIds.length > 0) {
+          const [primaryResult] = await db.execute(sql`
+            SELECT * FROM quiz_responses WHERE id = ${primaryId}
+          `);
+          const primary = (primaryResult as any)[0];
+          
+          const secondaryResult = await db.execute(sql`
+            SELECT * FROM quiz_responses WHERE id IN (${sql.raw(secondaryIds.join(","))})
+          `);
+          const secondaries = (secondaryResult as any)[0] || [];
+          
+          const fieldsToMerge = [
+            'leadName', 'leadEmail', 'leadCity',
+            'studentsCount', 'revenue', 'utmSource', 'utmMedium', 'utmCampaign',
+            'landingPage', 'deviceType', 'browser', 'os'
+          ];
+          
+          const updates: string[] = [];
+          
+          for (const field of fieldsToMerge) {
+            if (!primary[field]) {
+              for (const secondary of secondaries) {
+                if (secondary[field]) {
+                  updates.push(`${field} = '${secondary[field]}'`);
+                  break;
+                }
+              }
+            }
+          }
+          
+          const anyQualified = secondaries.some((s: any) => s.isQualified);
+          const anyConverted = secondaries.some((s: any) => s.converted);
+          const anyPersonalId = secondaries.find((s: any) => s.personalId)?.personalId;
+          
+          if (anyQualified && !primary.isQualified) updates.push("isQualified = 1");
+          if (anyConverted && !primary.converted) updates.push("converted = 1");
+          if (anyPersonalId && !primary.personalId) updates.push(`personalId = ${anyPersonalId}`);
+          
+          if (updates.length > 0) {
+            await db.execute(sql`
+              UPDATE quiz_responses 
+              SET ${sql.raw(updates.join(", "))}, updatedAt = NOW()
+              WHERE id = ${primaryId}
+            `);
+          }
+          
+          await db.execute(sql`
+            UPDATE quiz_responses 
+            SET mergedIntoId = ${primaryId}, mergedAt = NOW(), updatedAt = NOW()
+            WHERE id IN (${sql.raw(secondaryIds.join(","))})
+          `);
+          
+          totalMerged += secondaryIds.length;
+          groupsMerged++;
+        }
+      }
+      
+      return {
+        success: true,
+        message: `${totalMerged} lead(s) mesclado(s) em ${groupsMerged} grupo(s)`,
+        totalMerged,
+        groupsMerged,
+      };
     }),
 });

@@ -1,0 +1,16 @@
+{
+  "query": "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = 'quiz_responses' AND COLUMN_NAME LIKE 'merged%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME = 'quiz_responses' AND COLUMN_NAME LIKE 'merged%';",
+  "rows": [
+    {
+      "COLUMN_NAME": "mergedIntoId"
+    },
+    {
+      "COLUMN_NAME": "mergedAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nmergedIntoId\nmergedAt\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}
