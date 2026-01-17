@@ -4073,3 +4073,11 @@
 - [x] Criar sistema de tracking de cliques nos links
 - [x] Atualizar dashboard com métricas de abertura e cliques
 - [x] Testar e validar o sistema de tracking
+
+
+## Configuração PUBLIC_URL e Gráficos de Performance (v6.7)
+- [x] Configurar variável PUBLIC_URL para produção (fitprimemanager.com)
+- [x] Criar endpoint de métricas históricas de emails (por dia/semana)
+- [x] Criar gráficos de tendências de abertura ao longo do tempo
+- [x] Criar gráficos de tendências de clique ao longo do tempo
+- [x] Adicionar seletor de período (7 dias, 30 dias, 90 dias)

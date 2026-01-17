@@ -31,8 +31,10 @@ import {
   Zap,
   Users,
   MousePointer,
-  TrendingUp
+  TrendingUp,
+  Calendar
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 
 // Tipos
 interface EmailSequence {
@@ -82,6 +84,7 @@ export default function EmailAutomationPage() {
   const [editingSequence, setEditingSequence] = useState<EmailSequence | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
+  const [trendsPeriod, setTrendsPeriod] = useState(30); // Período em dias para gráficos
   
   // Queries - usando tRPC hooks
   const { data: sequences, refetch: refetchSequences } = trpc.leadEmail.listSequences.useQuery();
@@ -94,6 +97,8 @@ export default function EmailAutomationPage() {
   const { data: metrics } = trpc.leadEmail.getEmailMetrics.useQuery({});
   
   const { data: sends, refetch: refetchSends } = trpc.leadEmail.listSends.useQuery({ page: 1, limit: 50, status: "all" });
+  
+  const { data: trends } = trpc.leadEmail.getEmailTrends.useQuery({ days: trendsPeriod });
   
   // Mutations
   const createSequenceMutation = trpc.leadEmail.createSequence.useMutation({
@@ -254,6 +259,7 @@ export default function EmailAutomationPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="sequences">Sequências</TabsTrigger>
+            <TabsTrigger value="trends">Tendências</TabsTrigger>
             <TabsTrigger value="history">Histórico de Envios</TabsTrigger>
           </TabsList>
           
@@ -419,6 +425,172 @@ export default function EmailAutomationPage() {
                 )}
               </div>
             </div>
+          </TabsContent>
+          
+          {/* Tendências */}
+          <TabsContent value="trends" className="space-y-6">
+            {/* Seletor de Período */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Período:</span>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant={trendsPeriod === 7 ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setTrendsPeriod(7)}
+                >
+                  7 dias
+                </Button>
+                <Button 
+                  variant={trendsPeriod === 30 ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setTrendsPeriod(30)}
+                >
+                  30 dias
+                </Button>
+                <Button 
+                  variant={trendsPeriod === 90 ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setTrendsPeriod(90)}
+                >
+                  90 dias
+                </Button>
+              </div>
+            </div>
+            
+            {/* Cards de Resumo do Período */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">Enviados</p>
+                  <p className="text-xl font-bold">{trends?.summary?.totalSent || 0}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">Aberturas</p>
+                  <p className="text-xl font-bold text-blue-600">{trends?.summary?.totalOpens || 0}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">Cliques</p>
+                  <p className="text-xl font-bold text-purple-600">{trends?.summary?.totalClicks || 0}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">Taxa Abertura</p>
+                  <p className="text-xl font-bold text-blue-600">{trends?.summary?.openRate || 0}%</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">Taxa Clique</p>
+                  <p className="text-xl font-bold text-purple-600">{trends?.summary?.clickRate || 0}%</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Gráfico de Envios */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Emails Enviados</CardTitle>
+                <CardDescription>Volume de envios por dia</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trends?.trends || []}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => {
+                          const date = new Date(value);
+                          return `${date.getDate()}/${date.getMonth() + 1}`;
+                        }}
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip 
+                        labelFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('pt-BR');
+                        }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="sent" 
+                        name="Enviados"
+                        stroke="#22c55e" 
+                        fill="#22c55e" 
+                        fillOpacity={0.3}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Gráfico de Aberturas e Cliques */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Engajamento</CardTitle>
+                <CardDescription>Aberturas e cliques por dia</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trends?.trends || []}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => {
+                          const date = new Date(value);
+                          return `${date.getDate()}/${date.getMonth() + 1}`;
+                        }}
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip 
+                        labelFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('pt-BR');
+                        }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="opens" 
+                        name="Aberturas"
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="clicks" 
+                        name="Cliques"
+                        stroke="#a855f7" 
+                        strokeWidth={2}
+                        dot={{ fill: '#a855f7', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {(!trends?.trends || trends.trends.length === 0) && (
+              <div className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Nenhum dado disponível para o período selecionado</p>
+              </div>
+            )}
           </TabsContent>
           
           {/* Histórico de Envios */}

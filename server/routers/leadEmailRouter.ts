@@ -247,6 +247,107 @@ export const leadEmailRouter = router({
       };
     }),
   
+  // Métricas históricas para gráficos de tendências
+  getEmailTrends: adminProcedure
+    .input(z.object({
+      days: z.number().default(30), // Últimos N dias
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - input.days);
+      startDate.setHours(0, 0, 0, 0);
+      
+      // Buscar envios por dia
+      const sendsByDay = await db
+        .select({
+          date: sql<string>`DATE(${emailSends.sentAt})`,
+          sent: sql<number>`COUNT(*)`,
+        })
+        .from(emailSends)
+        .where(and(
+          eq(emailSends.status, "sent"),
+          gte(emailSends.sentAt, startDate)
+        ))
+        .groupBy(sql`DATE(${emailSends.sentAt})`)
+        .orderBy(sql`DATE(${emailSends.sentAt})`);
+      
+      // Buscar aberturas por dia
+      const opensByDay = await db
+        .select({
+          date: sql<string>`DATE(${emailTracking.createdAt})`,
+          opens: sql<number>`COUNT(*)`,
+        })
+        .from(emailTracking)
+        .where(and(
+          eq(emailTracking.eventType, "open"),
+          gte(emailTracking.createdAt, startDate)
+        ))
+        .groupBy(sql`DATE(${emailTracking.createdAt})`)
+        .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      
+      // Buscar cliques por dia
+      const clicksByDay = await db
+        .select({
+          date: sql<string>`DATE(${emailTracking.createdAt})`,
+          clicks: sql<number>`COUNT(*)`,
+        })
+        .from(emailTracking)
+        .where(and(
+          eq(emailTracking.eventType, "click"),
+          gte(emailTracking.createdAt, startDate)
+        ))
+        .groupBy(sql`DATE(${emailTracking.createdAt})`)
+        .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      
+      // Criar array de datas para preencher dias sem dados
+      const dates: string[] = [];
+      const currentDate = new Date(startDate);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      
+      while (currentDate <= today) {
+        dates.push(currentDate.toISOString().split('T')[0]);
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      // Mapear dados por data
+      const sendsMap = new Map(sendsByDay.map(s => [s.date, s.sent]));
+      const opensMap = new Map(opensByDay.map(o => [o.date, o.opens]));
+      const clicksMap = new Map(clicksByDay.map(c => [c.date, c.clicks]));
+      
+      // Combinar dados
+      const trends = dates.map(date => ({
+        date,
+        sent: sendsMap.get(date) || 0,
+        opens: opensMap.get(date) || 0,
+        clicks: clicksMap.get(date) || 0,
+      }));
+      
+      // Calcular totais do período
+      const totalSent = trends.reduce((sum, t) => sum + t.sent, 0);
+      const totalOpens = trends.reduce((sum, t) => sum + t.opens, 0);
+      const totalClicks = trends.reduce((sum, t) => sum + t.clicks, 0);
+      
+      return {
+        trends,
+        summary: {
+          totalSent,
+          totalOpens,
+          totalClicks,
+          openRate: totalSent > 0 ? ((totalOpens / totalSent) * 100).toFixed(1) : "0.0",
+          clickRate: totalSent > 0 ? ((totalClicks / totalSent) * 100).toFixed(1) : "0.0",
+        },
+        period: {
+          start: startDate.toISOString().split('T')[0],
+          end: today.toISOString().split('T')[0],
+          days: input.days,
+        },
+      };
+    }),
+  
   // Histórico de envios
   listSends: adminProcedure
     .input(z.object({
