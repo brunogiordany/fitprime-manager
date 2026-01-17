@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { trackPageView, trackQuizCompleted } from "@/lib/analytics";
+import { getTrackingData, saveUtmParams } from "@/lib/tracking";
 
 // Tipos
 interface QuizOption {
@@ -280,12 +281,16 @@ export default function QuizTrialPage() {
   const [sessionId] = useState(() => `quiz_trial_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   const saveQuizMutation = trpc.quiz.saveResponse.useMutation();
+  
+  // Capturar dados de tracking ao carregar
+  const [trackingData] = useState(() => getTrackingData());
 
   const currentQuestion = QUIZ_QUESTIONS[currentStep];
   const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
 
   useEffect(() => {
     trackPageView('/quiz-trial');
+    saveUtmParams();
   }, []);
 
   // Validar dados do lead
@@ -355,7 +360,7 @@ export default function QuizTrialPage() {
       const finalResult = calculateResult(newAnswers);
       setResult(finalResult);
       
-      // Salvar no banco com dados do lead
+      // Salvar no banco com dados do lead e tracking
       try {
         await saveQuizMutation.mutateAsync({
           visitorId: sessionId,
@@ -370,7 +375,8 @@ export default function QuizTrialPage() {
           recommendedPlan: finalResult.recommendedPlan,
           totalScore: finalResult.painScore + finalResult.solutionScore,
           isQualified: true,
-          landingPage: '/quiz-trial'
+          // Dados de tracking
+          ...trackingData,
         });
       } catch (error) {
         console.error('Erro ao salvar quiz:', error);

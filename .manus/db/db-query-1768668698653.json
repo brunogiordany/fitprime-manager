@@ -1,0 +1,22 @@
+{
+  "query": "\n-- Comparar totais\nSELECT 'Leads' as tipo, COUNT(*) as total FROM quiz_responses WHERE leadEmail IS NOT NULL\nUNION ALL\nSELECT 'Personais' as tipo, COUNT(*) as total FROM personals\nUNION ALL\nSELECT 'Leads que viraram Personal' as tipo, COUNT(*) as total \nFROM quiz_responses qr\nJOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)\nJOIN personals p ON u.id = p.userId;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \n-- Comparar totais\nSELECT 'Leads' as tipo, COUNT(*) as total FROM quiz_responses WHERE leadEmail IS NOT NULL\nUNION ALL\nSELECT 'Personais' as tipo, COUNT(*) as total FROM personals\nUNION ALL\nSELECT 'Leads que viraram Personal' as tipo, COUNT(*) as total \nFROM quiz_responses qr\nJOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)\nJOIN personals p ON u.id = p.userId;\n",
+  "rows": [
+    {
+      "tipo": "Personais",
+      "total": "11"
+    },
+    {
+      "tipo": "Leads",
+      "total": "23"
+    },
+    {
+      "tipo": "Leads que viraram Personal",
+      "total": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "tipo\ttotal\nPersonais\t11\nLeads\t23\nLeads que viraram Personal\t2\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

@@ -1,0 +1,28 @@
+{
+  "query": "\n-- Ver detalhes dos personais duplicados\nSELECT \n  p.id as personal_id,\n  u.id as user_id,\n  u.email,\n  u.name,\n  p.subscriptionStatus,\n  p.createdAt,\n  u.createdAt as user_created\nFROM personals p\nJOIN users u ON p.userId = u.id\nWHERE u.email IN (\n  SELECT u2.email \n  FROM personals p2 \n  JOIN users u2 ON p2.userId = u2.id \n  WHERE u2.email IS NOT NULL \n  GROUP BY u2.email \n  HAVING COUNT(*) > 1\n)\nORDER BY u.email, p.createdAt;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \n-- Ver detalhes dos personais duplicados\nSELECT \n  p.id as personal_id,\n  u.id as user_id,\n  u.email,\n  u.name,\n  p.subscriptionStatus,\n  p.createdAt,\n  u.createdAt as user_created\nFROM personals p\nJOIN users u ON p.userId = u.id\nWHERE u.email IN (\n  SELECT u2.email \n  FROM personals p2 \n  JOIN users u2 ON p2.userId = u2.id \n  WHERE u2.email IS NOT NULL \n  GROUP BY u2.email \n  HAVING COUNT(*) > 1\n)\nORDER BY u.email, p.createdAt;\n",
+  "rows": [
+    {
+      "personal_id": "30001",
+      "user_id": "1290075",
+      "email": "brunogiordanyps@gmail.com",
+      "name": "Bruno Giordany PS",
+      "subscriptionStatus": "trial",
+      "createdAt": "2025-12-30 01:29:53",
+      "user_created": "2025-12-30 01:29:51"
+    },
+    {
+      "personal_id": "30002",
+      "user_id": "1290075",
+      "email": "brunogiordanyps@gmail.com",
+      "name": "Bruno Giordany PS",
+      "subscriptionStatus": "trial",
+      "createdAt": "2025-12-30 01:29:53",
+      "user_created": "2025-12-30 01:29:51"
+    }
+  ],
+  "messages": [],
+  "stdout": "personal_id\tuser_id\temail\tname\tsubscriptionStatus\tcreatedAt\tuser_created\n30001\t1290075\tbrunogiordanyps@gmail.com\tBruno Giordany PS\ttrial\t2025-12-30 01:29:53\t2025-12-30 01:29:51\n30002\t1290075\tbrunogiordanyps@gmail.com\tBruno Giordany PS\ttrial\t2025-12-30 01:29:53\t2025-12-30 01:29:51\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

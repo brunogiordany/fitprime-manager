@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import DashboardLayout from "@/components/DashboardLayout";
+import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,7 +226,11 @@ export default function LeadsPage() {
   const total = leadsData?.total || 0;
 
   return (
-    <DashboardLayout>
+    <AdminLayout
+      title="Gestão de Leads"
+      description="Visualize e gerencie todos os leads capturados pelo quiz"
+      activeTab="leads"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -783,6 +787,6 @@ export default function LeadsPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 }

@@ -1,0 +1,73 @@
+{
+  "query": "\n-- Personais que não vieram do quiz (cadastro direto)\nSELECT \n  p.id,\n  u.name,\n  u.email,\n  p.subscriptionStatus,\n  p.createdAt\nFROM personals p\nJOIN users u ON p.userId = u.id\nWHERE NOT EXISTS (\n  SELECT 1 FROM quiz_responses qr \n  WHERE LOWER(qr.leadEmail) = LOWER(u.email)\n)\nORDER BY p.createdAt DESC\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \n-- Personais que não vieram do quiz (cadastro direto)\nSELECT \n  p.id,\n  u.name,\n  u.email,\n  p.subscriptionStatus,\n  p.createdAt\nFROM personals p\nJOIN users u ON p.userId = u.id\nWHERE NOT EXISTS (\n  SELECT 1 FROM quiz_responses qr \n  WHERE LOWER(qr.leadEmail) = LOWER(u.email)\n)\nORDER BY p.createdAt DESC\nLIMIT 10;\n",
+  "rows": [
+    {
+      "id": "180001",
+      "name": "teste dia 13",
+      "email": "testedia13@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2026-01-13 13:47:46"
+    },
+    {
+      "id": "150003",
+      "name": "Osmar de Oliveira Diomazio ",
+      "email": "oliverdiomazio@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2026-01-13 00:44:00"
+    },
+    {
+      "id": "150002",
+      "name": "Jj.ggfc hgvvv",
+      "email": "interliguet@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2026-01-12 22:17:43"
+    },
+    {
+      "id": "150001",
+      "name": "Kauê Mendes Pereira",
+      "email": "kauetreinadorpessoal@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2026-01-12 20:58:04"
+    },
+    {
+      "id": "120001",
+      "name": "Mário Giordano Guimarães Silva",
+      "email": "gmariogiordano@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2026-01-11 23:02:05"
+    },
+    {
+      "id": "90002",
+      "name": "nutri life teste2",
+      "email": "nutriliffee@gmail.com",
+      "subscriptionStatus": "cancelled",
+      "createdAt": "2026-01-04 22:53:05"
+    },
+    {
+      "id": "30001",
+      "name": "Bruno Giordany PS",
+      "email": "brunogiordanyps@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2025-12-30 01:29:53"
+    },
+    {
+      "id": "30002",
+      "name": "Bruno Giordany PS",
+      "email": "brunogiordanyps@gmail.com",
+      "subscriptionStatus": "trial",
+      "createdAt": "2025-12-30 01:29:53"
+    },
+    {
+      "id": "1",
+      "name": "Bruno Giordany",
+      "email": "brunogiordany@gmail.com",
+      "subscriptionStatus": "active",
+      "createdAt": "2025-12-24 10:32:13"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tsubscriptionStatus\tcreatedAt\n180001\tteste dia 13\ttestedia13@gmail.com\ttrial\t2026-01-13 13:47:46\n150003\tOsmar de Oliveira Diomazio \toliverdiomazio@gmail.com\ttrial\t2026-01-13 00:44:00\n150002\tJj.ggfc hgvvv\tinterliguet@gmail.com\ttrial\t2026-01-12 22:17:43\n150001\tKauê Mendes Pereira\tkauetreinadorpessoal@gmail.com\ttrial\t2026-01-12 20:58:04\n120001\tMário Giordano Guimarães Silva\tgmariogiordano@gmail.com\ttrial\t2026-01-11 23:02:05\n90002\tnutri life teste2\tnutriliffee@gmail.com\tcancelled\t2026-01-04 22:53:05\n30001\tBruno Giordany PS\tbrunogiordanyps@gmail.com\ttrial\t2025-12-30 01:29:53\n30002\tBruno Giordany PS\tbrunogiordanyps@gmail.com\ttrial\t2025-12-30 01:29:53\n1\tBruno Giordany\tbrunogiordany@gmail.com\tactive\t2025-12-24 10:32:13\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

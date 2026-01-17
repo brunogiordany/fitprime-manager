@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { pixelEvents } from "@/lib/tracking-pixels";
+import { getTrackingData, saveUtmParams } from "@/lib/tracking";
 
 // Tipos
 interface QuizOption {
@@ -285,6 +286,14 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
   const [sessionId] = useState(() => `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   const saveQuizMutation = trpc.quiz.saveResponse.useMutation();
+  
+  // Capturar dados de tracking ao carregar
+  const [trackingData] = useState(() => getTrackingData());
+  
+  // Salvar UTM params no localStorage
+  useEffect(() => {
+    saveUtmParams();
+  }, []);
 
   const currentQuestion = QUIZ_QUESTIONS[currentStep];
   const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
@@ -373,7 +382,7 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
       const quizResult = calculateResult(newAnswers);
       setResult(quizResult);
       
-      // Salvar no banco com dados do lead
+      // Salvar no banco com dados do lead e tracking
       saveQuizMutation.mutate({
         visitorId: `visitor_${Date.now()}`,
         sessionId,
@@ -387,6 +396,8 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
         recommendedPlan: quizResult.recommendedPlan,
         recommendedProfile: quizResult.painScore > 15 ? "high_pain" : quizResult.painScore > 10 ? "medium_pain" : "low_pain",
         totalScore: quizResult.painScore + quizResult.solutionScore,
+        // Dados de tracking
+        ...trackingData,
       });
       
       // Meta Pixel - Lead event quando completa o quiz

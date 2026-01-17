@@ -4105,3 +4105,29 @@
 - [x] Botão de limpar filtros na aba de tendências
 - [x] Mostrar filtros ativos como badges
 
+
+
+## Bugs Reportados (v6.9)
+- [ ] Menu do Personal aparecendo nas páginas Admin (sidebar incorreto)
+- [ ] Dados de origem do lead não captados (UTM Source, UTM Medium, UTM Campaign, Landing Page, Dispositivo vazios)
+- [ ] Personais duplicados - verificar sincronização entre Leads e Personais cadastrados
+- [ ] Verificar se há redundância no funil de cadastro
+
+
+
+## Bugs Reportados e Corrigidos (v6.9)
+- [x] Menu do Personal aparecendo nas páginas Admin
+  - [x] Criado componente AdminLayout para páginas admin
+  - [x] EmailAutomationPage atualizada para usar AdminLayout
+  - [x] LeadsPage atualizada para usar AdminLayout
+  - [x] Navegação horizontal com todas as páginas admin
+- [x] Dados de origem do lead não captados (UTM, dispositivo)
+  - [x] Criado utilitário tracking.ts para capturar UTM params e dados do dispositivo
+  - [x] QualificationQuizV4 atualizado para enviar dados de tracking
+  - [x] QuizTrialPage atualizado para enviar dados de tracking
+  - [x] Novos leads terão UTM Source, Medium, Campaign, Landing Page, Browser, OS, Device Type
+- [x] Personais duplicados vs Leads - Analisado
+  - [x] Apenas 1 caso de duplicação encontrado no banco
+  - [x] Sistema está funcionando corretamente
+  - [x] Leads e Personais são entidades separadas (lead vira personal ao se cadastrar)
+

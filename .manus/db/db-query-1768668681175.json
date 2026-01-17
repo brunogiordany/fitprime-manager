@@ -1,0 +1,210 @@
+{
+  "query": "\n-- Verificar leads que se tornaram personais (mesmo email)\nSELECT \n  qr.leadEmail as lead_email,\n  qr.leadName as lead_name,\n  qr.createdAt as lead_date,\n  u.email as user_email,\n  u.name as user_name,\n  u.createdAt as user_date,\n  p.id as personal_id,\n  p.subscriptionStatus\nFROM quiz_responses qr\nLEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)\nLEFT JOIN personals p ON u.id = p.userId\nWHERE qr.leadEmail IS NOT NULL\nORDER BY qr.createdAt DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \n-- Verificar leads que se tornaram personais (mesmo email)\nSELECT \n  qr.leadEmail as lead_email,\n  qr.leadName as lead_name,\n  qr.createdAt as lead_date,\n  u.email as user_email,\n  u.name as user_name,\n  u.createdAt as user_date,\n  p.id as personal_id,\n  p.subscriptionStatus\nFROM quiz_responses qr\nLEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)\nLEFT JOIN personals p ON u.id = p.userId\nWHERE qr.leadEmail IS NOT NULL\nORDER BY qr.createdAt DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "lead_email": "csluiz19@gmail.com",
+      "lead_name": "CASSIO LUIZ MOTA REGO",
+      "lead_date": "2026-01-17 01:45:33",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "brennoferreiraeducadorfisico@gmail.com",
+      "lead_name": "Brenno Ferreira",
+      "lead_date": "2026-01-16 22:20:25",
+      "user_email": "brennoferreiraeducadorfisico@gmail.com",
+      "user_name": "BRENNO FERREIRA BRUM",
+      "user_date": "2026-01-17 13:02:16",
+      "personal_id": "210001",
+      "subscriptionStatus": "trial"
+    },
+    {
+      "lead_email": "dmunhos59@gmail.com",
+      "lead_name": "Diogo",
+      "lead_date": "2026-01-16 21:41:41",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "luiz@gmail.com",
+      "lead_name": "Luiz",
+      "lead_date": "2026-01-16 21:20:36",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "csluiz19@gmail.com",
+      "lead_name": "Cássio Rêgo",
+      "lead_date": "2026-01-16 21:20:35",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "testemeta01@gmail.com",
+      "lead_name": "teste meta01",
+      "lead_date": "2026-01-15 18:56:02",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "a@a.com",
+      "lead_name": "a",
+      "lead_date": "2026-01-15 14:40:07",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "cardosojccarlos@gmail.com",
+      "lead_name": "José Carlos Cardoso da Silva",
+      "lead_date": "2026-01-14 20:24:06",
+      "user_email": "cardosojccarlos@gmail.com",
+      "user_name": "José Carlos Cardoso da Silva",
+      "user_date": "2026-01-13 14:23:11",
+      "personal_id": "180002",
+      "subscriptionStatus": "trial"
+    },
+    {
+      "lead_email": "aaggenciafox0142@outlook.com",
+      "lead_name": "teste meta",
+      "lead_date": "2026-01-14 16:57:08",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "leandroed.fisica@hotmail.com",
+      "lead_name": "Leandro",
+      "lead_date": "2026-01-14 15:54:17",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "contato@bpmesportes.com.br",
+      "lead_name": "Leonardo Edwards Scudeze",
+      "lead_date": "2026-01-14 15:39:07",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "gabriel.prevelato5@gmail.com",
+      "lead_name": "Gabriel Prevelato",
+      "lead_date": "2026-01-14 10:31:53",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "rogerpersonal32@gmail.com",
+      "lead_name": "Roger ",
+      "lead_date": "2026-01-14 09:34:28",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "leemarasco@gmail.com",
+      "lead_name": "Letícia Marasco Bouças",
+      "lead_date": "2026-01-14 00:18:00",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "marcelo_tunisio@gmail.com",
+      "lead_name": "Marcelo",
+      "lead_date": "2026-01-14 00:17:34",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "leandroed.fisica@hotmail.com",
+      "lead_name": "Leandro Araujo",
+      "lead_date": "2026-01-13 21:05:49",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "reisplbruno@gmail.com",
+      "lead_name": "Bruno de Souza Reis",
+      "lead_date": "2026-01-13 20:30:08",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "pedroteste@gmail.com",
+      "lead_name": "pedro",
+      "lead_date": "2026-01-13 20:04:31",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "testemeta@gmail.com",
+      "lead_name": "teste meta",
+      "lead_date": "2026-01-13 16:04:38",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    },
+    {
+      "lead_email": "marceloresende302@gmail.com",
+      "lead_name": "James kettle ",
+      "lead_date": "2026-01-13 14:34:22",
+      "user_email": "NULL",
+      "user_name": "NULL",
+      "user_date": "NULL",
+      "personal_id": "NULL",
+      "subscriptionStatus": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "lead_email\tlead_name\tlead_date\tuser_email\tuser_name\tuser_date\tpersonal_id\tsubscriptionStatus\ncsluiz19@gmail.com\tCASSIO LUIZ MOTA REGO\t2026-01-17 01:45:33\tNULL\tNULL\tNULL\tNULL\tNULL\nbrennoferreiraeducadorfisico@gmail.com\tBrenno Ferreira\t2026-01-16 22:20:25\tbrennoferreiraeducadorfisico@gmail.com\tBRENNO FERREIRA BRUM\t2026-01-17 13:02:16\t210001\ttrial\ndmunhos59@gmail.com\tDiogo\t2026-01-16 21:41:41\tNULL\tNULL\tNULL\tNULL\tNULL\nluiz@gmail.com\tLuiz\t2026-01-16 21:20:36\tNULL\tNULL\tNULL\tNULL\tNULL\ncsluiz19@gmail.com\tCássio Rêgo\t2026-01-16 21:20:35\tNULL\tNULL\tNULL\tNULL\tNULL\ntestemeta01@gmail.com\tteste meta01\t2026-01-15 18:56:02\tNULL\tNULL\tNULL\tNULL\tNULL\na@a.com\ta\t2026-01-15 14:40:07\tNULL\tNULL\tNULL\tNULL\tNULL\ncardosojccarlos@gmail.com\tJosé Carlos Cardoso da Silva\t2026-01-14 20:24:06\tcardosojccarlos@gmail.com\tJosé Carlos Cardoso da Silva\t2026-01-13 14:23:11\t180002\ttrial\naaggenciafox0142@outlook.com\tteste meta\t2026-01-14 16:57:08\tNULL\tNULL\tNULL\tNULL\tNULL\nleandroed.fisica@hotmail.com\tLeandro\t2026-01-14 15:54:17\tNULL\tNULL\tNULL\tNULL\tNULL\ncontato@bpmesportes.com.br\tLeonardo Edwards Scudeze\t2026-01-14 15:39:07\tNULL\tNULL\tNULL\tNULL\tNULL\ngabriel.prevelato5@gmail.com\tGabriel Prevelato\t2026-01-14 10:31:53\tNULL\tNULL\tNULL\tNULL\tNULL\nrogerpersonal32@gmail.com\tRoger \t2026-01-14 09:34:28\tNULL\tNULL\tNULL\tNULL\tNULL\nleemarasco@gmail.com\tLetícia Marasco Bouças\t2026-01-14 00:18:00\tNULL\tNULL\tNULL\tNULL\tNULL\nmarcelo_tunisio@gmail.com\tMarcelo\t2026-01-14 00:17:34\tNULL\tNULL\tNULL\tNULL\tNULL\nleandroed.fisica@hotmail.com\tLeandro Araujo\t2026-01-13 21:05:49\tNULL\tNULL\tNULL\tNULL\tNULL\nreisplbruno@gmail.com\tBruno de Souza Reis\t2026-01-13 20:30:08\tNULL\tNULL\tNULL\tNULL\tNULL\npedroteste@gmail.com\tpedro\t2026-01-13 20:04:31\tNULL\tNULL\tNULL\tNULL\tNULL\ntestemeta@gmail.com\tteste meta\t2026-01-13 16:04:38\tNULL\tNULL\tNULL\tNULL\tNULL\nmarceloresende302@gmail.com\tJames kettle \t2026-01-13 14:34:22\tNULL\tNULL\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 120
+}
