@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -40,9 +40,9 @@ interface EmailSequence {
   name: string;
   description: string | null;
   trigger: string;
-  triggerDays: number;
+  triggerDays: number | null;
   isActive: boolean;
-  priority: number;
+  priority: number | null;
   templateCount?: number;
   totalSends?: number;
 }
@@ -65,8 +65,8 @@ interface EmailSend {
   leadEmail: string;
   subject: string;
   status: string;
-  scheduledAt: string;
-  sentAt: string | null;
+  scheduledAt: Date | string;
+  sentAt: Date | string | null;
   sequenceName: string | null;
   templateName: string | null;
 }
@@ -81,27 +81,17 @@ export default function EmailAutomationPage() {
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
   
-  // Queries
-  const { data: sequences, refetch: refetchSequences } = useQuery({
-    queryKey: ["emailSequences"],
-    queryFn: () => trpc.leadEmail.listSequences.query(),
-  });
+  // Queries - usando tRPC hooks
+  const { data: sequences, refetch: refetchSequences } = trpc.leadEmail.listSequences.useQuery();
   
-  const { data: templates, refetch: refetchTemplates } = useQuery({
-    queryKey: ["emailTemplates", selectedSequence?.id],
-    queryFn: () => selectedSequence ? trpc.leadEmail.listTemplates.query({ sequenceId: selectedSequence.id }) : Promise.resolve([]),
-    enabled: !!selectedSequence,
-  });
+  const { data: templates, refetch: refetchTemplates } = trpc.leadEmail.listTemplates.useQuery(
+    { sequenceId: selectedSequence?.id || 0 },
+    { enabled: !!selectedSequence }
+  );
   
-  const { data: metrics } = useQuery({
-    queryKey: ["emailMetrics"],
-    queryFn: () => trpc.leadEmail.getEmailMetrics.query({}),
-  });
+  const { data: metrics } = trpc.leadEmail.getEmailMetrics.useQuery({});
   
-  const { data: sends } = useQuery({
-    queryKey: ["emailSends"],
-    queryFn: () => trpc.leadEmail.listSends.query({ page: 1, limit: 20, status: "all" }),
-  });
+  const { data: sends, refetch: refetchSends } = trpc.leadEmail.listSends.useQuery({ page: 1, limit: 50, status: "all" });
   
   // Mutations
   const createSequenceMutation = trpc.leadEmail.createSequence.useMutation({
@@ -291,7 +281,7 @@ export default function EmailAutomationPage() {
                             <h4 className="font-medium">{seq.name}</h4>
                             <p className="text-xs text-muted-foreground mt-1">
                               {getTriggerLabel(seq.trigger)}
-                              {seq.triggerDays > 0 && ` (${seq.triggerDays} dias)`}
+                              {(seq.triggerDays ?? 0) > 0 && ` (${seq.triggerDays} dias)`}
                             </p>
                           </div>
                           <Switch checked={seq.isActive} />
@@ -340,7 +330,7 @@ export default function EmailAutomationPage() {
                         <Button 
                           size="sm" 
                           variant="destructive"
-                          onClick={() => deleteSequenceMutation.mutate(selectedSequence.id)}
+                          onClick={() => deleteSequenceMutation.mutate({ id: selectedSequence.id })}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -394,7 +384,7 @@ export default function EmailAutomationPage() {
                                   size="sm" 
                                   variant="ghost"
                                   className="text-red-500"
-                                  onClick={() => deleteTemplateMutation.mutate(template.id)}
+                                  onClick={() => deleteTemplateMutation.mutate({ id: template.id })}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>

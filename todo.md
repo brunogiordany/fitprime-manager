@@ -4038,3 +4038,14 @@
 - [x] Página de gestão de automações no admin (/admin/email-automation)
 - [x] Dashboard de performance dos emails
 - [x] Worker de envio automático (executa a cada 5 minutos)
+
+
+### Completar Sistema de Automação de Emails
+- [ ] Verificar templates existentes na página /admin/emails
+- [ ] Criar sequências padrão automaticamente no banco
+- [ ] Criar templates para cada tipo de sequência
+- [ ] Sequência 1: Boas-vindas (imediato após quiz)
+- [ ] Sequência 2: Follow-up Lead Qualificado (1, 3, 7 dias)
+- [ ] Sequência 3: Follow-up Lead Desqualificado (reengajamento)
+- [ ] Sequência 4: Não Converteu (lembrete após X dias)
+- [ ] Atualizar página de automação para carregar dados existentes

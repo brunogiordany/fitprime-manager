@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE quiz_responses \nADD COLUMN IF NOT EXISTS viewedPricing BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS clickedCta BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS selectedPlan VARCHAR(50) DEFAULT NULL,\nADD COLUMN IF NOT EXISTS convertedToTrial BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS convertedToPaid BOOLEAN DEFAULT FALSE;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute ALTER TABLE quiz_responses \nADD COLUMN IF NOT EXISTS viewedPricing BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS clickedCta BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS selectedPlan VARCHAR(50) DEFAULT NULL,\nADD COLUMN IF NOT EXISTS convertedToTrial BOOLEAN DEFAULT FALSE,\nADD COLUMN IF NOT EXISTS convertedToPaid BOOLEAN DEFAULT FALSE;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1825
+}
