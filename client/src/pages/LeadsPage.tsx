@@ -408,7 +408,7 @@ export default function LeadsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Todos</SelectItem>
-                        {filterOptions?.sources?.map((source) => (
+                        {filterOptions?.sources?.map((source: string) => (
                           <SelectItem key={source} value={source}>
                             {source}
                           </SelectItem>
@@ -425,7 +425,7 @@ export default function LeadsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Todos</SelectItem>
-                        {filterOptions?.campaigns?.map((campaign) => (
+                        {filterOptions?.campaigns?.map((campaign: string) => (
                           <SelectItem key={campaign} value={campaign}>
                             {campaign}
                           </SelectItem>

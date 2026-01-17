@@ -2820,3 +2820,103 @@ export const webhookLogs = mysqlTable("webhook_logs", {
 });
 export type WebhookLog = typeof webhookLogs.$inferSelect;
 export type InsertWebhookLog = typeof webhookLogs.$inferInsert;
+
+
+// ==================== EMAIL SEQUENCES (Sequências de Email para Leads) ====================
+export const emailSequences = mysqlTable("email_sequences", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(), // Nome da sequência (ex: "Boas-vindas", "Follow-up 7 dias")
+  description: text("description"), // Descrição da sequência
+  trigger: mysqlEnum("trigger", [
+    "quiz_completed",      // Quando lead completa o quiz
+    "quiz_qualified",      // Quando lead é qualificado
+    "quiz_disqualified",   // Quando lead é desqualificado
+    "days_without_conversion", // X dias sem converter
+    "manual"               // Disparado manualmente
+  ]).notNull(),
+  triggerDays: int("triggerDays").default(0), // Dias após o trigger (para "days_without_conversion")
+  isActive: boolean("isActive").default(true).notNull(),
+  priority: int("priority").default(0), // Prioridade de execução (maior = primeiro)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailSequence = typeof emailSequences.$inferSelect;
+export type InsertEmailSequence = typeof emailSequences.$inferInsert;
+
+// ==================== EMAIL TEMPLATES (Templates de Email) ====================
+export const leadEmailTemplates = mysqlTable("lead_email_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  sequenceId: int("sequenceId").notNull().references(() => emailSequences.id),
+  name: varchar("name", { length: 255 }).notNull(), // Nome do template
+  subject: varchar("subject", { length: 255 }).notNull(), // Assunto do email
+  htmlContent: text("htmlContent").notNull(), // Conteúdo HTML do email
+  textContent: text("textContent"), // Conteúdo texto puro (fallback)
+  delayDays: int("delayDays").default(0).notNull(), // Dias de delay após o email anterior
+  delayHours: int("delayHours").default(0).notNull(), // Horas de delay adicional
+  position: int("position").default(0).notNull(), // Ordem na sequência
+  isActive: boolean("isActive").default(true).notNull(),
+  // Variáveis disponíveis: {{leadName}}, {{leadEmail}}, {{recommendedPlan}}, {{studentsCount}}
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LeadEmailTemplate = typeof leadEmailTemplates.$inferSelect;
+export type InsertLeadEmailTemplate = typeof leadEmailTemplates.$inferInsert;
+
+// ==================== EMAIL SENDS (Envios de Email) ====================
+export const emailSends = mysqlTable("email_sends", {
+  id: int("id").autoincrement().primaryKey(),
+  leadId: int("leadId").notNull(), // ID do lead (quiz_responses.id)
+  leadEmail: varchar("leadEmail", { length: 320 }).notNull(),
+  sequenceId: int("sequenceId").notNull().references(() => emailSequences.id),
+  templateId: int("templateId").notNull().references(() => leadEmailTemplates.id),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  status: mysqlEnum("status", [
+    "pending",    // Aguardando envio
+    "sent",       // Enviado com sucesso
+    "failed",     // Falha no envio
+    "bounced",    // Email retornou (inválido)
+    "cancelled"   // Cancelado (lead converteu)
+  ]).default("pending").notNull(),
+  scheduledAt: timestamp("scheduledAt").notNull(), // Data/hora agendada para envio
+  sentAt: timestamp("sentAt"), // Data/hora do envio efetivo
+  errorMessage: text("errorMessage"), // Mensagem de erro (se falhou)
+  resendId: varchar("resendId", { length: 100 }), // ID do email no Resend
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmailSend = typeof emailSends.$inferSelect;
+export type InsertEmailSend = typeof emailSends.$inferInsert;
+
+// ==================== EMAIL TRACKING (Rastreamento de Abertura/Clique) ====================
+export const emailTracking = mysqlTable("email_tracking", {
+  id: int("id").autoincrement().primaryKey(),
+  emailSendId: int("emailSendId").notNull().references(() => emailSends.id),
+  eventType: mysqlEnum("eventType", [
+    "open",       // Email aberto
+    "click",      // Link clicado
+    "unsubscribe" // Descadastrou
+  ]).notNull(),
+  linkUrl: varchar("linkUrl", { length: 500 }), // URL clicada (se for click)
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmailTracking = typeof emailTracking.$inferSelect;
+export type InsertEmailTracking = typeof emailTracking.$inferInsert;
+
+// ==================== LEAD EMAIL SUBSCRIPTIONS (Controle de Inscrição) ====================
+export const leadEmailSubscriptions = mysqlTable("lead_email_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  leadEmail: varchar("leadEmail", { length: 320 }).notNull().unique(),
+  isSubscribed: boolean("isSubscribed").default(true).notNull(),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  unsubscribeReason: text("unsubscribeReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LeadEmailSubscription = typeof leadEmailSubscriptions.$inferSelect;
+export type InsertLeadEmailSubscription = typeof leadEmailSubscriptions.$inferInsert;

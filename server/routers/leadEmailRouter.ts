@@ -1,0 +1,767 @@
+import { z } from "zod";
+import { router, adminProcedure } from "../_core/trpc";
+import { getDb } from "../db";
+import { 
+  emailSequences, 
+  leadEmailTemplates, 
+  emailSends, 
+  emailTracking,
+  leadEmailSubscriptions,
+  quizResponses
+} from "../../drizzle/schema";
+import { eq, desc, and, sql, gte, lte, isNull } from "drizzle-orm";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const leadEmailRouter = router({
+  // ==================== SEQUÊNCIAS ====================
+  
+  // Listar todas as sequências
+  listSequences: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    const sequences = await db
+      .select()
+      .from(emailSequences)
+      .orderBy(desc(emailSequences.priority), emailSequences.name);
+    
+    // Buscar contagem de templates por sequência
+    const sequencesWithCount = await Promise.all(
+      sequences.map(async (seq) => {
+        const [templateCount] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(leadEmailTemplates)
+          .where(eq(leadEmailTemplates.sequenceId, seq.id));
+        
+        const [sendCount] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(emailSends)
+          .where(eq(emailSends.sequenceId, seq.id));
+        
+        return {
+          ...seq,
+          templateCount: templateCount?.count || 0,
+          totalSends: sendCount?.count || 0,
+        };
+      })
+    );
+    
+    return sequencesWithCount;
+  }),
+  
+  // Criar sequência
+  createSequence: adminProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      trigger: z.enum(["quiz_completed", "quiz_qualified", "quiz_disqualified", "days_without_conversion", "manual"]),
+      triggerDays: z.number().default(0),
+      isActive: z.boolean().default(true),
+      priority: z.number().default(0),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const [result] = await db.insert(emailSequences).values(input);
+      return { id: result.insertId, ...input };
+    }),
+  
+  // Atualizar sequência
+  updateSequence: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      description: z.string().optional(),
+      trigger: z.enum(["quiz_completed", "quiz_qualified", "quiz_disqualified", "days_without_conversion", "manual"]).optional(),
+      triggerDays: z.number().optional(),
+      isActive: z.boolean().optional(),
+      priority: z.number().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const { id, ...data } = input;
+      await db.update(emailSequences).set(data).where(eq(emailSequences.id, id));
+      return { success: true };
+    }),
+  
+  // Deletar sequência
+  deleteSequence: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Deletar templates associados
+      await db.delete(leadEmailTemplates).where(eq(leadEmailTemplates.sequenceId, input.id));
+      // Deletar sequência
+      await db.delete(emailSequences).where(eq(emailSequences.id, input.id));
+      return { success: true };
+    }),
+  
+  // ==================== TEMPLATES ====================
+  
+  // Listar templates de uma sequência
+  listTemplates: adminProcedure
+    .input(z.object({ sequenceId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const templates = await db
+        .select()
+        .from(leadEmailTemplates)
+        .where(eq(leadEmailTemplates.sequenceId, input.sequenceId))
+        .orderBy(leadEmailTemplates.position);
+      
+      return templates;
+    }),
+  
+  // Criar template
+  createTemplate: adminProcedure
+    .input(z.object({
+      sequenceId: z.number(),
+      name: z.string().min(1),
+      subject: z.string().min(1),
+      htmlContent: z.string().min(1),
+      textContent: z.string().optional(),
+      delayDays: z.number().default(0),
+      delayHours: z.number().default(0),
+      position: z.number().default(0),
+      isActive: z.boolean().default(true),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const [result] = await db.insert(leadEmailTemplates).values(input);
+      return { id: result.insertId, ...input };
+    }),
+  
+  // Atualizar template
+  updateTemplate: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      subject: z.string().min(1).optional(),
+      htmlContent: z.string().min(1).optional(),
+      textContent: z.string().optional(),
+      delayDays: z.number().optional(),
+      delayHours: z.number().optional(),
+      position: z.number().optional(),
+      isActive: z.boolean().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const { id, ...data } = input;
+      await db.update(leadEmailTemplates).set(data).where(eq(leadEmailTemplates.id, id));
+      return { success: true };
+    }),
+  
+  // Deletar template
+  deleteTemplate: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      await db.delete(leadEmailTemplates).where(eq(leadEmailTemplates.id, input.id));
+      return { success: true };
+    }),
+  
+  // ==================== MÉTRICAS ====================
+  
+  // Dashboard de métricas de email
+  getEmailMetrics: adminProcedure
+    .input(z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      sequenceId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Total de envios
+      const [totalSends] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailSends);
+      
+      // Envios por status
+      const sendsByStatus = await db
+        .select({
+          status: emailSends.status,
+          count: sql<number>`COUNT(*)`,
+        })
+        .from(emailSends)
+        .groupBy(emailSends.status);
+      
+      // Total de aberturas
+      const [totalOpens] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailTracking)
+        .where(eq(emailTracking.eventType, "open"));
+      
+      // Total de cliques
+      const [totalClicks] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailTracking)
+        .where(eq(emailTracking.eventType, "click"));
+      
+      // Emails enviados com sucesso
+      const sentCount = sendsByStatus.find(s => s.status === "sent")?.count || 0;
+      
+      // Calcular taxas
+      const openRate = sentCount > 0 ? ((totalOpens?.count || 0) / sentCount) * 100 : 0;
+      const clickRate = sentCount > 0 ? ((totalClicks?.count || 0) / sentCount) * 100 : 0;
+      
+      // Métricas por sequência
+      const metricsBySequence = await db
+        .select({
+          sequenceId: emailSends.sequenceId,
+          sequenceName: emailSequences.name,
+          totalSends: sql<number>`COUNT(*)`,
+          sentCount: sql<number>`SUM(CASE WHEN ${emailSends.status} = 'sent' THEN 1 ELSE 0 END)`,
+        })
+        .from(emailSends)
+        .leftJoin(emailSequences, eq(emailSends.sequenceId, emailSequences.id))
+        .groupBy(emailSends.sequenceId, emailSequences.name);
+      
+      return {
+        totalSends: totalSends?.count || 0,
+        sentCount,
+        pendingCount: sendsByStatus.find(s => s.status === "pending")?.count || 0,
+        failedCount: sendsByStatus.find(s => s.status === "failed")?.count || 0,
+        bouncedCount: sendsByStatus.find(s => s.status === "bounced")?.count || 0,
+        totalOpens: totalOpens?.count || 0,
+        totalClicks: totalClicks?.count || 0,
+        openRate: openRate.toFixed(1),
+        clickRate: clickRate.toFixed(1),
+        metricsBySequence,
+      };
+    }),
+  
+  // Histórico de envios
+  listSends: adminProcedure
+    .input(z.object({
+      page: z.number().default(1),
+      limit: z.number().default(20),
+      status: z.enum(["all", "pending", "sent", "failed", "bounced", "cancelled"]).default("all"),
+      sequenceId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const offset = (input.page - 1) * input.limit;
+      
+      const conditions = [];
+      if (input.status !== "all") {
+        conditions.push(eq(emailSends.status, input.status));
+      }
+      if (input.sequenceId) {
+        conditions.push(eq(emailSends.sequenceId, input.sequenceId));
+      }
+      
+      const sends = await db
+        .select({
+          id: emailSends.id,
+          leadEmail: emailSends.leadEmail,
+          subject: emailSends.subject,
+          status: emailSends.status,
+          scheduledAt: emailSends.scheduledAt,
+          sentAt: emailSends.sentAt,
+          sequenceName: emailSequences.name,
+          templateName: leadEmailTemplates.name,
+        })
+        .from(emailSends)
+        .leftJoin(emailSequences, eq(emailSends.sequenceId, emailSequences.id))
+        .leftJoin(leadEmailTemplates, eq(emailSends.templateId, leadEmailTemplates.id))
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(emailSends.createdAt))
+        .limit(input.limit)
+        .offset(offset);
+      
+      const [countResult] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailSends)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
+      
+      return {
+        sends,
+        total: countResult?.count || 0,
+        page: input.page,
+        limit: input.limit,
+        totalPages: Math.ceil((countResult?.count || 0) / input.limit),
+      };
+    }),
+  
+  // ==================== ENVIO MANUAL ====================
+  
+  // Enviar email manual para um lead
+  sendManualEmail: adminProcedure
+    .input(z.object({
+      leadId: z.number(),
+      templateId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar lead
+      const [lead] = await db
+        .select()
+        .from(quizResponses)
+        .where(eq(quizResponses.id, input.leadId));
+      
+      if (!lead || !lead.leadEmail) {
+        throw new Error("Lead não encontrado ou sem email");
+      }
+      
+      // Buscar template
+      const [template] = await db
+        .select()
+        .from(leadEmailTemplates)
+        .where(eq(leadEmailTemplates.id, input.templateId));
+      
+      if (!template) {
+        throw new Error("Template não encontrado");
+      }
+      
+      // Substituir variáveis no template
+      const htmlContent = replaceTemplateVariables(template.htmlContent, lead);
+      const subject = replaceTemplateVariables(template.subject, lead);
+      
+      // Enviar email via Resend
+      try {
+        const result = await resend.emails.send({
+          from: "FitPrime <noreply@fitprime.com.br>",
+          to: lead.leadEmail,
+          subject,
+          html: htmlContent,
+        });
+        
+        // Registrar envio
+        await db.insert(emailSends).values({
+          leadId: lead.id,
+          leadEmail: lead.leadEmail,
+          sequenceId: template.sequenceId,
+          templateId: template.id,
+          subject,
+          status: "sent",
+          scheduledAt: new Date(),
+          sentAt: new Date(),
+          resendId: result.data?.id,
+        });
+        
+        return { success: true, emailId: result.data?.id };
+      } catch (error: any) {
+        // Registrar falha
+        await db.insert(emailSends).values({
+          leadId: lead.id,
+          leadEmail: lead.leadEmail,
+          sequenceId: template.sequenceId,
+          templateId: template.id,
+          subject,
+          status: "failed",
+          scheduledAt: new Date(),
+          errorMessage: error.message,
+        });
+        
+        throw new Error(`Falha ao enviar email: ${error.message}`);
+      }
+    }),
+  
+  // ==================== TRACKING ====================
+  
+  // Registrar abertura de email (chamado via pixel)
+  trackOpen: adminProcedure
+    .input(z.object({
+      emailSendId: z.number(),
+      ipAddress: z.string().optional(),
+      userAgent: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      await db.insert(emailTracking).values({
+        emailSendId: input.emailSendId,
+        eventType: "open",
+        ipAddress: input.ipAddress,
+        userAgent: input.userAgent,
+      });
+      
+      return { success: true };
+    }),
+  
+  // Registrar clique em link
+  trackClick: adminProcedure
+    .input(z.object({
+      emailSendId: z.number(),
+      linkUrl: z.string(),
+      ipAddress: z.string().optional(),
+      userAgent: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      await db.insert(emailTracking).values({
+        emailSendId: input.emailSendId,
+        eventType: "click",
+        linkUrl: input.linkUrl,
+        ipAddress: input.ipAddress,
+        userAgent: input.userAgent,
+      });
+      
+      return { success: true };
+    }),
+  
+  // ==================== UNSUBSCRIBE ====================
+  
+  // Descadastrar email
+  unsubscribe: adminProcedure
+    .input(z.object({
+      email: z.string().email(),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Verificar se já existe
+      const [existing] = await db
+        .select()
+        .from(leadEmailSubscriptions)
+        .where(eq(leadEmailSubscriptions.leadEmail, input.email));
+      
+      if (existing) {
+        await db
+          .update(leadEmailSubscriptions)
+          .set({
+            isSubscribed: false,
+            unsubscribedAt: new Date(),
+            unsubscribeReason: input.reason,
+          })
+          .where(eq(leadEmailSubscriptions.leadEmail, input.email));
+      } else {
+        await db.insert(leadEmailSubscriptions).values({
+          leadEmail: input.email,
+          isSubscribed: false,
+          unsubscribedAt: new Date(),
+          unsubscribeReason: input.reason,
+        });
+      }
+      
+      // Cancelar emails pendentes
+      await db
+        .update(emailSends)
+        .set({ status: "cancelled" })
+        .where(and(
+          eq(emailSends.leadEmail, input.email),
+          eq(emailSends.status, "pending")
+        ));
+      
+      return { success: true };
+    }),
+  
+  // ==================== TEMPLATES PADRÃO ====================
+  
+  // Criar sequências e templates padrão
+  createDefaultSequences: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    // Verificar se já existem sequências
+    const [existing] = await db.select({ count: sql<number>`COUNT(*)` }).from(emailSequences);
+    if ((existing?.count || 0) > 0) {
+      return { message: "Sequências já existem" };
+    }
+    
+    // Criar sequência de boas-vindas
+    const [welcomeSeq] = await db.insert(emailSequences).values({
+      name: "Boas-vindas",
+      description: "Email enviado imediatamente após o lead completar o quiz",
+      trigger: "quiz_completed",
+      triggerDays: 0,
+      isActive: true,
+      priority: 100,
+    });
+    
+    // Template de boas-vindas
+    await db.insert(leadEmailTemplates).values({
+      sequenceId: welcomeSeq.insertId,
+      name: "Email de Boas-vindas",
+      subject: "{{leadName}}, bem-vindo ao FitPrime! 🎉",
+      htmlContent: getWelcomeEmailTemplate(),
+      delayDays: 0,
+      delayHours: 0,
+      position: 1,
+      isActive: true,
+    });
+    
+    // Criar sequência de follow-up
+    const [followupSeq] = await db.insert(emailSequences).values({
+      name: "Follow-up 7 dias",
+      description: "Sequência de emails para leads que não converteram em 7 dias",
+      trigger: "days_without_conversion",
+      triggerDays: 7,
+      isActive: true,
+      priority: 50,
+    });
+    
+    // Templates de follow-up
+    await db.insert(leadEmailTemplates).values([
+      {
+        sequenceId: followupSeq.insertId,
+        name: "Lembrete - Dia 1",
+        subject: "{{leadName}}, você ainda está pensando?",
+        htmlContent: getFollowup1Template(),
+        delayDays: 0,
+        delayHours: 0,
+        position: 1,
+        isActive: true,
+      },
+      {
+        sequenceId: followupSeq.insertId,
+        name: "Dica de Gestão - Dia 3",
+        subject: "3 dicas para dobrar sua retenção de alunos",
+        htmlContent: getFollowup2Template(),
+        delayDays: 3,
+        delayHours: 0,
+        position: 2,
+        isActive: true,
+      },
+      {
+        sequenceId: followupSeq.insertId,
+        name: "Última Chance - Dia 7",
+        subject: "{{leadName}}, última chance de transformar sua carreira",
+        htmlContent: getFollowup3Template(),
+        delayDays: 7,
+        delayHours: 0,
+        position: 3,
+        isActive: true,
+      },
+    ]);
+    
+    return { message: "Sequências padrão criadas com sucesso" };
+  }),
+});
+
+// Função para substituir variáveis no template
+function replaceTemplateVariables(content: string, lead: any): string {
+  return content
+    .replace(/\{\{leadName\}\}/g, lead.leadName || "Personal")
+    .replace(/\{\{leadEmail\}\}/g, lead.leadEmail || "")
+    .replace(/\{\{recommendedPlan\}\}/g, lead.recommendedPlan || "Pro")
+    .replace(/\{\{studentsCount\}\}/g, lead.studentsCount?.toString() || "0")
+    .replace(/\{\{revenue\}\}/g, lead.revenue || "Não informado");
+}
+
+// Templates de email padrão
+function getWelcomeEmailTemplate(): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .header h1 { color: white; margin: 0; }
+    .content { background: #f9fafb; padding: 30px; }
+    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Bem-vindo ao FitPrime!</h1>
+    </div>
+    <div class="content">
+      <p>Olá <strong>{{leadName}}</strong>,</p>
+      
+      <p>Obrigado por completar nosso quiz! Analisamos suas respostas e identificamos que o plano <strong>{{recommendedPlan}}</strong> é ideal para você.</p>
+      
+      <p>Com o FitPrime, você vai:</p>
+      <ul>
+        <li>✅ Economizar até 10 horas por semana em tarefas administrativas</li>
+        <li>✅ Aumentar sua retenção de alunos em até 40%</li>
+        <li>✅ Automatizar cobranças e lembretes via WhatsApp</li>
+        <li>✅ Criar treinos personalizados com IA em segundos</li>
+      </ul>
+      
+      <p style="text-align: center;">
+        <a href="https://fitprime.com.br/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+      </p>
+      
+      <p>Qualquer dúvida, estamos aqui para ajudar!</p>
+      
+      <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
+    </div>
+    <div class="footer">
+      <p>FitPrime - Sistema de Gestão para Personal Trainers</p>
+      <p><a href="{{unsubscribeUrl}}">Cancelar inscrição</a></p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+function getFollowup1Template(): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }
+    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <p>Olá <strong>{{leadName}}</strong>,</p>
+      
+      <p>Notei que você ainda não começou seu teste gratuito do FitPrime. Tudo bem?</p>
+      
+      <p>Sei que a rotina de personal é corrida, mas quero te mostrar como o FitPrime pode te ajudar a:</p>
+      
+      <ul>
+        <li>📱 Gerenciar todos os seus alunos em um só lugar</li>
+        <li>⏰ Economizar tempo com automações inteligentes</li>
+        <li>💰 Nunca mais perder uma cobrança</li>
+      </ul>
+      
+      <p>O teste é 100% gratuito por 7 dias, sem precisar de cartão de crédito.</p>
+      
+      <p style="text-align: center;">
+        <a href="https://fitprime.com.br/quiz-trial" class="cta">Quero Testar Grátis</a>
+      </p>
+      
+      <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+function getFollowup2Template(): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }
+    .tip { background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; }
+    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <p>Olá <strong>{{leadName}}</strong>,</p>
+      
+      <p>Separei 3 dicas que vão te ajudar a dobrar a retenção dos seus alunos:</p>
+      
+      <div class="tip">
+        <strong>1. Acompanhamento Semanal</strong><br>
+        Envie um resumo semanal do progresso para cada aluno. Isso aumenta o engajamento em até 60%.
+      </div>
+      
+      <div class="tip">
+        <strong>2. Lembretes Automáticos</strong><br>
+        Configure lembretes 24h antes de cada sessão. Reduz faltas em até 40%.
+      </div>
+      
+      <div class="tip">
+        <strong>3. Celebre Conquistas</strong><br>
+        Reconheça cada meta atingida. Alunos que recebem reconhecimento ficam 3x mais tempo.
+      </div>
+      
+      <p>O FitPrime automatiza tudo isso para você. Quer ver como funciona?</p>
+      
+      <p style="text-align: center;">
+        <a href="https://fitprime.com.br/quiz-trial" class="cta">Ver Demonstração</a>
+      </p>
+      
+      <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+function getFollowup3Template(): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }
+    .highlight { background: #fef3c7; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }
+    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <p>Olá <strong>{{leadName}}</strong>,</p>
+      
+      <p>Esta é minha última mensagem sobre o FitPrime.</p>
+      
+      <p>Sei que você está ocupado, mas quero te fazer uma pergunta sincera:</p>
+      
+      <p><strong>Quanto tempo você perde por semana com:</strong></p>
+      <ul>
+        <li>❌ Montando treinos manualmente?</li>
+        <li>❌ Cobrando alunos atrasados?</li>
+        <li>❌ Respondendo as mesmas perguntas no WhatsApp?</li>
+        <li>❌ Organizando sua agenda?</li>
+      </ul>
+      
+      <div class="highlight">
+        <p style="margin: 0; font-size: 18px;"><strong>Personais que usam o FitPrime economizam em média 10 horas por semana.</strong></p>
+      </div>
+      
+      <p>São 10 horas que você poderia usar para:</p>
+      <ul>
+        <li>✅ Atender mais alunos</li>
+        <li>✅ Passar tempo com a família</li>
+        <li>✅ Investir em você</li>
+      </ul>
+      
+      <p style="text-align: center;">
+        <a href="https://fitprime.com.br/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+      </p>
+      
+      <p>Se não for pra você, tudo bem. Mas se for, não deixe essa oportunidade passar.</p>
+      
+      <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}

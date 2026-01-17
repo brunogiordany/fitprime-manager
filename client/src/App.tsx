@@ -67,6 +67,7 @@ import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates";
 import LeadsPage from "./pages/LeadsPage";
+import EmailAutomationPage from "./pages/EmailAutomationPage";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import QuizTrialPage from "./pages/QuizTrialPage";
 import LoginPage from "./pages/LoginPage";
@@ -171,6 +172,7 @@ function Router() {
       <Route path="/admin/ab-testing" component={AdminABTesting} />
       <Route path="/admin/emails" component={AdminEmailTemplates} />
       <Route path="/admin/leads" component={LeadsPage} />
+      <Route path="/admin/email-automation" component={EmailAutomationPage} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

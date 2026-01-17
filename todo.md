@@ -4026,3 +4026,15 @@
 - [x] Exportar leads para CSV
 - [x] Adicionar rota /admin/leads no App.tsx
 - [x] Adicionar link no menu do AdminPanel
+
+
+### Sistema de Automação de Emails para Leads
+- [x] Criar tabelas: email_sequences, lead_email_templates, email_sends, lead_email_subscriptions
+- [x] Email de boas-vindas automático após quiz
+- [x] Sequência de follow-up configurável (1, 3, 7 dias)
+- [x] Emails baseados em comportamento (não converteu em X dias)
+- [x] Templates personalizáveis com editor
+- [x] Métricas de abertura e clique (pixel tracking)
+- [x] Página de gestão de automações no admin (/admin/email-automation)
+- [x] Dashboard de performance dos emails
+- [x] Worker de envio automático (executa a cada 5 minutos)

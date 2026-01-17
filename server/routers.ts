@@ -22,6 +22,7 @@ import { activationRouter } from "./routers/activationRouter";
 import aiAssistant from "./aiAssistant";
 import { nutritionRouter } from "./routers/nutritionRouter";
 import { trackingRouter } from "./routers/trackingRouter";
+import { leadEmailRouter } from "./routers/leadEmailRouter";
 
 // Funcão para fazer parse seguro de JSON (evita erro quando valor não é JSON válido)
 function safeJsonParse<T>(value: string | null | undefined, defaultValue: T): T {
@@ -380,6 +381,7 @@ export const appRouter = router({
   pageBlocks: pageBlocksRouter,
   pageAssets: pageAssetsRouter,
   pageVersions: pageVersionsRouter,
+  leadEmail: leadEmailRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

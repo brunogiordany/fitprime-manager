@@ -16,6 +16,7 @@ import { handlePaytWebhook } from "../payt/webhook";
 import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 import { startAutomationWorker } from "../automationWorker";
+import { startEmailWorker } from "../workers/emailWorker";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -262,6 +263,9 @@ Formato de resposta:
     
     // Iniciar worker de automações WhatsApp (executa a cada 15 minutos)
     startAutomationWorker(15);
+    
+    // Iniciar worker de emails para leads (executa a cada 5 minutos)
+    startEmailWorker();
   });
 }
 
