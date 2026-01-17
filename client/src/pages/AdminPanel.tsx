@@ -1666,6 +1666,25 @@ export default function AdminPanel() {
               </Link>
             </div>
             
+            {/* Links Rápidos - Terceira Linha */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link href="/admin/email-automation">
+                <Card className="cursor-pointer hover:border-purple-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                        <Zap className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Automação de Emails</p>
+                        <p className="text-xs text-muted-foreground">Follow-ups automáticos</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+            
             {/* Gráficos */}
             <div className="grid lg:grid-cols-2 gap-6">
               <Card>
