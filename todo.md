@@ -4016,3 +4016,13 @@
 - [x] Botão CTA visível above the fold (mobile-first)
 - [x] Faixa vermelha com data/horário
 - [x] Adicionar rota /pvcaptura02 no App.tsx
+
+
+### Página de Gestão de Leads (Admin)
+- [x] Criar endpoint para listar leads do quiz (quizRouter)
+- [x] Criar página LeadsPage.tsx com tabela de leads
+- [x] Filtros: data, origem UTM, qualificação, cidade
+- [x] Detalhes do lead em modal
+- [x] Exportar leads para CSV
+- [x] Adicionar rota /admin/leads no App.tsx
+- [x] Adicionar link no menu do AdminPanel

@@ -451,4 +451,233 @@ export const quizRouter = router({
       
       return (responses as any)[0] || [];
     }),
+
+  // Listar todos os leads com filtros avançados (admin)
+  listLeads: adminProcedure
+    .input(z.object({
+      page: z.number().default(1),
+      limit: z.number().default(25),
+      search: z.string().optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      isQualified: z.enum(["all", "qualified", "disqualified"]).default("all"),
+      converted: z.enum(["all", "converted", "not_converted"]).default("all"),
+      utmSource: z.string().optional(),
+      utmMedium: z.string().optional(),
+      utmCampaign: z.string().optional(),
+      landingPage: z.string().optional(),
+      studentsCount: z.string().optional(),
+      revenue: z.string().optional(),
+      city: z.string().optional(),
+      sortBy: z.enum(["createdAt", "leadName", "leadEmail", "studentsCount", "revenue"]).default("createdAt"),
+      sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    }))
+    .query(async ({ input }) => {
+      const offset = (input.page - 1) * input.limit;
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Construir condições WHERE dinamicamente
+      const conditions: string[] = ["1=1"];
+      const params: any[] = [];
+      
+      if (input.search) {
+        conditions.push("(leadName LIKE ? OR leadEmail LIKE ? OR leadPhone LIKE ?)");
+        const searchTerm = `%${input.search}%`;
+        params.push(searchTerm, searchTerm, searchTerm);
+      }
+      
+      if (input.startDate) {
+        conditions.push("createdAt >= ?");
+        params.push(input.startDate);
+      }
+      
+      if (input.endDate) {
+        conditions.push("createdAt <= ?");
+        params.push(input.endDate + " 23:59:59");
+      }
+      
+      if (input.isQualified === "qualified") {
+        conditions.push("isQualified = 1");
+      } else if (input.isQualified === "disqualified") {
+        conditions.push("isQualified = 0");
+      }
+      
+      if (input.converted === "converted") {
+        conditions.push("converted = 1");
+      } else if (input.converted === "not_converted") {
+        conditions.push("(converted = 0 OR converted IS NULL)");
+      }
+      
+      if (input.utmSource) {
+        conditions.push("utmSource = ?");
+        params.push(input.utmSource);
+      }
+      
+      if (input.utmMedium) {
+        conditions.push("utmMedium = ?");
+        params.push(input.utmMedium);
+      }
+      
+      if (input.utmCampaign) {
+        conditions.push("utmCampaign = ?");
+        params.push(input.utmCampaign);
+      }
+      
+      if (input.landingPage) {
+        conditions.push("landingPage LIKE ?");
+        params.push(`%${input.landingPage}%`);
+      }
+      
+      if (input.studentsCount) {
+        conditions.push("studentsCount = ?");
+        params.push(input.studentsCount);
+      }
+      
+      if (input.revenue) {
+        conditions.push("revenue = ?");
+        params.push(input.revenue);
+      }
+      
+      if (input.city) {
+        conditions.push("leadCity LIKE ?");
+        params.push(`%${input.city}%`);
+      }
+      
+      const whereClause = conditions.join(" AND ");
+      const orderClause = `${input.sortBy} ${input.sortOrder.toUpperCase()}`;
+      
+      // Query principal
+      // Query principal usando sql template
+      const leads = await db.execute(sql`
+        SELECT 
+          id, visitorId, sessionId,
+          leadName, leadEmail, leadPhone, leadCity,
+          studentsCount, revenue, priority,
+          managementPain, timePain, retentionPain, billingPain,
+          recommendedProfile, recommendedPlan, totalScore,
+          isQualified, disqualificationReason,
+          converted, conversionType, convertedAt,
+          utmSource, utmMedium, utmCampaign, utmContent, utmTerm,
+          referrer, landingPage,
+          deviceType, browser, os,
+          createdAt, completedAt
+        FROM quiz_responses 
+        ORDER BY createdAt DESC
+        LIMIT ${input.limit} OFFSET ${offset}
+      `);
+      
+      // Contagem total
+      const [countResult] = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_responses`);
+      const total = (countResult as any)?.count || 0;
+      
+      return {
+        leads: (leads as any)?.[0] || [],
+        total,
+        page: input.page,
+        limit: input.limit,
+        totalPages: Math.ceil(total / input.limit),
+      };
+    }),
+
+  // Obter opções de filtro disponíveis (admin)
+  getFilterOptions: adminProcedure
+    .query(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // UTM Sources
+      const [sources] = await db.execute(sql`
+        SELECT DISTINCT utmSource as value FROM quiz_responses 
+        WHERE utmSource IS NOT NULL AND utmSource != ''
+        ORDER BY utmSource
+      `);
+      
+      // UTM Mediums
+      const [mediums] = await db.execute(sql`
+        SELECT DISTINCT utmMedium as value FROM quiz_responses 
+        WHERE utmMedium IS NOT NULL AND utmMedium != ''
+        ORDER BY utmMedium
+      `);
+      
+      // UTM Campaigns
+      const [campaigns] = await db.execute(sql`
+        SELECT DISTINCT utmCampaign as value FROM quiz_responses 
+        WHERE utmCampaign IS NOT NULL AND utmCampaign != ''
+        ORDER BY utmCampaign
+      `);
+      
+      // Landing Pages
+      const [landingPages] = await db.execute(sql`
+        SELECT DISTINCT landingPage as value FROM quiz_responses 
+        WHERE landingPage IS NOT NULL AND landingPage != ''
+        ORDER BY landingPage
+      `);
+      
+      // Cidades
+      const [cities] = await db.execute(sql`
+        SELECT DISTINCT leadCity as value FROM quiz_responses 
+        WHERE leadCity IS NOT NULL AND leadCity != ''
+        ORDER BY leadCity
+      `);
+      
+      return {
+        sources: ((sources as any)?.[0] || []).map((s: any) => s.value) || [],
+        mediums: ((mediums as any)?.[0] || []).map((m: any) => m.value) || [],
+        campaigns: ((campaigns as any)?.[0] || []).map((c: any) => c.value) || [],
+        landingPages: ((landingPages as any)?.[0] || []).map((l: any) => l.value) || [],
+        cities: ((cities as any)?.[0] || []).map((c: any) => c.value) || [],
+      };
+    }),
+
+  // Exportar leads para CSV (admin)
+  exportLeads: adminProcedure
+    .input(z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      isQualified: z.enum(["all", "qualified", "disqualified"]).default("all"),
+      converted: z.enum(["all", "converted", "not_converted"]).default("all"),
+      utmSource: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const conditions: string[] = ["1=1"];
+      
+      if (input.startDate) {
+        conditions.push(`createdAt >= '${input.startDate}'`);
+      }
+      if (input.endDate) {
+        conditions.push(`createdAt <= '${input.endDate} 23:59:59'`);
+      }
+      if (input.isQualified === "qualified") {
+        conditions.push("isQualified = 1");
+      } else if (input.isQualified === "disqualified") {
+        conditions.push("isQualified = 0");
+      }
+      if (input.converted === "converted") {
+        conditions.push("converted = 1");
+      } else if (input.converted === "not_converted") {
+        conditions.push("(converted = 0 OR converted IS NULL)");
+      }
+      if (input.utmSource) {
+        conditions.push(`utmSource = '${input.utmSource}'`);
+      }
+      
+      // Query simples para exportar todos os leads
+      const leads = await db.execute(sql`
+        SELECT 
+          id, leadName, leadEmail, leadPhone, leadCity,
+          studentsCount, revenue, priority,
+          isQualified, converted,
+          utmSource, utmMedium, utmCampaign,
+          landingPage, deviceType,
+          createdAt
+        FROM quiz_responses 
+        ORDER BY createdAt DESC
+      `);
+      
+      return (leads as any)?.[0] || [];
+    }),
 });

@@ -1585,6 +1585,21 @@ export default function AdminPanel() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link href="/admin/leads">
+                <Card className="cursor-pointer hover:border-teal-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-teal-100 dark:bg-teal-900 rounded-lg">
+                        <Users className="h-5 w-5 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Gestão de Leads</p>
+                        <p className="text-xs text-muted-foreground">Leads capturados</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             
             {/* Links Rápidos - Segunda Linha */}

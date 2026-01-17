@@ -66,6 +66,7 @@ import AdminROIDashboard from "@/pages/AdminROIDashboard";
 import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates";
+import LeadsPage from "./pages/LeadsPage";
 import QuizResultPlan from "./pages/QuizResultPlan";
 import QuizTrialPage from "./pages/QuizTrialPage";
 import LoginPage from "./pages/LoginPage";
@@ -169,6 +170,7 @@ function Router() {
       <Route path="/admin/editor/new" component={AdminPageEditor} />
       <Route path="/admin/ab-testing" component={AdminABTesting} />
       <Route path="/admin/emails" component={AdminEmailTemplates} />
+      <Route path="/admin/leads" component={LeadsPage} />
       
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
