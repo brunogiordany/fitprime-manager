@@ -1,0 +1,1 @@
+ALTER TABLE `quiz_responses` ADD `leadInstagram` varchar(100);

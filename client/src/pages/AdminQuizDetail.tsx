@@ -29,6 +29,7 @@ import {
   Loader2,
   Copy,
   MessageCircle,
+  Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -230,7 +231,7 @@ export default function AdminQuizDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Nome</p>
                   <p className="font-semibold text-gray-900 flex items-center gap-2">
@@ -279,6 +280,35 @@ export default function AdminQuizDetail() {
                           onClick={() => openWhatsApp(response.leadPhone)}
                         >
                           <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-500 mb-1">Instagram</p>
+                  <div className="flex items-center gap-1">
+                    <Instagram className="h-4 w-4 text-pink-600 flex-shrink-0" />
+                    <p className="font-medium text-gray-900 truncate flex-1 min-w-0">
+                      {response.leadInstagram ? `@${response.leadInstagram.replace(/^@/, '')}` : "-"}
+                    </p>
+                    {response.leadInstagram && (
+                      <div className="flex items-center flex-shrink-0">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          onClick={() => copyToClipboard(`@${response.leadInstagram.replace(/^@/, '')}`)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-pink-600 hover:text-pink-700 hover:bg-pink-50"
+                          onClick={() => window.open(`https://instagram.com/${response.leadInstagram.replace(/^@/, '')}`, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
                         </Button>
                       </div>
                     )}

@@ -22,7 +22,8 @@ import {
   Mail,
   Phone,
   MapPin,
-  Loader2
+  Loader2,
+  Instagram
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -54,6 +55,7 @@ interface LeadData {
   name: string;
   email: string;
   phone: string;
+  instagram: string;
   city: string;
 }
 
@@ -276,7 +278,7 @@ interface QuizResult {
 
 export default function QualificationQuizV4({ onComplete }: QualificationQuizV4Props) {
   const [showLeadForm, setShowLeadForm] = useState(true); // Começa com o formulário de lead
-  const [leadData, setLeadData] = useState<LeadData>({ name: "", email: "", phone: "", city: "" });
+  const [leadData, setLeadData] = useState<LeadData>({ name: "", email: "", phone: "", instagram: "", city: "" });
   const [leadErrors, setLeadErrors] = useState<Partial<LeadData>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -389,6 +391,7 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
         leadName: leadData.name,
         leadEmail: leadData.email,
         leadPhone: leadData.phone,
+        leadInstagram: leadData.instagram || undefined,
         leadCity: leadData.city,
         allAnswers: newAnswers,
         studentsCount: quizResult.currentStudents.toString(),
@@ -564,6 +567,24 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
                   {leadErrors.phone && (
                     <p className="text-red-500 text-sm mt-1">{leadErrors.phone}</p>
                   )}
+                </div>
+
+                <div>
+                  <Label htmlFor="instagram" className="flex items-center gap-2 mb-2">
+                    <Instagram className="w-4 h-4 text-gray-500" />
+                    Instagram (opcional)
+                  </Label>
+                  <Input
+                    id="instagram"
+                    placeholder="Ex: @seuperfil"
+                    value={leadData.instagram}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Remove @ se o usuário digitar, vamos adicionar depois
+                      value = value.replace(/^@/, '');
+                      setLeadData({ ...leadData, instagram: value });
+                    }}
+                  />
                 </div>
 
                 <div>

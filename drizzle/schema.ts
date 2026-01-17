@@ -1037,6 +1037,7 @@ export const quizResponses = mysqlTable("quiz_responses", {
   leadName: varchar("leadName", { length: 255 }), // Nome do personal trainer
   leadEmail: varchar("leadEmail", { length: 320 }), // Email do personal trainer
   leadPhone: varchar("leadPhone", { length: 20 }), // Telefone/WhatsApp do personal trainer
+  leadInstagram: varchar("leadInstagram", { length: 100 }), // Instagram do personal trainer (sem @)
   leadCity: varchar("leadCity", { length: 100 }), // Cidade do personal trainer
   
   // Dados de qualificação

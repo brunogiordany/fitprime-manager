@@ -421,6 +421,13 @@
       "when": 1768673299198,
       "tag": "0059_worthless_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "5",
+      "when": 1768674604782,
+      "tag": "0060_sleepy_bloodstorm",
+      "breakpoints": true
     }
   ]
 }

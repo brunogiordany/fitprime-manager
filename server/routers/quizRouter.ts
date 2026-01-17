@@ -140,6 +140,7 @@ const saveQuizResponseSchema = z.object({
   leadName: z.string().optional(),
   leadEmail: z.string().optional(),
   leadPhone: z.string().optional(),
+  leadInstagram: z.string().optional(),
   leadCity: z.string().optional(),
   
   // Respostas individuais
@@ -190,7 +191,7 @@ export const quizRouter = router({
       const result = await db.execute(sql`
         INSERT INTO quiz_responses (
           visitorId, sessionId, answers, 
-          leadName, leadEmail, leadPhone, leadCity,
+          leadName, leadEmail, leadPhone, leadInstagram, leadCity,
           studentsCount, revenue, managementPain, timePain, retentionPain, billingPain, priority,
           allAnswers, recommendedProfile, recommendedPlan, totalScore, identifiedPains,
           isQualified, disqualificationReason,
@@ -198,7 +199,7 @@ export const quizRouter = router({
           userAgent, deviceType, browser, os, completedAt, createdAt
         ) VALUES (
           ${input.visitorId}, ${input.sessionId}, ${JSON.stringify(input.allAnswers || {})},
-          ${input.leadName || null}, ${input.leadEmail || null}, ${input.leadPhone || null}, ${input.leadCity || null},
+          ${input.leadName || null}, ${input.leadEmail || null}, ${input.leadPhone || null}, ${input.leadInstagram || null}, ${input.leadCity || null},
           ${input.studentsCount || null}, ${input.revenue || null}, ${input.managementPain || null}, 
           ${input.timePain || null}, ${input.retentionPain || null}, ${input.billingPain || null}, ${input.priority || null},
           ${JSON.stringify(input.allAnswers || {})}, ${input.recommendedProfile || null}, ${input.recommendedPlan || null}, 

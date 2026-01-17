@@ -4214,3 +4214,13 @@
 - [x] Corrigir layout encavalado na seção "Dados do Personal Trainer" (email e WhatsApp sobrepostos)
   - [x] Alterado grid de md:grid-cols-4 para grid-cols-2 lg:grid-cols-4 para melhor responsividade
   - [x] Layout agora se adapta corretamente em telas menores
+
+
+## Campo Instagram nos Leads (v6.15)
+- [x] Verificar se campo Instagram existe no schema do banco
+- [x] Adicionar campo leadInstagram no schema quiz_responses
+- [x] Atualizar formulário do quiz para capturar Instagram
+- [x] Exibir campo Instagram na seção "Dados do Personal Trainer" do AdminQuizDetail
+- [x] Adicionar botão para abrir perfil do Instagram
+- [x] Botão de copiar Instagram
+- [x] Grid ajustado para 5 colunas (Nome, Email, WhatsApp, Instagram, Cidade)
