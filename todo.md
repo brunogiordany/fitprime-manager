@@ -4065,3 +4065,11 @@
 - [x] Atualizar replaceTemplateVariables para incluir baseUrl e unsubscribeUrl
 - [x] Verificar histórico de envios de emails (listSends funcionando)
 - [x] Manter páginas separadas: Templates de Email (sistema) e Automação de Emails (leads)
+
+
+## Rastreamento de Emails e Correção de Domínio (v6.6)
+- [x] Corrigir domínio nos templates de email para fitprimemanager.com
+- [x] Criar sistema de tracking de abertura de emails (pixel tracking)
+- [x] Criar sistema de tracking de cliques nos links
+- [x] Atualizar dashboard com métricas de abertura e cliques
+- [x] Testar e validar o sistema de tracking

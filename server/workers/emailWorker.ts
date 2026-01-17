@@ -27,7 +27,7 @@ const WORKER_INTERVAL = 5 * 60 * 1000;
 // Função para substituir variáveis no template
 function replaceTemplateVariables(content: string, lead: any): string {
   // Usar a URL base do projeto (variável de ambiente ou URL pública)
-  const baseUrl = process.env.PUBLIC_URL || "https://fitprime-manager.manus.space";
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprimemanager.com";
   const unsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(lead.leadEmail || "")}`;
   
   return content
@@ -38,6 +38,37 @@ function replaceTemplateVariables(content: string, lead: any): string {
     .replace(/\{\{revenue\}\}/g, lead.revenue || "Não informado")
     .replace(/\{\{unsubscribeUrl\}\}/g, unsubscribeUrl)
     .replace(/\{\{baseUrl\}\}/g, baseUrl);
+}
+
+// Função para adicionar pixel de tracking de abertura ao email
+function addTrackingPixel(htmlContent: string, emailSendId: number): string {
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprimemanager.com";
+  const pixelUrl = `${baseUrl}/api/email/track/open/${emailSendId}`;
+  const pixelImg = `<img src="${pixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
+  
+  // Adicionar pixel antes do </body> ou no final do conteúdo
+  if (htmlContent.includes('</body>')) {
+    return htmlContent.replace('</body>', `${pixelImg}</body>`);
+  }
+  return htmlContent + pixelImg;
+}
+
+// Função para substituir links por links rastreados
+function addClickTracking(htmlContent: string, emailSendId: number): string {
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprimemanager.com";
+  
+  // Regex para encontrar links href
+  const linkRegex = /href="(https?:\/\/[^"]+)"/g;
+  
+  return htmlContent.replace(linkRegex, (match, url) => {
+    // Não rastrear links de unsubscribe ou tracking
+    if (url.includes('/api/email/') || url.includes('unsubscribe')) {
+      return match;
+    }
+    
+    const trackedUrl = `${baseUrl}/api/email/track/click/${emailSendId}?url=${encodeURIComponent(url)}`;
+    return `href="${trackedUrl}"`;
+  });
 }
 
 // Verificar se email está inscrito
@@ -240,14 +271,20 @@ async function processPendingEmails(db: any) {
       continue;
     }
     
-    // Preparar conteúdo do email
-    const htmlContent = replaceTemplateVariables(template.htmlContent, lead);
+    // Preparar conteúdo do email com tracking
+    let htmlContent = replaceTemplateVariables(template.htmlContent, lead);
     const subject = replaceTemplateVariables(template.subject, lead);
+    
+    // Adicionar tracking de cliques nos links
+    htmlContent = addClickTracking(htmlContent, send.id);
+    
+    // Adicionar pixel de tracking de abertura
+    htmlContent = addTrackingPixel(htmlContent, send.id);
     
     try {
       // Enviar email via Resend
       const result = await resend.emails.send({
-        from: "FitPrime <noreply@fitprime.com.br>",
+        from: "FitPrime <noreply@fitprimemanager.com>",
         to: send.leadEmail,
         subject,
         html: htmlContent,

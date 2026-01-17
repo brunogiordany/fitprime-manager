@@ -69,6 +69,8 @@ interface EmailSend {
   sentAt: Date | string | null;
   sequenceName: string | null;
   templateName: string | null;
+  opens?: number;
+  clicks?: number;
 }
 
 export default function EmailAutomationPage() {
@@ -434,6 +436,8 @@ export default function EmailAutomationPage() {
                       <TableHead>Assunto</TableHead>
                       <TableHead>Sequência</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-center">Aberturas</TableHead>
+                      <TableHead className="text-center">Cliques</TableHead>
                       <TableHead>Agendado</TableHead>
                       <TableHead>Enviado</TableHead>
                     </TableRow>
@@ -445,6 +449,22 @@ export default function EmailAutomationPage() {
                         <TableCell className="max-w-[200px] truncate">{send.subject}</TableCell>
                         <TableCell>{send.sequenceName || "-"}</TableCell>
                         <TableCell>{getStatusBadge(send.status)}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Eye className="h-3 w-3 text-blue-500" />
+                            <span className={send.opens && send.opens > 0 ? "text-blue-600 font-medium" : "text-muted-foreground"}>
+                              {send.opens || 0}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <MousePointer className="h-3 w-3 text-purple-500" />
+                            <span className={send.clicks && send.clicks > 0 ? "text-purple-600 font-medium" : "text-muted-foreground"}>
+                              {send.clicks || 0}
+                            </span>
+                          </div>
+                        </TableCell>
                         <TableCell>{new Date(send.scheduledAt).toLocaleString("pt-BR")}</TableCell>
                         <TableCell>
                           {send.sentAt ? new Date(send.sentAt).toLocaleString("pt-BR") : "-"}
@@ -454,7 +474,7 @@ export default function EmailAutomationPage() {
                     
                     {(!sends?.sends || sends.sends.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           Nenhum email enviado ainda
                         </TableCell>
                       </TableRow>

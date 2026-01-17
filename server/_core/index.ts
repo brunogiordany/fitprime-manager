@@ -234,6 +234,164 @@ Formato de resposta:
     }
   });
   
+  // ==================== EMAIL TRACKING ROUTES ====================
+  
+  // Pixel de rastreamento de abertura de email (1x1 transparent GIF)
+  app.get('/api/email/track/open/:emailSendId', async (req: any, res: any) => {
+    try {
+      const emailSendId = parseInt(req.params.emailSendId);
+      if (isNaN(emailSendId)) {
+        // Return transparent pixel anyway to not break email
+        const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+        res.set('Content-Type', 'image/gif');
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        return res.send(pixel);
+      }
+      
+      // Record the open event
+      const { getDb } = await import('../db');
+      const { emailTracking, emailSends } = await import('../../drizzle/schema');
+      const db = await getDb();
+      
+      if (db) {
+        // Check if email exists
+        const { eq } = await import('drizzle-orm');
+        const [emailSend] = await db.select().from(emailSends).where(eq(emailSends.id, emailSendId));
+        
+        if (emailSend) {
+          await db.insert(emailTracking).values({
+            emailSendId,
+            eventType: 'open',
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '',
+            userAgent: req.headers['user-agent'] || '',
+          });
+          console.log(`[EmailTracking] Open recorded for email ${emailSendId}`);
+        }
+      }
+      
+      // Return transparent 1x1 GIF pixel
+      const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+      res.set('Content-Type', 'image/gif');
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.send(pixel);
+    } catch (error) {
+      console.error('[EmailTracking] Open error:', error);
+      // Return pixel anyway
+      const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+      res.set('Content-Type', 'image/gif');
+      res.send(pixel);
+    }
+  });
+  
+  // Redirect de rastreamento de clique em link
+  app.get('/api/email/track/click/:emailSendId', async (req: any, res: any) => {
+    try {
+      const emailSendId = parseInt(req.params.emailSendId);
+      const targetUrl = req.query.url as string;
+      
+      if (!targetUrl) {
+        return res.status(400).send('Missing target URL');
+      }
+      
+      // Decode the URL
+      const decodedUrl = decodeURIComponent(targetUrl);
+      
+      if (!isNaN(emailSendId)) {
+        // Record the click event
+        const { getDb } = await import('../db');
+        const { emailTracking, emailSends } = await import('../../drizzle/schema');
+        const db = await getDb();
+        
+        if (db) {
+          const { eq } = await import('drizzle-orm');
+          const [emailSend] = await db.select().from(emailSends).where(eq(emailSends.id, emailSendId));
+          
+          if (emailSend) {
+            await db.insert(emailTracking).values({
+              emailSendId,
+              eventType: 'click',
+              linkUrl: decodedUrl,
+              ipAddress: req.ip || req.headers['x-forwarded-for'] || '',
+              userAgent: req.headers['user-agent'] || '',
+            });
+            console.log(`[EmailTracking] Click recorded for email ${emailSendId}: ${decodedUrl}`);
+          }
+        }
+      }
+      
+      // Redirect to the target URL
+      res.redirect(302, decodedUrl);
+    } catch (error) {
+      console.error('[EmailTracking] Click error:', error);
+      // Try to redirect anyway
+      const targetUrl = req.query.url as string;
+      if (targetUrl) {
+        res.redirect(302, decodeURIComponent(targetUrl));
+      } else {
+        res.status(500).send('Error processing click');
+      }
+    }
+  });
+  
+  // Unsubscribe endpoint
+  app.get('/api/email/unsubscribe', async (req: any, res: any) => {
+    try {
+      const email = req.query.email as string;
+      
+      if (!email) {
+        return res.status(400).send('Email não fornecido');
+      }
+      
+      const { getDb } = await import('../db');
+      const { leadEmailSubscriptions } = await import('../../drizzle/schema');
+      const { eq } = await import('drizzle-orm');
+      const db = await getDb();
+      
+      if (db) {
+        // Check if subscription exists
+        const [existing] = await db.select().from(leadEmailSubscriptions).where(eq(leadEmailSubscriptions.leadEmail, email));
+        
+        if (existing) {
+          await db.update(leadEmailSubscriptions)
+            .set({ isSubscribed: false, unsubscribedAt: new Date() })
+            .where(eq(leadEmailSubscriptions.leadEmail, email));
+        } else {
+          await db.insert(leadEmailSubscriptions).values({
+            leadEmail: email,
+            isSubscribed: false,
+            unsubscribedAt: new Date(),
+          });
+        }
+        
+        console.log(`[EmailTracking] Unsubscribed: ${email}`);
+      }
+      
+      // Return a simple confirmation page
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Inscrição Cancelada</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+            h1 { color: #10b981; }
+            p { color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>✓ Inscrição Cancelada</h1>
+          <p>Você foi removido da nossa lista de emails.</p>
+          <p>Não enviaremos mais emails para ${email}.</p>
+        </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('[EmailTracking] Unsubscribe error:', error);
+      res.status(500).send('Erro ao processar solicitação');
+    }
+  });
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

@@ -269,7 +269,7 @@ export const leadEmailRouter = router({
         conditions.push(eq(emailSends.sequenceId, input.sequenceId));
       }
       
-      const sends = await db
+      const sendsRaw = await db
         .select({
           id: emailSends.id,
           leadEmail: emailSends.leadEmail,
@@ -287,6 +287,33 @@ export const leadEmailRouter = router({
         .orderBy(desc(emailSends.createdAt))
         .limit(input.limit)
         .offset(offset);
+      
+      // Buscar contagem de opens e clicks para cada email
+      const sends = await Promise.all(
+        sendsRaw.map(async (send) => {
+          const [openCount] = await db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(emailTracking)
+            .where(and(
+              eq(emailTracking.emailSendId, send.id),
+              eq(emailTracking.eventType, "open")
+            ));
+          
+          const [clickCount] = await db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(emailTracking)
+            .where(and(
+              eq(emailTracking.emailSendId, send.id),
+              eq(emailTracking.eventType, "click")
+            ));
+          
+          return {
+            ...send,
+            opens: openCount?.count || 0,
+            clicks: clickCount?.count || 0,
+          };
+        })
+      );
       
       const [countResult] = await db
         .select({ count: sql<number>`COUNT(*)` })
@@ -558,7 +585,7 @@ export const leadEmailRouter = router({
 // Função para substituir variáveis no template
 function replaceTemplateVariables(content: string, lead: any): string {
   // Usar a URL base do projeto (variável de ambiente ou URL pública)
-  const baseUrl = process.env.PUBLIC_URL || "https://fitprime-manager.manus.space";
+  const baseUrl = process.env.PUBLIC_URL || "https://fitprimemanager.com";
   const unsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(lead.leadEmail || "")}`;
   
   return content
