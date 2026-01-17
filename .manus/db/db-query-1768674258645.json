@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, leadName, leadEmail, leadPhone FROM quiz_responses WHERE leadEmail IS NOT NULL ORDER BY id DESC LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadName, leadEmail, leadPhone FROM quiz_responses WHERE leadEmail IS NOT NULL ORDER BY id DESC LIMIT 5",
+  "rows": [
+    {
+      "id": "360001",
+      "leadName": "CASSIO LUIZ MOTA REGO",
+      "leadEmail": "csluiz19@gmail.com",
+      "leadPhone": "(93) 99152-3498"
+    },
+    {
+      "id": "330007",
+      "leadName": "Brenno Ferreira",
+      "leadEmail": "brennoferreiraeducadorfisico@gmail.com",
+      "leadPhone": "(28) 99999-1209"
+    },
+    {
+      "id": "330006",
+      "leadName": "Diogo",
+      "leadEmail": "dmunhos59@gmail.com",
+      "leadPhone": "(11) 98189-1883"
+    },
+    {
+      "id": "330005",
+      "leadName": "Luiz",
+      "leadEmail": "luiz@gmail.com",
+      "leadPhone": "(11) 96969-6969"
+    },
+    {
+      "id": "330004",
+      "leadName": "Cássio Rêgo",
+      "leadEmail": "csluiz19@gmail.com",
+      "leadPhone": "(93) 99152-3498"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadName\tleadEmail\tleadPhone\n360001\tCASSIO LUIZ MOTA REGO\tcsluiz19@gmail.com\t(93) 99152-3498\n330007\tBrenno Ferreira\tbrennoferreiraeducadorfisico@gmail.com\t(28) 99999-1209\n330006\tDiogo\tdmunhos59@gmail.com\t(11) 98189-1883\n330005\tLuiz\tluiz@gmail.com\t(11) 96969-6969\n330004\tCássio Rêgo\tcsluiz19@gmail.com\t(93) 99152-3498\n",
+  "stderr": "",
+  "execution_time_ms": 96
+}

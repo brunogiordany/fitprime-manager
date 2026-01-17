@@ -4208,3 +4208,9 @@
 - [x] Criar interface para visualizar grupos de leads duplicados
 - [x] Adicionar modal de mesclagem de leads
 - [x] Adicionar botão "Mesclar Todos" para unificar todos os duplicados de uma vez
+
+
+## Bug UX - Detalhes do Lead (v6.14)
+- [x] Corrigir layout encavalado na seção "Dados do Personal Trainer" (email e WhatsApp sobrepostos)
+  - [x] Alterado grid de md:grid-cols-4 para grid-cols-2 lg:grid-cols-4 para melhor responsividade
+  - [x] Layout agora se adapta corretamente em telas menores

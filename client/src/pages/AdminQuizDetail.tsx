@@ -230,24 +230,26 @@ export default function AdminQuizDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Nome</p>
                   <p className="font-semibold text-gray-900 flex items-center gap-2">
-                    <User className="h-4 w-4 text-blue-600" />
-                    {response.leadName || "-"}
+                    <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <span className="truncate">{response.leadName || "-"}</span>
                   </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500 mb-1">Email</p>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-blue-600" />
-                    <p className="font-medium text-gray-900">{response.leadEmail || "-"}</p>
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <p className="font-medium text-gray-900 truncate flex-1 min-w-0" title={response.leadEmail || "-"}>
+                      {response.leadEmail || "-"}
+                    </p>
                     {response.leadEmail && (
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6"
+                        className="h-6 w-6 flex-shrink-0"
                         onClick={() => copyToClipboard(response.leadEmail)}
                       >
                         <Copy className="h-3 w-3" />
@@ -255,13 +257,13 @@ export default function AdminQuizDetail() {
                     )}
                   </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500 mb-1">WhatsApp</p>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-blue-600" />
-                    <p className="font-medium text-gray-900">{response.leadPhone || "-"}</p>
+                  <div className="flex items-center gap-1">
+                    <Phone className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <p className="font-medium text-gray-900 truncate flex-1 min-w-0">{response.leadPhone || "-"}</p>
                     {response.leadPhone && (
-                      <>
+                      <div className="flex items-center flex-shrink-0">
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -278,15 +280,15 @@ export default function AdminQuizDetail() {
                         >
                           <MessageCircle className="h-4 w-4" />
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Cidade</p>
                   <p className="font-medium text-gray-900 flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-blue-600" />
-                    {response.leadCity || "-"}
+                    <Globe className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <span className="truncate">{response.leadCity || "-"}</span>
                   </p>
                 </div>
               </div>
