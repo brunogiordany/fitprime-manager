@@ -85,6 +85,9 @@ export default function EmailAutomationPage() {
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
   const [trendsPeriod, setTrendsPeriod] = useState(30); // Período em dias para gráficos
+  const [trendsSequenceId, setTrendsSequenceId] = useState<number | undefined>(undefined); // Filtro por campanha
+  const [trendsTemplateId, setTrendsTemplateId] = useState<number | undefined>(undefined); // Filtro por tipo de email
+  const [viewEmailId, setViewEmailId] = useState<number | null>(null); // ID do email para visualizar
   
   // Queries - usando tRPC hooks
   const { data: sequences, refetch: refetchSequences } = trpc.leadEmail.listSequences.useQuery();
@@ -94,11 +97,27 @@ export default function EmailAutomationPage() {
     { enabled: !!selectedSequence }
   );
   
+  // Templates para o filtro de tendências (baseado na sequência selecionada no filtro)
+  const { data: trendsTemplates } = trpc.leadEmail.listTemplates.useQuery(
+    { sequenceId: trendsSequenceId || 0 },
+    { enabled: !!trendsSequenceId }
+  );
+  
   const { data: metrics } = trpc.leadEmail.getEmailMetrics.useQuery({});
   
   const { data: sends, refetch: refetchSends } = trpc.leadEmail.listSends.useQuery({ page: 1, limit: 50, status: "all" });
   
-  const { data: trends } = trpc.leadEmail.getEmailTrends.useQuery({ days: trendsPeriod });
+  const { data: trends } = trpc.leadEmail.getEmailTrends.useQuery({ 
+    days: trendsPeriod,
+    sequenceId: trendsSequenceId,
+    templateId: trendsTemplateId,
+  });
+  
+  // Query para detalhes do email (visualização)
+  const { data: emailDetails, isLoading: isLoadingEmailDetails } = trpc.leadEmail.getEmailSendDetails.useQuery(
+    { sendId: viewEmailId! },
+    { enabled: !!viewEmailId }
+  );
   
   // Mutations
   const createSequenceMutation = trpc.leadEmail.createSequence.useMutation({
@@ -429,36 +448,125 @@ export default function EmailAutomationPage() {
           
           {/* Tendências */}
           <TabsContent value="trends" className="space-y-6">
-            {/* Seletor de Período */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Período:</span>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant={trendsPeriod === 7 ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setTrendsPeriod(7)}
-                >
-                  7 dias
-                </Button>
-                <Button 
-                  variant={trendsPeriod === 30 ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setTrendsPeriod(30)}
-                >
-                  30 dias
-                </Button>
-                <Button 
-                  variant={trendsPeriod === 90 ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setTrendsPeriod(90)}
-                >
-                  90 dias
-                </Button>
-              </div>
-            </div>
+            {/* Filtros */}
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Seletor de Período */}
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Período:</span>
+                    <div className="flex gap-1">
+                      <Button 
+                        variant={trendsPeriod === 7 ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setTrendsPeriod(7)}
+                      >
+                        7 dias
+                      </Button>
+                      <Button 
+                        variant={trendsPeriod === 30 ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setTrendsPeriod(30)}
+                      >
+                        30 dias
+                      </Button>
+                      <Button 
+                        variant={trendsPeriod === 90 ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => setTrendsPeriod(90)}
+                      >
+                        90 dias
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Separador */}
+                  <div className="h-8 w-px bg-border" />
+                  
+                  {/* Filtro por Campanha */}
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Campanha:</span>
+                    <Select 
+                      value={trendsSequenceId?.toString() || "all"} 
+                      onValueChange={(value) => {
+                        setTrendsSequenceId(value === "all" ? undefined : parseInt(value));
+                        setTrendsTemplateId(undefined); // Limpar template ao mudar campanha
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Todas as campanhas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as campanhas</SelectItem>
+                        {sequences?.map((seq: EmailSequence) => (
+                          <SelectItem key={seq.id} value={seq.id.toString()}>
+                            {seq.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Filtro por Tipo de Email (só aparece se campanha selecionada) */}
+                  {trendsSequenceId && (
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Tipo:</span>
+                      <Select 
+                        value={trendsTemplateId?.toString() || "all"} 
+                        onValueChange={(value) => setTrendsTemplateId(value === "all" ? undefined : parseInt(value))}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Todos os tipos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos os tipos</SelectItem>
+                          {trendsTemplates?.map((tmpl: EmailTemplate) => (
+                            <SelectItem key={tmpl.id} value={tmpl.id.toString()}>
+                              {tmpl.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  {/* Botão Limpar Filtros */}
+                  {(trendsSequenceId || trendsTemplateId) && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setTrendsSequenceId(undefined);
+                        setTrendsTemplateId(undefined);
+                      }}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Limpar filtros
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Indicador de filtros ativos */}
+                {(trendsSequenceId || trendsTemplateId) && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Filtros ativos:</span>
+                    {trendsSequenceId && (
+                      <Badge variant="secondary">
+                        Campanha: {sequences?.find((s: EmailSequence) => s.id === trendsSequenceId)?.name}
+                      </Badge>
+                    )}
+                    {trendsTemplateId && (
+                      <Badge variant="secondary">
+                        Tipo: {trendsTemplates?.find((t: EmailTemplate) => t.id === trendsTemplateId)?.name}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             
             {/* Cards de Resumo do Período */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -612,6 +720,7 @@ export default function EmailAutomationPage() {
                       <TableHead className="text-center">Cliques</TableHead>
                       <TableHead>Agendado</TableHead>
                       <TableHead>Enviado</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -641,6 +750,15 @@ export default function EmailAutomationPage() {
                         <TableCell>
                           {send.sentAt ? new Date(send.sentAt).toLocaleString("pt-BR") : "-"}
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setViewEmailId(send.id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                     
@@ -657,6 +775,160 @@ export default function EmailAutomationPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Dialog: Visualizar Email Enviado */}
+        <Dialog open={!!viewEmailId} onOpenChange={(open) => !open && setViewEmailId(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Detalhes do Email Enviado
+              </DialogTitle>
+              <DialogDescription>
+                Visualize o conteúdo e métricas do email
+              </DialogDescription>
+            </DialogHeader>
+            
+            {isLoadingEmailDetails ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : emailDetails ? (
+              <div className="space-y-6">
+                {/* Informações do Email */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Destinatário</Label>
+                    <p className="font-medium">{emailDetails.leadEmail}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <p>{getStatusBadge(emailDetails.status)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Campanha</Label>
+                    <p className="font-medium">{emailDetails.sequenceName || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Template</Label>
+                    <p className="font-medium">{emailDetails.templateName || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Agendado para</Label>
+                    <p>{emailDetails.scheduledAt ? new Date(emailDetails.scheduledAt).toLocaleString("pt-BR") : "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Enviado em</Label>
+                    <p>{emailDetails.sentAt ? new Date(emailDetails.sentAt).toLocaleString("pt-BR") : "-"}</p>
+                  </div>
+                </div>
+                
+                {/* Métricas de Engajamento */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Aberturas</p>
+                          <p className="text-2xl font-bold text-blue-600">{emailDetails.opens}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <MousePointer className="h-5 w-5 text-purple-500" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Cliques</p>
+                          <p className="text-2xl font-bold text-purple-600">{emailDetails.clicks}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Assunto */}
+                <div>
+                  <Label className="text-muted-foreground">Assunto</Label>
+                  <p className="font-medium text-lg mt-1">{emailDetails.subject}</p>
+                </div>
+                
+                {/* Conteúdo do Email */}
+                <div>
+                  <Label className="text-muted-foreground">Conteúdo do Email</Label>
+                  <div className="mt-2 border rounded-lg overflow-hidden">
+                    {emailDetails.htmlContent ? (
+                      <iframe
+                        srcDoc={emailDetails.htmlContent}
+                        className="w-full h-[400px] bg-white"
+                        title="Email Preview"
+                        sandbox="allow-same-origin"
+                      />
+                    ) : (
+                      <div className="p-4 text-center text-muted-foreground">
+                        Conteúdo não disponível para este email
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Histórico de Eventos */}
+                {emailDetails.trackingEvents && emailDetails.trackingEvents.length > 0 && (
+                  <div>
+                    <Label className="text-muted-foreground">Histórico de Eventos</Label>
+                    <div className="mt-2 space-y-2">
+                      {emailDetails.trackingEvents.map((event: any) => (
+                        <div key={event.id} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg text-sm">
+                          {event.eventType === "open" ? (
+                            <Eye className="h-4 w-4 text-blue-500" />
+                          ) : event.eventType === "click" ? (
+                            <MousePointer className="h-4 w-4 text-purple-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className="font-medium">
+                            {event.eventType === "open" ? "Abriu o email" : 
+                             event.eventType === "click" ? "Clicou em link" : "Descadastrou"}
+                          </span>
+                          {event.linkUrl && (
+                            <span className="text-muted-foreground truncate max-w-[200px]" title={event.linkUrl}>
+                              {event.linkUrl}
+                            </span>
+                          )}
+                          <span className="ml-auto text-muted-foreground">
+                            {new Date(event.createdAt).toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Erro (se houver) */}
+                {emailDetails.errorMessage && (
+                  <div>
+                    <Label className="text-red-500">Erro no Envio</Label>
+                    <p className="mt-1 p-2 bg-red-50 text-red-700 rounded-lg text-sm">
+                      {emailDetails.errorMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Email não encontrado
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setViewEmailId(null)}>
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         
         {/* Dialog: Criar/Editar Sequência */}
         <Dialog open={isSequenceDialogOpen} onOpenChange={setIsSequenceDialogOpen}>

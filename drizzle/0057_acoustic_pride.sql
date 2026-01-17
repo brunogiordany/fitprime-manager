@@ -1,0 +1,1 @@
+ALTER TABLE `email_sends` ADD `htmlContent` text;

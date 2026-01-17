@@ -251,6 +251,8 @@ export const leadEmailRouter = router({
   getEmailTrends: adminProcedure
     .input(z.object({
       days: z.number().default(30), // Últimos N dias
+      sequenceId: z.number().optional(), // Filtro por campanha/sequência
+      templateId: z.number().optional(), // Filtro por tipo de email/template
     }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -260,47 +262,104 @@ export const leadEmailRouter = router({
       startDate.setDate(startDate.getDate() - input.days);
       startDate.setHours(0, 0, 0, 0);
       
-      // Buscar envios por dia
+      // Construir condições de filtro para envios
+      const sendConditions = [
+        eq(emailSends.status, "sent"),
+        gte(emailSends.sentAt, startDate)
+      ];
+      if (input.sequenceId) {
+        sendConditions.push(eq(emailSends.sequenceId, input.sequenceId));
+      }
+      if (input.templateId) {
+        sendConditions.push(eq(emailSends.templateId, input.templateId));
+      }
+      
+      // Buscar envios por dia com filtros
       const sendsByDay = await db
         .select({
           date: sql<string>`DATE(${emailSends.sentAt})`,
           sent: sql<number>`COUNT(*)`,
         })
         .from(emailSends)
-        .where(and(
-          eq(emailSends.status, "sent"),
-          gte(emailSends.sentAt, startDate)
-        ))
+        .where(and(...sendConditions))
         .groupBy(sql`DATE(${emailSends.sentAt})`)
         .orderBy(sql`DATE(${emailSends.sentAt})`);
       
-      // Buscar aberturas por dia
-      const opensByDay = await db
-        .select({
-          date: sql<string>`DATE(${emailTracking.createdAt})`,
-          opens: sql<number>`COUNT(*)`,
-        })
-        .from(emailTracking)
-        .where(and(
-          eq(emailTracking.eventType, "open"),
-          gte(emailTracking.createdAt, startDate)
-        ))
-        .groupBy(sql`DATE(${emailTracking.createdAt})`)
-        .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      // Para aberturas e cliques, precisamos fazer join com emailSends para aplicar os filtros
+      const trackingConditionsOpen = [
+        eq(emailTracking.eventType, "open"),
+        gte(emailTracking.createdAt, startDate)
+      ];
+      const trackingConditionsClick = [
+        eq(emailTracking.eventType, "click"),
+        gte(emailTracking.createdAt, startDate)
+      ];
       
-      // Buscar cliques por dia
-      const clicksByDay = await db
-        .select({
-          date: sql<string>`DATE(${emailTracking.createdAt})`,
-          clicks: sql<number>`COUNT(*)`,
-        })
-        .from(emailTracking)
-        .where(and(
-          eq(emailTracking.eventType, "click"),
-          gte(emailTracking.createdAt, startDate)
-        ))
-        .groupBy(sql`DATE(${emailTracking.createdAt})`)
-        .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      // Se há filtros, precisamos fazer join com emailSends
+      let opensByDay;
+      let clicksByDay;
+      
+      if (input.sequenceId || input.templateId) {
+        // Com filtros - fazer join
+        const joinConditions = [];
+        if (input.sequenceId) {
+          joinConditions.push(eq(emailSends.sequenceId, input.sequenceId));
+        }
+        if (input.templateId) {
+          joinConditions.push(eq(emailSends.templateId, input.templateId));
+        }
+        
+        opensByDay = await db
+          .select({
+            date: sql<string>`DATE(${emailTracking.createdAt})`,
+            opens: sql<number>`COUNT(*)`,
+          })
+          .from(emailTracking)
+          .innerJoin(emailSends, eq(emailTracking.emailSendId, emailSends.id))
+          .where(and(
+            eq(emailTracking.eventType, "open"),
+            gte(emailTracking.createdAt, startDate),
+            ...joinConditions
+          ))
+          .groupBy(sql`DATE(${emailTracking.createdAt})`)
+          .orderBy(sql`DATE(${emailTracking.createdAt})`);
+        
+        clicksByDay = await db
+          .select({
+            date: sql<string>`DATE(${emailTracking.createdAt})`,
+            clicks: sql<number>`COUNT(*)`,
+          })
+          .from(emailTracking)
+          .innerJoin(emailSends, eq(emailTracking.emailSendId, emailSends.id))
+          .where(and(
+            eq(emailTracking.eventType, "click"),
+            gte(emailTracking.createdAt, startDate),
+            ...joinConditions
+          ))
+          .groupBy(sql`DATE(${emailTracking.createdAt})`)
+          .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      } else {
+        // Sem filtros - query simples
+        opensByDay = await db
+          .select({
+            date: sql<string>`DATE(${emailTracking.createdAt})`,
+            opens: sql<number>`COUNT(*)`,
+          })
+          .from(emailTracking)
+          .where(and(...trackingConditionsOpen))
+          .groupBy(sql`DATE(${emailTracking.createdAt})`)
+          .orderBy(sql`DATE(${emailTracking.createdAt})`);
+        
+        clicksByDay = await db
+          .select({
+            date: sql<string>`DATE(${emailTracking.createdAt})`,
+            clicks: sql<number>`COUNT(*)`,
+          })
+          .from(emailTracking)
+          .where(and(...trackingConditionsClick))
+          .groupBy(sql`DATE(${emailTracking.createdAt})`)
+          .orderBy(sql`DATE(${emailTracking.createdAt})`);
+      }
       
       // Criar array de datas para preencher dias sem dados
       const dates: string[] = [];
@@ -344,6 +403,10 @@ export const leadEmailRouter = router({
           start: startDate.toISOString().split('T')[0],
           end: today.toISOString().split('T')[0],
           days: input.days,
+        },
+        filters: {
+          sequenceId: input.sequenceId || null,
+          templateId: input.templateId || null,
         },
       };
     }),
@@ -427,6 +490,67 @@ export const leadEmailRouter = router({
         page: input.page,
         limit: input.limit,
         totalPages: Math.ceil((countResult?.count || 0) / input.limit),
+      };
+    }),
+  
+  // Buscar detalhes de um email enviado (incluindo conteúdo)
+  getEmailSendDetails: adminProcedure
+    .input(z.object({
+      sendId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar o email enviado com todos os detalhes
+      const [send] = await db
+        .select({
+          id: emailSends.id,
+          leadEmail: emailSends.leadEmail,
+          subject: emailSends.subject,
+          htmlContent: emailSends.htmlContent,
+          status: emailSends.status,
+          scheduledAt: emailSends.scheduledAt,
+          sentAt: emailSends.sentAt,
+          errorMessage: emailSends.errorMessage,
+          sequenceId: emailSends.sequenceId,
+          templateId: emailSends.templateId,
+          sequenceName: emailSequences.name,
+          templateName: leadEmailTemplates.name,
+          createdAt: emailSends.createdAt,
+        })
+        .from(emailSends)
+        .leftJoin(emailSequences, eq(emailSends.sequenceId, emailSequences.id))
+        .leftJoin(leadEmailTemplates, eq(emailSends.templateId, leadEmailTemplates.id))
+        .where(eq(emailSends.id, input.sendId));
+      
+      if (!send) {
+        throw new Error("Email não encontrado");
+      }
+      
+      // Buscar eventos de tracking
+      const trackingEvents = await db
+        .select({
+          id: emailTracking.id,
+          eventType: emailTracking.eventType,
+          linkUrl: emailTracking.linkUrl,
+          userAgent: emailTracking.userAgent,
+          ipAddress: emailTracking.ipAddress,
+          createdAt: emailTracking.createdAt,
+        })
+        .from(emailTracking)
+        .where(eq(emailTracking.emailSendId, input.sendId))
+        .orderBy(desc(emailTracking.createdAt));
+      
+      // Contar opens e clicks
+      const opens = trackingEvents.filter(e => e.eventType === "open").length;
+      const clicks = trackingEvents.filter(e => e.eventType === "click").length;
+      
+      return {
+        ...send,
+        opens,
+        clicks,
+        trackingEvents,
       };
     }),
   

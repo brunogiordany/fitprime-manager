@@ -4081,3 +4081,27 @@
 - [x] Criar gráficos de tendências de abertura ao longo do tempo
 - [x] Criar gráficos de tendências de clique ao longo do tempo
 - [x] Adicionar seletor de período (7 dias, 30 dias, 90 dias)
+
+
+## Filtros de Tendências de Emails (v6.8)
+- [ ] Atualizar endpoint getEmailTrends para aceitar filtro de sequência
+- [ ] Atualizar endpoint getEmailTrends para aceitar filtro de template
+- [ ] Adicionar seletor de campanha (sequência) na interface
+- [ ] Adicionar seletor de tipo de email (template) na interface
+- [ ] Testar filtros combinados (período + campanha + tipo)
+
+- [ ] Adicionar endpoint para buscar conteúdo do email enviado
+- [ ] Adicionar modal de visualização do conteúdo do email no histórico
+
+
+## Filtros de Tendências e Visualização de Emails (v6.8)
+- [x] Adicionar filtro por campanha (sequência) nos gráficos de tendências
+- [x] Adicionar filtro por tipo de email (template) nos gráficos de tendências
+- [x] Atualizar endpoint getEmailTrends para aceitar os novos filtros
+- [x] Adicionar endpoint para buscar conteúdo do email enviado
+- [x] Adicionar modal de visualização do conteúdo do email no histórico
+- [x] Salvar conteúdo HTML do email ao enviar para visualização posterior
+- [x] Adicionar coluna de ações na tabela de histórico
+- [x] Botão de limpar filtros na aba de tendências
+- [x] Mostrar filtros ativos como badges
+

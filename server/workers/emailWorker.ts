@@ -290,13 +290,14 @@ async function processPendingEmails(db: any) {
         html: htmlContent,
       });
       
-      // Atualizar status para enviado
+      // Atualizar status para enviado e salvar conteúdo HTML
       await db
         .update(emailSends)
         .set({
           status: "sent",
           sentAt: new Date(),
           resendId: result.data?.id,
+          htmlContent: htmlContent, // Salvar conteúdo para visualização posterior
         })
         .where(eq(emailSends.id, send.id));
       

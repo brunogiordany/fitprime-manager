@@ -2872,6 +2872,7 @@ export const emailSends = mysqlTable("email_sends", {
   sequenceId: int("sequenceId").notNull().references(() => emailSequences.id),
   templateId: int("templateId").notNull().references(() => leadEmailTemplates.id),
   subject: varchar("subject", { length: 255 }).notNull(),
+  htmlContent: text("htmlContent"), // Conteúdo HTML do email enviado (para visualização)
   status: mysqlEnum("status", [
     "pending",    // Aguardando envio
     "sent",       // Enviado com sucesso
