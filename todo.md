@@ -4154,3 +4154,25 @@
 - [x] Busca de duplicações por email com histórico completo
 - [x] Modal de histórico do personal com leads do quiz, duplicados e registros
 - [x] Botão de mesclar registros duplicados (transfere alunos, sessões, treinos, planos)
+
+
+## Validação de Email Duplicado no Cadastro (v6.11)
+- [ ] Identificar pontos de cadastro de personal no sistema
+- [ ] Implementar validação de email duplicado no backend
+- [ ] Retornar erro específico quando email já existe
+- [ ] Implementar redirecionamento para login no frontend
+- [ ] Mostrar mensagem amigável com link para login
+
+
+## Validação de Email Duplicado no Cadastro de Personal (v6.11)
+- [ ] Implementar validação de email duplicado no backend (apenas cadastro, não leads)
+- [ ] Retornar erro específico quando email já existe
+- [ ] Implementar redirecionamento para login no frontend
+- [ ] Mostrar mensagem amigável com link para login
+
+
+## Validação de Email Duplicado no Cadastro (v6.11)
+- [x] Verificar pontos de cadastro de personal no sistema
+- [x] Confirmar validação de email duplicado no backend (registerPersonal, createTrial, completeActivation)
+- [x] Melhorar mensagem de erro no frontend com link para login
+- [x] Adicionar link "Clique aqui para fazer login" quando email/CPF já cadastrado

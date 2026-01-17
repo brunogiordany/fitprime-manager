@@ -346,7 +346,20 @@ export default function TrialSignupPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className={errors.email ? "border-red-500" : ""}
                   />
-                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                  {errors.email && (
+                    <div className="text-xs text-red-500 mt-1">
+                      {errors.email}
+                      {errors.email.includes("já cadastrado") && (
+                        <button
+                          type="button"
+                          onClick={() => setLocation(`/login?email=${encodeURIComponent(formData.email)}`)}
+                          className="ml-1 text-emerald-600 hover:text-emerald-700 underline font-medium"
+                        >
+                          Clique aqui para fazer login
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -377,7 +390,20 @@ export default function TrialSignupPage() {
                       onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
                       className={errors.cpf ? "border-red-500" : ""}
                     />
-                    {errors.cpf && <p className="text-xs text-red-500 mt-1">{errors.cpf}</p>}
+                    {errors.cpf && (
+                      <div className="text-xs text-red-500 mt-1">
+                        {errors.cpf}
+                        {errors.cpf.includes("já cadastrado") && (
+                          <button
+                            type="button"
+                            onClick={() => setLocation(`/login`)}
+                            className="ml-1 text-emerald-600 hover:text-emerald-700 underline font-medium"
+                          >
+                            Clique aqui para fazer login
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>
