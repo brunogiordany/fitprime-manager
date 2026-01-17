@@ -79,6 +79,8 @@ import {
   Sparkles,
   History,
   Sliders,
+  GitMerge,
+  AlertCircle,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -156,6 +158,391 @@ function SimplePieChart({ data }: { data: { status: string; count: number }[] })
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Componente de Deduplicação
+function DeduplicationTab() {
+  const [search, setSearch] = useState("");
+  const [showOnlyDuplicates, setShowOnlyDuplicates] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [selectedPersonalId, setSelectedPersonalId] = useState<number | null>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [primaryId, setPrimaryId] = useState<number | null>(null);
+  const [secondaryIds, setSecondaryIds] = useState<number[]>([]);
+  
+  const utils = trpc.useUtils();
+  
+  const { data: stats, isLoading: loadingStats } = trpc.deduplication.getDuplicationStats.useQuery();
+  
+  const { data: duplicatesData, isLoading: loadingDuplicates } = trpc.deduplication.getDuplicatesByEmail.useQuery(
+    { email: selectedEmail! },
+    { enabled: !!selectedEmail }
+  );
+  
+  const { data: historyData, isLoading: loadingHistory } = trpc.deduplication.getPersonalHistory.useQuery(
+    { personalId: selectedPersonalId! },
+    { enabled: !!selectedPersonalId }
+  );
+  
+  const mergeMutation = trpc.deduplication.mergePersonals.useMutation({
+    onSuccess: () => {
+      toast.success("Registros mesclados com sucesso!");
+      utils.deduplication.getDuplicationStats.invalidate();
+      utils.deduplication.getDuplicatesByEmail.invalidate();
+      setShowMergeDialog(false);
+      setSelectedEmail(null);
+      setPrimaryId(null);
+      setSecondaryIds([]);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const handleMerge = () => {
+    if (!primaryId || secondaryIds.length === 0) {
+      toast.error("Selecione o registro principal e pelo menos um para mesclar");
+      return;
+    }
+    mergeMutation.mutate({ primaryPersonalId: primaryId, secondaryPersonalIds: secondaryIds });
+  };
+  
+  return (
+    <div className="space-y-6">
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">{stats?.totalPersonals || 0}</div>
+            <p className="text-xs text-muted-foreground">Total Personais</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-amber-600">{stats?.duplicatedEmails || 0}</div>
+            <p className="text-xs text-muted-foreground">Emails Duplicados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-red-600">{stats?.totalDuplicateRecords || 0}</div>
+            <p className="text-xs text-muted-foreground">Registros Duplicados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-green-600">{stats?.conversionRate || 0}%</div>
+            <p className="text-xs text-muted-foreground">Taxa Conversão Leads</p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Busca de duplicações por email */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GitMerge className="h-5 w-5" />
+            Buscar Duplicações por Email
+          </CardTitle>
+          <CardDescription>
+            Digite o email para verificar se há registros duplicados
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Digite o email para buscar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={() => setSelectedEmail(search)} disabled={!search}>
+              <Search className="h-4 w-4 mr-2" />
+              Buscar
+            </Button>
+          </div>
+          
+          {selectedEmail && (
+            <div className="space-y-4">
+              {loadingDuplicates ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin" />
+                </div>
+              ) : duplicatesData ? (
+                <>
+                  {/* Personais encontrados */}
+                  {duplicatesData.personals.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Personais com este email ({duplicatesData.personals.length})
+                        {duplicatesData.personals.length > 1 && (
+                          <Badge variant="destructive">Duplicado</Badge>
+                        )}
+                      </h4>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Cadastro</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(duplicatesData.personals as any[]).map((p: any) => (
+                            <TableRow key={p.id}>
+                              <TableCell>{p.id}</TableCell>
+                              <TableCell>{p.name}</TableCell>
+                              <TableCell>
+                                <Badge variant={p.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
+                                  {p.subscriptionStatus}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{new Date(p.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                              <TableCell>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => setSelectedPersonalId(p.id)}
+                                >
+                                  <History className="h-4 w-4 mr-1" />
+                                  Histórico
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      
+                      {duplicatesData.personals.length > 1 && (
+                        <Button 
+                          variant="destructive" 
+                          onClick={() => {
+                            const sorted = [...duplicatesData.personals as any[]].sort((a: any, b: any) => 
+                              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                            );
+                            setPrimaryId(sorted[0].id);
+                            setSecondaryIds(sorted.slice(1).map((p: any) => p.id));
+                            setShowMergeDialog(true);
+                          }}
+                        >
+                          <GitMerge className="h-4 w-4 mr-2" />
+                          Mesclar Registros Duplicados
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Leads do quiz */}
+                  {duplicatesData.quizLeads.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        Leads do Quiz ({duplicatesData.quizLeads.length})
+                      </h4>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Cidade</TableHead>
+                            <TableHead>Alunos</TableHead>
+                            <TableHead>Origem</TableHead>
+                            <TableHead>Data</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(duplicatesData.quizLeads as any[]).map((lead: any) => (
+                            <TableRow key={lead.id}>
+                              <TableCell>{lead.leadName}</TableCell>
+                              <TableCell>{lead.leadCity || '-'}</TableCell>
+                              <TableCell>{lead.studentsCount || '-'}</TableCell>
+                              <TableCell>
+                                {lead.utmSource && (
+                                  <Badge variant="outline">{lead.utmSource}</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>{new Date(lead.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                  
+                  {duplicatesData.personals.length === 0 && duplicatesData.quizLeads.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Nenhum registro encontrado para este email
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Dialog de Histórico */}
+      <Dialog open={!!selectedPersonalId} onOpenChange={(open) => !open && setSelectedPersonalId(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Histórico do Personal
+            </DialogTitle>
+          </DialogHeader>
+          
+          {loadingHistory ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="h-6 w-6 animate-spin" />
+            </div>
+          ) : historyData ? (
+            <div className="space-y-4">
+              {/* Dados atuais */}
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Dados Atuais</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="text-muted-foreground">Nome:</span> {historyData.personal.name}</div>
+                  <div><span className="text-muted-foreground">Email:</span> {historyData.personal.email}</div>
+                  <div><span className="text-muted-foreground">Telefone:</span> {historyData.personal.phone || '-'}</div>
+                  <div><span className="text-muted-foreground">CPF:</span> {historyData.personal.cpf || '-'}</div>
+                  <div><span className="text-muted-foreground">Status:</span> {historyData.personal.subscriptionStatus}</div>
+                  <div><span className="text-muted-foreground">Login:</span> {historyData.personal.loginMethod}</div>
+                </div>
+              </div>
+              
+              {/* Duplicados */}
+              {historyData.duplicates.length > 0 && (
+                <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                  <h4 className="font-medium mb-2 text-red-800 dark:text-red-200 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Registros Duplicados ({historyData.duplicates.length})
+                  </h4>
+                  {(historyData.duplicates as any[]).map((dup: any) => (
+                    <div key={dup.id} className="text-sm text-red-700 dark:text-red-300">
+                      ID {dup.id} - {dup.name} - {dup.subscriptionStatus} - {new Date(dup.createdAt).toLocaleDateString('pt-BR')}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Leads do quiz */}
+              {Array.isArray(historyData.quizLeads) && historyData.quizLeads.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Histórico de Leads ({historyData.quizLeads.length})</h4>
+                  <div className="space-y-2">
+                    {(historyData.quizLeads as unknown as any[]).map((lead: any) => (
+                      <div key={lead.id} className="p-3 border rounded-lg text-sm">
+                        <div className="flex justify-between">
+                          <span className="font-medium">{lead.leadName}</span>
+                          <span className="text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div className="text-muted-foreground">
+                          {lead.leadCity} | {lead.studentsCount} alunos | {lead.revenue}
+                        </div>
+                        {lead.utmSource && (
+                          <div className="mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {lead.utmSource}/{lead.utmMedium}/{lead.utmCampaign}
+                            </Badge>
+                          </div>
+                        )}
+                        {lead.deviceType && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {lead.deviceType} | {lead.browser} | {lead.os}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Histórico de registros */}
+              {Array.isArray(historyData.registrationHistory) && historyData.registrationHistory.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Histórico de Registros</h4>
+                  <div className="space-y-2">
+                    {(historyData.registrationHistory as unknown as any[]).map((reg: any) => (
+                      <div key={reg.id} className="p-3 border rounded-lg text-sm">
+                        <div className="flex justify-between">
+                          <Badge variant={reg.status === 'merged' ? 'secondary' : 'default'}>
+                            {reg.source} - {reg.status}
+                          </Badge>
+                          <span className="text-muted-foreground">{new Date(reg.createdAt).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        {reg.utmSource && (
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            UTM: {reg.utmSource}/{reg.utmMedium}/{reg.utmCampaign}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de Mesclar */}
+      <Dialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitMerge className="h-5 w-5" />
+              Mesclar Registros Duplicados
+            </DialogTitle>
+            <DialogDescription>
+              O registro principal será mantido e os demais serão mesclados nele. Todos os dados (alunos, treinos, etc.) serão transferidos.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+              <h4 className="font-medium text-green-800 dark:text-green-200">Registro Principal (será mantido)</h4>
+              <p className="text-sm text-green-700 dark:text-green-300">ID: {primaryId}</p>
+            </div>
+            
+            <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+              <h4 className="font-medium text-red-800 dark:text-red-200">Registros a Mesclar (serão removidos)</h4>
+              <p className="text-sm text-red-700 dark:text-red-300">IDs: {secondaryIds.join(', ')}</p>
+            </div>
+            
+            <div className="p-4 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium">Atenção</span>
+              </div>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                Esta ação não pode ser desfeita. Os registros secundários serão marcados como excluídos.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMergeDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleMerge}
+              disabled={mergeMutation.isPending}
+            >
+              {mergeMutation.isPending ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <GitMerge className="h-4 w-4 mr-2" />
+              )}
+              Confirmar Mesclagem
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1443,6 +1830,10 @@ export default function AdminPanel() {
               <Settings className="h-4 w-4" />
               DNS/Email
             </TabsTrigger>
+            <TabsTrigger value="deduplication" className="gap-2">
+              <GitMerge className="h-4 w-4" />
+              Dedupl.
+            </TabsTrigger>
           </TabsList>
           
           {/* Visão Geral */}
@@ -2448,6 +2839,11 @@ export default function AdminPanel() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          {/* Deduplicação */}
+          <TabsContent value="deduplication" className="space-y-6">
+            <DeduplicationTab />
           </TabsContent>
         </Tabs>
       </div>

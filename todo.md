@@ -4131,3 +4131,26 @@
   - [x] Sistema está funcionando corretamente
   - [x] Leads e Personais são entidades separadas (lead vira personal ao se cadastrar)
 
+
+
+## Sistema de Deduplicação e Histórico de Personais (v7.0)
+- [ ] Indicador de leads convertidos na lista de leads
+- [ ] Sistema de detecção de duplicações por email
+- [ ] Tabela de histórico de registros do personal
+- [ ] Interface de visualização de histórico e unificação
+- [ ] Unificar registros duplicados automaticamente
+- [ ] Ao clicar no personal, ver todos os registros/tentativas de cadastro
+
+
+
+## Sistema de Deduplicação e Histórico de Registros (v6.10)
+- [x] Adicionar indicador de leads convertidos na lista de leads (badge "Personal Cadastrado")
+- [x] Criar sistema de detecção de duplicações por email
+- [x] Criar tabela de histórico de registros do personal (personal_registration_history)
+- [x] Implementar interface de visualização de histórico de registros
+- [x] Implementar funcionalidade de mesclar registros duplicados
+- [x] Criar aba "Dedupl." no Painel de Administração
+- [x] Estatísticas: Total Personais, Emails Duplicados, Registros Duplicados, Taxa Conversão Leads
+- [x] Busca de duplicações por email com histórico completo
+- [x] Modal de histórico do personal com leads do quiz, duplicados e registros
+- [x] Botão de mesclar registros duplicados (transfere alunos, sessões, treinos, planos)

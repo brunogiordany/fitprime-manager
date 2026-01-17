@@ -56,6 +56,29 @@ export const personals = mysqlTable("personals", {
 export type Personal = typeof personals.$inferSelect;
 export type InsertPersonal = typeof personals.$inferInsert;
 
+// ==================== PERSONAL REGISTRATION HISTORY (Histórico de Registros) ====================
+export const personalRegistrationHistory = mysqlTable("personal_registration_history", {
+  id: int("id").autoincrement().primaryKey(),
+  personalId: int("personalId").references(() => personals.id), // Personal unificado (pode ser null se ainda não unificado)
+  email: varchar("email", { length: 320 }).notNull(),
+  name: text("name"),
+  phone: varchar("phone", { length: 20 }),
+  cpf: varchar("cpf", { length: 14 }),
+  source: mysqlEnum("source", ["quiz", "direct", "oauth", "invite", "migration"]).default("direct"), // Origem do registro
+  quizResponseId: int("quizResponseId"), // ID do quiz se veio do quiz
+  ipAddress: varchar("ipAddress", { length: 45 }), // IP do registro
+  userAgent: text("userAgent"), // User agent do navegador
+  utmSource: varchar("utmSource", { length: 255 }),
+  utmMedium: varchar("utmMedium", { length: 255 }),
+  utmCampaign: varchar("utmCampaign", { length: 255 }),
+  status: mysqlEnum("status", ["completed", "abandoned", "merged", "duplicate"]).default("completed"),
+  mergedIntoId: int("mergedIntoId"), // Se foi mesclado, ID do registro principal
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PersonalRegistrationHistory = typeof personalRegistrationHistory.$inferSelect;
+export type InsertPersonalRegistrationHistory = typeof personalRegistrationHistory.$inferInsert;
+
 // ==================== STUDENTS (Alunos) ====================
 export const students = mysqlTable("students", {
   id: int("id").autoincrement().primaryKey(),

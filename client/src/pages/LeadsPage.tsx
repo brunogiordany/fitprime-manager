@@ -83,6 +83,10 @@ interface Lead {
   os: string | null;
   createdAt: string;
   completedAt: string | null;
+  // Campos de personal vinculado
+  personalId: number | null;
+  personalStatus: string | null;
+  personalName: string | null;
 }
 
 const studentsLabels: Record<string, string> = {
@@ -535,7 +539,12 @@ export default function LeadsPage() {
                             >
                               {lead.isQualified ? "Qualificado" : "Desqualificado"}
                             </Badge>
-                            {lead.converted && (
+                            {lead.personalId && (
+                              <Badge className="bg-blue-100 text-blue-700">
+                                ✓ Cadastrado
+                              </Badge>
+                            )}
+                            {lead.converted && !lead.personalId && (
                               <Badge className="bg-purple-100 text-purple-700">
                                 Convertido
                               </Badge>

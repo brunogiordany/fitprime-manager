@@ -547,23 +547,27 @@ export const quizRouter = router({
       const whereClause = conditions.join(" AND ");
       const orderClause = `${input.sortBy} ${input.sortOrder.toUpperCase()}`;
       
-      // Query principal
-      // Query principal usando sql template
+      // Query principal - inclui info de personal vinculado
       const leads = await db.execute(sql`
         SELECT 
-          id, visitorId, sessionId,
-          leadName, leadEmail, leadPhone, leadCity,
-          studentsCount, revenue, priority,
-          managementPain, timePain, retentionPain, billingPain,
-          recommendedProfile, recommendedPlan, totalScore,
-          isQualified, disqualificationReason,
-          converted, conversionType, convertedAt,
-          utmSource, utmMedium, utmCampaign, utmContent, utmTerm,
-          referrer, landingPage,
-          deviceType, browser, os,
-          createdAt, completedAt
-        FROM quiz_responses 
-        ORDER BY createdAt DESC
+          qr.id, qr.visitorId, qr.sessionId,
+          qr.leadName, qr.leadEmail, qr.leadPhone, qr.leadCity,
+          qr.studentsCount, qr.revenue, qr.priority,
+          qr.managementPain, qr.timePain, qr.retentionPain, qr.billingPain,
+          qr.recommendedProfile, qr.recommendedPlan, qr.totalScore,
+          qr.isQualified, qr.disqualificationReason,
+          qr.converted, qr.conversionType, qr.convertedAt,
+          qr.utmSource, qr.utmMedium, qr.utmCampaign, qr.utmContent, qr.utmTerm,
+          qr.referrer, qr.landingPage,
+          qr.deviceType, qr.browser, qr.os,
+          qr.createdAt, qr.completedAt,
+          p.id as personalId,
+          p.subscriptionStatus as personalStatus,
+          u.name as personalName
+        FROM quiz_responses qr
+        LEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)
+        LEFT JOIN personals p ON u.id = p.userId
+        ORDER BY qr.createdAt DESC
         LIMIT ${input.limit} OFFSET ${offset}
       `);
       
