@@ -4176,3 +4176,17 @@
 - [x] Confirmar validação de email duplicado no backend (registerPersonal, createTrial, completeActivation)
 - [x] Melhorar mensagem de erro no frontend com link para login
 - [x] Adicionar link "Clique aqui para fazer login" quando email/CPF já cadastrado
+
+
+## Melhorias no Fluxo de Cadastro (v6.12)
+- [ ] Adicionar opção 'Esqueci minha senha' na mensagem de erro de email duplicado
+- [ ] Criar endpoint para vincular dados do quiz à conta existente
+- [ ] Implementar interface para oferecer vinculação de dados do quiz
+
+
+## Melhorias no Fluxo de Cadastro (v6.13)
+- [x] Adicionar opção 'Esqueci minha senha' na mensagem de erro de email duplicado
+- [x] Criar endpoint checkQuizDataToLink para verificar dados do quiz vinculáveis
+- [x] Criar endpoint linkQuizData para vincular dados do quiz à conta existente
+- [x] Implementar modal de vinculação de dados do quiz no cadastro trial
+- [x] Atualizar personalId nos registros do quiz ao vincular

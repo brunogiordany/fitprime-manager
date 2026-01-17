@@ -44,8 +44,16 @@ export default function TrialSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showLinkQuizModal, setShowLinkQuizModal] = useState(false);
+  const [linkQuizPassword, setLinkQuizPassword] = useState("");
+  const [isLinkingQuiz, setIsLinkingQuiz] = useState(false);
 
   const createTrialMutation = trpc.trial.createTrial.useMutation();
+  const linkQuizMutation = trpc.trial.linkQuizData.useMutation();
+  const { data: quizDataToLink } = trpc.trial.checkQuizDataToLink.useQuery(
+    { email: formData.email },
+    { enabled: !!formData.email && formData.email.includes("@") }
+  );
 
   useEffect(() => {
     trackPageView('/cadastro-trial');
@@ -220,6 +228,10 @@ export default function TrialSignupPage() {
         setErrors({ cpf: "CPF já cadastrado. Faça login na sua conta existente." });
       } else if (error.message?.includes("Email já cadastrado")) {
         setErrors({ email: "Email já cadastrado. Faça login na sua conta existente." });
+        // Verificar se há dados do quiz para vincular
+        if (quizDataToLink?.hasQuizData) {
+          setShowLinkQuizModal(true);
+        }
       } else {
         toast.error("Erro ao criar conta: " + error.message);
       }
@@ -350,13 +362,23 @@ export default function TrialSignupPage() {
                     <div className="text-xs text-red-500 mt-1">
                       {errors.email}
                       {errors.email.includes("já cadastrado") && (
-                        <button
-                          type="button"
-                          onClick={() => setLocation(`/login?email=${encodeURIComponent(formData.email)}`)}
-                          className="ml-1 text-emerald-600 hover:text-emerald-700 underline font-medium"
-                        >
-                          Clique aqui para fazer login
-                        </button>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => setLocation(`/login?email=${encodeURIComponent(formData.email)}`)}
+                            className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                          >
+                            Fazer login
+                          </button>
+                          <span className="text-gray-400">ou</span>
+                          <button
+                            type="button"
+                            onClick={() => setLocation(`/esqueci-senha?email=${encodeURIComponent(formData.email)}`)}
+                            className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                          >
+                            Esqueci minha senha
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -394,13 +416,23 @@ export default function TrialSignupPage() {
                       <div className="text-xs text-red-500 mt-1">
                         {errors.cpf}
                         {errors.cpf.includes("já cadastrado") && (
-                          <button
-                            type="button"
-                            onClick={() => setLocation(`/login`)}
-                            className="ml-1 text-emerald-600 hover:text-emerald-700 underline font-medium"
-                          >
-                            Clique aqui para fazer login
-                          </button>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => setLocation(`/login`)}
+                              className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                            >
+                              Fazer login
+                            </button>
+                            <span className="text-gray-400">ou</span>
+                            <button
+                              type="button"
+                              onClick={() => setLocation(`/esqueci-senha`)}
+                              className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                            >
+                              Esqueci minha senha
+                            </button>
+                          </div>
                         )}
                       </div>
                     )}
@@ -508,6 +540,93 @@ export default function TrialSignupPage() {
           <p>&copy; 2025 FitPrime. Todos os direitos reservados.</p>
         </div>
       </footer>
+
+      {/* Modal de Vinculação de Dados do Quiz */}
+      {showLinkQuizModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-emerald-600" />
+                Vincular Dados do Quiz
+              </CardTitle>
+              <CardDescription>
+                Encontramos {quizDataToLink?.count || 0} registro(s) do quiz com este email.
+                Deseja vincular esses dados à sua conta existente?
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="linkPassword">Confirme sua senha</Label>
+                <div className="relative">
+                  <Input
+                    id="linkPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Digite sua senha"
+                    value={linkQuizPassword}
+                    onChange={(e) => setLinkQuizPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowLinkQuizModal(false);
+                    setLinkQuizPassword("");
+                    setLocation(`/login?email=${encodeURIComponent(formData.email)}`);
+                  }}
+                >
+                  Ir para Login
+                </Button>
+                <Button
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={isLinkingQuiz || !linkQuizPassword}
+                  onClick={async () => {
+                    setIsLinkingQuiz(true);
+                    try {
+                      const result = await linkQuizMutation.mutateAsync({
+                        email: formData.email,
+                        password: linkQuizPassword,
+                      });
+                      toast.success(result.message);
+                      setShowLinkQuizModal(false);
+                      setLinkQuizPassword("");
+                      setLocation(`/login?email=${encodeURIComponent(formData.email)}`);
+                    } catch (error: any) {
+                      toast.error(error.message || "Erro ao vincular dados");
+                    } finally {
+                      setIsLinkingQuiz(false);
+                    }
+                  }}
+                >
+                  {isLinkingQuiz ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Vinculando...
+                    </>
+                  ) : (
+                    "Vincular Dados"
+                  )}
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                Os dados do quiz serão associados à sua conta existente.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

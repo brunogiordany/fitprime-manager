@@ -128,6 +128,138 @@ export const trialRouter = router({
       };
     }),
 
+  // Vincular dados do quiz à conta existente
+  linkQuizData: publicProcedure
+    .input(z.object({
+      email: z.string().email(),
+      password: z.string().min(1, "Senha obrigatória"),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Buscar usuário pelo email
+      const userResult = await db.execute(sql`
+        SELECT u.id, u.passwordHash, u.name, p.id as personalId
+        FROM users u
+        LEFT JOIN personals p ON p.userId = u.id
+        WHERE u.email = ${input.email}
+        LIMIT 1
+      `);
+
+      const user = (userResult as any)[0]?.[0];
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Email não encontrado. Verifique o email informado.",
+        });
+      }
+
+      // Verificar senha
+      const isValidPassword = await bcrypt.compare(input.password, user.passwordHash);
+      if (!isValidPassword) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Senha incorreta. Tente novamente.",
+        });
+      }
+
+      // Buscar dados do quiz não vinculados com o mesmo email
+      const quizResult = await db.execute(sql`
+        SELECT id, name, email, phone, city, state, studentsCount, monthlyRevenue,
+               utmSource, utmMedium, utmCampaign, utmContent, utmTerm,
+               referrer, userAgent, deviceType, browser, operatingSystem,
+               createdAt
+        FROM quiz_responses
+        WHERE email = ${input.email}
+        AND linkedPersonalId IS NULL
+        ORDER BY createdAt DESC
+      `);
+
+      const quizResponses = (quizResult as any)[0] || [];
+
+      if (quizResponses.length === 0) {
+        return {
+          success: true,
+          linked: 0,
+          message: "Nenhum dado do quiz encontrado para vincular.",
+        };
+      }
+
+      // Vincular todos os registros do quiz ao personal
+      const quizIds = quizResponses.map((q: any) => q.id);
+      await db.execute(sql`
+        UPDATE quiz_responses
+        SET linkedPersonalId = ${user.personalId || user.id}
+        WHERE id IN (${sql.join(quizIds.map((id: number) => sql`${id}`), sql`, `)})
+      `);
+
+      // Atualizar dados do personal com informações mais recentes do quiz (se vazios)
+      const latestQuiz = quizResponses[0];
+      if (user.personalId && latestQuiz) {
+        // Atualizar cidade/estado se não preenchidos
+        await db.execute(sql`
+          UPDATE personals
+          SET 
+            city = COALESCE(NULLIF(city, ''), ${latestQuiz.city}),
+            state = COALESCE(NULLIF(state, ''), ${latestQuiz.state}),
+            updatedAt = NOW()
+          WHERE id = ${user.personalId}
+        `);
+      }
+
+      // Registrar no histórico
+      await db.execute(sql`
+        INSERT INTO personal_registration_history (personalId, eventType, eventData, createdAt)
+        VALUES (
+          ${user.personalId || user.id},
+          'quiz_linked',
+          ${JSON.stringify({ quizIds, linkedAt: new Date().toISOString() })},
+          NOW()
+        )
+      `);
+
+      return {
+        success: true,
+        linked: quizResponses.length,
+        message: `${quizResponses.length} registro(s) do quiz vinculado(s) à sua conta com sucesso!`,
+      };
+    }),
+
+  // Verificar se existem dados do quiz para vincular
+  checkQuizDataToLink: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Verificar se o email já existe como usuário
+      const userResult = await db.execute(sql`
+        SELECT id FROM users WHERE email = ${input.email} LIMIT 1
+      `);
+      const userExists = (userResult as any)[0]?.length > 0;
+
+      if (!userExists) {
+        return { hasQuizData: false, count: 0, userExists: false };
+      }
+
+      // Buscar dados do quiz não vinculados
+      const quizResult = await db.execute(sql`
+        SELECT COUNT(*) as count
+        FROM quiz_responses
+        WHERE email = ${input.email}
+        AND linkedPersonalId IS NULL
+      `);
+
+      const count = (quizResult as any)[0]?.[0]?.count || 0;
+
+      return {
+        hasQuizData: count > 0,
+        count,
+        userExists: true,
+      };
+    }),
+
   // Estatísticas de trials (admin)
   getTrialStats: adminProcedure
     .input(z.object({
