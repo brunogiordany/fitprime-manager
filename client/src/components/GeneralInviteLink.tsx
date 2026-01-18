@@ -31,12 +31,15 @@ export function GeneralInviteLink() {
     },
   });
 
-  const regenerateMutation = trpc.students.regenerateGeneralInvite.useQuery(
-    undefined,
-    {
-      enabled: false,
-    }
-  );
+  const regenerateMutation = trpc.students.regenerateGeneralInvite.useMutation({
+    onSuccess: () => {
+      toast.success('Novo link gerado com sucesso!');
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao gerar novo link');
+    },
+  });
 
   const handleCopyLink = async () => {
     if (data?.fullInviteLink) {
@@ -54,11 +57,7 @@ export function GeneralInviteLink() {
   };
 
   const handleRegenerateLink = async () => {
-    const result = await regenerateMutation.refetch();
-    if (result.data) {
-      toast.success('Novo link gerado com sucesso!');
-      refetch();
-    }
+    regenerateMutation.mutate();
   };
 
   return (

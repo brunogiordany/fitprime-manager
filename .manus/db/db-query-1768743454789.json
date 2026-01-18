@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, email, role FROM users LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, email, role FROM users LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "brunogiordany@gmail.com",
+      "role": "admin"
+    },
+    {
+      "id": "1290075",
+      "email": "brunogiordanyps@gmail.com",
+      "role": "user"
+    },
+    {
+      "id": "2370320",
+      "email": "nutriliffee@gmail.com",
+      "role": "personal"
+    },
+    {
+      "id": "3270001",
+      "email": "gmariogiordano@gmail.com",
+      "role": "user"
+    },
+    {
+      "id": "3330001",
+      "email": "kauetreinadorpessoal@gmail.com",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\trole\n1\tbrunogiordany@gmail.com\tadmin\n1290075\tbrunogiordanyps@gmail.com\tuser\n2370320\tnutriliffee@gmail.com\tpersonal\n3270001\tgmariogiordano@gmail.com\tuser\n3330001\tkauetreinadorpessoal@gmail.com\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 91
+}

@@ -2326,6 +2326,7 @@ export const appRouter = router({
             studentId: 0, // Convite geral (0 = sem aluno específico)
             inviteToken,
             expiresAt,
+            status: 'pending',
           });
         }
         
@@ -2489,7 +2490,7 @@ export const appRouter = router({
     
     // Regenerar link de convite geral após cancelamento
     regenerateGeneralInvite: personalProcedure
-      .query(async ({ ctx }) => {
+      .mutation(async ({ ctx }) => {
         // Buscar todos os convites gerais do personal
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
         const generalInvites = allInvites.filter(i => i.studentId === 0);
@@ -2513,6 +2514,7 @@ export const appRouter = router({
           studentId: 0, // Convite geral
           inviteToken,
           expiresAt,
+          status: 'pending',
         });
         
         const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
