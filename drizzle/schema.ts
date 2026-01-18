@@ -2954,3 +2954,5 @@ export const leadEmailSubscriptions = mysqlTable("lead_email_subscriptions", {
 
 export type LeadEmailSubscription = typeof leadEmailSubscriptions.$inferSelect;
 export type InsertLeadEmailSubscription = typeof leadEmailSubscriptions.$inferInsert;
+
+

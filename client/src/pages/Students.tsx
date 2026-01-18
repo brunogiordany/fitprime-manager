@@ -49,6 +49,7 @@ import { useLocation, useSearch } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { copyToClipboard } from "@/lib/clipboard";
+import { GeneralInviteLink } from "@/components/GeneralInviteLink";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -251,13 +252,15 @@ export default function Students() {
               Gerencie seus alunos e acompanhe seu progresso
             </p>
           </div>
-          <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Aluno
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <GeneralInviteLink />
+            <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Aluno
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Cadastrar Novo Aluno</DialogTitle>
@@ -335,7 +338,8 @@ export default function Students() {
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Filters */}

@@ -24,6 +24,8 @@ import { nutritionRouter } from "./routers/nutritionRouter";
 import { trackingRouter } from "./routers/trackingRouter";
 import { leadEmailRouter } from "./routers/leadEmailRouter";
 import { deduplicationRouter } from "./routers/deduplicationRouter";
+import { and, eq, gt } from "drizzle-orm";
+import { studentInvites } from "../drizzle/schema";
 
 // Funcão para fazer parse seguro de JSON (evita erro quando valor não é JSON válido)
 function safeJsonParse<T>(value: string | null | undefined, defaultValue: T): T {
@@ -2291,6 +2293,170 @@ export const appRouter = router({
         );
         
         return { success: true, token, studentId: invite.studentId, message: 'Cadastro realizado com sucesso!' };
+      }),
+    
+    // Gerar link de convite geral (reutilizável para múltiplos alunos)
+    getOrCreateGeneralInvite: personalProcedure
+      .query(async ({ ctx }) => {
+        // Verificar se já existe um link geral válido (studentId = 0 indica convite geral)
+        const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
+        const existingInvites = allInvites.filter(i => 
+          i.studentId === 0 && 
+          i.status === 'pending' && 
+          new Date(i.expiresAt) > new Date()
+        ).slice(0, 1);
+        
+        let inviteToken: string;
+        let expiresAt: Date;
+        
+        if (existingInvites.length > 0) {
+          // Usar convite existente
+          inviteToken = existingInvites[0].inviteToken;
+          expiresAt = new Date(existingInvites[0].expiresAt);
+        } else {
+          // Gerar novo token
+          const { nanoid } = await import('nanoid');
+          inviteToken = nanoid(32);
+          expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 365); // Expira em 1 ano
+          
+          // Criar convite geral (studentId = 0 indica convite geral reutilizável)
+          await db.createStudentInvite({
+            personalId: ctx.personal.id,
+            studentId: 0, // Convite geral (0 = sem aluno específico)
+            inviteToken,
+            expiresAt,
+          });
+        }
+        
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+        const inviteLink = `/invite/personal/${ctx.personal.id}/${inviteToken}`;
+        const fullInviteLink = `${baseUrl}${inviteLink}`;
+        
+        return {
+          success: true,
+          inviteToken,
+          inviteLink,
+          fullInviteLink,
+          expiresAt,
+          personalId: ctx.personal.id,
+        };
+      }),
+    
+    // Registrar aluno via link de convite geral
+    registerWithGeneralInvite: publicProcedure
+      .input(z.object({
+        personalId: z.number(),
+        inviteToken: z.string(),
+        name: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string(),
+        birthDate: z.string().optional(),
+        gender: z.enum(['male', 'female', 'other']).optional(),
+        password: z.string().min(8),
+      }))
+      .mutation(async ({ input }) => {
+        // Validar convite geral (deve ter studentId = 0)
+        const invite = await db.getStudentInviteByToken(input.inviteToken);
+        if (!invite) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Link de convite não encontrado' });
+        }
+        if (invite.personalId !== input.personalId) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Link de convite inválido' });
+        }
+        if (invite.studentId !== 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este link de convite não é um convite geral' });
+        }
+        if (invite.status !== 'pending') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este link de convite já foi cancelado' });
+        }
+        if (new Date(invite.expiresAt) < new Date()) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este link de convite expirou' });
+        }
+        
+        // Verificar limite de alunos
+        const { canAddStudent, updateStudentCount } = await import('./subscription/subscriptionService');
+        const canAdd = await canAddStudent(input.personalId);
+        if (!canAdd.canAdd) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: canAdd.message || 'Limite de alunos atingido. Faça upgrade do seu plano.'
+          });
+        }
+        
+        // Hash da senha
+        const bcrypt = await import('bcryptjs');
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        
+        // Criar novo aluno
+        const studentId = await db.createStudent({
+          personalId: input.personalId,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          birthDate: input.birthDate ? new Date(input.birthDate) : undefined,
+          gender: input.gender,
+          passwordHash: passwordHash,
+          status: 'active',
+        });
+        
+        // Atualizar contagem de alunos
+        await updateStudentCount(input.personalId);
+        
+        // Notificar o personal que um novo aluno se cadastrou
+        const { notifyOwner } = await import('./_core/notification');
+        await notifyOwner({
+          title: `🎉 Novo Cadastro - ${input.name}`,
+          content: `Um novo aluno ${input.name} se cadastrou através do seu link de convite!\n\n📧 Email: ${input.email}\n📱 Telefone: ${input.phone}\n\nO aluno agora pode acessar o portal e preencher sua anamnese.`,
+        });
+        
+        // Enviar email para o personal
+        const personal = await db.getPersonalSubscription(input.personalId);
+        const personalData = personal ? await db.getPersonalByUserId(personal.personalId) : null;
+        
+        if (personalData) {
+          const personalUser = await db.getUserById(personalData.userId);
+          if (personalUser?.email) {
+            const { sendEmail } = await import('./email');
+            await sendEmail({
+              to: personalUser.email,
+              subject: `🎉 ${input.name} se cadastrou no FitPrime!`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background: linear-gradient(to right, #10b981, #14b8a6); padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="color: white; margin: 0;">🎉 Novo Aluno Cadastrado!</h2>
+                  </div>
+                  <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                    <p style="font-size: 16px;">Parabéns! <strong>${input.name}</strong> se cadastrou através do seu link de convite.</p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                      <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${input.email}</p>
+                      <p style="margin: 5px 0;"><strong>📱 Telefone:</strong> ${input.phone}</p>
+                    </div>
+                    <p style="color: #666;">O aluno já pode acessar o portal e preencher sua anamnese. Você pode acompanhar o progresso dele no seu dashboard.</p>
+                    <a href="${process.env.VITE_APP_URL || 'https://fitprimemanager.com'}/alunos/${studentId}" style="display: inline-block; background: linear-gradient(to right, #10b981, #14b8a6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 15px;">Ver Perfil do Aluno</a>
+                  </div>
+                </div>
+              `,
+              text: `Parabéns! ${input.name} se cadastrou através do seu link de convite. Email: ${input.email}, Telefone: ${input.phone}`,
+            });
+          }
+        }
+        
+        // Enviar email de boas-vindas ao aluno
+        const { sendWelcomeEmail } = await import('./email');
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+        const loginLink = `${baseUrl}/login-aluno`;
+        await sendWelcomeEmail(input.email, input.name, loginLink);
+        
+        // Gerar token JWT para login automático
+        const jwt = await import('jsonwebtoken');
+        const token = jwt.default.sign(
+          { studentId, type: 'student' },
+          process.env.JWT_SECRET || 'secret',
+          { expiresIn: '30d' }
+        );
+        
+        return { success: true, token, studentId, message: 'Cadastro realizado com sucesso!' };
       }),
     
     // Login de aluno com email/senha

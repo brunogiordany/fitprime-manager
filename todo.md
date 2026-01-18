@@ -4224,3 +4224,13 @@
 - [x] Adicionar botão para abrir perfil do Instagram
 - [x] Botão de copiar Instagram
 - [x] Grid ajustado para 5 colunas (Nome, Email, WhatsApp, Instagram, Cidade)
+
+
+## Sistema de Link de Convite Geral para Alunos (v6.19)
+- [x] Adicionar tabela de invites no schema do banco (já existia)
+- [x] Criar endpoint para gerar link de convite único por personal (reutilizável) - getOrCreateGeneralInvite
+- [x] Criar página de cadastro por convite (/invite/personal/[personalId]/[token])
+- [x] Adicionar botão "Copiar Link de Convite" na lista de alunos - GeneralInviteLink component
+- [x] Implementar validação de token e segurança - validação no registerWithGeneralInvite
+- [ ] Testar fluxo completo de cadastro via link
+- [ ] Testar múltiplos alunos usando o mesmo link
