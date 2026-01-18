@@ -10,6 +10,10 @@ function isIpAddress(host: string) {
 
 function isSecureRequest(req: Request) {
   if (req.protocol === "https") return true;
+  
+  // Localhost e 127.0.0.1 são considerados seguros mesmo em HTTP
+  const hostname = req.hostname;
+  if (LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) return true;
 
   const forwardedProto = req.headers["x-forwarded-proto"];
   if (!forwardedProto) return false;
