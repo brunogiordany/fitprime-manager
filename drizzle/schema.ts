@@ -35,6 +35,7 @@ export const personals = mysqlTable("personals", {
   evolutionApiKey: varchar("evolutionApiKey", { length: 255 }), // Stevo API Key (Token)
   evolutionInstance: varchar("evolutionInstance", { length: 255 }), // Stevo Instance ID
   stevoServer: varchar("stevoServer", { length: 50 }).default("sm15"), // Servidor Stevo (sm12, sm15, sm16, etc.)
+  stevoWebhookToken: varchar("stevoWebhookToken", { length: 255 }), // Token secreto para validar webhooks do Stevo
   logoUrl: varchar("logoUrl", { length: 500 }), // Logo personalizada do personal
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "trial", "expired", "cancelled"]).default("trial").notNull(),
   subscriptionPeriod: mysqlEnum("subscriptionPeriod", ["monthly", "quarterly", "semiannual", "annual"]).default("monthly"),

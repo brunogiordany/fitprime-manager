@@ -6687,9 +6687,10 @@ export async function getPersonalByStevoInstance(instanceName: string) {
   const db = await getDb();
   if (!db) return null;
   
+  // Usar evolutionInstance que é o campo correto para o nome da instância Stevo
   const [personal] = await db.select()
     .from(personals)
-    .where(eq(personals.stevoInstanceName, instanceName))
+    .where(eq(personals.evolutionInstance, instanceName))
     .limit(1);
   
   return personal;

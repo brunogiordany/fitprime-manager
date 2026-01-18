@@ -428,6 +428,13 @@
       "when": 1768674604782,
       "tag": "0060_sleepy_bloodstorm",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "5",
+      "when": 1768704101630,
+      "tag": "0061_stale_rictor",
+      "breakpoints": true
     }
   ]
 }
