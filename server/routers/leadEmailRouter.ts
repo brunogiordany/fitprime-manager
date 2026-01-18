@@ -12,7 +12,8 @@ import {
 import { eq, desc, and, sql, gte, lte, isNull } from "drizzle-orm";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inicialização segura do Resend - só cria instância se API key existir
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const leadEmailRouter = router({
   // ==================== SEQUÊNCIAS ====================
