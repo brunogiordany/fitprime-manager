@@ -66,6 +66,7 @@ import AdminROIDashboard from "@/pages/AdminROIDashboard";
 import AdminPageEditor from "@/pages/AdminPageEditor";
 import AdminABTesting from "./pages/AdminABTesting";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates";
+import AdminFailedEmails from "./pages/AdminFailedEmails";
 import LeadsPage from "./pages/LeadsPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
 import QuizResultPlan from "./pages/QuizResultPlan";
@@ -171,6 +172,7 @@ function Router() {
       <Route path="/admin/editor/new" component={AdminPageEditor} />
       <Route path="/admin/ab-testing" component={AdminABTesting} />
       <Route path="/admin/emails" component={AdminEmailTemplates} />
+      <Route path="/admin/failed-emails" component={AdminFailedEmails} />
       <Route path="/admin/leads" component={LeadsPage} />
       <Route path="/admin/email-automation" component={EmailAutomationPage} />
       

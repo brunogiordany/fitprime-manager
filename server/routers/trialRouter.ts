@@ -4,6 +4,112 @@ import { getDb } from "../db";
 import { sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
+import { sendWhatsAppMessage } from "../stevo";
+import { sendEmail } from "../email";
+
+// Função para enviar notificação WhatsApp para o personal que fez cadastro trial
+async function sendTrialWelcomeWhatsApp(phone: string, name: string) {
+  // Configurar Stevo com as credenciais do admin/sistema
+  const stevoConfig = {
+    apiKey: process.env.STEVO_API_KEY || '',
+    instanceName: process.env.STEVO_INSTANCE_NAME || '',
+    server: process.env.STEVO_SERVER || 'sm15',
+  };
+  
+  if (!stevoConfig.apiKey || !stevoConfig.instanceName) {
+    console.log('[Trial] Stevo não configurado, pulando notificação WhatsApp');
+    return;
+  }
+  
+  const message = `🎉 *Olá ${name}!*
+
+Seja bem-vindo(a) ao FitPrime Manager!
+
+Sua conta trial foi criada com sucesso. Você tem *24 horas* de acesso gratuito para explorar todas as funcionalidades.
+
+✅ Acesse agora: https://fitprimemanager.com/login-personal
+
+💡 *Dica:* Configure seus alunos e experimente a gestão completa do seu negócio fitness!
+
+Precisa de ajuda? Responda esta mensagem que iremos te auxiliar.`;
+  
+  try {
+    const result = await sendWhatsAppMessage({
+      phone,
+      message,
+      config: stevoConfig,
+    });
+    
+    if (result.success) {
+      console.log(`[Trial] WhatsApp de boas-vindas enviado para ${phone}`);
+    } else {
+      console.error(`[Trial] Erro ao enviar WhatsApp: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('[Trial] Erro ao enviar WhatsApp de boas-vindas:', error);
+  }
+}
+
+// Função para enviar email de boas-vindas para o personal trial
+async function sendTrialWelcomeEmail(email: string, name: string) {
+  const subject = `🎉 Bem-vindo ao FitPrime Manager, ${name}!`;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 24px;">🎉</span>
+        </div>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Bem-vindo ao FitPrime!</h1>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Sua conta trial foi criada com sucesso</p>
+      </div>
+      
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <h3 style="color: #166534; margin: 0 0 12px 0; font-size: 16px;">⏰ Você tem 24 horas de acesso gratuito!</h3>
+        <p style="color: #166534; margin: 0; font-size: 14px;">Aproveite para explorar todas as funcionalidades e ver como o FitPrime pode transformar a gestão do seu negócio fitness.</p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://fitprimemanager.com/login-personal" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Acessar Minha Conta</a>
+      </div>
+      
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+        <h4 style="color: #374151; margin: 0 0 12px 0; font-size: 14px;">💡 Próximos passos:</h4>
+        <ul style="color: #6b7280; font-size: 14px; margin: 0; padding-left: 20px;">
+          <li style="margin-bottom: 8px;">Cadastre seus alunos</li>
+          <li style="margin-bottom: 8px;">Configure seus treinos</li>
+          <li style="margin-bottom: 8px;">Explore o dashboard financeiro</li>
+        </ul>
+      </div>
+      
+      <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 30px;">
+        Precisa de ajuda? Responda este email ou acesse nosso suporte.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+  
+  try {
+    await sendEmail({
+      to: email,
+      subject,
+      html,
+      from: 'noreply@fitprimemanager.online',
+    });
+    console.log(`[Trial] Email de boas-vindas enviado para ${email}`);
+  } catch (error) {
+    console.error('[Trial] Erro ao enviar email de boas-vindas:', error);
+  }
+}
 
 // Schema para criar trial
 const createTrialSchema = z.object({
@@ -86,6 +192,14 @@ export const trialRouter = router({
         INSERT INTO personals (userId, trialEndsAt, subscriptionStatus, createdAt, updatedAt)
         VALUES (${userId}, ${trialEndsAt.toISOString()}, 'trial', NOW(), NOW())
       `);
+
+      // Enviar notificações de boas-vindas (assíncrono, não bloqueia)
+      sendTrialWelcomeWhatsApp(input.phone, input.name).catch(err => 
+        console.error('[Trial] Erro ao enviar WhatsApp:', err)
+      );
+      sendTrialWelcomeEmail(input.email, input.name).catch(err => 
+        console.error('[Trial] Erro ao enviar email:', err)
+      );
 
       return {
         success: true,

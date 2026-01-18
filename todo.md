@@ -4276,3 +4276,12 @@
 - [x] Implementar botão de reenviar email para cada lead (botão Send na coluna Ações)
 - [x] Criar endpoints para reenviar emails (resendEmail, resendFailedEmails, listFailedEmails)
 - [ ] Testar funcionalidades de reenvio
+
+
+## Melhorias de Gestão de Emails e Notificações (v6.24)
+- [x] Criar página de administração para listar emails com falha (/admin/failed-emails)
+- [x] Adicionar botão de reenvio em lote na página de emails com falha
+- [x] Implementar notificação por email para admin quando novo lead preencher quiz (já existia)
+- [x] Implementar notificação WhatsApp para personal que fez cadastro trial (trialRouter.ts)
+- [x] Implementar email de boas-vindas para personal trial
+- [ ] Configurar variáveis de ambiente STEVO_API_KEY, STEVO_INSTANCE_NAME, STEVO_SERVER
