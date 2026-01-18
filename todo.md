@@ -4260,3 +4260,13 @@
 - [x] Mostrar quantidade de alunos cadastrados via link
 - [x] Taxa de conversão (aceitos / total)
 - [x] Testes para analytics (21 testes)
+
+
+## Bug - Emails do Quiz não sendo enviados (v6.22) - PROBLEMA REAL
+- [x] Investigar logs do emailWorker
+- [x] PROBLEMA IDENTIFICADO: Domínio fitprimemanager.com não verificado no Resend
+- [x] Domínio correto é fitprimemanager.online
+- [x] Atualizar código para usar fitprimemanager.online (emailWorker.ts e leadEmailRouter.ts)
+- [ ] Verificar configuração DNS do novo domínio
+- [ ] Testar envio de email com domínio correto
+- [ ] Validar que emails chegam no destinatário

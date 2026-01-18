@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, leadEmail, status, resendId, errorMessage FROM email_sends ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadEmail, status, resendId, errorMessage FROM email_sends ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "15",
+      "leadEmail": "visionixenterprise@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "14",
+      "leadEmail": "brunodomingo@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "13",
+      "leadEmail": "alexsandto_silva7@hotmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "12",
+      "leadEmail": "teste@teste.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "11",
+      "leadEmail": "gabriel07.bc@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "10",
+      "leadEmail": "gugabinotto@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "9",
+      "leadEmail": "csluiz19@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "8",
+      "leadEmail": "glauberrafael@hotmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "7",
+      "leadEmail": "edinho080699@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "6",
+      "leadEmail": "edinho080699@gmail.com",
+      "status": "sent",
+      "resendId": "NULL",
+      "errorMessage": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadEmail\tstatus\tresendId\terrorMessage\n15\tvisionixenterprise@gmail.com\tsent\tNULL\tNULL\n14\tbrunodomingo@gmail.com\tsent\tNULL\tNULL\n13\talexsandto_silva7@hotmail.com\tsent\tNULL\tNULL\n12\tteste@teste.com\tsent\tNULL\tNULL\n11\tgabriel07.bc@gmail.com\tsent\tNULL\tNULL\n10\tgugabinotto@gmail.com\tsent\tNULL\tNULL\n9\tcsluiz19@gmail.com\tsent\tNULL\tNULL\n8\tglauberrafael@hotmail.com\tsent\tNULL\tNULL\n7\tedinho080699@gmail.com\tsent\tNULL\tNULL\n6\tedinho080699@gmail.com\tsent\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 392
+}

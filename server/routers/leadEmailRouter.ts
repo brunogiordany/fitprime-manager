@@ -597,7 +597,7 @@ export const leadEmailRouter = router({
           throw new Error("Resend API not configured");
         }
         const result = await resend.emails.send({
-          from: "FitPrime <noreply@fitprime.com.br>",
+          from: "FitPrime <noreply@fitprimemanager.online>",
           to: lead.leadEmail,
           subject,
           html: htmlContent,

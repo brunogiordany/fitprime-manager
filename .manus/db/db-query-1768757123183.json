@@ -1,0 +1,130 @@
+{
+  "query": "SELECT id, leadEmail, status, sentAt, scheduledAt, errorMessage FROM email_sends ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadEmail, status, sentAt, scheduledAt, errorMessage FROM email_sends ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "15",
+      "leadEmail": "visionixenterprise@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 16:35:26",
+      "scheduledAt": "2026-01-18 16:35:21",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "14",
+      "leadEmail": "brunodomingo@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 16:25:17",
+      "scheduledAt": "2026-01-18 16:25:12",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "13",
+      "leadEmail": "alexsandto_silva7@hotmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 14:21:19",
+      "scheduledAt": "2026-01-18 14:21:15",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "12",
+      "leadEmail": "teste@teste.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 14:06:32",
+      "scheduledAt": "2026-01-18 14:06:18",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "11",
+      "leadEmail": "gabriel07.bc@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 14:03:47",
+      "scheduledAt": "2026-01-18 14:03:45",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "10",
+      "leadEmail": "gugabinotto@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 13:33:23",
+      "scheduledAt": "2026-01-18 13:33:13",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "9",
+      "leadEmail": "csluiz19@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 02:26:44",
+      "scheduledAt": "2026-01-18 02:26:37",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "8",
+      "leadEmail": "glauberrafael@hotmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 01:21:40",
+      "scheduledAt": "2026-01-18 01:21:36",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "7",
+      "leadEmail": "edinho080699@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 01:11:43",
+      "scheduledAt": "2026-01-18 01:11:36",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "6",
+      "leadEmail": "edinho080699@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-18 00:46:44",
+      "scheduledAt": "2026-01-18 00:46:36",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "5",
+      "leadEmail": "csluiz19@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-17 15:24:54",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "4",
+      "leadEmail": "brennoferreiraeducadorfisico@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-17 15:24:53",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "3",
+      "leadEmail": "dmunhos59@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-17 15:24:51",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "2",
+      "leadEmail": "luiz@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-17 15:24:50",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "errorMessage": "NULL"
+    },
+    {
+      "id": "1",
+      "leadEmail": "csluiz19@gmail.com",
+      "status": "sent",
+      "sentAt": "2026-01-17 15:24:49",
+      "scheduledAt": "2026-01-17 15:24:47",
+      "errorMessage": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadEmail\tstatus\tsentAt\tscheduledAt\terrorMessage\n15\tvisionixenterprise@gmail.com\tsent\t2026-01-18 16:35:26\t2026-01-18 16:35:21\tNULL\n14\tbrunodomingo@gmail.com\tsent\t2026-01-18 16:25:17\t2026-01-18 16:25:12\tNULL\n13\talexsandto_silva7@hotmail.com\tsent\t2026-01-18 14:21:19\t2026-01-18 14:21:15\tNULL\n12\tteste@teste.com\tsent\t2026-01-18 14:06:32\t2026-01-18 14:06:18\tNULL\n11\tgabriel07.bc@gmail.com\tsent\t2026-01-18 14:03:47\t2026-01-18 14:03:45\tNULL\n10\tgugabinotto@gmail.com\tsent\t2026-01-18 13:33:23\t2026-01-18 13:33:13\tNULL\n9\tcsluiz19@gmail.com\tsent\t2026-01-18 02:26:44\t2026-01-18 02:26:37\tNULL\n8\tglauberrafael@hotmail.com\tsent\t2026-01-18 01:21:40\t2026-01-18 01:21:36\tNULL\n7\tedinho080699@gmail.com\tsent\t2026-01-18 01:11:43\t2026-01-18 01:11:36\tNULL\n6\tedinho080699@gmail.com\tsent\t2026-01-18 00:46:44\t2026-01-18 00:46:36\tNULL\n5\tcsluiz19@gmail.com\tsent\t2026-01-17 15:24:54\t2026-01-17 15:24:47\tNULL\n4\tbrennoferreiraeducadorfisico@gmail.com\tsent\t2026-01-17 15:24:53\t2026-01-17 15:24:47\tNULL\n3\tdmunhos59@gmail.com\tsent\t2026-01-17 15:24:51\t2026-01-17 15:24:47\tNULL\n2\tluiz@gmail.com\tsent\t2026-01-17 15:24:50\t2026-01-17 15:24:47\tNULL\n1\tcsluiz19@gmail.com\tsent\t2026-01-17 15:24:49\t2026-01-17 15:24:47\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 346
+}

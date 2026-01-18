@@ -288,7 +288,7 @@ async function processPendingEmails(db: any) {
         throw new Error('Resend API key not configured');
       }
       const result = await resend.emails.send({
-        from: "FitPrime <noreply@fitprimemanager.com>",
+        from: "FitPrime <noreply@fitprimemanager.online>",
         to: send.leadEmail,
         subject,
         html: htmlContent,
