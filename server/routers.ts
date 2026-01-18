@@ -1203,12 +1203,32 @@ export const appRouter = router({
       }),
     
     // Solicitar recuperação de senha para personal
+    // SEGURANÇA: Rate limiting para prevenir abuso e spam de emails
     requestPersonalPasswordReset: publicProcedure
       .input(z.object({ email: z.string().email() }))
       .mutation(async ({ input }) => {
+        // Importar rate limiter
+        const { checkRateLimit, RATE_LIMIT_CONFIGS, generateRateLimitKey } = await import('./security/rateLimiter');
+        
+        // Aplicar rate limiting por email (máx 3 tentativas por 15 minutos)
+        const rateLimitKey = generateRateLimitKey('password_reset', input.email.toLowerCase());
+        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.passwordReset);
+        
+        if (!rateLimit.allowed) {
+          console.warn(`[PersonalPasswordReset] Rate limit excedido para: ${input.email}`);
+          // Retornar mesma mensagem genérica para não revelar informações
+          return { 
+            success: true, 
+            message: 'Se o email estiver cadastrado, você receberá um código de recuperação.',
+            rateLimited: true
+          };
+        }
+        
         const user = await db.getUserByEmailForLogin(input.email);
         if (!user) {
           // Por segurança, não revelar se o email existe
+          // MAS não enviar email para emails não cadastrados
+          console.log(`[PersonalPasswordReset] Email não encontrado: ${input.email}`);
           return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
         }
         
@@ -1228,7 +1248,7 @@ export const appRouter = router({
           console.error('[PersonalPasswordReset] Erro ao enviar email:', error);
         }
         
-        console.log(`[PersonalPasswordReset] Código gerado para ${input.email}: ${code}`);
+        console.log(`[PersonalPasswordReset] Código gerado para ${input.email} (tentativas restantes: ${rateLimit.remaining})`);
         return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
       }),
     
@@ -1247,13 +1267,25 @@ export const appRouter = router({
       }),
     
     // Redefinir senha do personal
+    // SEGURANÇA: Validação de senha forte
     resetPersonalPassword: publicProcedure
       .input(z.object({
         email: z.string().email(),
         code: z.string().length(6),
-        newPassword: z.string().min(6),
+        newPassword: z.string().min(8), // Mínimo 8 caracteres
       }))
       .mutation(async ({ input }) => {
+        // Validar força da senha
+        const { validatePassword } = await import('./security/passwordValidator');
+        const passwordValidation = validatePassword(input.newPassword);
+        
+        if (!passwordValidation.valid) {
+          throw new TRPCError({ 
+            code: 'BAD_REQUEST', 
+            message: passwordValidation.errors.join('. ') 
+          });
+        }
+        
         const token = await db.verifyPersonalResetCode(input.email, input.code);
         if (!token) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Código inválido ou expirado' });
@@ -1274,7 +1306,7 @@ export const appRouter = router({
         // Marcar código como usado
         await db.markPersonalResetCodeUsed(token.id);
         
-        return { success: true };
+        return { success: true, passwordStrength: passwordValidation.score };
       }),
   }),
 
@@ -2296,13 +2328,33 @@ export const appRouter = router({
       }),
     
     // Solicitar recuperação de senha
+    // SEGURANÇA: Rate limiting para prevenir abuso e spam de emails
     requestPasswordReset: publicProcedure
       .input(z.object({ email: z.string().email() }))
       .mutation(async ({ input }) => {
+        // Importar rate limiter
+        const { checkRateLimit, RATE_LIMIT_CONFIGS, generateRateLimitKey } = await import('./security/rateLimiter');
+        
+        // Aplicar rate limiting por email (máx 3 tentativas por 15 minutos)
+        const rateLimitKey = generateRateLimitKey('student_password_reset', input.email.toLowerCase());
+        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.passwordReset);
+        
+        if (!rateLimit.allowed) {
+          console.warn(`[PasswordReset] Rate limit excedido para: ${input.email}`);
+          // Retornar mesma mensagem genérica para não revelar informações
+          return { 
+            success: true, 
+            message: 'Se o email estiver cadastrado, você receberá um código de recuperação.',
+            rateLimited: true
+          };
+        }
+        
         // Buscar aluno pelo email
         const student = await db.getStudentByEmail(input.email);
         if (!student) {
           // Por segurança, não revelar se o email existe ou não
+          // MAS não enviar email para emails não cadastrados
+          console.log(`[PasswordReset] Email não encontrado: ${input.email}`);
           return { success: true, message: 'Se o email estiver cadastrado, você receberá um código de recuperação.' };
         }
         
@@ -2325,8 +2377,7 @@ export const appRouter = router({
           console.error('[PasswordReset] Erro ao enviar email de recuperação:', error);
         }
         
-        // Retornar o código no console para debug (remover em produção)
-        console.log(`[PasswordReset] Código gerado para ${input.email}: ${code}`);
+        console.log(`[PasswordReset] Código gerado para ${input.email} (tentativas restantes: ${rateLimit.remaining})`);
         
         return { success: true, message: 'Código enviado para seu email.' };
       }),
@@ -2352,13 +2403,25 @@ export const appRouter = router({
       }),
     
     // Redefinir senha com código
+    // SEGURANÇA: Validação de senha forte
     resetPassword: publicProcedure
       .input(z.object({
         email: z.string().email(),
         code: z.string().length(6),
-        newPassword: z.string().min(6),
+        newPassword: z.string().min(8), // Mínimo 8 caracteres
       }))
       .mutation(async ({ input }) => {
+        // Validar força da senha
+        const { validatePassword } = await import('./security/passwordValidator');
+        const passwordValidation = validatePassword(input.newPassword);
+        
+        if (!passwordValidation.valid) {
+          throw new TRPCError({ 
+            code: 'BAD_REQUEST', 
+            message: passwordValidation.errors.join('. ') 
+          });
+        }
+        
         const student = await db.getStudentByEmail(input.email);
         if (!student) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Email não encontrado' });
@@ -2377,7 +2440,7 @@ export const appRouter = router({
         await db.updateStudentPassword(student.id, passwordHash);
         await db.clearPasswordResetCode(student.id);
         
-        return { success: true, message: 'Senha redefinida com sucesso!' };
+        return { success: true, message: 'Senha redefinida com sucesso!', passwordStrength: passwordValidation.score };
       }),
     
     // Verificar token de aluno

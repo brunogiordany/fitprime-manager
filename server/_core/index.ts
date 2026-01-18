@@ -51,9 +51,52 @@ async function startServer() {
   app.post('/api/payt/webhook', express.json(), handlePaytWebhook);
   
   // Stevo webhook - receives WhatsApp messages
+  // SEGURANÇA: Validação de token, rate limiting e validação de payload
   app.post('/api/webhook/stevo', express.json(), async (req: any, res: any) => {
-    console.log('[Stevo Webhook] Recebido payload:', JSON.stringify(req.body, null, 2));
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const instanceName = req.body?.instance || 'default';
+    
     try {
+      // Importar módulo de segurança
+      const { checkRateLimit, validateStevoPayload } = await import('../security/webhookSecurity');
+      
+      // 1. Rate Limiting - máximo 100 requisições por minuto por IP
+      const rateLimitKey = `stevo_webhook_${clientIp}`;
+      const rateLimit = checkRateLimit(rateLimitKey, 100, 60000);
+      
+      if (!rateLimit.allowed) {
+        console.warn(`[Stevo Webhook] Rate limit excedido para IP: ${clientIp}`);
+        return res.status(429).json({ 
+          error: 'Too Many Requests', 
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000) 
+        });
+      }
+      
+      // 2. Validar estrutura do payload
+      const payloadValidation = validateStevoPayload(req.body);
+      if (!payloadValidation.valid) {
+        console.warn(`[Stevo Webhook] Payload inválido de IP: ${clientIp}`, payloadValidation.error);
+        return res.status(400).json({ error: payloadValidation.error });
+      }
+      
+      // 3. Verificar token de segurança (header X-Webhook-Token ou Authorization)
+      const providedToken = req.headers['x-webhook-token'] || 
+                           req.headers['authorization']?.replace('Bearer ', '');
+      
+      // Buscar token configurado para esta instância no banco de dados
+      const db = await import('../db');
+      const personalWithInstance = await db.getPersonalByStevoInstance(instanceName);
+      
+      if (personalWithInstance?.stevoWebhookToken) {
+        // Se há token configurado, validar
+        if (providedToken !== personalWithInstance.stevoWebhookToken) {
+          console.warn(`[Stevo Webhook] Token inválido para instância: ${instanceName}, IP: ${clientIp}`);
+          return res.status(401).json({ error: 'Unauthorized - Invalid webhook token' });
+        }
+      }
+      
+      console.log('[Stevo Webhook] Recebido payload de IP:', clientIp, 'Instância:', instanceName);
+      
       const { handleStevoWebhook } = await import('../stevo');
       const result = await handleStevoWebhook(req.body);
       console.log('[Stevo Webhook] Resultado:', JSON.stringify(result, null, 2));

@@ -6677,3 +6677,20 @@ export async function getAiRecommendationHistory(studentId: number, limit: numbe
     warnings: r.warnings ? JSON.parse(r.warnings) : [],
   }));
 }
+
+
+/**
+ * Busca um personal pelo nome da instância Stevo
+ * Usado para validar tokens de webhook
+ */
+export async function getPersonalByStevoInstance(instanceName: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [personal] = await db.select()
+    .from(personals)
+    .where(eq(personals.stevoInstanceName, instanceName))
+    .limit(1);
+  
+  return personal;
+}
