@@ -4226,14 +4226,22 @@
 - [x] Grid ajustado para 5 colunas (Nome, Email, WhatsApp, Instagram, Cidade)
 
 
-## Sistema de Link de Convite Geral para Alunos (v6.19)
+## Resgate de Link de Convite Geral para Alunos (v6.19)
 - [x] Adicionar tabela de invites no schema do banco (já existia)
 - [x] Criar endpoint para gerar link de convite único por personal (reutilizável) - getOrCreateGeneralInvite
 - [x] Criar página de cadastro por convite (/invite/personal/[personalId]/[token])
-- [x] Adicionar botão "Copiar Link de Convite" na lista de alunos - GeneralInviteLink component
+- [x] Adicionar botão Copiar Link de Convite na lista de alunos - GeneralInviteLink component
 - [x] Implementar validação de token e segurança - validação no registerWithGeneralInvite
-- [ ] Testar fluxo completo de cadastro via link
-- [ ] Testar múltiplos alunos usando o mesmo link
+- [x] Testar fluxo completo de cadastro via link
+- [x] Testar múltiplos alunos usando o mesmo link
+- [x] Corrigir erro de autenticação de cookies para localhost
+- [x] Implementar cancelamento e regeneração de links
+- [x] Implementar dashboard de analytics de convites
+
+## Sugestões de Acompanhamento (v6.20)
+- [ ] Implementar notificações de conversão para personal trainer
+- [x] Adicionar filtros de período e status no dashboard de analytics
+- [x] Implementar opção de revogar e regenerar links (já implementado em v6.21)
 
 
 ## Resgate de Link de Convite Cancelado (v6.21)

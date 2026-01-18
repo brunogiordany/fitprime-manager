@@ -3,12 +3,67 @@
 import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, Users, Link2, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Loader2, TrendingUp, Users, Link2, CheckCircle, Calendar } from 'lucide-react';
+import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useState, useMemo } from 'react';
+
+type PeriodFilter = 'all' | 'week' | 'month' | 'custom';
+type StatusFilter = 'all' | 'active' | 'inactive';
 
 export function InviteAnalyticsDashboard() {
   const { data, isLoading, error } = trpc.students.getInviteAnalytics.useQuery();
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+
+  const filteredAnalytics = useMemo(() => {
+    if (!data?.analytics) return [];
+
+    let filtered = [...data.analytics];
+
+    // Filtrar por status
+    if (statusFilter === 'active') {
+      filtered = filtered.filter(link => link.isActive);
+    } else if (statusFilter === 'inactive') {
+      filtered = filtered.filter(link => !link.isActive);
+    }
+
+    // Filtrar por período
+    const now = new Date();
+    let startDate: Date | null = null;
+    let endDate = now;
+
+    if (periodFilter === 'week') {
+      startDate = subDays(now, 7);
+    } else if (periodFilter === 'month') {
+      startDate = subDays(now, 30);
+    } else if (periodFilter === 'custom' && customStartDate && customEndDate) {
+      startDate = new Date(customStartDate);
+      endDate = new Date(customEndDate);
+    }
+
+    if (startDate) {
+      filtered = filtered.filter(link => {
+        const createdDate = new Date(link.createdAt);
+        return createdDate >= startDate && createdDate <= endDate;
+      });
+    }
+
+    return filtered;
+  }, [data?.analytics, periodFilter, statusFilter, customStartDate, customEndDate]);
+
+  const filteredSummary = useMemo(() => {
+    if (!filteredAnalytics) return { totalLinks: 0, activeLinks: 0, totalStudentsRegistered: 0 };
+
+    return {
+      totalLinks: filteredAnalytics.length,
+      activeLinks: filteredAnalytics.filter(l => l.isActive).length,
+      totalStudentsRegistered: filteredAnalytics.reduce((sum, link) => sum + link.acceptedCount, 0),
+    };
+  }, [filteredAnalytics]);
 
   if (isLoading) {
     return (
@@ -32,7 +87,7 @@ export function InviteAnalyticsDashboard() {
     return null;
   }
 
-  const { analytics, summary } = data;
+  const { summary } = data;
 
   return (
     <div className="space-y-6">
@@ -107,13 +162,116 @@ export function InviteAnalyticsDashboard() {
         </Card>
       </div>
 
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Filtros</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Period Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Período</label>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={periodFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setPeriodFilter('all');
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+              >
+                Todos
+              </Button>
+              <Button
+                variant={periodFilter === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setPeriodFilter('week');
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+              >
+                Últimos 7 dias
+              </Button>
+              <Button
+                variant={periodFilter === 'month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setPeriodFilter('month');
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+              >
+                Últimos 30 dias
+              </Button>
+              <Button
+                variant={periodFilter === 'custom' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPeriodFilter('custom')}
+              >
+                Personalizado
+              </Button>
+            </div>
+
+            {/* Custom Date Range */}
+            {periodFilter === 'custom' && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-3 py-2 border border-slate-300 rounded-md text-sm"
+                  placeholder="Data inicial"
+                />
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-3 py-2 border border-slate-300 rounded-md text-sm"
+                  placeholder="Data final"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Status Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Status</label>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('all')}
+              >
+                Todos
+              </Button>
+              <Button
+                variant={statusFilter === 'active' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('active')}
+              >
+                Ativos
+              </Button>
+              <Button
+                variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('inactive')}
+              >
+                Inativos
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Links Table */}
-      {analytics.length > 0 ? (
+      {filteredAnalytics.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Histórico de Links</CardTitle>
             <CardDescription>
-              Detalhes de cada link de convite gerado
+              {filteredAnalytics.length} link{filteredAnalytics.length !== 1 ? 's' : ''} encontrado{filteredAnalytics.length !== 1 ? 's' : ''}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -130,7 +288,7 @@ export function InviteAnalyticsDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {analytics.map((link) => (
+                  {filteredAnalytics.map((link) => (
                     <tr key={link.id} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="py-3 px-4">
                         <Badge
@@ -173,14 +331,16 @@ export function InviteAnalyticsDashboard() {
         <Card className="bg-slate-50 border-slate-200">
           <CardContent className="pt-6">
             <p className="text-center text-slate-600">
-              Nenhum link de convite gerado ainda. Crie um link para começar a rastrear conversões.
+              {data.analytics.length === 0
+                ? 'Nenhum link de convite gerado ainda. Crie um link para começar a rastrear conversões.'
+                : 'Nenhum link encontrado com os filtros selecionados.'}
             </p>
           </CardContent>
         </Card>
       )}
 
       {/* Insights */}
-      {analytics.length > 0 && (
+      {data.analytics.length > 0 && (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="text-base">💡 Insights</CardTitle>
@@ -198,9 +358,9 @@ export function InviteAnalyticsDashboard() {
                 Todos os cadastros foram bem-sucedidos!
               </p>
             )}
-            {summary.totalLinks > 1 && (
+            {summary.totalLinks === 0 && (
               <p>
-                ℹ️ Você pode ter múltiplos links ativos simultaneamente. Cada link pode ser usado por quantos alunos quiser.
+                → Crie seu primeiro link de convite geral para começar a rastrear conversões e automatizar o cadastro de alunos.
               </p>
             )}
           </CardContent>
