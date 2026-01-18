@@ -4270,3 +4270,9 @@
 - [ ] Verificar configuração DNS do novo domínio
 - [ ] Testar envio de email com domínio correto
 - [ ] Validar que emails chegam no destinatário
+
+## Funcionalidades de Reenvio de Emails (v6.23)
+- [x] Adicionar status de email na lista de leads (Enviado/Falhou/Pendente/Não enviado)
+- [x] Implementar botão de reenviar email para cada lead (botão Send na coluna Ações)
+- [x] Criar endpoints para reenviar emails (resendEmail, resendFailedEmails, listFailedEmails)
+- [ ] Testar funcionalidades de reenvio

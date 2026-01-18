@@ -646,7 +646,7 @@ export const quizRouter = router({
       const whereClause = conditions.join(" AND ");
       const orderClause = `${input.sortBy} ${input.sortOrder.toUpperCase()}`;
       
-      // Query principal - inclui info de personal vinculado
+      // Query principal - inclui info de personal vinculado e status de email
       const leads = await db.execute(sql`
         SELECT 
           qr.id, qr.visitorId, qr.sessionId,
@@ -662,10 +662,18 @@ export const quizRouter = router({
           qr.createdAt, qr.completedAt,
           p.id as personalId,
           p.subscriptionStatus as personalStatus,
-          u.name as personalName
+          u.name as personalName,
+          es.status as emailStatus,
+          es.sentAt as emailSentAt,
+          es.id as emailSendId
         FROM quiz_responses qr
         LEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)
         LEFT JOIN personals p ON u.id = p.userId
+        LEFT JOIN (
+          SELECT lead_email, status, sent_at as sentAt, id,
+            ROW_NUMBER() OVER (PARTITION BY lead_email ORDER BY created_at DESC) as rn
+          FROM email_sends
+        ) es ON LOWER(qr.leadEmail) = LOWER(es.lead_email) AND es.rn = 1
         ORDER BY qr.createdAt DESC
         LIMIT ${input.limit} OFFSET ${offset}
       `);
@@ -1123,5 +1131,146 @@ export const quizRouter = router({
         totalMerged,
         groupsMerged,
       };
+    }),
+
+  // Reenviar email para um lead específico
+  resendEmail: adminProcedure
+    .input(z.object({
+      leadId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar dados do lead
+      const leadResult = await db.execute(sql`
+        SELECT id, leadName, leadEmail, recommendedPlan
+        FROM quiz_responses
+        WHERE id = ${input.leadId}
+      `);
+      
+      const leads = (leadResult as any)?.[0] as any[];
+      if (!leads || leads.length === 0) {
+        throw new Error("Lead não encontrado");
+      }
+      
+      const lead = leads[0];
+      if (!lead.leadEmail) {
+        throw new Error("Lead não possui email cadastrado");
+      }
+      
+      // Buscar sequência de boas-vindas ativa
+      const sequenceResult = await db.execute(sql`
+        SELECT id FROM email_sequences
+        WHERE trigger = 'quiz_completed' AND is_active = 1
+        ORDER BY priority DESC
+        LIMIT 1
+      `);
+      
+      const sequences = (sequenceResult as any)?.[0] as any[];
+      if (!sequences || sequences.length === 0) {
+        throw new Error("Nenhuma sequência de email ativa encontrada");
+      }
+      
+      const sequenceId = sequences[0].id;
+      
+      // Buscar primeiro template da sequência
+      const templateResult = await db.execute(sql`
+        SELECT id, subject, html_content as htmlContent
+        FROM lead_email_templates
+        WHERE sequence_id = ${sequenceId} AND is_active = 1
+        ORDER BY position ASC
+        LIMIT 1
+      `);
+      
+      const templates = (templateResult as any)?.[0] as any[];
+      if (!templates || templates.length === 0) {
+        throw new Error("Nenhum template de email encontrado");
+      }
+      
+      const template = templates[0];
+      
+      // Substituir variáveis no subject e conteúdo
+      const firstName = lead.leadName?.split(' ')[0] || 'Olá';
+      const subject = template.subject
+        .replace(/{{firstName}}/g, firstName)
+        .replace(/{{name}}/g, lead.leadName || 'Olá')
+        .replace(/{{plan}}/g, lead.recommendedPlan || 'starter');
+      
+      // Agendar envio imediato
+      const scheduledAt = new Date();
+      
+      await db.execute(sql`
+        INSERT INTO email_sends (lead_email, sequence_id, template_id, subject, scheduled_at, status, created_at, updated_at)
+        VALUES (${lead.leadEmail}, ${sequenceId}, ${template.id}, ${subject}, ${scheduledAt}, 'pending', NOW(), NOW())
+      `);
+      
+      return {
+        success: true,
+        message: `Email agendado para ${lead.leadEmail}`,
+      };
+    }),
+
+  // Reenviar emails para todos os leads que falharam
+  resendFailedEmails: adminProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar todos os emails que falharam ou não foram enviados
+      const failedResult = await db.execute(sql`
+        SELECT DISTINCT es.lead_email, es.sequence_id, es.template_id, es.subject
+        FROM email_sends es
+        WHERE es.status IN ('failed', 'bounced')
+        AND es.lead_email NOT IN (
+          SELECT lead_email FROM email_sends WHERE status = 'sent'
+        )
+      `);
+      
+      const failedEmails = (failedResult as any)?.[0] as any[] || [];
+      let reenqueued = 0;
+      
+      for (const email of failedEmails) {
+        await db.execute(sql`
+          INSERT INTO email_sends (lead_email, sequence_id, template_id, subject, scheduled_at, status, created_at, updated_at)
+          VALUES (${email.lead_email}, ${email.sequence_id}, ${email.template_id}, ${email.subject}, NOW(), 'pending', NOW(), NOW())
+        `);
+        reenqueued++;
+      }
+      
+      return {
+        success: true,
+        message: `${reenqueued} email(s) reagendado(s) para envio`,
+        count: reenqueued,
+      };
+    }),
+
+  // Listar emails com falha
+  listFailedEmails: adminProcedure
+    .query(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const result = await db.execute(sql`
+        SELECT 
+          es.id,
+          es.lead_email as leadEmail,
+          es.subject,
+          es.status,
+          es.scheduled_at as scheduledAt,
+          es.sent_at as sentAt,
+          es.created_at as createdAt,
+          qr.leadName,
+          qr.recommendedPlan
+        FROM email_sends es
+        LEFT JOIN quiz_responses qr ON LOWER(es.lead_email) = LOWER(qr.leadEmail)
+        WHERE es.status IN ('failed', 'bounced')
+        AND es.lead_email NOT IN (
+          SELECT lead_email FROM email_sends WHERE status = 'sent'
+        )
+        ORDER BY es.created_at DESC
+      `);
+      
+      return (result as any)?.[0] as any[] || [];
     }),
 });

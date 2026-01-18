@@ -47,6 +47,10 @@ import {
   RefreshCw,
   GitMerge,
   AlertTriangle,
+  Send,
+  MailX,
+  MailCheck,
+  Clock,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -92,6 +96,10 @@ interface Lead {
   // Campos de merge
   mergedIntoId: number | null;
   mergedAt: string | null;
+  // Campos de status de email
+  emailStatus: string | null;
+  emailSentAt: string | null;
+  emailSendId: number | null;
 }
 
 const studentsLabels: Record<string, string> = {
@@ -191,6 +199,28 @@ export default function LeadsPage() {
       refetch();
       refetchDuplicates();
       alert(`${data.totalMerged} lead(s) mesclado(s) em ${data.groupsMerged} grupo(s)`);
+    },
+  });
+
+  // Mutation para reenviar email
+  const resendEmailMutation = trpc.quiz.resendEmail.useMutation({
+    onSuccess: (data) => {
+      refetch();
+      alert(data.message);
+    },
+    onError: (error) => {
+      alert(`Erro ao reenviar email: ${error.message}`);
+    },
+  });
+
+  // Mutation para reenviar todos os emails que falharam
+  const resendFailedMutation = trpc.quiz.resendFailedEmails.useMutation({
+    onSuccess: (data) => {
+      refetch();
+      alert(data.message);
+    },
+    onError: (error) => {
+      alert(`Erro ao reenviar emails: ${error.message}`);
     },
   });
 
@@ -663,6 +693,7 @@ export default function LeadsPage() {
                     <TableHead>Contato</TableHead>
                     <TableHead>Perfil</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Origem</TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -671,14 +702,14 @@ export default function LeadsPage() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
+                      <TableCell colSpan={8} className="text-center py-8">
                         <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
                         <p className="text-gray-500 mt-2">Carregando leads...</p>
                       </TableCell>
                     </TableRow>
                   ) : leads.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
+                      <TableCell colSpan={8} className="text-center py-8">
                         <Users className="w-12 h-12 mx-auto text-gray-300" />
                         <p className="text-gray-500 mt-2">Nenhum lead encontrado</p>
                       </TableCell>
@@ -748,6 +779,31 @@ export default function LeadsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {lead.emailStatus === 'sent' ? (
+                              <Badge className="bg-green-100 text-green-700 flex items-center gap-1">
+                                <MailCheck className="w-3 h-3" />
+                                Enviado
+                              </Badge>
+                            ) : lead.emailStatus === 'failed' || lead.emailStatus === 'bounced' ? (
+                              <Badge className="bg-red-100 text-red-700 flex items-center gap-1">
+                                <MailX className="w-3 h-3" />
+                                Falhou
+                              </Badge>
+                            ) : lead.emailStatus === 'pending' ? (
+                              <Badge className="bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                Pendente
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-gray-100 text-gray-600 flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                Não enviado
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <div className="space-y-1">
                             {lead.utmSource && (
                               <Badge variant="outline" className="text-xs">
@@ -771,13 +827,26 @@ export default function LeadsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedLead(lead)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {lead.leadEmail && lead.emailStatus !== 'sent' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => resendEmailMutation.mutate({ leadId: lead.id })}
+                                disabled={resendEmailMutation.isPending}
+                                title="Reenviar email"
+                              >
+                                <Send className="w-4 h-4 text-blue-500" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedLead(lead)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
