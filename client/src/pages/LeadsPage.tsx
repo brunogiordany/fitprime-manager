@@ -51,7 +51,15 @@ import {
   MailX,
   MailCheck,
   Clock,
+  Tag,
+  X,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -100,6 +108,8 @@ interface Lead {
   emailStatus: string | null;
   emailSentAt: string | null;
   emailSendId: number | null;
+  // Campos de tags
+  tags?: Array<{ id: number; name: string; color: string }>;
 }
 
 const studentsLabels: Record<string, string> = {
@@ -149,6 +159,11 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [selectedDuplicate, setSelectedDuplicate] = useState<{ identifier: string; type: "email" | "phone" } | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+
+  // Buscar tags disponíveis
+  const { data: tagsData } = trpc.conversionMetrics.listTags.useQuery();
+  const availableTags = (tagsData as any)?.tags || [];
 
   // Buscar leads
   const { data: leadsData, isLoading, refetch } = trpc.quiz.listLeads.useQuery({
@@ -161,6 +176,7 @@ export default function LeadsPage() {
     converted,
     utmSource: utmSource || undefined,
     utmCampaign: utmCampaign || undefined,
+    tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
   });
 
   // Buscar opções de filtro
@@ -289,6 +305,16 @@ export default function LeadsPage() {
     setConverted("all");
     setUtmSource("");
     setUtmCampaign("");
+    setSelectedTagIds([]);
+    setPage(1);
+  };
+
+  const toggleTag = (tagId: number) => {
+    setSelectedTagIds(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : [...prev, tagId]
+    );
     setPage(1);
   };
 
@@ -667,11 +693,80 @@ export default function LeadsPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {/* Filtro por Tags */}
+                  <div className="col-span-2 md:col-span-4">
+                    <Label className="text-xs text-gray-500 mb-2 block">Filtrar por Tags</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start">
+                          <Tag className="w-4 h-4 mr-2" />
+                          {selectedTagIds.length === 0 
+                            ? "Selecionar tags..." 
+                            : `${selectedTagIds.length} tag(s) selecionada(s)`}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" align="start">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Tags Disponíveis</h4>
+                          {availableTags.length === 0 ? (
+                            <p className="text-sm text-gray-500">Nenhuma tag criada ainda.</p>
+                          ) : (
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {availableTags.map((tag: any) => (
+                                <div key={tag.id} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`tag-${tag.id}`}
+                                    checked={selectedTagIds.includes(tag.id)}
+                                    onCheckedChange={() => toggleTag(tag.id)}
+                                  />
+                                  <label
+                                    htmlFor={`tag-${tag.id}`}
+                                    className="flex items-center gap-2 text-sm cursor-pointer"
+                                  >
+                                    <span
+                                      className="w-3 h-3 rounded-full"
+                                      style={{ backgroundColor: tag.color }}
+                                    />
+                                    {tag.name}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {/* Tags selecionadas */}
+                    {selectedTagIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedTagIds.map(tagId => {
+                          const tag = availableTags.find((t: any) => t.id === tagId);
+                          if (!tag) return null;
+                          return (
+                            <Badge
+                              key={tagId}
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                              style={{ backgroundColor: `${tag.color}20`, color: tag.color, borderColor: tag.color }}
+                            >
+                              {tag.name}
+                              <X
+                                className="w-3 h-3 cursor-pointer"
+                                onClick={() => toggleTag(tagId)}
+                              />
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* Botão limpar filtros */}
-              {(search || startDate || endDate || isQualified !== "all" || converted !== "all" || utmSource || utmCampaign) && (
+              {(search || startDate || endDate || isQualified !== "all" || converted !== "all" || utmSource || utmCampaign || selectedTagIds.length > 0) && (
                 <div className="flex justify-end">
                   <Button variant="ghost" size="sm" onClick={clearFilters}>
                     Limpar filtros
@@ -692,6 +787,7 @@ export default function LeadsPage() {
                     <TableHead>Lead</TableHead>
                     <TableHead>Contato</TableHead>
                     <TableHead>Perfil</TableHead>
+                    <TableHead>Tags</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Origem</TableHead>
@@ -702,14 +798,14 @@ export default function LeadsPage() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
+                      <TableCell colSpan={9} className="text-center py-8">
                         <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
                         <p className="text-gray-500 mt-2">Carregando leads...</p>
                       </TableCell>
                     </TableRow>
                   ) : leads.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
+                      <TableCell colSpan={9} className="text-center py-8">
                         <Users className="w-12 h-12 mx-auto text-gray-300" />
                         <p className="text-gray-500 mt-2">Nenhum lead encontrado</p>
                       </TableCell>
@@ -756,6 +852,28 @@ export default function LeadsPage() {
                             <p className="text-xs text-gray-500">
                               {revenueLabels[lead.revenue || ""] || lead.revenue || "-"}
                             </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1 max-w-[150px]">
+                            {lead.tags && lead.tags.length > 0 ? (
+                              lead.tags.map((tag) => (
+                                <Badge
+                                  key={tag.id}
+                                  variant="secondary"
+                                  className="text-xs"
+                                  style={{ 
+                                    backgroundColor: `${tag.color}20`, 
+                                    color: tag.color,
+                                    borderColor: tag.color 
+                                  }}
+                                >
+                                  {tag.name}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>

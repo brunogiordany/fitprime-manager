@@ -4317,3 +4317,11 @@
   - [x] Dropdown com opções: Ver detalhes, Reenviar email
   - [x] Modal de confirmação antes de reenviar
   - [x] Feedback de sucesso/erro após reenvio
+
+
+## Filtros por Tags na Lista de Leads (v6.27)
+- [x] Adicionar filtro por tags na página de Gestão de Leads
+  - [x] Dropdown multi-select para selecionar tags
+  - [x] Filtrar leads que possuem as tags selecionadas
+  - [x] Combinar com filtros existentes (status, período)
+  - [x] Mostrar tags de cada lead na tabela

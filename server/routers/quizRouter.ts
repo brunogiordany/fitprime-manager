@@ -568,6 +568,7 @@ export const quizRouter = router({
       studentsCount: z.string().optional(),
       revenue: z.string().optional(),
       city: z.string().optional(),
+      tagIds: z.array(z.number()).optional(), // Filtro por tags
       sortBy: z.enum(["createdAt", "leadName", "leadEmail", "studentsCount", "revenue"]).default("createdAt"),
       sortOrder: z.enum(["asc", "desc"]).default("desc"),
     }))
@@ -646,44 +647,118 @@ export const quizRouter = router({
       const whereClause = conditions.join(" AND ");
       const orderClause = `${input.sortBy} ${input.sortOrder.toUpperCase()}`;
       
-      // Query principal - inclui info de personal vinculado e status de email
-      const leads = await db.execute(sql`
-        SELECT 
-          qr.id, qr.visitorId, qr.sessionId,
-          qr.leadName, qr.leadEmail, qr.leadPhone, qr.leadCity,
-          qr.studentsCount, qr.revenue, qr.priority,
-          qr.managementPain, qr.timePain, qr.retentionPain, qr.billingPain,
-          qr.recommendedProfile, qr.recommendedPlan, qr.totalScore,
-          qr.isQualified, qr.disqualificationReason,
-          qr.converted, qr.conversionType, qr.convertedAt,
-          qr.utmSource, qr.utmMedium, qr.utmCampaign, qr.utmContent, qr.utmTerm,
-          qr.referrer, qr.landingPage,
-          qr.deviceType, qr.browser, qr.os,
-          qr.createdAt, qr.completedAt,
-          p.id as personalId,
-          p.subscriptionStatus as personalStatus,
-          u.name as personalName,
-          es.status as emailStatus,
-          es.sentAt as emailSentAt,
-          es.id as emailSendId
-        FROM quiz_responses qr
-        LEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)
-        LEFT JOIN personals p ON u.id = p.userId
-        LEFT JOIN (
-          SELECT lead_email, status, sent_at as sentAt, id,
-            ROW_NUMBER() OVER (PARTITION BY lead_email ORDER BY created_at DESC) as rn
-          FROM email_sends
-        ) es ON LOWER(qr.leadEmail) = LOWER(es.lead_email) AND es.rn = 1
-        ORDER BY qr.createdAt DESC
-        LIMIT ${input.limit} OFFSET ${offset}
-      `);
+      // Se tiver filtro por tags, fazer subquery
+      let tagFilterJoin = "";
+      let tagFilterCondition = "";
+      if (input.tagIds && input.tagIds.length > 0) {
+        const tagIdsList = input.tagIds.join(",");
+        tagFilterJoin = `INNER JOIN lead_tag_assignments lta ON qr.id = lta.leadId AND lta.tagId IN (${tagIdsList})`;
+      }
       
-      // Contagem total
-      const [countResult] = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_responses`);
+      // Query principal - inclui info de personal vinculado, status de email e tags
+      const leadsQuery = input.tagIds && input.tagIds.length > 0
+        ? sql`
+          SELECT DISTINCT
+            qr.id, qr.visitorId, qr.sessionId,
+            qr.leadName, qr.leadEmail, qr.leadPhone, qr.leadCity,
+            qr.studentsCount, qr.revenue, qr.priority,
+            qr.managementPain, qr.timePain, qr.retentionPain, qr.billingPain,
+            qr.recommendedProfile, qr.recommendedPlan, qr.totalScore,
+            qr.isQualified, qr.disqualificationReason,
+            qr.converted, qr.conversionType, qr.convertedAt,
+            qr.utmSource, qr.utmMedium, qr.utmCampaign, qr.utmContent, qr.utmTerm,
+            qr.referrer, qr.landingPage,
+            qr.deviceType, qr.browser, qr.os,
+            qr.createdAt, qr.completedAt,
+            p.id as personalId,
+            p.subscriptionStatus as personalStatus,
+            u.name as personalName,
+            es.status as emailStatus,
+            es.sentAt as emailSentAt,
+            es.id as emailSendId
+          FROM quiz_responses qr
+          INNER JOIN lead_tag_assignments lta ON qr.id = lta.leadId AND lta.tagId IN (${sql.raw(input.tagIds.join(","))})
+          LEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)
+          LEFT JOIN personals p ON u.id = p.userId
+          LEFT JOIN (
+            SELECT lead_email, status, sent_at as sentAt, id,
+              ROW_NUMBER() OVER (PARTITION BY lead_email ORDER BY created_at DESC) as rn
+            FROM email_sends
+          ) es ON LOWER(qr.leadEmail) = LOWER(es.lead_email) AND es.rn = 1
+          ORDER BY qr.createdAt DESC
+          LIMIT ${input.limit} OFFSET ${offset}
+        `
+        : sql`
+          SELECT 
+            qr.id, qr.visitorId, qr.sessionId,
+            qr.leadName, qr.leadEmail, qr.leadPhone, qr.leadCity,
+            qr.studentsCount, qr.revenue, qr.priority,
+            qr.managementPain, qr.timePain, qr.retentionPain, qr.billingPain,
+            qr.recommendedProfile, qr.recommendedPlan, qr.totalScore,
+            qr.isQualified, qr.disqualificationReason,
+            qr.converted, qr.conversionType, qr.convertedAt,
+            qr.utmSource, qr.utmMedium, qr.utmCampaign, qr.utmContent, qr.utmTerm,
+            qr.referrer, qr.landingPage,
+            qr.deviceType, qr.browser, qr.os,
+            qr.createdAt, qr.completedAt,
+            p.id as personalId,
+            p.subscriptionStatus as personalStatus,
+            u.name as personalName,
+            es.status as emailStatus,
+            es.sentAt as emailSentAt,
+            es.id as emailSendId
+          FROM quiz_responses qr
+          LEFT JOIN users u ON LOWER(qr.leadEmail) = LOWER(u.email)
+          LEFT JOIN personals p ON u.id = p.userId
+          LEFT JOIN (
+            SELECT lead_email, status, sent_at as sentAt, id,
+              ROW_NUMBER() OVER (PARTITION BY lead_email ORDER BY created_at DESC) as rn
+            FROM email_sends
+          ) es ON LOWER(qr.leadEmail) = LOWER(es.lead_email) AND es.rn = 1
+          ORDER BY qr.createdAt DESC
+          LIMIT ${input.limit} OFFSET ${offset}
+        `;
+      
+      const leads = await db.execute(leadsQuery);
+      const leadsArray = (leads as any)?.[0] || [];
+      
+      // Buscar tags de cada lead
+      const leadIds = leadsArray.map((l: any) => l.id);
+      let leadTagsMap: Record<number, Array<{id: number, name: string, color: string}>> = {};
+      
+      if (leadIds.length > 0) {
+        const tagsResult = await db.execute(sql`
+          SELECT lta.leadId, lt.id, lt.name, lt.color
+          FROM lead_tag_assignments lta
+          INNER JOIN lead_tags lt ON lta.tagId = lt.id
+          WHERE lta.leadId IN (${sql.raw(leadIds.join(","))})
+        `);
+        
+        const tagsArray = (tagsResult as any)?.[0] || [];
+        for (const tag of tagsArray) {
+          if (!leadTagsMap[tag.leadId]) {
+            leadTagsMap[tag.leadId] = [];
+          }
+          leadTagsMap[tag.leadId].push({ id: tag.id, name: tag.name, color: tag.color });
+        }
+      }
+      
+      // Adicionar tags a cada lead
+      const leadsWithTags = leadsArray.map((lead: any) => ({
+        ...lead,
+        tags: leadTagsMap[lead.id] || []
+      }));
+      
+      // Contagem total (com ou sem filtro de tags)
+      const countQuery = input.tagIds && input.tagIds.length > 0
+        ? sql`SELECT COUNT(DISTINCT qr.id) as count FROM quiz_responses qr INNER JOIN lead_tag_assignments lta ON qr.id = lta.leadId AND lta.tagId IN (${sql.raw(input.tagIds.join(","))})`
+        : sql`SELECT COUNT(*) as count FROM quiz_responses`;
+      
+      const [countResult] = await db.execute(countQuery);
       const total = (countResult as any)?.count || 0;
       
       return {
-        leads: (leads as any)?.[0] || [],
+        leads: leadsWithTags,
         total,
         page: input.page,
         limit: input.limit,
