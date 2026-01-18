@@ -2459,6 +2459,125 @@ export const appRouter = router({
         return { success: true, token, studentId, message: 'Cadastro realizado com sucesso!' };
       }),
     
+    // Cancelar link de convite geral
+    cancelGeneralInvite: personalProcedure
+      .input(z.object({
+        inviteToken: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Buscar o convite
+        const invite = await db.getStudentInviteByToken(input.inviteToken);
+        if (!invite) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Link de convite não encontrado' });
+        }
+        
+        // Validar que pertence ao personal
+        if (invite.personalId !== ctx.personal.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Link de convite não pertence a você' });
+        }
+        
+        // Validar que é um convite geral
+        if (invite.studentId !== 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este não é um convite geral' });
+        }
+        
+        // Cancelar o convite
+        await db.updateStudentInvite(invite.id, { status: 'cancelled' });
+        
+        return { success: true, message: 'Link de convite cancelado com sucesso' };
+      }),
+    
+    // Regenerar link de convite geral após cancelamento
+    regenerateGeneralInvite: personalProcedure
+      .query(async ({ ctx }) => {
+        // Buscar todos os convites gerais do personal
+        const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
+        const generalInvites = allInvites.filter(i => i.studentId === 0);
+        
+        // Cancelar todos os convites gerais existentes
+        for (const invite of generalInvites) {
+          if (invite.status === 'pending') {
+            await db.updateStudentInvite(invite.id, { status: 'cancelled' });
+          }
+        }
+        
+        // Gerar novo token
+        const { nanoid } = await import('nanoid');
+        const inviteToken = nanoid(32);
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 365); // Expira em 1 ano
+        
+        // Criar novo convite geral
+        await db.createStudentInvite({
+          personalId: ctx.personal.id,
+          studentId: 0, // Convite geral
+          inviteToken,
+          expiresAt,
+        });
+        
+        const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
+        const inviteLink = `/invite/personal/${ctx.personal.id}/${inviteToken}`;
+        const fullInviteLink = `${baseUrl}${inviteLink}`;
+        
+        return {
+          success: true,
+          inviteToken,
+          inviteLink,
+          fullInviteLink,
+          expiresAt,
+          personalId: ctx.personal.id,
+          message: 'Novo link de convite gerado com sucesso',
+        };
+      }),
+    
+    // Obter estatísticas de convites gerais
+    getInviteAnalytics: personalProcedure
+      .query(async ({ ctx }) => {
+        // Buscar todos os convites do personal
+        const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
+        const generalInvites = allInvites.filter(i => i.studentId === 0);
+        
+        // Calcular estatísticas para cada link
+        const analytics = generalInvites.map(invite => {
+          // Contar alunos aceitos após criação do link
+          const acceptedCount = allInvites.filter(i => 
+            i.personalId === ctx.personal.id && 
+            i.status === 'accepted' &&
+            i.createdAt >= invite.createdAt
+          ).length;
+          
+          // Taxa de conversão (aceitos / total de registros)
+          const conversionRate = allInvites.length > 0 ? ((acceptedCount / allInvites.length) * 100).toFixed(2) : '0';
+          
+          return {
+            id: invite.id,
+            token: invite.inviteToken,
+            status: invite.status,
+            createdAt: invite.createdAt,
+            expiresAt: invite.expiresAt,
+            lastUsedAt: invite.acceptedAt,
+            acceptedCount,
+            conversionRate: parseFloat(conversionRate),
+            isActive: invite.status === 'pending' && new Date(invite.expiresAt) > new Date(),
+          };
+        });
+        
+        // Ordenar por data de criação (mais recentes primeiro)
+        analytics.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
+        // Calcular totais
+        const totalAccepted = allInvites.filter(i => i.status === 'accepted').length;
+        
+        return {
+          analytics,
+          summary: {
+            totalLinks: generalInvites.length,
+            activeLinks: generalInvites.filter(i => i.status === 'pending' && new Date(i.expiresAt) > new Date()).length,
+            totalStudentsRegistered: totalAccepted,
+          },
+        };
+      }),
+    
     // Login de aluno com email/senha
     loginStudent: publicProcedure
       .input(z.object({

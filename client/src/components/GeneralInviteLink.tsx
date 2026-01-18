@@ -9,11 +9,32 @@ import { toast } from 'sonner';
 export function GeneralInviteLink() {
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
-  const { data, isLoading, error } = trpc.students.getOrCreateGeneralInvite.useQuery(
+  const utils = trpc.useUtils();
+
+  const { data, isLoading, error, refetch } = trpc.students.getOrCreateGeneralInvite.useQuery(
     undefined,
     {
       enabled: showModal,
+    }
+  );
+
+  const cancelMutation = trpc.students.cancelGeneralInvite.useMutation({
+    onSuccess: () => {
+      toast.success('Link de convite cancelado com sucesso!');
+      setShowCancelConfirm(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao cancelar link');
+    },
+  });
+
+  const regenerateMutation = trpc.students.regenerateGeneralInvite.useQuery(
+    undefined,
+    {
+      enabled: false,
     }
   );
 
@@ -23,6 +44,20 @@ export function GeneralInviteLink() {
       setCopied(true);
       toast.success('Link copiado para a área de transferência!');
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleCancelLink = () => {
+    if (data?.inviteToken) {
+      cancelMutation.mutate({ inviteToken: data.inviteToken });
+    }
+  };
+
+  const handleRegenerateLink = async () => {
+    const result = await regenerateMutation.refetch();
+    if (result.data) {
+      toast.success('Novo link gerado com sucesso!');
+      refetch();
     }
   };
 
@@ -148,8 +183,58 @@ export function GeneralInviteLink() {
                     <li>✓ Você receberá notificação de cada novo cadastro</li>
                   </ul>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    onClick={() => setShowCancelConfirm(true)}
+                    variant="outline"
+                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    disabled={cancelMutation.isPending}
+                  >
+                    Cancelar Link
+                  </Button>
+                  <Button
+                    onClick={handleRegenerateLink}
+                    variant="outline"
+                    className="flex-1"
+                    disabled={regenerateMutation.isPending}
+                  >
+                    Gerar Novo
+                  </Button>
+                </div>
               </div>
             ) : null}
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelConfirm && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+                <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">
+                    Cancelar Link de Convite?
+                  </h3>
+                  <p className="text-slate-600 text-sm mb-6">
+                    Ao cancelar este link, ninguém mais poderá se registrar usando-o. Você poderá gerar um novo link a qualquer momento.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowCancelConfirm(false)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Não, manter
+                    </Button>
+                    <Button
+                      onClick={handleCancelLink}
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                      disabled={cancelMutation.isPending}
+                    >
+                      {cancelMutation.isPending ? 'Cancelando...' : 'Sim, cancelar'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Close Button */}
             <Button

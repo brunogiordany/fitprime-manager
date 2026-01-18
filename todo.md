@@ -4234,3 +4234,21 @@
 - [x] Implementar validação de token e segurança - validação no registerWithGeneralInvite
 - [ ] Testar fluxo completo de cadastro via link
 - [ ] Testar múltiplos alunos usando o mesmo link
+
+
+## Resgate de Link de Convite Cancelado (v6.21)
+- [x] Adicionar endpoint para cancelar link de convite geral - cancelGeneralInvite
+- [x] Adicionar endpoint para gerar novo link após cancelamento - regenerateGeneralInvite
+- [x] Atualizar componente GeneralInviteLink com opção de cancelar
+- [x] Modal de confirmação antes de cancelar link
+- [x] Notificação visual quando link foi cancelado
+- [x] Testes para cancelamento de link (21 testes)
+
+## Analytics de Convites (v6.22)
+- [x] Usar dados existentes da tabela studentInvites (sem nova tabela)
+- [x] Adicionar endpoint para obter estatísticas de convites - getInviteAnalytics
+- [x] Dashboard com tabela de conversão - InviteAnalyticsDashboard
+- [x] Mostrar data de criação e último uso do link
+- [x] Mostrar quantidade de alunos cadastrados via link
+- [x] Taxa de conversão (aceitos / total)
+- [x] Testes para analytics (21 testes)
