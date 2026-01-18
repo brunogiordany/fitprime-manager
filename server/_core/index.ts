@@ -87,12 +87,25 @@ async function startServer() {
       const db = await import('../db');
       const personalWithInstance = await db.getPersonalByStevoInstance(instanceName);
       
-      if (personalWithInstance?.stevoWebhookToken) {
-        // Se há token configurado, validar
-        if (providedToken !== personalWithInstance.stevoWebhookToken) {
-          console.warn(`[Stevo Webhook] Token inválido para instância: ${instanceName}, IP: ${clientIp}`);
-          return res.status(401).json({ error: 'Unauthorized - Invalid webhook token' });
-        }
+      // SEGURANÇA: Instância deve existir e estar configurada
+      if (!personalWithInstance) {
+        console.warn(`[Stevo Webhook] Instância não encontrada: ${instanceName}, IP: ${clientIp}`);
+        return res.status(401).json({ error: 'Unauthorized - Instance not found' });
+      }
+      
+      // SEGURANÇA: Se há token configurado, DEVE ser validado
+      // Se não há token configurado, usar evolutionApiKey como fallback
+      const expectedToken = personalWithInstance.stevoWebhookToken || personalWithInstance.evolutionApiKey;
+      
+      if (!expectedToken) {
+        // Instância sem token configurado - bloquear por segurança
+        console.warn(`[Stevo Webhook] Instância sem token configurado: ${instanceName}, IP: ${clientIp}`);
+        return res.status(401).json({ error: 'Unauthorized - Webhook token not configured' });
+      }
+      
+      if (providedToken !== expectedToken) {
+        console.warn(`[Stevo Webhook] Token inválido para instância: ${instanceName}, IP: ${clientIp}`);
+        return res.status(401).json({ error: 'Unauthorized - Invalid webhook token' });
       }
       
       console.log('[Stevo Webhook] Recebido payload de IP:', clientIp, 'Instância:', instanceName);

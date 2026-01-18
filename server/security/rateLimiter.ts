@@ -124,7 +124,7 @@ export function cleanupRateLimitStore(): void {
   const now = Date.now();
   const maxAge = 2 * 60 * 60 * 1000; // 2 horas
   
-  for (const [key, record] of rateLimitStore.entries()) {
+  for (const [key, record] of Array.from(rateLimitStore.entries())) {
     // Remover se a janela expirou e não está bloqueado
     if (now - record.firstRequest > maxAge && (!record.blockedUntil || now > record.blockedUntil)) {
       rateLimitStore.delete(key);
