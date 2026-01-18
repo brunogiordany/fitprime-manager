@@ -2956,3 +2956,30 @@ export type LeadEmailSubscription = typeof leadEmailSubscriptions.$inferSelect;
 export type InsertLeadEmailSubscription = typeof leadEmailSubscriptions.$inferInsert;
 
 
+
+// ==================== LEAD TAGS (Tags para Segmentação de Leads) ====================
+export const leadTags = mysqlTable("lead_tags", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // Nome da tag
+  color: varchar("color", { length: 20 }).default("#6b7280"), // Cor hex da tag
+  description: text("description"), // Descrição da tag
+  isAutomatic: boolean("isAutomatic").default(false), // Se é tag automática (gerada pelo quiz)
+  autoRule: text("autoRule"), // JSON com regra de auto-aplicação (ex: {"field": "studentsCount", "operator": "eq", "value": "over_30"})
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LeadTag = typeof leadTags.$inferSelect;
+export type InsertLeadTag = typeof leadTags.$inferInsert;
+
+// ==================== LEAD TAG ASSIGNMENTS (Vinculação de Tags aos Leads) ====================
+export const leadTagAssignments = mysqlTable("lead_tag_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  leadId: int("leadId").notNull(), // ID do lead (quiz_responses.id)
+  tagId: int("tagId").notNull().references(() => leadTags.id),
+  assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+  assignedBy: varchar("assignedBy", { length: 50 }).default("system"), // "system" ou "admin"
+});
+
+export type LeadTagAssignment = typeof leadTagAssignments.$inferSelect;
+export type InsertLeadTagAssignment = typeof leadTagAssignments.$inferInsert;

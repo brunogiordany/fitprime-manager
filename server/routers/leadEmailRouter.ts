@@ -634,6 +634,100 @@ export const leadEmailRouter = router({
       }
     }),
   
+  // ==================== REENVIO ====================
+  
+  // Reenviar um email específico
+  resendEmail: adminProcedure
+    .input(z.object({
+      sendId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Buscar o email original
+      const [originalSend] = await db
+        .select({
+          id: emailSends.id,
+          leadId: emailSends.leadId,
+          leadEmail: emailSends.leadEmail,
+          subject: emailSends.subject,
+          htmlContent: emailSends.htmlContent,
+          sequenceId: emailSends.sequenceId,
+          templateId: emailSends.templateId,
+        })
+        .from(emailSends)
+        .where(eq(emailSends.id, input.sendId));
+      
+      if (!originalSend) {
+        throw new Error("Email original não encontrado");
+      }
+      
+      if (!originalSend.leadEmail) {
+        throw new Error("Email do lead não encontrado");
+      }
+      
+      // Verificar se o lead está inscrito
+      const [subscription] = await db
+        .select()
+        .from(leadEmailSubscriptions)
+        .where(eq(leadEmailSubscriptions.leadEmail, originalSend.leadEmail));
+      
+      if (subscription && !subscription.isSubscribed) {
+        throw new Error("Lead cancelou a inscrição de emails");
+      }
+      
+      // Enviar email via Resend
+      try {
+        if (!resend) {
+          throw new Error("Resend API not configured");
+        }
+        
+        const result = await resend.emails.send({
+          from: "FitPrime <noreply@fitprimemanager.online>",
+          to: originalSend.leadEmail,
+          subject: originalSend.subject || "Email do FitPrime",
+          html: originalSend.htmlContent || "<p>Conteúdo do email</p>",
+        });
+        
+        // Registrar novo envio
+        const [newSend] = await db.insert(emailSends).values({
+          leadId: originalSend.leadId,
+          leadEmail: originalSend.leadEmail,
+          sequenceId: originalSend.sequenceId,
+          templateId: originalSend.templateId,
+          subject: originalSend.subject,
+          htmlContent: originalSend.htmlContent,
+          status: "sent",
+          scheduledAt: new Date(),
+          sentAt: new Date(),
+          resendId: result.data?.id,
+        });
+        
+        return { 
+          success: true, 
+          emailId: result.data?.id,
+          newSendId: newSend.insertId,
+          message: `Email reenviado com sucesso para ${originalSend.leadEmail}` 
+        };
+      } catch (error: any) {
+        // Registrar falha
+        await db.insert(emailSends).values({
+          leadId: originalSend.leadId,
+          leadEmail: originalSend.leadEmail,
+          sequenceId: originalSend.sequenceId,
+          templateId: originalSend.templateId,
+          subject: originalSend.subject,
+          htmlContent: originalSend.htmlContent,
+          status: "failed",
+          scheduledAt: new Date(),
+          errorMessage: `Reenvio falhou: ${error.message}`,
+        });
+        
+        throw new Error(`Falha ao reenviar email: ${error.message}`);
+      }
+    }),
+  
   // ==================== TRACKING ====================
   
   // Registrar abertura de email (chamado via pixel)

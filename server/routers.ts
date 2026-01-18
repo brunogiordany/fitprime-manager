@@ -24,6 +24,7 @@ import { nutritionRouter } from "./routers/nutritionRouter";
 import { trackingRouter } from "./routers/trackingRouter";
 import { leadEmailRouter } from "./routers/leadEmailRouter";
 import { deduplicationRouter } from "./routers/deduplicationRouter";
+import { conversionMetricsRouter } from "./routers/conversionMetricsRouter";
 import { and, eq, gt } from "drizzle-orm";
 import { studentInvites } from "../drizzle/schema";
 
@@ -386,6 +387,7 @@ export const appRouter = router({
   pageVersions: pageVersionsRouter,
   leadEmail: leadEmailRouter,
   deduplication: deduplicationRouter,
+  conversionMetrics: conversionMetricsRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

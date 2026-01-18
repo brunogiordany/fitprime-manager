@@ -4285,3 +4285,35 @@
 - [x] Implementar notificação WhatsApp para personal que fez cadastro trial (trialRouter.ts)
 - [x] Implementar email de boas-vindas para personal trial
 - [ ] Configurar variáveis de ambiente STEVO_API_KEY, STEVO_INSTANCE_NAME, STEVO_SERVER
+
+
+## Dashboard de Métricas de Conversão (v6.23)
+- [x] Dashboard de métricas de conversão do funil
+  - [x] Gráfico de leads do quiz → trials → assinantes pagos
+  - [x] Taxa de conversão lead → trial
+  - [x] Taxa de conversão trial → assinante
+  - [x] Gráfico de tendência temporal
+  - [x] Filtros por período (7 dias, 30 dias, personalizado)
+
+## Painel de Engajamento de Emails (v6.24)
+- [x] Painel de métricas de engajamento de emails
+  - [x] Taxa de abertura de emails
+  - [x] Taxa de cliques em links
+  - [x] Emails enviados vs entregues vs falhos
+  - [x] Gráfico de engajamento por tipo de email
+  - [x] Lista de emails com melhor performance
+
+## Sistema de Tags para Leads (v6.25)
+- [x] Sistema de tags para segmentar leads
+  - [x] Tags automáticas baseadas nas respostas do quiz
+  - [x] Tags manuais para categorização
+  - [ ] Filtros por tags na lista de leads
+  - [x] Cores personalizadas para tags
+  - [ ] Exportar leads por tag
+
+
+## Botão de Reenvio na Automação de Emails (v6.26)
+- [x] Adicionar botão de reenvio na coluna "Ações" da página de Automação de Emails
+  - [x] Dropdown com opções: Ver detalhes, Reenviar email
+  - [x] Modal de confirmação antes de reenviar
+  - [x] Feedback de sucesso/erro após reenvio

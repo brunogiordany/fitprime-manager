@@ -32,8 +32,12 @@ import {
   Users,
   MousePointer,
   TrendingUp,
-  Calendar
+  Calendar,
+  MoreHorizontal,
+  RefreshCw,
+  Loader2
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 
 // Tipos
@@ -88,6 +92,7 @@ export default function EmailAutomationPage() {
   const [trendsSequenceId, setTrendsSequenceId] = useState<number | undefined>(undefined); // Filtro por campanha
   const [trendsTemplateId, setTrendsTemplateId] = useState<number | undefined>(undefined); // Filtro por tipo de email
   const [viewEmailId, setViewEmailId] = useState<number | null>(null); // ID do email para visualizar
+  const [resendingEmailId, setResendingEmailId] = useState<number | null>(null); // ID do email sendo reenviado
   
   // Queries - usando tRPC hooks
   const { data: sequences, refetch: refetchSequences } = trpc.leadEmail.listSequences.useQuery();
@@ -147,6 +152,26 @@ export default function EmailAutomationPage() {
       if (selectedSequence) setSelectedSequence(null);
     },
   });
+  
+  const resendEmailMutation = trpc.leadEmail.resendEmail.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message || "Email reenviado com sucesso!");
+      refetchSends();
+      setResendingEmailId(null);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao reenviar email: " + error.message);
+      setResendingEmailId(null);
+    },
+  });
+  
+  // Função para reenviar email
+  const handleResendEmail = (sendId: number) => {
+    if (confirm("Tem certeza que deseja reenviar este email?")) {
+      setResendingEmailId(sendId);
+      resendEmailMutation.mutate({ sendId });
+    }
+  };
   
   const createTemplateMutation = trpc.leadEmail.createTemplate.useMutation({
     onSuccess: () => {
@@ -755,13 +780,30 @@ export default function EmailAutomationPage() {
                           {send.sentAt ? new Date(send.sentAt).toLocaleString("pt-BR") : "-"}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setViewEmailId(send.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setViewEmailId(send.id)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleResendEmail(send.id)}
+                                disabled={resendingEmailId === send.id}
+                              >
+                                {resendingEmailId === send.id ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                )}
+                                Reenviar email
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
