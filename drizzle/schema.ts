@@ -2983,3 +2983,148 @@ export const leadTagAssignments = mysqlTable("lead_tag_assignments", {
 
 export type LeadTagAssignment = typeof leadTagAssignments.$inferSelect;
 export type InsertLeadTagAssignment = typeof leadTagAssignments.$inferInsert;
+
+
+// ==================== ADMIN WHATSAPP CONFIG (Configuração WhatsApp do Admin) ====================
+export const adminWhatsappConfig = mysqlTable("admin_whatsapp_config", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Credenciais Stevo
+  stevoApiKey: varchar("stevoApiKey", { length: 255 }), // Token da instância Stevo
+  stevoInstanceName: varchar("stevoInstanceName", { length: 255 }), // Instance ID da Stevo
+  stevoServer: varchar("stevoServer", { length: 50 }).default("sm15"), // Servidor (sm12, sm15, sm16)
+  stevoWebhookToken: varchar("stevoWebhookToken", { length: 255 }), // Token para validar webhooks
+  
+  // Status da conexão
+  connectionStatus: mysqlEnum("connectionStatus", ["disconnected", "connecting", "connected", "error"]).default("disconnected"),
+  lastConnectedAt: timestamp("lastConnectedAt"),
+  lastErrorMessage: text("lastErrorMessage"),
+  
+  // Número conectado
+  connectedPhone: varchar("connectedPhone", { length: 20 }),
+  connectedName: varchar("connectedName", { length: 255 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdminWhatsappConfig = typeof adminWhatsappConfig.$inferSelect;
+export type InsertAdminWhatsappConfig = typeof adminWhatsappConfig.$inferInsert;
+
+// ==================== ADMIN WHATSAPP AUTOMATIONS (Automações WhatsApp do Admin) ====================
+export const adminWhatsappAutomations = mysqlTable("admin_whatsapp_automations", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // Tipo de automação
+  trigger: mysqlEnum("trigger", [
+    "lead_trial_signup",        // Lead se cadastrou no trial
+    "lead_trial_2days_before",  // 2 dias antes do trial vencer
+    "lead_trial_expired",       // Trial expirou
+    "lead_followup_7days",      // Follow-up 7 dias após cadastro
+    "personal_payment_2days",   // 2 dias antes do vencimento
+    "personal_payment_dueday",  // No dia do vencimento
+    "personal_payment_overdue", // Pagamento em atraso
+    "personal_payment_confirmed", // Pagamento confirmado
+    "personal_reengagement_30days", // Reengajamento 30 dias inativo
+    "custom"                    // Personalizado
+  ]).notNull(),
+  
+  // Target
+  targetType: mysqlEnum("targetType", ["lead", "personal", "both"]).default("lead"),
+  
+  // Template da mensagem
+  messageTemplate: text("messageTemplate").notNull(),
+  
+  // Configurações
+  isActive: boolean("isActive").default(true).notNull(),
+  delayMinutes: int("delayMinutes").default(0), // Delay antes de enviar
+  sendWindowStart: varchar("sendWindowStart", { length: 5 }).default("08:00"), // Horário início
+  sendWindowEnd: varchar("sendWindowEnd", { length: 5 }).default("20:00"), // Horário fim
+  sendOnWeekends: boolean("sendOnWeekends").default(false),
+  
+  // Filtros adicionais
+  excludeExistingPersonals: boolean("excludeExistingPersonals").default(true), // Não enviar para quem já é personal
+  excludeRecentMessages: int("excludeRecentMessages").default(24), // Não enviar se já enviou nas últimas X horas
+  
+  // Estatísticas
+  totalSent: int("totalSent").default(0),
+  totalDelivered: int("totalDelivered").default(0),
+  totalRead: int("totalRead").default(0),
+  totalReplied: int("totalReplied").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdminWhatsappAutomation = typeof adminWhatsappAutomations.$inferSelect;
+export type InsertAdminWhatsappAutomation = typeof adminWhatsappAutomations.$inferInsert;
+
+// ==================== ADMIN WHATSAPP MESSAGES (Mensagens WhatsApp do Admin) ====================
+export const adminWhatsappMessages = mysqlTable("admin_whatsapp_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Destinatário
+  recipientType: mysqlEnum("recipientType", ["lead", "personal"]).notNull(),
+  recipientId: int("recipientId").notNull(), // ID do lead (quiz_responses) ou personal
+  recipientPhone: varchar("recipientPhone", { length: 20 }).notNull(),
+  recipientName: varchar("recipientName", { length: 255 }),
+  
+  // Mensagem
+  direction: mysqlEnum("direction", ["outbound", "inbound"]).notNull(),
+  message: text("message").notNull(),
+  messageType: mysqlEnum("messageType", ["text", "image", "document", "audio", "video"]).default("text"),
+  mediaUrl: varchar("mediaUrl", { length: 500 }),
+  
+  // Automação (se foi enviada por automação)
+  automationId: int("automationId").references(() => adminWhatsappAutomations.id),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "sent", "delivered", "read", "failed"]).default("pending"),
+  stevoMessageId: varchar("stevoMessageId", { length: 255 }),
+  errorMessage: text("errorMessage"),
+  
+  // Timestamps
+  scheduledAt: timestamp("scheduledAt"),
+  sentAt: timestamp("sentAt"),
+  deliveredAt: timestamp("deliveredAt"),
+  readAt: timestamp("readAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminWhatsappMessage = typeof adminWhatsappMessages.$inferSelect;
+export type InsertAdminWhatsappMessage = typeof adminWhatsappMessages.$inferInsert;
+
+// ==================== ADMIN WHATSAPP QUEUE (Fila de Mensagens Admin) ====================
+export const adminWhatsappQueue = mysqlTable("admin_whatsapp_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Destinatário
+  recipientType: mysqlEnum("recipientType", ["lead", "personal"]).notNull(),
+  recipientId: int("recipientId").notNull(),
+  recipientPhone: varchar("recipientPhone", { length: 20 }).notNull(),
+  recipientName: varchar("recipientName", { length: 255 }),
+  
+  // Mensagem
+  message: text("message").notNull(),
+  
+  // Automação
+  automationId: int("automationId").references(() => adminWhatsappAutomations.id),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "processing", "sent", "failed", "cancelled"]).default("pending"),
+  errorMessage: text("errorMessage"),
+  retryCount: int("retryCount").default(0),
+  
+  // Agendamento
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  processedAt: timestamp("processedAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminWhatsappQueueItem = typeof adminWhatsappQueue.$inferSelect;
+export type InsertAdminWhatsappQueue = typeof adminWhatsappQueue.$inferInsert;

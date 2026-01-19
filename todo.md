@@ -4325,3 +4325,46 @@
   - [x] Filtrar leads que possuem as tags selecionadas
   - [x] Combinar com filtros existentes (status, período)
   - [x] Mostrar tags de cada lead na tabela
+
+
+## Integração Meta Ads (v6.28)
+- [ ] Integração com conta de anúncios do Meta (Facebook/Instagram Ads)
+  - [ ] Configurar OAuth para autenticação com Meta Business
+  - [ ] Criar endpoint para conectar conta de anúncios
+  - [ ] Criar endpoint para obter métricas de campanhas (impressões, cliques, gastos)
+  - [ ] Criar endpoint para obter métricas de conjuntos de anúncios
+  - [ ] Dashboard de Meta Ads com visualização de métricas
+  - [ ] Gráficos de performance por período
+  - [ ] Comparativo de campanhas
+  - [ ] Integração com leads do quiz (correlacionar UTM com campanhas)
+
+
+## Integração WhatsApp Admin - Controle Centralizado (v6.29)
+- [x] Painel de controle WhatsApp no Admin
+  - [x] Conectar WhatsApp via QR Code (Stevo API)
+  - [x] Status de conexão em tempo real
+  - [x] Visualizar conversas recentes
+  - [x] Enviar mensagens manuais para leads/personals
+  - [x] Histórico de mensagens enviadas/recebidas
+
+## Automações WhatsApp para Leads (v6.30)
+- [x] Mensagem automática quando lead se cadastra no trial
+  - [x] Template de boas-vindas personalizável
+  - [x] Delay configurável antes do envio
+- [x] Verificar se lead já é personal cadastrado (não enviar duplicado)
+- [x] Lembrete de 2 dias antes do vencimento do trial
+- [x] Mensagem de follow-up para leads que não converteram (7 dias)
+
+## Automações WhatsApp para Personals (v6.31)
+- [x] Lembrete de 2 dias antes do vencimento da assinatura
+- [x] Lembrete no dia do vencimento
+- [x] Notificação de pagamento confirmado
+- [x] Mensagem de reengajamento para personals inativos (30 dias)
+- [ ] Não enviar para personals com assinatura ativa e em dia
+
+## Configurações de Automações Admin (v6.32)
+- [ ] Interface para ativar/desativar cada automação
+- [ ] Editar templates de mensagens
+- [ ] Configurar horários de envio (janela de horário)
+- [ ] Logs de mensagens enviadas com status
+- [ ] Métricas de engajamento (entregues, lidas, respondidas)

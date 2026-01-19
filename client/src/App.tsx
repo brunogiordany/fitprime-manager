@@ -55,6 +55,7 @@ import AdminFunnelDashboard from "@/pages/AdminFunnelDashboard";
 import AdminConversionDashboard from "@/pages/AdminConversionDashboard";
 import AdminEmailEngagement from "@/pages/AdminEmailEngagement";
 import AdminLeadTags from "@/pages/AdminLeadTags";
+import AdminWhatsappDashboard from "@/pages/AdminWhatsappDashboard";
 import AdminQuizDashboard from "@/pages/AdminQuizDashboard";
 import AdminQuizDetail from "@/pages/AdminQuizDetail";
 import AdminExtraCharges from "@/pages/AdminExtraCharges";
@@ -165,6 +166,7 @@ function Router() {
       <Route path="/admin/conversao" component={AdminConversionDashboard} />
       <Route path="/admin/email-engagement" component={AdminEmailEngagement} />
       <Route path="/admin/tags" component={AdminLeadTags} />
+      <Route path="/admin/whatsapp" component={AdminWhatsappDashboard} />
       <Route path="/admin/quiz" component={AdminQuizDashboard} />
       <Route path="/admin/quiz/:id" component={AdminQuizDetail} />
       <Route path="/admin/suporte" component={AdminSupportChat} />
