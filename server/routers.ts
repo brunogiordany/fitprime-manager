@@ -2381,7 +2381,7 @@ export const appRouter = router({
         phone: z.string(),
         birthDate: z.string().optional(),
         gender: z.enum(['male', 'female', 'other']).optional(),
-        password: z.string().min(8),
+        password: z.string().min(8, "Senha muito curta! Use pelo menos 8 caracteres"),
       }))
       .mutation(async ({ input }) => {
         // Validar convite geral (deve ter studentId = 0)
@@ -2409,6 +2409,15 @@ export const appRouter = router({
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: canAdd.message || 'Limite de alunos atingido. Faça upgrade do seu plano.'
+          });
+        }
+        
+        // Verificar se já existe aluno com este email
+        const existingStudent = await db.getStudentByEmail(input.email);
+        if (existingStudent) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'EMAIL_JA_CADASTRADO'
           });
         }
         
@@ -2517,7 +2526,12 @@ export const appRouter = router({
     
     // Regenerar link de convite geral após cancelamento
     regenerateGeneralInvite: personalProcedure
-      .mutation(async ({ ctx }) => {
+      .input(z.object({
+        expirationDays: z.number().min(1).max(730).optional().default(365),
+      }).optional())
+      .mutation(async ({ ctx, input }) => {
+        const expirationDays = input?.expirationDays || 365;
+        
         // Buscar todos os convites gerais do personal
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
         const generalInvites = allInvites.filter(i => i.studentId === null || i.studentId === 0);
@@ -2533,7 +2547,7 @@ export const appRouter = router({
         const { nanoid } = await import('nanoid');
         const inviteToken = nanoid(32);
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 365); // Expira em 1 ano
+        expiresAt.setDate(expiresAt.getDate() + expirationDays); // Expira conforme selecionado
         
         // Criar novo convite geral
         await db.createStudentInvite({

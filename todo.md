@@ -4612,3 +4612,36 @@
 - [x] Processamento de leads históricos que nunca receberam mensagens
 - [x] Integração com automações existentes do admin WhatsApp
 
+
+
+## CORREÇÕES URGENTES v6.22 - Filtros CRM e WhatsApp Admin
+
+### Filtro de Leads no CRM
+- [ ] Corrigir filtro por estágio (Trial Ativo, Trial Expirado, Convertido não retornam leads)
+- [ ] Verificar lógica de classificação de leads por estágio
+- [ ] Adicionar filtro de negativação (excluir personais ativos e trials ativos)
+- [ ] Permitir envio em massa apenas para leads que não são personais ativos
+
+### Botão WhatsApp Admin
+- [ ] Adicionar card/botão "WhatsApp Admin" no painel de administração
+- [ ] Rota: /admin/whatsapp
+- [ ] Posicionar junto aos outros cards de funcionalidades
+
+
+
+## CORREÇÕES v6.23 - Senha e Planos
+
+### Mensagem de Erro de Senha
+- [ ] Melhorar mensagem de erro quando senha tem menos de 8 caracteres
+- [ ] Mostrar mensagem clara em português no formulário de cadastro
+
+### Planos de Pricing
+- [ ] Aguardar base de planos do usuário para atualizar
+
+
+### Erro de Cadastro Duplicado
+- [x] Melhorar mensagem quando aluno já tem cadastro
+- [x] Mostrar opções: fazer login, resetar senha, falar com personal
+- [x] Indicador visual de força da senha em tempo real
+- [x] Mensagem clara quando senha tem menos de 8 caracteres
+

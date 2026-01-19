@@ -23,6 +23,7 @@ export default function Invite() {
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [showEmailExistsModal, setShowEmailExistsModal] = useState(false);
 
   // Verificar se o convite é válido
   const { data: inviteData, isLoading: inviteLoading, error: inviteError } = trpc.students.validateInvite.useQuery(
@@ -57,7 +58,15 @@ export default function Invite() {
       }, 2000);
     },
     onError: (error: any) => {
-      toast.error(error.message || "Erro ao realizar cadastro");
+      if (error.message === 'EMAIL_JA_CADASTRADO') {
+        setShowEmailExistsModal(true);
+      } else if (error.message?.includes('too_small') || error.message?.includes('password') || error.message?.includes('8')) {
+        // Erro de senha muito curta - mostrar no campo
+        setFormErrors(prev => ({ ...prev, password: 'A senha precisa ter pelo menos 8 caracteres' }));
+        toast.error('Senha muito curta! Use pelo menos 8 caracteres.');
+      } else {
+        toast.error(error.message || "Erro ao realizar cadastro");
+      }
     },
   });
 
@@ -90,8 +99,8 @@ export default function Invite() {
     }
     if (!registerForm.password) {
       errors.password = "Senha é obrigatória";
-    } else if (registerForm.password.length < 6) {
-      errors.password = "Senha deve ter pelo menos 6 caracteres";
+    } else if (registerForm.password.length < 8) {
+      errors.password = `Senha muito curta! Use pelo menos 8 caracteres (você digitou ${registerForm.password.length})`;
     }
     if (registerForm.password !== registerForm.confirmPassword) {
       errors.confirmPassword = "Senhas não conferem";
@@ -125,7 +134,15 @@ export default function Invite() {
       }, 2000);
     },
     onError: (error: any) => {
-      toast.error(error.message || "Erro ao realizar cadastro");
+      if (error.message === 'EMAIL_JA_CADASTRADO') {
+        setShowEmailExistsModal(true);
+      } else if (error.message?.includes('too_small') || error.message?.includes('password') || error.message?.includes('8')) {
+        // Erro de senha muito curta - mostrar no campo
+        setFormErrors(prev => ({ ...prev, password: 'A senha precisa ter pelo menos 8 caracteres' }));
+        toast.error('Senha muito curta! Use pelo menos 8 caracteres.');
+      } else {
+        toast.error(error.message || "Erro ao realizar cadastro");
+      }
     },
   });
 
@@ -295,8 +312,8 @@ export default function Invite() {
                   type={showPassword ? "text" : "password"}
                   value={registerForm.password}
                   onChange={(e) => setRegisterForm(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Mínimo 6 caracteres"
-                  className={formErrors.password ? "border-red-500 pr-10" : "pr-10"}
+                  placeholder="Mínimo 8 caracteres"
+                  className={formErrors.password || (registerForm.password.length > 0 && registerForm.password.length < 8) ? "border-red-500 pr-10" : "pr-10"}
                 />
                 <button
                   type="button"
@@ -306,7 +323,36 @@ export default function Invite() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
+              {/* Indicador de força da senha */}
+              {registerForm.password.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          registerForm.password.length >= i * 2
+                            ? registerForm.password.length >= 8
+                              ? 'bg-emerald-500'
+                              : 'bg-amber-500'
+                            : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${
+                    registerForm.password.length >= 8 
+                      ? 'text-emerald-600' 
+                      : 'text-amber-600'
+                  }`}>
+                    {registerForm.password.length >= 8 
+                      ? '✓ Senha válida!' 
+                      : `Faltam ${8 - registerForm.password.length} caractere${8 - registerForm.password.length > 1 ? 's' : ''} (mínimo 8)`
+                    }
+                  </p>
+                </div>
+              )}
+              {formErrors.password && <p className="text-xs text-red-500 bg-red-50 p-2 rounded-md">{formErrors.password}</p>}
             </div>
 
             <div className="space-y-2">
@@ -345,6 +391,66 @@ export default function Invite() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Modal de Email Já Cadastrado */}
+        {showEmailExistsModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader className="text-center">
+                <div className="mx-auto h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                  <AlertCircle className="h-8 w-8 text-amber-600" />
+                </div>
+                <CardTitle className="text-xl text-amber-700">Você já tem uma conta!</CardTitle>
+                <CardDescription className="text-base mt-2">
+                  O email <strong>{registerForm.email}</strong> já está cadastrado no FitPrime.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600 text-center">
+                  Escolha uma das opções abaixo:
+                </p>
+                
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => setLocation("/aluno/login")}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Fazer Login
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setLocation("/aluno/recuperar-senha")}
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Esqueci minha senha
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost"
+                    className="w-full text-gray-600"
+                    onClick={() => {
+                      toast.info(`Entre em contato com ${inviteData?.personalName || 'seu personal trainer'} para obter ajuda.`);
+                    }}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Falar com meu Personal
+                  </Button>
+                </div>
+                
+                <Button 
+                  variant="link"
+                  className="w-full text-gray-500"
+                  onClick={() => setShowEmailExistsModal(false)}
+                >
+                  Tentar com outro email
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     );
   }

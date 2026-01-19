@@ -156,24 +156,35 @@ export function GeneralInviteLink() {
 
                 {/* Expiry Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-700 mb-2">
+                  <p className="text-sm text-blue-700 font-medium">
                     <strong>Válido até:</strong>{' '}
                     {new Date(data.expiresAt).toLocaleDateString('pt-BR')}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs text-blue-600">Expiração (dias):</label>
-                    <select 
-                      value={expirationDays}
-                      onChange={(e) => setExpirationDays(Number(e.target.value))}
-                      className="text-xs border border-blue-300 rounded px-2 py-1 bg-white"
-                    >
-                      <option value={7}>7 dias</option>
-                      <option value={30}>30 dias</option>
-                      <option value={90}>90 dias</option>
-                      <option value={180}>180 dias</option>
-                      <option value={365}>1 ano</option>
-                    </select>
-                  </div>
+                </div>
+
+                {/* Expiration Selector */}
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <label className="block text-sm font-semibold text-orange-800 mb-2">
+                    Alterar tempo de expiração:
+                  </label>
+                  <select 
+                    value={expirationDays}
+                    onChange={(e) => {
+                      setExpirationDays(Number(e.target.value));
+                      // Regenerar link com nova expiração
+                      setTimeout(() => regenerateMutation.mutate({ expirationDays: Number(e.target.value) }), 100);
+                    }}
+                    className="w-full text-sm border border-orange-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  >
+                    <option value={7}>7 dias</option>
+                    <option value={30}>30 dias</option>
+                    <option value={90}>90 dias (3 meses)</option>
+                    <option value={180}>180 dias (6 meses)</option>
+                    <option value={365}>1 ano</option>
+                  </select>
+                  <p className="text-xs text-orange-600 mt-2">
+                    Ao alterar, um novo link será gerado automaticamente
+                  </p>
                 </div>
 
                 {/* Copy Button */}
