@@ -614,7 +614,14 @@ export default function Charges() {
                       <CollapsibleContent>
                         <div className="border-t bg-accent/20">
                           <div className="divide-y">
-                            {item.charges.map((chargeItem) => (
+                            {[...item.charges]
+                              .sort((a, b) => {
+                                // Ordenar por data de vencimento (mais próximo primeiro)
+                                const dateA = new Date(a.charge.dueDate).getTime();
+                                const dateB = new Date(b.charge.dueDate).getTime();
+                                return dateA - dateB;
+                              })
+                              .map((chargeItem) => (
                               <div 
                                 key={chargeItem.charge.id}
                                 className="flex items-center justify-between p-4 hover:bg-accent/30"

@@ -2074,6 +2074,21 @@ export default function AdminPanel() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link href="/admin/whatsapp">
+                <Card className="cursor-pointer hover:border-green-500 transition-colors">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                        <Phone className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">WhatsApp Admin</p>
+                        <p className="text-xs text-muted-foreground">Automações e mensagens</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             
             {/* Gráficos */}

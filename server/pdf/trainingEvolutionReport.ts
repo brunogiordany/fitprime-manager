@@ -108,13 +108,21 @@ export async function generateTrainingEvolutionPDF(
     }
   };
 
+  // Função auxiliar para garantir string válida
+  const safeText = (value: any): string => {
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'string') return value || '-';
+    return String(value) || '-';
+  };
+
   // Função auxiliar para adicionar seção
   const addSection = (title: string) => {
     checkNewPage(30);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(59, 130, 246); // Azul
-    doc.text(title, margin, yPos);
+    doc.text(safeText(title), margin, yPos);
     yPos += 8;
     doc.setDrawColor(59, 130, 246);
     doc.line(margin, yPos, pageWidth - margin, yPos);
@@ -203,21 +211,21 @@ export async function generateTrainingEvolutionPDF(
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(student.name, margin, yPos);
+  doc.text(safeText(student.name), margin, yPos);
   yPos += 6;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
   if (student.email) {
-    doc.text(`Email: ${student.email}`, margin, yPos);
+    doc.text(`Email: ${safeText(student.email)}`, margin, yPos);
     yPos += 5;
   }
   if (student.phone) {
-    doc.text(`Telefone: ${student.phone}`, margin, yPos);
+    doc.text(`Telefone: ${safeText(student.phone)}`, margin, yPos);
     yPos += 5;
   }
-  doc.text(`Período: ${periodLabel}`, margin, yPos);
+  doc.text(`Período: ${safeText(periodLabel)}`, margin, yPos);
   yPos += 15;
 
   // ==================== MÉTRICAS PRINCIPAIS ====================
@@ -356,13 +364,13 @@ export async function generateTrainingEvolutionPDF(
       }
       
       xPos = margin + 3;
-      doc.text(group.muscleGroup, xPos, yPos + 5);
+      doc.text(safeText(group.muscleGroup), xPos, yPos + 5);
       xPos += colWidths[0];
-      doc.text(group.totalVolume.toLocaleString('pt-BR'), xPos, yPos + 5);
+      doc.text(safeText((group.totalVolume || 0).toLocaleString('pt-BR')), xPos, yPos + 5);
       xPos += colWidths[1];
-      doc.text(group.totalSets.toString(), xPos, yPos + 5);
+      doc.text(safeText(group.totalSets || 0), xPos, yPos + 5);
       xPos += colWidths[2];
-      doc.text(group.totalReps.toString(), xPos, yPos + 5);
+      doc.text(safeText(group.totalReps || 0), xPos, yPos + 5);
       xPos += colWidths[3];
       const percentage = totalVolume > 0 ? ((group.totalVolume / totalVolume) * 100).toFixed(1) : '0';
       doc.text(`${percentage}%`, xPos, yPos + 5);
@@ -453,22 +461,22 @@ export async function generateTrainingEvolutionPDF(
       
       xPos = margin + 3;
       const dateText = safeFormatDate(log.trainingDate, 'dd/MM/yy') || '-';
-      doc.text(String(dateText), xPos, yPos + 5);
+      doc.text(safeText(dateText), xPos, yPos + 5);
       xPos += colWidths[0];
       
-      const workoutName = String(log.workoutName || 'Treino').substring(0, 20);
-      doc.text(workoutName, xPos, yPos + 5);
+      const workoutName = safeText(log.workoutName || 'Treino').substring(0, 20);
+      doc.text(safeText(workoutName), xPos, yPos + 5);
       xPos += colWidths[1];
       
-      doc.text(String(`${log.totalDuration || 0}min`), xPos, yPos + 5);
+      doc.text(safeText(`${log.totalDuration || 0}min`), xPos, yPos + 5);
       xPos += colWidths[2];
       
-      doc.text(String(log.totalSets || 0), xPos, yPos + 5);
+      doc.text(safeText(log.totalSets || 0), xPos, yPos + 5);
       xPos += colWidths[3];
       
       const volume = parseFloat(String(log.totalVolume || '0'));
       const volumeText = volume >= 1000 ? `${(volume / 1000).toFixed(1)}t` : `${volume.toFixed(0)}kg`;
-      doc.text(String(volumeText), xPos, yPos + 5);
+      doc.text(safeText(volumeText), xPos, yPos + 5);
       
       yPos += 10;
     });

@@ -4645,3 +4645,26 @@
 - [x] Indicador visual de força da senha em tempo real
 - [x] Mensagem clara quando senha tem menos de 8 caracteres
 
+
+
+## CORREÇÕES v6.24 - Planos, WhatsApp Admin, Filtros CRM
+- [ ] Atualizar planos de pricing conforme base enviada
+- [ ] Adicionar botão WhatsApp Admin no painel de administração
+- [ ] Corrigir filtros do CRM de leads
+
+
+### Bug PDF Dashboard v6.24
+- [ ] Corrigir erro "Invalid arguments passed to jsPDF.text" ao exportar PDF no dashboard
+
+
+### Ordenação de Cobranças v6.24
+- [ ] Ordenar cobranças do mais próximo para o mais distante (personal e aluno)
+
+
+
+## CORREÇÕES v6.24 - Filtros CRM, PDF, Cobranças, WhatsApp Admin
+- [x] Adicionar botão WhatsApp Admin no painel de administração
+- [x] Corrigir filtros do CRM de leads (trial ativo/expirado)
+- [x] Corrigir erro "Invalid arguments passed to jsPDF.text" ao exportar PDF
+- [x] Ordenar cobranças do mais próximo para o mais distante (por data de vencimento)
+

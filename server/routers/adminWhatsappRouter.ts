@@ -1015,6 +1015,29 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
             .where(sql`${leadTagAssignments.leadId} IN (${sql.join(leadIds.map(id => sql`${id}`), sql`, `)})`)
         : [];
       
+      // Buscar personais com trial para verificar status real
+      const personalsWithTrial = await db.select({
+        email: users.email,
+        subscriptionStatus: personals.subscriptionStatus,
+        trialEndsAt: personals.trialEndsAt,
+      })
+        .from(personals)
+        .innerJoin(users, eq(personals.userId, users.id))
+        .where(sql`${users.email} IS NOT NULL`);
+      
+      // Criar mapa de emails para status
+      const emailStatusMap = new Map<string, { status: string; trialEndsAt: Date | null }>();
+      for (const p of personalsWithTrial) {
+        if (p.email) {
+          emailStatusMap.set(p.email.toLowerCase(), {
+            status: p.subscriptionStatus || 'trial',
+            trialEndsAt: p.trialEndsAt,
+          });
+        }
+      }
+      
+      const now = new Date();
+      
       // Combinar dados
       const leadsWithFunnel = leads.map(lead => {
         const stageInfo = stages.find(s => s.leadId === lead.id);
@@ -1023,9 +1046,31 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
         // Determinar estágio automaticamente se não existir
         let stage = stageInfo?.stage || 'new_lead';
         if (!stageInfo) {
-          if (lead.convertedToPaid) stage = 'converted';
-          else if (lead.convertedToTrial) stage = 'trial_active';
-          else if (lead.recommendedProfile) stage = 'quiz_completed';
+          // Verificar status real do personal se existir
+          const personalStatus = lead.email ? emailStatusMap.get(lead.email.toLowerCase()) : null;
+          
+          if (personalStatus) {
+            if (personalStatus.status === 'active') {
+              stage = 'converted';
+            } else if (personalStatus.status === 'trial') {
+              // Verificar se trial ainda está ativo
+              if (personalStatus.trialEndsAt && new Date(personalStatus.trialEndsAt) > now) {
+                stage = 'trial_active';
+              } else {
+                stage = 'trial_expired';
+              }
+            } else if (personalStatus.status === 'expired') {
+              stage = 'trial_expired';
+            } else if (personalStatus.status === 'cancelled') {
+              stage = 'lost';
+            }
+          } else if (lead.convertedToPaid) {
+            stage = 'converted';
+          } else if (lead.convertedToTrial) {
+            stage = 'trial_active'; // Fallback se não encontrar personal
+          } else if (lead.recommendedProfile) {
+            stage = 'quiz_completed';
+          }
         }
         
         return {
@@ -1176,6 +1221,7 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
       convertedToTrial: quizResponses.convertedToTrial,
       convertedToPaid: quizResponses.convertedToPaid,
       recommendedProfile: quizResponses.recommendedProfile,
+      leadEmail: quizResponses.leadEmail,
     })
       .from(quizResponses)
       .where(sql`${quizResponses.leadPhone} IS NOT NULL`);
@@ -1183,6 +1229,28 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
     // Buscar estágios salvos
     const stages = await db.select()
       .from(leadFunnelStages);
+    
+    // Buscar personais com trial para verificar status real
+    const personalsWithTrial = await db.select({
+      email: users.email,
+      subscriptionStatus: personals.subscriptionStatus,
+      trialEndsAt: personals.trialEndsAt,
+      subscriptionExpiresAt: personals.subscriptionExpiresAt,
+    })
+      .from(personals)
+      .innerJoin(users, eq(personals.userId, users.id))
+      .where(sql`${users.email} IS NOT NULL`);
+    
+    // Criar mapa de emails para status
+    const emailStatusMap = new Map<string, { status: string; trialEndsAt: Date | null }>();
+    for (const p of personalsWithTrial) {
+      if (p.email) {
+        emailStatusMap.set(p.email.toLowerCase(), {
+          status: p.subscriptionStatus || 'trial',
+          trialEndsAt: p.trialEndsAt,
+        });
+      }
+    }
     
     // Contar por estágio
     const stageCounts: Record<string, number> = {
@@ -1198,14 +1266,38 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
       reengagement: 0,
     };
     
+    const now = new Date();
+    
     for (const lead of leads) {
       const stageInfo = stages.find(s => s.leadId === lead.id);
       let stage = stageInfo?.stage || 'new_lead';
       
       if (!stageInfo) {
-        if (lead.convertedToPaid) stage = 'converted';
-        else if (lead.convertedToTrial) stage = 'trial_active';
-        else if (lead.recommendedProfile) stage = 'quiz_completed';
+        // Verificar status real do personal se existir
+        const personalStatus = lead.leadEmail ? emailStatusMap.get(lead.leadEmail.toLowerCase()) : null;
+        
+        if (personalStatus) {
+          if (personalStatus.status === 'active') {
+            stage = 'converted';
+          } else if (personalStatus.status === 'trial') {
+            // Verificar se trial ainda está ativo
+            if (personalStatus.trialEndsAt && new Date(personalStatus.trialEndsAt) > now) {
+              stage = 'trial_active';
+            } else {
+              stage = 'trial_expired';
+            }
+          } else if (personalStatus.status === 'expired') {
+            stage = 'trial_expired';
+          } else if (personalStatus.status === 'cancelled') {
+            stage = 'lost';
+          }
+        } else if (lead.convertedToPaid) {
+          stage = 'converted';
+        } else if (lead.convertedToTrial) {
+          stage = 'trial_active'; // Fallback se não encontrar personal
+        } else if (lead.recommendedProfile) {
+          stage = 'quiz_completed';
+        }
       }
       
       stageCounts[stage] = (stageCounts[stage] || 0) + 1;
