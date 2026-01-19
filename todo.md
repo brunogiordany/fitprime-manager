@@ -4809,3 +4809,10 @@
   - Cards com métricas principais
   - Gráfico de envios por dia
   - Tabela de desempenho por sequência
+
+## Correções de Bugs - 19/01/2026
+- [x] Selecionar Todos condicional ao filtro ativo (só seleciona leads filtrados)
+- [x] Deduplicação de leads por telefone na listagem (remove duplicatas)
+- [x] Links de email corrigidos para fitprimemanager.com (não fitprime.com.br)
+- [x] Controle de emails repetidos (não envia mesmo template 2x para mesmo lead)
+- [ ] Página de Gestão de Leads mostrando 0 leads (investigar filtro de data)

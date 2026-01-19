@@ -587,6 +587,23 @@ export const leadEmailRouter = router({
         throw new Error("Template não encontrado");
       }
       
+      // VERIFICAR SE JÁ FOI ENVIADO EMAIL COM ESTE TEMPLATE PARA ESTE LEAD
+      const [existingEmail] = await db
+        .select()
+        .from(emailSends)
+        .where(
+          and(
+            eq(emailSends.leadId, input.leadId),
+            eq(emailSends.templateId, input.templateId),
+            eq(emailSends.status, "sent")
+          )
+        )
+        .limit(1);
+      
+      if (existingEmail) {
+        throw new Error("Este email já foi enviado para este lead anteriormente. Para reenviar, use a função de reenvio.");
+      }
+      
       // Substituir variáveis no template
       const htmlContent = replaceTemplateVariables(template.htmlContent, lead);
       const subject = replaceTemplateVariables(template.subject, lead);

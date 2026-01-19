@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total, MIN(createdAt) as first_lead, MAX(createdAt) as last_lead FROM quiz_responses;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COUNT(*) as total, MIN(createdAt) as first_lead, MAX(createdAt) as last_lead FROM quiz_responses;",
+  "rows": [
+    {
+      "total": "78",
+      "first_lead": "2026-01-02 16:50:39",
+      "last_lead": "2026-01-19 17:41:13"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tfirst_lead\tlast_lead\n78\t2026-01-02 16:50:39\t2026-01-19 17:41:13\n",
+  "stderr": "",
+  "execution_time_ms": 362
+}

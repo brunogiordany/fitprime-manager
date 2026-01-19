@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, leadName, leadEmail, createdAt FROM quiz_responses ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, leadName, leadEmail, createdAt FROM quiz_responses ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "420008",
+      "leadName": "Alan santos",
+      "leadEmail": "arieleanthony@gmail.com",
+      "createdAt": "2026-01-19 17:41:13"
+    },
+    {
+      "id": "420007",
+      "leadName": "Plano Majestade 2",
+      "leadEmail": "lklashhouse@gmail.com",
+      "createdAt": "2026-01-19 13:34:05"
+    },
+    {
+      "id": "420006",
+      "leadName": "Plano Majestade ",
+      "leadEmail": "lklashhouse@gmail.com",
+      "createdAt": "2026-01-19 13:32:14"
+    },
+    {
+      "id": "420005",
+      "leadName": "Cláudio Vieira",
+      "leadEmail": "clicopyoficial@gmail.com",
+      "createdAt": "2026-01-19 11:50:07"
+    },
+    {
+      "id": "420004",
+      "leadName": "Cláudio Vieira",
+      "leadEmail": "clicopyoficial@gmail.com",
+      "createdAt": "2026-01-19 11:48:33"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tleadName\tleadEmail\tcreatedAt\n420008\tAlan santos\tarieleanthony@gmail.com\t2026-01-19 17:41:13\n420007\tPlano Majestade 2\tlklashhouse@gmail.com\t2026-01-19 13:34:05\n420006\tPlano Majestade \tlklashhouse@gmail.com\t2026-01-19 13:32:14\n420005\tCláudio Vieira\tclicopyoficial@gmail.com\t2026-01-19 11:50:07\n420004\tCláudio Vieira\tclicopyoficial@gmail.com\t2026-01-19 11:48:33\n",
+  "stderr": "",
+  "execution_time_ms": 348
+}

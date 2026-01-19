@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, name, subject, SUBSTRING(htmlContent, 1, 500) as content_preview FROM lead_email_templates WHERE htmlContent LIKE '%fitprime.com.br%' OR htmlContent LIKE '%/pricing%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, subject, SUBSTRING(htmlContent, 1, 500) as content_preview FROM lead_email_templates WHERE htmlContent LIKE '%fitprime.com.br%' OR htmlContent LIKE '%/pricing%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Email de Boas-vindas",
+      "subject": "{{leadName}}, bem-vindo ao FitPrime! 🎉",
+      "content_preview": ""
+    },
+    {
+      "id": "2",
+      "name": "Lembrete - Dia 1",
+      "subject": "{{leadName}}, você ainda está pensando?",
+      "content_preview": ""
+    },
+    {
+      "id": "3",
+      "name": "Dica de Gestão - Dia 3",
+      "subject": "3 dicas para dobrar sua retenção de alunos",
+      "content_preview": ""
+    },
+    {
+      "id": "4",
+      "name": "Última Chance - Dia 7",
+      "subject": "{{leadName}}, última chance de transformar sua carreira",
+      "content_preview": ""
+    }
+  ],
+  "messages": [
+    "<!DOCTYPE html>",
+    "<html>",
+    "<head>",
+    "  <meta charset=\"utf-8\">",
+    "  <style>",
+    "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }",
+    "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }",
+    "    .header { background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }",
+    "    .header h1 { color: white; margin: 0; }",
+    "    .content { background: #f9fafb; padding: 30px; }",
+    "    .cta { display: inline-block; background: #10b981; co",
+    "<!DOCTYPE html>",
+    "<html>",
+    "<head>",
+    "  <meta charset=\"utf-8\">",
+    "  <style>",
+    "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }",
+    "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }",
+    "    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }",
+    "    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }",
+    "  </style>",
+    "</head>",
+    "<body>",
+    "  <div class=\"container\">",
+    "    <div class",
+    "<!DOCTYPE html>",
+    "<html>",
+    "<head>",
+    "  <meta charset=\"utf-8\">",
+    "  <style>",
+    "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }",
+    "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }",
+    "    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }",
+    "    .tip { background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; }",
+    "    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-",
+    "<!DOCTYPE html>",
+    "<html>",
+    "<head>",
+    "  <meta charset=\"utf-8\">",
+    "  <style>",
+    "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }",
+    "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }",
+    "    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }",
+    "    .highlight { background: #fef3c7; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }",
+    "    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration:"
+  ],
+  "stdout": "id\tname\tsubject\tcontent_preview\n1\tEmail de Boas-vindas\t{{leadName}}, bem-vindo ao FitPrime! 🎉\t\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }\n    .header h1 { color: white; margin: 0; }\n    .content { background: #f9fafb; padding: 30px; }\n    .cta { display: inline-block; background: #10b981; co\n2\tLembrete - Dia 1\t{{leadName}}, você ainda está pensando?\t\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }\n    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class\n3\tDica de Gestão - Dia 3\t3 dicas para dobrar sua retenção de alunos\t\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }\n    .tip { background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; margin: 15px 0; }\n    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-\n4\tÚltima Chance - Dia 7\t{{leadName}}, última chance de transformar sua carreira\t\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .content { background: #f9fafb; padding: 30px; border-radius: 10px; }\n    .highlight { background: #fef3c7; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }\n    .cta { display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration:\n",
+  "stderr": "",
+  "execution_time_ms": 691
+}

@@ -1154,7 +1154,33 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
         filteredLeads = filteredLeads.filter(l => l.source === input.sourceFilter);
       }
       
-      return filteredLeads;
+      // DEDUPLICAÇÃO: Remover leads duplicados por telefone (manter o mais recente)
+      const seenPhones = new Map<string, typeof filteredLeads[0]>();
+      for (const lead of filteredLeads) {
+        const normalizedPhone = lead.phone?.replace(/\D/g, '') || '';
+        if (normalizedPhone) {
+          const existing = seenPhones.get(normalizedPhone);
+          if (!existing || (lead.createdAt && existing.createdAt && new Date(lead.createdAt) > new Date(existing.createdAt))) {
+            seenPhones.set(normalizedPhone, lead);
+          }
+        } else {
+          // Se não tem telefone, incluir mesmo assim (usar email como chave)
+          const key = lead.email?.toLowerCase() || `no-contact-${lead.id}`;
+          if (!seenPhones.has(key)) {
+            seenPhones.set(key, lead);
+          }
+        }
+      }
+      
+      // Retornar leads únicos ordenados por data de criação (mais recentes primeiro)
+      const uniqueLeads = Array.from(seenPhones.values())
+        .sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+      
+      return uniqueLeads;
     }),
   
   // Atualizar estágio do lead no funil

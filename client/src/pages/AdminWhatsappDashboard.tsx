@@ -632,18 +632,23 @@ export default function AdminWhatsappDashboard() {
   };
   
   const selectAllLeads = () => {
-    if (leads) {
-      // Se todos já estão selecionados, desmarcar todos
-      if (selectedLeads.length === leads.length && leads.length > 0) {
+    // Usar leadsWithFunnel (leads filtrados) ao invés de leads
+    const currentLeads = leadsWithFunnel || [];
+    if (currentLeads.length > 0) {
+      // Se todos os leads filtrados já estão selecionados, desmarcar todos
+      const allFilteredSelected = currentLeads.every((l: any) => selectedLeads.includes(l.id));
+      if (allFilteredSelected) {
         setSelectedLeads([]);
       } else {
-        // Senão, selecionar todos
-        setSelectedLeads(leads.map((l: Lead) => l.id));
+        // Senão, selecionar apenas os leads filtrados
+        setSelectedLeads(currentLeads.map((l: any) => l.id));
       }
     }
   };
   
-  const allSelected = leads && leads.length > 0 && selectedLeads.length === leads.length;
+  // Verificar se todos os leads filtrados estão selecionados
+  const allSelected = leadsWithFunnel && leadsWithFunnel.length > 0 && 
+    leadsWithFunnel.every((l: any) => selectedLeads.includes(l.id));
   
   const isConnected = config?.connectionStatus === "connected";
   
