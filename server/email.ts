@@ -142,7 +142,7 @@ export async function sendInviteEmail(
   }
   
   // Fallback to default template
-  const subject = `${personalName} convidou você para o FitPrime`;
+  const subject = `💪 ${studentName}, ${personalName} te convidou para treinar com mais resultados!`;
   
   const html = `
 <!DOCTYPE html>
@@ -158,7 +158,7 @@ export async function sendInviteEmail(
         <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
           <span style="font-size: 24px;">💪</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Bem-vindo ao FitPrime!</h1>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Seu treino está te esperando!</h1>
       </div>
       
       <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
@@ -166,13 +166,17 @@ export async function sendInviteEmail(
       </p>
       
       <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-        <strong>${personalName}</strong> convidou você para acessar o Portal do Aluno do FitPrime. 
-        Lá você poderá ver seus treinos, acompanhar sua evolução e muito mais!
+        <strong>${personalName}</strong> preparou um portal exclusivo para você acompanhar seus treinos e evolução. 
+        Acesse agora e tenha tudo na palma da mão!
       </p>
       
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 15px; margin: 20px 0;">
+        <p style="color: #166534; font-size: 14px; margin: 0;">✅ Treinos personalizados<br>✅ Acompanhamento de evolução<br>✅ Comunicação direta com seu personal</p>
+      </div>
+      
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${inviteLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-          Criar minha conta
+        <a href="${inviteLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 18px;">
+          Acessar Meus Treinos Agora
         </a>
       </div>
       

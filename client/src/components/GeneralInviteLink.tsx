@@ -10,11 +10,12 @@ export function GeneralInviteLink() {
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [expirationDays, setExpirationDays] = useState<number>(365);
 
   const utils = trpc.useUtils();
 
   const { data, isLoading, error, refetch } = trpc.students.getOrCreateGeneralInvite.useQuery(
-    undefined,
+    { expirationDays },
     {
       enabled: showModal,
       retry: 2,
@@ -155,10 +156,24 @@ export function GeneralInviteLink() {
 
                 {/* Expiry Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-700">
+                  <p className="text-xs text-blue-700 mb-2">
                     <strong>Válido até:</strong>{' '}
                     {new Date(data.expiresAt).toLocaleDateString('pt-BR')}
                   </p>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-blue-600">Expiração (dias):</label>
+                    <select 
+                      value={expirationDays}
+                      onChange={(e) => setExpirationDays(Number(e.target.value))}
+                      className="text-xs border border-blue-300 rounded px-2 py-1 bg-white"
+                    >
+                      <option value={7}>7 dias</option>
+                      <option value={30}>30 dias</option>
+                      <option value={90}>90 dias</option>
+                      <option value={180}>180 dias</option>
+                      <option value={365}>1 ano</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Copy Button */}

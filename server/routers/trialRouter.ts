@@ -52,7 +52,9 @@ Precisa de ajuda? Responda esta mensagem que iremos te auxiliar.`;
 
 // Função para enviar email de boas-vindas para o personal trial
 async function sendTrialWelcomeEmail(email: string, name: string) {
-  const subject = `🎉 Bem-vindo ao FitPrime Manager, ${name}!`;
+  const subject = `💪 ${name}, sua conta FitPrime está ativa! Comece a faturar mais hoje`;
+  
+  const baseUrl = process.env.VITE_APP_URL || 'https://fitprimemanager.com';
   
   const html = `
 <!DOCTYPE html>
@@ -66,32 +68,37 @@ async function sendTrialWelcomeEmail(email: string, name: string) {
     <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
       <div style="text-align: center; margin-bottom: 30px;">
         <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #14b8a6); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-size: 24px;">🎉</span>
+          <span style="font-size: 24px;">💪</span>
         </div>
-        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Bem-vindo ao FitPrime!</h1>
-        <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Sua conta trial foi criada com sucesso</p>
+        <h1 style="color: #1f2937; margin: 0; font-size: 24px;">Parabéns, ${name}!</h1>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Sua conta FitPrime está pronta para você começar a faturar mais</p>
       </div>
       
-      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-        <h3 style="color: #166534; margin: 0 0 12px 0; font-size: 16px;">⏰ Você tem 24 horas de acesso gratuito!</h3>
-        <p style="color: #166534; margin: 0; font-size: 14px;">Aproveite para explorar todas as funcionalidades e ver como o FitPrime pode transformar a gestão do seu negócio fitness.</p>
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+        <h3 style="color: #92400e; margin: 0 0 12px 0; font-size: 16px;">💡 Personals que usam FitPrime faturam em média 67% a mais!</h3>
+        <p style="color: #92400e; margin: 0; font-size: 14px;">Organize seus alunos, automatize cobranças e foque no que importa: treinar pessoas.</p>
       </div>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://fitprimemanager.com/login-personal" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Acessar Minha Conta</a>
+        <a href="${baseUrl}/login-personal" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 18px;">Acessar e Começar a Faturar</a>
       </div>
       
-      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
-        <h4 style="color: #374151; margin: 0 0 12px 0; font-size: 14px;">💡 Próximos passos:</h4>
-        <ul style="color: #6b7280; font-size: 14px; margin: 0; padding-left: 20px;">
-          <li style="margin-bottom: 8px;">Cadastre seus alunos</li>
-          <li style="margin-bottom: 8px;">Configure seus treinos</li>
-          <li style="margin-bottom: 8px;">Explore o dashboard financeiro</li>
-        </ul>
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <h4 style="color: #166534; margin: 0 0 12px 0; font-size: 14px;">🚀 3 passos para aumentar seu faturamento:</h4>
+        <ol style="color: #166534; font-size: 14px; margin: 0; padding-left: 20px;">
+          <li style="margin-bottom: 8px;"><strong>Cadastre seus alunos</strong> - Centralize tudo em um lugar</li>
+          <li style="margin-bottom: 8px;"><strong>Ative cobranças automáticas</strong> - Nunca mais perca pagamento</li>
+          <li style="margin-bottom: 8px;"><strong>Ative seu plano</strong> - Desbloqueie todas as funcionalidades</li>
+        </ol>
+      </div>
+      
+      <div style="text-align: center; margin: 20px 0; padding: 15px; background-color: #f9fafb; border-radius: 8px;">
+        <p style="color: #374151; font-size: 14px; margin: 0 0 10px 0;">🎁 <strong>Oferta especial:</strong> Ative seu plano agora e ganhe 30% de desconto!</p>
+        <a href="${baseUrl}/planos-fitprime" style="display: inline-block; background: #f59e0b; color: white; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; font-size: 14px;">Ver Planos e Ativar</a>
       </div>
       
       <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 30px;">
-        Precisa de ajuda? Responda este email ou acesse nosso suporte.
+        Dúvidas? Responda este email ou fale conosco pelo WhatsApp.
       </p>
     </div>
   </div>

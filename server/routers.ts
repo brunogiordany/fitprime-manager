@@ -2152,11 +2152,15 @@ export const appRouter = router({
     
     // Validar convite (público - para página de convite)
     validateInvite: publicProcedure
-      .input(z.object({ token: z.string() }))
+      .input(z.object({ token: z.string(), personalId: z.number().optional() }))
       .query(async ({ input }) => {
         const invite = await db.getStudentInviteByToken(input.token);
         if (!invite) {
           return { valid: false, message: 'Convite não encontrado' };
+        }
+        // Se personalId foi passado na URL, verificar se corresponde ao convite
+        if (input.personalId && invite.personalId !== input.personalId) {
+          return { valid: false, message: 'Convite não encontrado para este personal' };
         }
         if (invite.status !== 'pending') {
           return { valid: false, message: 'Este convite já foi usado ou cancelado' };
@@ -2164,14 +2168,23 @@ export const appRouter = router({
         if (new Date(invite.expiresAt) < new Date()) {
           return { valid: false, message: 'Este convite expirou' };
         }
-        // Buscar nome do personal e aluno
-        // Buscar personal pelo userId (precisamos criar função ou usar outra abordagem)
-        // Por enquanto, vamos retornar um nome genérico
-        const personal = { name: 'Seu Personal Trainer' };
+        // Buscar nome do personal
+        let personalName = 'Seu Personal Trainer';
+        try {
+          const personalData = await db.getPersonalSubscription(invite.personalId);
+          if (personalData) {
+            const personalUser = await db.getUserById(personalData.personalId);
+            if (personalUser?.name) {
+              personalName = personalUser.name;
+            }
+          }
+        } catch (e) {
+          console.log('[Invite] Erro ao buscar nome do personal:', e);
+        }
         const student = invite.studentId ? await db.getStudentById(invite.studentId, invite.personalId) : null;
         return { 
           valid: true, 
-          personalName: personal?.name || 'Personal',
+          personalName,
           studentName: student?.name || '',
           studentEmail: student?.email || '',
           studentPhone: student?.phone || '',
@@ -2305,7 +2318,11 @@ export const appRouter = router({
     
     // Gerar link de convite geral (reutilizável para múltiplos alunos)
     getOrCreateGeneralInvite: personalProcedure
-      .query(async ({ ctx }) => {
+      .input(z.object({
+        expirationDays: z.number().min(1).max(365).optional(), // Expiração configurável em dias
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const expirationDays = input?.expirationDays || 365; // Padrão: 1 ano
         // Verificar se já existe um link geral válido (studentId = 0 indica convite geral)
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
         const existingInvites = allInvites.filter(i => 
@@ -2326,7 +2343,7 @@ export const appRouter = router({
           const { nanoid } = await import('nanoid');
           inviteToken = nanoid(32);
           expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + 365); // Expira em 1 ano
+          expiresAt.setDate(expiresAt.getDate() + expirationDays); // Expiração configurável
           
           // Criar convite geral (studentId = null indica convite geral reutilizável)
           await db.createStudentInvite({

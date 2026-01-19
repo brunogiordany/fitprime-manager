@@ -4559,3 +4559,56 @@
 - [x] 4. Botão "Renovar Assinatura" com link não funcional - direcionar para página com todos os planos - CORRIGIDO
 - [x] 5. Página de planos não mostra o plano mais barato de R$ 39,90 - CORRIGIDO (CompletePricingPage já tem Beginner)
 
+
+
+## CHECKLIST v4.9 - Bugs Críticos
+
+### Página de Planos
+- [x] 1. Mostrar TODOS os planos (Beginner R$39,90, Starter, Pro, Business, Premium)
+- [x] 2. CTAs dos botões fracos - mudar para foco em benefícios
+
+### Link de Convite
+- [x] 3. Link de convite dá erro 404 (/invite/personal/1/token) - CORRIGIDO (rota adicionada)
+- [ ] 4. Adicionar opção de tempo de expiração customizável
+
+### Emails de Follow-up
+- [ ] 5. Links nos emails errados (fitprime.com.br/pricing)
+- [ ] 6. CTA fraco - mudar para "ativar plano e faturar mais"
+
+### Automações WhatsApp
+- [ ] 7. Mensagens não estão sendo enviadas
+- [ ] 8. Colocar leads nas esteiras de automação corretas
+
+
+
+## CORREÇÕES v6.21 - Pricing, Convites e Automações WhatsApp
+
+### Página de Pricing
+- [x] Página de pricing mostrando todos os 5 planos (Beginner R$39,90, Starter, Pro, Business, Premium)
+- [x] CTAs dos botões atualizados com foco em benefícios:
+  - "Ativar e Começar a Faturar" (Beginner)
+  - "Ativar Agora - 7 Dias Grátis" (Starter)
+  - "Escalar Meu Faturamento" (Pro)
+  - "Dominar e Faturar Alto" (Business)
+  - "Ser Referência no Mercado" (Premium)
+
+### Sistema de Convites
+- [x] Link de convite com expiração configurável (7, 30, 90, 180 dias ou 1 ano)
+- [x] Componente GeneralInviteLink atualizado com seletor de expiração
+- [x] Componente Invite atualizado para suportar convites gerais (registerWithGeneralInvite)
+- [x] Validação de convite melhorada para buscar nome real do personal
+
+### Templates de Email
+- [x] Email de boas-vindas trial atualizado com foco em ativação e conversão
+- [x] Email de convite de aluno atualizado com CTAs fortes ("Acessar Meus Treinos Agora")
+- [x] Mensagens focadas em benefícios e faturamento
+
+### Automações WhatsApp para Leads
+- [x] Worker de automações WhatsApp para leads criado (leadWhatsappWorker.ts)
+- [x] Worker iniciado no servidor (executa a cada 10 minutos)
+- [x] Processamento de boas-vindas para novos leads
+- [x] Processamento de follow-up para leads que não converteram
+- [x] Processamento de reativação por temperatura (frio, morno, quente)
+- [x] Processamento de leads históricos que nunca receberam mensagens
+- [x] Integração com automações existentes do admin WhatsApp
+

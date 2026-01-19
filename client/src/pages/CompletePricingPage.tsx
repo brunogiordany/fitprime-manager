@@ -39,6 +39,96 @@ interface PricingPlan {
   cta: string;
 }
 
+// TODOS os planos disponíveis (para mostrar todas as opções)
+const ALL_PLANS: PricingPlan[] = [
+  {
+    id: "beginner",
+    name: "Beginner",
+    description: "Começando sua jornada",
+    price: 39.9,
+    studentLimit: 5,
+    extraStudentPrice: 7.98,
+    features: [
+      "Até 5 alunos inclusos",
+      "Gestão completa de alunos",
+      "Treinos personalizados",
+      "Cobranças automáticas",
+      "Relatórios básicos",
+      "Suporte por email",
+    ],
+    cta: "Ativar e Começar a Faturar",
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    description: "Mais popular",
+    price: 97,
+    studentLimit: 15,
+    extraStudentPrice: 6.47,
+    features: [
+      "Até 15 alunos inclusos",
+      "Tudo do Beginner +",
+      "Treinos com IA",
+      "Análise de evolução",
+      "Relatórios avançados",
+      "Suporte prioritário",
+    ],
+    highlighted: true,
+    cta: "Ativar Agora - 7 Dias Grátis",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    description: "Para crescer mais",
+    price: 147,
+    studentLimit: 25,
+    extraStudentPrice: 5.88,
+    features: [
+      "Até 25 alunos inclusos",
+      "Tudo do Starter +",
+      "IA avançada",
+      "Automações completas",
+      "Integrações",
+      "Suporte dedicado",
+    ],
+    cta: "Escalar Meu Faturamento",
+  },
+  {
+    id: "business",
+    name: "Business",
+    description: "Para escalar",
+    price: 197,
+    studentLimit: 40,
+    extraStudentPrice: 4.93,
+    features: [
+      "Até 40 alunos inclusos",
+      "Tudo do Pro +",
+      "Multi-personal",
+      "API completa",
+      "Onboarding VIP",
+      "Gerente de conta",
+    ],
+    cta: "Dominar e Faturar Alto",
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    description: "Máximo poder",
+    price: 297,
+    studentLimit: 70,
+    extraStudentPrice: 4.24,
+    features: [
+      "Até 70 alunos inclusos",
+      "Tudo do Business +",
+      "White-label",
+      "Suporte 24/7",
+      "Consultoria mensal",
+      "Recursos exclusivos",
+    ],
+    cta: "Ser Referência no Mercado",
+  },
+];
+
 // Planos por perfil
 const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
   beginner: [
@@ -57,7 +147,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Relatórios básicos",
         "Suporte por email",
       ],
-      cta: "Começar Agora",
+      cta: "Ativar e Faturar Mais",
     },
     {
       id: "starter",
@@ -75,7 +165,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Suporte prioritário",
       ],
       highlighted: true,
-      cta: "Testar 7 Dias Grátis",
+      cta: "Ativar Agora - Teste Grátis",
     },
     {
       id: "pro",
@@ -92,7 +182,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Integrações",
         "Suporte dedicado",
       ],
-      cta: "Falar com Consultor",
+      cta: "Escalar Meu Negócio",
     },
   ],
   starter: [
@@ -113,7 +203,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Suporte prioritário",
       ],
       highlighted: true,
-      cta: "Testar 7 Dias Grátis",
+      cta: "Ativar Agora - Teste Grátis",
     },
     {
       id: "pro",
@@ -130,7 +220,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Integrações",
         "Suporte dedicado",
       ],
-      cta: "Falar com Consultor",
+      cta: "Escalar Meu Negócio",
     },
     {
       id: "business",
@@ -147,7 +237,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Onboarding VIP",
         "Gerente de conta",
       ],
-      cta: "Agendar Demo",
+      cta: "Faturar no Próximo Nível",
     },
   ],
   pro: [
@@ -168,7 +258,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Suporte dedicado",
       ],
       highlighted: true,
-      cta: "Testar 7 Dias Grátis",
+      cta: "Ativar Agora - Teste Grátis",
     },
     {
       id: "business",
@@ -185,7 +275,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Onboarding VIP",
         "Gerente de conta",
       ],
-      cta: "Falar com Consultor",
+      cta: "Escalar Meu Negócio",
     },
     {
       id: "premium",
@@ -202,7 +292,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Consultoria mensal",
         "Recursos exclusivos",
       ],
-      cta: "Agendar Demo",
+      cta: "Faturar no Próximo Nível",
     },
   ],
   business: [
@@ -223,7 +313,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Gerente de conta",
       ],
       highlighted: true,
-      cta: "Testar 7 Dias Grátis",
+      cta: "Ativar Agora - Teste Grátis",
     },
     {
       id: "premium",
@@ -240,7 +330,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Consultoria mensal",
         "Recursos exclusivos",
       ],
-      cta: "Falar com Consultor",
+      cta: "Escalar Meu Negócio",
     },
     {
       id: "enterprise",
@@ -257,7 +347,7 @@ const PLANS_BY_PROFILE: Record<string, PricingPlan[]> = {
         "Desenvolvimento custom",
         "Suporte VIP",
       ],
-      cta: "Agendar Demo",
+      cta: "Faturar no Próximo Nível",
     },
   ],
 };
@@ -400,9 +490,11 @@ export default function CompletePricingPage() {
   const userPains = painsParam ? painsParam.split(",") : [];
   
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [showAllPlans, setShowAllPlans] = useState(true); // Mostrar todos os planos por padrão
   const [, setLocation] = useLocation();
 
-  const plans = PLANS_BY_PROFILE[profile] || PLANS_BY_PROFILE.starter;
+  // Se showAllPlans = true, mostra todos os planos, senão mostra baseado no perfil
+  const plans = showAllPlans ? ALL_PLANS : (PLANS_BY_PROFILE[profile] || PLANS_BY_PROFILE.starter);
 
   // Meta Pixel - ViewContent para página de preços completa
   useEffect(() => {
@@ -592,12 +684,30 @@ export default function CompletePricingPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Escolha o plano ideal
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-4">
               Todos os planos incluem 7 dias grátis para testar
             </p>
+            {!showAllPlans && (
+              <Button 
+                variant="link" 
+                className="text-emerald-600 hover:text-emerald-700"
+                onClick={() => setShowAllPlans(true)}
+              >
+                Ver todos os planos disponíveis <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            )}
+            {showAllPlans && (
+              <Button 
+                variant="link" 
+                className="text-emerald-600 hover:text-emerald-700"
+                onClick={() => setShowAllPlans(false)}
+              >
+                Ver planos recomendados <ChevronUp className="ml-1 h-4 w-4" />
+              </Button>
+            )}
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className={`grid gap-6 ${showAllPlans ? 'md:grid-cols-5' : 'md:grid-cols-3'}`}>
             {plans.map((plan, index) => (
               <Card 
                 key={plan.id} 

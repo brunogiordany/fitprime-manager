@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function Invite() {
-  const { token } = useParams<{ token: string }>();
+  const { token, personalId } = useParams<{ token: string; personalId?: string }>();
   const [, setLocation] = useLocation();
   
   // Estado do formulário de cadastro
@@ -26,11 +26,14 @@ export default function Invite() {
 
   // Verificar se o convite é válido
   const { data: inviteData, isLoading: inviteLoading, error: inviteError } = trpc.students.validateInvite.useQuery(
-    { token: token || "" },
+    { token: token || "", personalId: personalId ? parseInt(personalId) : undefined },
     { enabled: !!token }
   );
 
-  // Mutation para registrar novo aluno
+  // Verificar se é convite geral (tem personalId na URL)
+  const isGeneralInvite = !!personalId;
+
+  // Mutation para registrar novo aluno (convite individual)
   const registerStudentMutation = trpc.students.registerWithInvite.useMutation({
     onSuccess: (data) => {
       toast.success("Cadastro realizado com sucesso!");
@@ -98,16 +101,57 @@ export default function Invite() {
     return Object.keys(errors).length === 0;
   };
 
+  // Mutation para registrar via convite geral
+  const registerGeneralInviteMutation = trpc.students.registerWithGeneralInvite.useMutation({
+    onSuccess: (data) => {
+      toast.success("Cadastro realizado com sucesso!");
+      // Salvar token JWT no localStorage
+      if (data.token) {
+        localStorage.setItem("studentToken", data.token);
+        localStorage.setItem("studentId", String(data.studentId));
+        localStorage.setItem("studentData", JSON.stringify({
+          id: data.studentId,
+          name: registerForm.name,
+          email: registerForm.email,
+          phone: registerForm.phone,
+          status: 'active',
+          createdAt: Date.now(),
+        }));
+      }
+      setRegistrationSuccess(true);
+      // Redirecionar para o portal do aluno após 2 segundos
+      setTimeout(() => {
+        setLocation("/meu-portal");
+      }, 2000);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Erro ao realizar cadastro");
+    },
+  });
+
   const handleRegister = () => {
     if (!validateForm()) return;
     
-    registerStudentMutation.mutate({
-      token: token || "",
-      name: registerForm.name,
-      email: registerForm.email,
-      phone: registerForm.phone,
-      password: registerForm.password,
-    });
+    if (isGeneralInvite && personalId) {
+      // Convite geral - usa registerWithGeneralInvite
+      registerGeneralInviteMutation.mutate({
+        personalId: parseInt(personalId),
+        inviteToken: token || "",
+        name: registerForm.name,
+        email: registerForm.email,
+        phone: registerForm.phone,
+        password: registerForm.password,
+      });
+    } else {
+      // Convite individual - usa registerWithInvite
+      registerStudentMutation.mutate({
+        token: token || "",
+        name: registerForm.name,
+        email: registerForm.email,
+        phone: registerForm.phone,
+        password: registerForm.password,
+      });
+    }
   };
 
   if (inviteLoading) {
@@ -284,15 +328,15 @@ export default function Invite() {
             <Button 
               className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
               onClick={handleRegister}
-              disabled={registerStudentMutation.isPending}
+              disabled={registerStudentMutation.isPending || registerGeneralInviteMutation.isPending}
             >
-              {registerStudentMutation.isPending ? (
+              {(registerStudentMutation.isPending || registerGeneralInviteMutation.isPending) ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Criando conta...
                 </>
               ) : (
-                "Criar minha conta"
+                "Criar Minha Conta e Acessar Treinos"
               )}
             </Button>
 

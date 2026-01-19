@@ -108,6 +108,7 @@ function Router() {
       <Route path="/planos-fitprime" component={CompletePricingPage} />
       <Route path="/apresentacao" component={PresentationPage} />
       <Route path="/convite/:token" component={Invite} />
+      <Route path="/invite/personal/:personalId/:token" component={Invite} />
       {/* /login agora redireciona para / */}
       <Route path="/login">{() => { window.location.replace('/'); return null; }}</Route>
       <Route path="/login-personal" component={PersonalLogin} />

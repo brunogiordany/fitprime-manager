@@ -17,6 +17,7 @@ import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 import { startAutomationWorker } from "../automationWorker";
 import { startEmailWorker } from "../workers/emailWorker";
+import { startLeadWhatsappWorker } from "../workers/leadWhatsappWorker";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -480,6 +481,9 @@ Formato de resposta:
     
     // Iniciar worker de emails para leads (executa a cada 5 minutos)
     startEmailWorker();
+    
+    // Iniciar worker de WhatsApp para leads (executa a cada 10 minutos)
+    startLeadWhatsappWorker(10);
   });
 }
 
