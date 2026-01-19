@@ -4368,3 +4368,9 @@
 - [ ] Configurar horários de envio (janela de horário)
 - [ ] Logs de mensagens enviadas com status
 - [ ] Métricas de engajamento (entregues, lidas, respondidas)
+
+
+## Preenchimento Automático Cadastro-Trial (v6.33)
+- [x] Passar dados do quiz (nome, email, whatsapp) para página de cadastro-trial
+- [x] Preencher automaticamente os campos no formulário de cadastro
+- [x] Evitar que lead precise digitar novamente os mesmos dados

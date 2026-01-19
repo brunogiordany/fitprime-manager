@@ -690,7 +690,16 @@ export default function QuizTrialPage() {
                       goalRevenue: result.goalRevenue,
                       painScore: result.painScore,
                       recommendedPlan: result.recommendedPlan,
-                      answers: result.answers
+                      answers: result.answers,
+                      leadName: leadData.name,
+                      leadEmail: leadData.email,
+                      leadPhone: leadData.phone,
+                    }));
+                    // Também salvar no quizResult para compatibilidade
+                    localStorage.setItem('quizResult', JSON.stringify({
+                      leadName: leadData.name,
+                      leadEmail: leadData.email,
+                      leadPhone: leadData.phone,
                     }));
                     window.location.href = "/cadastro-trial";
                   }}

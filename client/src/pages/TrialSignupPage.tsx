@@ -66,6 +66,27 @@ export default function TrialSignupPage() {
       contentCategory: 'trial',
       value: 0,
     });
+    
+    // Preencher automaticamente com dados do quiz se existirem
+    // Tentar primeiro quizResult, depois quizTrialResult
+    const quizResultStr = localStorage.getItem('quizResult') || localStorage.getItem('quizTrialResult');
+    if (quizResultStr) {
+      try {
+        const quizResult = JSON.parse(quizResultStr);
+        if (quizResult.leadName || quizResult.leadEmail || quizResult.leadPhone) {
+          setFormData(prev => ({
+            ...prev,
+            name: quizResult.leadName || prev.name,
+            email: quizResult.leadEmail || prev.email,
+            phone: quizResult.leadPhone ? formatPhone(quizResult.leadPhone) : prev.phone,
+          }));
+          // Mostrar mensagem de que os dados foram preenchidos
+          toast.success('Seus dados do quiz foram preenchidos automaticamente!');
+        }
+      } catch (e) {
+        console.error('Erro ao carregar dados do quiz:', e);
+      }
+    }
   }, []);
 
   // Formatação de data de nascimento
