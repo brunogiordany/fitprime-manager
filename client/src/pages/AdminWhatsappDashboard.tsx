@@ -209,6 +209,11 @@ export default function AdminWhatsappDashboard() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   // Estados de Tags
   const [createTagDialogOpen, setCreateTagDialogOpen] = useState(false);
+  
+  // Estados Filtros de Estatísticas
+  const [statsPeriod, setStatsPeriod] = useState("7days"); // today, 7days, 15days, 30days, 90days, custom
+  const [statsStartDate, setStatsStartDate] = useState("");
+  const [statsEndDate, setStatsEndDate] = useState("");
   const [newTagForm, setNewTagForm] = useState({ name: "", color: "#3b82f6", description: "" });
   const [addNumberDialogOpen, setAddNumberDialogOpen] = useState(false);
   const [newNumberForm, setNewNumberForm] = useState({
@@ -1134,6 +1139,50 @@ export default function AdminWhatsappDashboard() {
           {/* Stats Tab - Estatísticas Completas do WhatsApp */}
           <TabsContent value="stats">
             <div className="space-y-6">
+              {/* Filtros de Período */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Estatísticas de Mensagens</CardTitle>
+                      <CardDescription>Visualize métricas de envio por período</CardDescription>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select value={statsPeriod} onValueChange={setStatsPeriod}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue placeholder="Período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="today">Hoje</SelectItem>
+                          <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                          <SelectItem value="15days">Últimos 15 dias</SelectItem>
+                          <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                          <SelectItem value="90days">Últimos 90 dias</SelectItem>
+                          <SelectItem value="custom">Personalizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {statsPeriod === 'custom' && (
+                        <>
+                          <Input 
+                            type="date" 
+                            value={statsStartDate}
+                            onChange={(e) => setStatsStartDate(e.target.value)}
+                            className="w-[140px]"
+                          />
+                          <span className="text-gray-500">até</span>
+                          <Input 
+                            type="date" 
+                            value={statsEndDate}
+                            onChange={(e) => setStatsEndDate(e.target.value)}
+                            className="w-[140px]"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+              
               {/* Resumo de Estatísticas */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card>

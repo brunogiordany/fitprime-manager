@@ -94,8 +94,27 @@ export default function EmailAutomationPage() {
   const [viewEmailId, setViewEmailId] = useState<number | null>(null); // ID do email para visualizar
   const [resendingEmailId, setResendingEmailId] = useState<number | null>(null); // ID do email sendo reenviado
   
+  // Estados para Duplicados e Relatório
+  const [reportPeriod, setReportPeriod] = useState("30days"); // today, 7days, 15days, 30days, 90days, custom
+  const [reportStartDate, setReportStartDate] = useState("");
+  const [reportEndDate, setReportEndDate] = useState("");
+  const [isDeletingDuplicates, setIsDeletingDuplicates] = useState(false);
+  
   // Queries - usando tRPC hooks
   const { data: sequences, refetch: refetchSequences } = trpc.leadEmail.listSequences.useQuery();
+  
+  // Query para duplicados
+  const { data: duplicates, refetch: refetchDuplicates } = trpc.leadEmail.listDuplicateEmails.useQuery({ page: 1, limit: 50 });
+  
+  // Query para relatório por período
+  const { data: emailReport } = trpc.leadEmail.getEmailReportByPeriod.useQuery({ 
+    period: reportPeriod as any,
+    startDate: reportPeriod === 'custom' ? reportStartDate : undefined,
+    endDate: reportPeriod === 'custom' ? reportEndDate : undefined,
+  });
+  
+  // Mutation para deletar duplicados
+  const deleteDuplicatesMutation = trpc.leadEmail.deleteDuplicateEmails.useMutation();
   
   const { data: templates, refetch: refetchTemplates } = trpc.leadEmail.listTemplates.useQuery(
     { sequenceId: selectedSequence?.id || 0 },
@@ -309,6 +328,8 @@ export default function EmailAutomationPage() {
             <TabsTrigger value="sequences">Sequências</TabsTrigger>
             <TabsTrigger value="trends">Tendências</TabsTrigger>
             <TabsTrigger value="history">Histórico de Envios</TabsTrigger>
+            <TabsTrigger value="duplicates">Duplicados</TabsTrigger>
+            <TabsTrigger value="report">Relatório</TabsTrigger>
           </TabsList>
           
           {/* Sequências */}
@@ -819,6 +840,287 @@ export default function EmailAutomationPage() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          {/* Aba de Duplicados */}
+          <TabsContent value="duplicates">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                      Emails Duplicados
+                    </CardTitle>
+                    <CardDescription>
+                      Gerencie emails que foram enviados mais de uma vez para o mesmo destinatário
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant="destructive"
+                    disabled={isDeletingDuplicates}
+                    onClick={async () => {
+                      if (confirm("Tem certeza que deseja deletar TODOS os emails duplicados? Esta ação não pode ser desfeita.")) {
+                        setIsDeletingDuplicates(true);
+                        try {
+                          const result = await deleteDuplicatesMutation.mutateAsync({ deleteAll: true });
+                          toast.success(result.message);
+                          refetchDuplicates();
+                        } catch (error: any) {
+                          toast.error("Erro ao deletar duplicados: " + error.message);
+                        } finally {
+                          setIsDeletingDuplicates(false);
+                        }
+                      }
+                    }}
+                  >
+                    {isDeletingDuplicates ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Deletando...</>
+                    ) : (
+                      <><Trash2 className="h-4 w-4 mr-2" />Deletar Todos Duplicados</>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Resumo */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-2xl font-bold text-orange-600">{duplicates?.total || 0}</div>
+                      <p className="text-sm text-muted-foreground">Grupos com duplicados</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-2xl font-bold text-red-600">{duplicates?.totalDuplicates || 0}</div>
+                      <p className="text-sm text-muted-foreground">Emails duplicados</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-2xl font-bold text-green-600">
+                        {duplicates?.totalDuplicates ? `R$ ${((duplicates.totalDuplicates * 0.001) || 0).toFixed(2)}` : "R$ 0.00"}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Custo evitável (estimado)</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Tabela de Duplicados */}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Template</TableHead>
+                      <TableHead>Sequência</TableHead>
+                      <TableHead className="text-center">Envios</TableHead>
+                      <TableHead>Primeiro Envio</TableHead>
+                      <TableHead>Último Envio</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {duplicates?.duplicates?.map((dup: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{dup.leadEmail}</TableCell>
+                        <TableCell>{dup.templateName || "-"}</TableCell>
+                        <TableCell>{dup.sequenceName || "-"}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="destructive">{dup.sendCount}x</Badge>
+                        </TableCell>
+                        <TableCell>{new Date(dup.firstSent).toLocaleString("pt-BR")}</TableCell>
+                        <TableCell>{new Date(dup.lastSent).toLocaleString("pt-BR")}</TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={async () => {
+                              if (confirm(`Deletar ${dup.sendCount - 1} email(s) duplicado(s) para ${dup.leadEmail}?`)) {
+                                try {
+                                  const result = await deleteDuplicatesMutation.mutateAsync({ 
+                                    leadEmail: dup.leadEmail, 
+                                    templateId: dup.templateId 
+                                  });
+                                  toast.success(result.message);
+                                  refetchDuplicates();
+                                } catch (error: any) {
+                                  toast.error("Erro: " + error.message);
+                                }
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!duplicates?.duplicates || duplicates.duplicates.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                          <p>Nenhum email duplicado encontrado!</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Aba de Relatório */}
+          <TabsContent value="report">
+            <div className="space-y-6">
+              {/* Filtros de Período */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Relatório de Emails</CardTitle>
+                      <CardDescription>Análise detalhada de envios por período</CardDescription>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select value={reportPeriod} onValueChange={setReportPeriod}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue placeholder="Período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="today">Hoje</SelectItem>
+                          <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                          <SelectItem value="15days">Últimos 15 dias</SelectItem>
+                          <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                          <SelectItem value="90days">Últimos 90 dias</SelectItem>
+                          <SelectItem value="custom">Personalizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {reportPeriod === 'custom' && (
+                        <>
+                          <Input 
+                            type="date" 
+                            value={reportStartDate}
+                            onChange={(e) => setReportStartDate(e.target.value)}
+                            className="w-[140px]"
+                          />
+                          <span className="text-gray-500">até</span>
+                          <Input 
+                            type="date" 
+                            value={reportEndDate}
+                            onChange={(e) => setReportEndDate(e.target.value)}
+                            className="w-[140px]"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+              
+              {/* Cards de Métricas */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-2xl font-bold text-blue-600">{emailReport?.summary?.sent || 0}</div>
+                    <p className="text-sm text-muted-foreground">Enviados</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-2xl font-bold text-green-600">{emailReport?.rates?.openRate?.toFixed(1) || 0}%</div>
+                    <p className="text-sm text-muted-foreground">Taxa de Abertura</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-2xl font-bold text-purple-600">{emailReport?.rates?.clickRate?.toFixed(1) || 0}%</div>
+                    <p className="text-sm text-muted-foreground">Taxa de Clique</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-2xl font-bold text-emerald-600">{emailReport?.rates?.deliveryRate?.toFixed(1) || 0}%</div>
+                    <p className="text-sm text-muted-foreground">Taxa de Entrega</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-2xl font-bold text-red-600">{emailReport?.rates?.bounceRate?.toFixed(1) || 0}%</div>
+                    <p className="text-sm text-muted-foreground">Taxa de Bounce</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Gráfico por Dia */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Envios por Dia</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={emailReport?.byDay || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Area type="monotone" dataKey="sent" name="Enviados" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
+                        <Area type="monotone" dataKey="opens" name="Aberturas" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                        <Area type="monotone" dataKey="clicks" name="Cliques" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Desempenho por Sequência */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Desempenho por Sequência</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Sequência</TableHead>
+                        <TableHead className="text-center">Enviados</TableHead>
+                        <TableHead className="text-center">Aberturas</TableHead>
+                        <TableHead className="text-center">Cliques</TableHead>
+                        <TableHead className="text-center">Taxa Abertura</TableHead>
+                        <TableHead className="text-center">Taxa Clique</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {emailReport?.bySequence?.map((seq: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{seq.name}</TableCell>
+                          <TableCell className="text-center">{seq.sent}</TableCell>
+                          <TableCell className="text-center">{seq.opens}</TableCell>
+                          <TableCell className="text-center">{seq.clicks}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={seq.openRate > 20 ? "default" : "secondary"}>
+                              {seq.openRate?.toFixed(1)}%
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={seq.clickRate > 5 ? "default" : "secondary"}>
+                              {seq.clickRate?.toFixed(1)}%
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {(!emailReport?.bySequence || emailReport.bySequence.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Nenhum dado disponível para o período selecionado
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
         

@@ -4762,3 +4762,50 @@
 - [x] Verificar por EMAIL ao invés de leadId (mesmo email pode ter múltiplos quizzes)
 - [x] Dupla proteção: verificar sequência E template específico
 
+
+
+## TAREFAS v6.33 - Emails e Estatísticas
+- [ ] Botão para deletar emails duplicados no histórico
+- [ ] Relatório de emails por período com taxas de abertura/clique
+- [ ] Limite de envio diário por usuário para evitar spam
+- [ ] Filtros por data na aba Estatísticas do WhatsApp Admin
+
+
+## Filtros de Data e Gerenciamento de Emails (19/01/2026)
+
+- [x] Adicionar filtros de período na aba Estatísticas do WhatsApp Admin
+  - Filtros: Hoje, 7 dias, 15 dias, 30 dias, 90 dias, Personalizado
+  - Inputs de data para período personalizado
+  
+- [x] Criar endpoint getEmailReportByPeriod no leadEmailRouter
+  - Relatório completo de emails por período
+  - Métricas: enviados, aberturas, cliques, bounces
+  - Taxas: abertura, clique, entrega, bounce
+  - Agrupamento por dia e por sequência
+  
+- [x] Criar endpoint listDuplicateEmails no leadEmailRouter
+  - Lista emails duplicados (mesmo destinatário + template)
+  - Mostra quantidade de envios e datas
+  
+- [x] Criar endpoint deleteDuplicateEmails no leadEmailRouter
+  - Deleta emails duplicados mantendo o primeiro
+  - Suporta deleção individual ou em massa
+  
+- [x] Criar endpoint getDailyEmailLimit no leadEmailRouter
+  - Retorna limite diário (100 emails)
+  - Mostra uso atual e restante
+  
+- [x] Criar endpoint canSendEmail no leadEmailRouter
+  - Verifica se pode enviar email
+  - Checa limite diário, unsubscribe e limite por destinatário
+  
+- [x] Adicionar aba "Duplicados" na página de Email Automation
+  - Lista grupos de emails duplicados
+  - Botão para deletar duplicados individualmente ou todos
+  - Mostra custo evitável estimado
+  
+- [x] Adicionar aba "Relatório" na página de Email Automation
+  - Filtros de período
+  - Cards com métricas principais
+  - Gráfico de envios por dia
+  - Tabela de desempenho por sequência

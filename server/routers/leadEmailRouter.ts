@@ -903,6 +903,491 @@ export const leadEmailRouter = router({
     
     return { message: "Sequências padrão criadas com sucesso" };
   }),
+  
+  // ==================== GERENCIAMENTO DE DUPLICADOS ====================
+  
+  // Listar emails duplicados enviados
+  listDuplicateEmails: adminProcedure
+    .input(z.object({
+      page: z.number().default(1),
+      limit: z.number().default(50),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const offset = (input.page - 1) * input.limit;
+      
+      // Buscar emails que foram enviados mais de uma vez para o mesmo destinatário com o mesmo template
+      const duplicates = await db.execute(sql`
+        SELECT 
+          es.leadEmail,
+          es.templateId,
+          let.name as templateName,
+          seq.name as sequenceName,
+          COUNT(*) as sendCount,
+          GROUP_CONCAT(es.id ORDER BY es.createdAt) as sendIds,
+          MIN(es.createdAt) as firstSent,
+          MAX(es.createdAt) as lastSent
+        FROM email_sends es
+        LEFT JOIN lead_email_templates let ON let.id = es.templateId
+        LEFT JOIN email_sequences seq ON seq.id = es.sequenceId
+        WHERE es.status = 'sent'
+        GROUP BY es.leadEmail, es.templateId
+        HAVING COUNT(*) > 1
+        ORDER BY sendCount DESC, lastSent DESC
+        LIMIT ${input.limit} OFFSET ${offset}
+      `);
+      
+      // Contar total de grupos duplicados
+      const countResult = await db.execute(sql`
+        SELECT COUNT(*) as total FROM (
+          SELECT leadEmail, templateId
+          FROM email_sends
+          WHERE status = 'sent'
+          GROUP BY leadEmail, templateId
+          HAVING COUNT(*) > 1
+        ) as duplicates
+      `);
+      
+      const total = Number((countResult as any)[0]?.[0]?.total) || 0;
+      
+      // Calcular total de emails duplicados (excluindo o primeiro de cada grupo)
+      const totalDuplicatesResult = await db.execute(sql`
+        SELECT SUM(cnt - 1) as totalDuplicates FROM (
+          SELECT COUNT(*) as cnt
+          FROM email_sends
+          WHERE status = 'sent'
+          GROUP BY leadEmail, templateId
+          HAVING COUNT(*) > 1
+        ) as duplicates
+      `);
+      
+      const totalDuplicates = Number((totalDuplicatesResult as any)[0]?.[0]?.totalDuplicates) || 0;
+      
+      return {
+        duplicates: (duplicates as any)[0] || [],
+        total,
+        totalDuplicates,
+        page: input.page,
+        limit: input.limit,
+        totalPages: Math.ceil(total / input.limit),
+      };
+    }),
+  
+  // Deletar emails duplicados (mantém apenas o primeiro de cada grupo)
+  deleteDuplicateEmails: adminProcedure
+    .input(z.object({
+      leadEmail: z.string().optional(), // Se fornecido, deleta apenas deste email
+      templateId: z.number().optional(), // Se fornecido, deleta apenas deste template
+      deleteAll: z.boolean().default(false), // Se true, deleta todos os duplicados
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      let deletedCount = 0;
+      
+      if (input.deleteAll) {
+        // Buscar todos os grupos de duplicados
+        const duplicateGroups = await db.execute(sql`
+          SELECT 
+            leadEmail,
+            templateId,
+            GROUP_CONCAT(id ORDER BY createdAt) as sendIds
+          FROM email_sends
+          WHERE status = 'sent'
+          GROUP BY leadEmail, templateId
+          HAVING COUNT(*) > 1
+        `);
+        
+        const groups = (duplicateGroups as any)[0] || [];
+        
+        for (const group of groups) {
+          const ids = group.sendIds.split(',').map(Number);
+          // Manter o primeiro (mais antigo), deletar os demais
+          const idsToDelete = ids.slice(1);
+          
+          if (idsToDelete.length > 0) {
+            // Deletar trackings relacionados
+            for (const id of idsToDelete) {
+              await db.delete(emailTracking).where(eq(emailTracking.emailSendId, id));
+            }
+            
+            // Deletar emails
+            for (const id of idsToDelete) {
+              await db.delete(emailSends).where(eq(emailSends.id, id));
+            }
+            
+            deletedCount += idsToDelete.length;
+          }
+        }
+      } else if (input.leadEmail && input.templateId) {
+        // Deletar duplicados específicos de um email/template
+        const duplicates = await db
+          .select({ id: emailSends.id })
+          .from(emailSends)
+          .where(and(
+            eq(emailSends.leadEmail, input.leadEmail),
+            eq(emailSends.templateId, input.templateId),
+            eq(emailSends.status, 'sent')
+          ))
+          .orderBy(emailSends.createdAt);
+        
+        const idsToDelete = duplicates.slice(1).map(r => r.id);
+        
+        if (idsToDelete.length > 0) {
+          for (const id of idsToDelete) {
+            await db.delete(emailTracking).where(eq(emailTracking.emailSendId, id));
+            await db.delete(emailSends).where(eq(emailSends.id, id));
+          }
+          deletedCount = idsToDelete.length;
+        }
+      }
+      
+      return {
+        success: true,
+        deletedCount,
+        message: `${deletedCount} email(s) duplicado(s) removido(s) com sucesso`,
+      };
+    }),
+  
+  // ==================== RELATÓRIO POR PERÍODO ====================
+  
+  // Relatório completo de emails por período com taxas
+  getEmailReportByPeriod: adminProcedure
+    .input(z.object({
+      startDate: z.string().optional(), // ISO date string
+      endDate: z.string().optional(),   // ISO date string
+      period: z.enum(['today', '7days', '15days', '30days', '90days', 'custom']).default('30days'),
+      sequenceId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      // Calcular datas
+      const now = new Date();
+      let startDate: Date;
+      let endDate = new Date();
+      
+      switch (input.period) {
+        case 'today':
+          startDate = new Date(now.setHours(0, 0, 0, 0));
+          break;
+        case '7days':
+          startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '15days':
+          startDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+          break;
+        case '30days':
+          startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90days':
+          startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case 'custom':
+          startDate = input.startDate ? new Date(input.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          endDate = input.endDate ? new Date(input.endDate) : new Date();
+          break;
+        default:
+          startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      }
+      
+      // Condições base
+      const conditions = [
+        gte(emailSends.createdAt, startDate),
+        lte(emailSends.createdAt, endDate),
+      ];
+      
+      if (input.sequenceId) {
+        conditions.push(eq(emailSends.sequenceId, input.sequenceId));
+      }
+      
+      // Buscar todos os emails do período
+      const emails = await db
+        .select({
+          id: emailSends.id,
+          leadEmail: emailSends.leadEmail,
+          subject: emailSends.subject,
+          status: emailSends.status,
+          sequenceId: emailSends.sequenceId,
+          templateId: emailSends.templateId,
+          createdAt: emailSends.createdAt,
+          sentAt: emailSends.sentAt,
+          sequenceName: emailSequences.name,
+          templateName: leadEmailTemplates.name,
+        })
+        .from(emailSends)
+        .leftJoin(emailSequences, eq(emailSends.sequenceId, emailSequences.id))
+        .leftJoin(leadEmailTemplates, eq(emailSends.templateId, leadEmailTemplates.id))
+        .where(and(...conditions))
+        .orderBy(desc(emailSends.createdAt));
+      
+      // Buscar métricas de tracking para todos os emails
+      const emailIds = emails.map(e => e.id);
+      let trackingData: { emailSendId: number; eventType: string; count: number }[] = [];
+      
+      if (emailIds.length > 0) {
+        const trackingRaw = await db
+          .select({
+            emailSendId: emailTracking.emailSendId,
+            eventType: emailTracking.eventType,
+          })
+          .from(emailTracking)
+          .where(sql`${emailTracking.emailSendId} IN (${emailIds.join(',')})`);
+        
+        // Agrupar manualmente
+        const trackingGroups = new Map<string, number>();
+        for (const t of trackingRaw) {
+          const key = `${t.emailSendId}-${t.eventType}`;
+          trackingGroups.set(key, (trackingGroups.get(key) || 0) + 1);
+        }
+        
+        trackingData = Array.from(trackingGroups.entries()).map(([key, count]) => {
+          const [emailSendId, eventType] = key.split('-');
+          return { emailSendId: parseInt(emailSendId), eventType, count };
+        });
+      }
+      
+      // Mapear tracking por email
+      const trackingMap = new Map<number, { opens: number; clicks: number }>();
+      for (const t of trackingData) {
+        if (!trackingMap.has(t.emailSendId)) {
+          trackingMap.set(t.emailSendId, { opens: 0, clicks: 0 });
+        }
+        const data = trackingMap.get(t.emailSendId)!;
+        if (t.eventType === 'open') data.opens = t.count;
+        if (t.eventType === 'click') data.clicks = t.count;
+      }
+      
+      // Calcular métricas gerais
+      const totalSent = emails.filter(e => e.status === 'sent').length;
+      const totalPending = emails.filter(e => e.status === 'pending').length;
+      const totalFailed = emails.filter(e => e.status === 'failed').length;
+      const totalBounced = emails.filter(e => e.status === 'bounced').length;
+      
+      let totalOpens = 0;
+      let totalClicks = 0;
+      let uniqueOpens = 0;
+      let uniqueClicks = 0;
+      
+      trackingMap.forEach((data) => {
+        totalOpens += data.opens;
+        totalClicks += data.clicks;
+        if (data.opens > 0) uniqueOpens++;
+        if (data.clicks > 0) uniqueClicks++;
+      });
+      
+      // Taxas
+      const openRate = totalSent > 0 ? (uniqueOpens / totalSent) * 100 : 0;
+      const clickRate = totalSent > 0 ? (uniqueClicks / totalSent) * 100 : 0;
+      const clickToOpenRate = uniqueOpens > 0 ? (uniqueClicks / uniqueOpens) * 100 : 0;
+      const deliveryRate = emails.length > 0 ? ((totalSent) / emails.length) * 100 : 0;
+      const bounceRate = emails.length > 0 ? (totalBounced / emails.length) * 100 : 0;
+      
+      // Agrupar por dia
+      const byDay: Record<string, { sent: number; opens: number; clicks: number }> = {};
+      for (const email of emails) {
+        const day = email.createdAt?.toISOString().split('T')[0] || 'unknown';
+        if (!byDay[day]) {
+          byDay[day] = { sent: 0, opens: 0, clicks: 0 };
+        }
+        if (email.status === 'sent') {
+          byDay[day].sent++;
+          const tracking = trackingMap.get(email.id);
+          if (tracking) {
+            byDay[day].opens += tracking.opens;
+            byDay[day].clicks += tracking.clicks;
+          }
+        }
+      }
+      
+      // Agrupar por sequência
+      const bySequence: Record<string, { name: string; sent: number; opens: number; clicks: number; openRate: number; clickRate: number }> = {};
+      for (const email of emails) {
+        const seqId = email.sequenceId?.toString() || 'none';
+        if (!bySequence[seqId]) {
+          bySequence[seqId] = { 
+            name: email.sequenceName || 'Sem sequência', 
+            sent: 0, 
+            opens: 0, 
+            clicks: 0,
+            openRate: 0,
+            clickRate: 0,
+          };
+        }
+        if (email.status === 'sent') {
+          bySequence[seqId].sent++;
+          const tracking = trackingMap.get(email.id);
+          if (tracking) {
+            if (tracking.opens > 0) bySequence[seqId].opens++;
+            if (tracking.clicks > 0) bySequence[seqId].clicks++;
+          }
+        }
+      }
+      
+      // Calcular taxas por sequência
+      for (const key of Object.keys(bySequence)) {
+        const seq = bySequence[key];
+        seq.openRate = seq.sent > 0 ? (seq.opens / seq.sent) * 100 : 0;
+        seq.clickRate = seq.sent > 0 ? (seq.clicks / seq.sent) * 100 : 0;
+      }
+      
+      // Emails com métricas
+      const emailsWithMetrics = emails.map(e => ({
+        ...e,
+        opens: trackingMap.get(e.id)?.opens || 0,
+        clicks: trackingMap.get(e.id)?.clicks || 0,
+      }));
+      
+      return {
+        period: {
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          label: input.period,
+        },
+        summary: {
+          total: emails.length,
+          sent: totalSent,
+          pending: totalPending,
+          failed: totalFailed,
+          bounced: totalBounced,
+          totalOpens,
+          totalClicks,
+          uniqueOpens,
+          uniqueClicks,
+        },
+        rates: {
+          openRate: Math.round(openRate * 100) / 100,
+          clickRate: Math.round(clickRate * 100) / 100,
+          clickToOpenRate: Math.round(clickToOpenRate * 100) / 100,
+          deliveryRate: Math.round(deliveryRate * 100) / 100,
+          bounceRate: Math.round(bounceRate * 100) / 100,
+        },
+        byDay: Object.entries(byDay).map(([date, data]) => ({ date, ...data })).sort((a, b) => a.date.localeCompare(b.date)),
+        bySequence: Object.values(bySequence),
+        emails: emailsWithMetrics,
+      };
+    }),
+  
+  // ==================== LIMITE DIÁRIO DE ENVIO ====================
+  
+  // Obter configuração de limite diário
+  getDailyEmailLimit: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    
+    // Limite padrão de 100 emails por dia
+    const defaultLimit = 100;
+    
+    // Contar emails enviados hoje
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const [sentToday] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(emailSends)
+      .where(and(
+        gte(emailSends.createdAt, today),
+        eq(emailSends.status, 'sent')
+      ));
+    
+    const used = sentToday?.count || 0;
+    const remaining = Math.max(0, defaultLimit - used);
+    const percentage = (used / defaultLimit) * 100;
+    
+    return {
+      limit: defaultLimit,
+      used,
+      remaining,
+      percentage: Math.round(percentage * 100) / 100,
+      isNearLimit: percentage >= 80,
+      isAtLimit: percentage >= 100,
+      alerts: [
+        ...(percentage >= 80 && percentage < 100 ? [`⚠️ Você já usou ${Math.round(percentage)}% do limite diário de emails`] : []),
+        ...(percentage >= 100 ? [`🚫 Limite diário de emails atingido! Aguarde até amanhã para enviar mais.`] : []),
+      ],
+    };
+  }),
+  
+  // Verificar se pode enviar email (usado antes de cada envio)
+  canSendEmail: adminProcedure
+    .input(z.object({
+      recipientEmail: z.string().email(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      
+      const defaultLimit = 100;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Verificar limite diário global
+      const [sentToday] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailSends)
+        .where(and(
+          gte(emailSends.createdAt, today),
+          eq(emailSends.status, 'sent')
+        ));
+      
+      const globalUsed = sentToday?.count || 0;
+      
+      if (globalUsed >= defaultLimit) {
+        return {
+          canSend: false,
+          reason: 'daily_limit_reached',
+          message: 'Limite diário de emails atingido',
+        };
+      }
+      
+      // Verificar se o email não está na lista de unsubscribe
+      const [unsubscribed] = await db
+        .select()
+        .from(leadEmailSubscriptions)
+        .where(eq(leadEmailSubscriptions.leadEmail, input.recipientEmail.toLowerCase()));
+      
+      if (unsubscribed && !unsubscribed.isSubscribed) {
+        return {
+          canSend: false,
+          reason: 'unsubscribed',
+          message: 'Este email cancelou a inscrição',
+        };
+      }
+      
+      // Verificar limite por destinatário (máx 3 emails por dia para o mesmo email)
+      const [sentToRecipient] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(emailSends)
+        .where(and(
+          gte(emailSends.createdAt, today),
+          eq(emailSends.leadEmail, input.recipientEmail.toLowerCase()),
+          eq(emailSends.status, 'sent')
+        ));
+      
+      const recipientCount = sentToRecipient?.count || 0;
+      
+      if (recipientCount >= 3) {
+        return {
+          canSend: false,
+          reason: 'recipient_limit_reached',
+          message: 'Este destinatário já recebeu o limite de 3 emails hoje',
+        };
+      }
+      
+      return {
+        canSend: true,
+        reason: null,
+        message: null,
+        remaining: {
+          global: defaultLimit - globalUsed,
+          recipient: 3 - recipientCount,
+        },
+      };
+    }),
 });
 
 // Função para substituir variáveis no template
