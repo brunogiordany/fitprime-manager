@@ -25,6 +25,14 @@ import StudentHelpCenter from "@/components/StudentHelpCenter";
 import StudentNutritionRecommendations from "@/components/StudentNutritionRecommendations";
 import { GuidedPhotos } from "@/components/GuidedPhotos";
 import { StudentEvolutionDashboard } from "@/components/StudentEvolutionDashboard";
+
+// Função helper para extrair data local no formato YYYY-MM-DD sem conversão UTC
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 // StudentProgressShare removido - agora usamos ShareProgressCard contextual
 import { 
   Calendar, 
@@ -3500,7 +3508,7 @@ export default function StudentPortalPage() {
               onClick={async () => {
                 if (!selectedSession?.workoutInfo) return;
                 
-                const trainingDate = new Date(selectedSession.scheduledAt).toISOString().split('T')[0];
+                const trainingDate = getLocalDateString(new Date(selectedSession.scheduledAt));
                 
                 // Se estiver offline, salvar localmente
                 if (!offlineTraining.isOnline && studentData?.id) {

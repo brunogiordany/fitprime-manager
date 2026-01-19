@@ -148,6 +148,15 @@ const safeDateFormat = (dateValue: Date | string | null | undefined, options?: I
   }
 };
 
+// Função helper para extrair data local no formato YYYY-MM-DD sem conversão UTC
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+
 // Interface para série
 // Interface para drop set individual
 interface DropData {
@@ -232,7 +241,7 @@ export default function TrainingDiaryPage() {
   const [selectedCardioId, setSelectedCardioId] = useState<number | null>(null);
   const [cardioForm, setCardioForm] = useState({
     studentId: 0,
-    cardioDate: new Date().toISOString().split('T')[0],
+    cardioDate: getLocalDateString(new Date()),
     cardioType: '' as string,
     cardioTypeName: '',
     durationMinutes: 0,
@@ -264,7 +273,7 @@ export default function TrainingDiaryPage() {
     studentId: 0,
     workoutId: 0,
     workoutDayId: 0,
-    trainingDate: new Date().toISOString().split('T')[0],
+    trainingDate: getLocalDateString(new Date()),
     dayName: "",
     startTime: "",
     notes: "",
@@ -299,8 +308,8 @@ export default function TrainingDiaryPage() {
   endDate.setDate(endDate.getDate() + 7);
   
   const { data: upcomingSessions, refetch: refetchSessions } = trpc.sessions.list.useQuery({
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
+    startDate: getLocalDateString(startDate),
+    endDate: getLocalDateString(endDate),
     studentId: selectedStudentId && selectedStudentId !== 'all' ? parseInt(selectedStudentId) : undefined,
   });
   // Buscar dias do treino selecionado
@@ -451,7 +460,7 @@ export default function TrainingDiaryPage() {
   const resetCardioForm = () => {
     setCardioForm({
       studentId: 0,
-      cardioDate: new Date().toISOString().split('T')[0],
+      cardioDate: getLocalDateString(new Date()),
       cardioType: '',
       cardioTypeName: '',
       durationMinutes: 0,
@@ -625,7 +634,7 @@ export default function TrainingDiaryPage() {
       studentId: 0,
       workoutId: 0,
       workoutDayId: 0,
-      trainingDate: new Date().toISOString().split('T')[0],
+      trainingDate: getLocalDateString(new Date()),
       dayName: "",
       startTime: "",
       notes: "",
@@ -995,7 +1004,7 @@ export default function TrainingDiaryPage() {
                           studentId: session.studentId,
                           workoutId: session.workoutId || 0,
                           workoutDayId: 0,
-                          trainingDate: safeDate(session.scheduledAt).toISOString().split('T')[0],
+                          trainingDate: getLocalDateString(safeDate(session.scheduledAt)),
                           dayName: session.notes || `Sessão ${session.time}`,
                           startTime: session.time || '',
                           notes: '',
@@ -3901,11 +3910,11 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
   const [groupBy, setGroupBy] = useState<"day" | "week" | "month">("day");
   
   // Calcular datas baseado no período
-  const endDate = new Date().toISOString().split('T')[0];
+  const endDate = getLocalDateString(new Date());
   const startDate = (() => {
     const date = new Date();
     date.setDate(date.getDate() - parseInt(period));
-    return date.toISOString().split('T')[0];
+    return getLocalDateString(date);
   })();
   
   // Buscar dados de evolução
@@ -3928,7 +3937,7 @@ function CardioStatsTab({ studentId }: { studentId: string }) {
       previousPeriodStart: (() => {
         const date = new Date();
         date.setDate(date.getDate() - parseInt(period) * 2);
-        return date.toISOString().split('T')[0];
+        return getLocalDateString(date);
       })(),
       previousPeriodEnd: startDate
     },

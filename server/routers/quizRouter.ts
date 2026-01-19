@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router, adminProcedure } from "../_core/trpc";
+import { publicProcedure, router, adminProcedure, ownerProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { sql, desc, and, gte, lte, count, eq } from "drizzle-orm";
 import { sendEmail, EMAIL_SENDERS } from "../email";
@@ -418,7 +418,7 @@ export const quizRouter = router({
     }),
 
   // Estatísticas do funil (admin)
-  getFunnelStats: adminProcedure
+  getFunnelStats: ownerProcedure
     .input(z.object({
       startDate: z.string().optional(),
       endDate: z.string().optional(),
@@ -552,7 +552,7 @@ export const quizRouter = router({
     }),
 
   // Listar todos os leads com filtros avançados (admin)
-  listLeads: adminProcedure
+  listLeads: ownerProcedure
     .input(z.object({
       page: z.number().default(1),
       limit: z.number().default(25),
@@ -767,7 +767,7 @@ export const quizRouter = router({
     }),
 
   // Obter opções de filtro disponíveis (admin)
-  getFilterOptions: adminProcedure
+  getFilterOptions: ownerProcedure
     .query(async () => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
@@ -817,7 +817,7 @@ export const quizRouter = router({
     }),
 
   // Exportar leads para CSV (admin)
-  exportLeads: adminProcedure
+  exportLeads: ownerProcedure
     .input(z.object({
       startDate: z.string().optional(),
       endDate: z.string().optional(),
@@ -868,7 +868,7 @@ export const quizRouter = router({
     }),
 
   // Detectar leads duplicados por email ou telefone (admin)
-  getDuplicateLeads: adminProcedure
+  getDuplicateLeads: ownerProcedure
     .query(async () => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
@@ -922,7 +922,7 @@ export const quizRouter = router({
     }),
 
   // Obter detalhes de um grupo de leads duplicados (admin)
-  getDuplicateDetails: adminProcedure
+  getDuplicateDetails: ownerProcedure
     .input(z.object({
       identifier: z.string(),
       type: z.enum(["email", "phone"]),

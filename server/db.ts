@@ -1450,14 +1450,19 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Converter trainingDate para string YYYY-MM-DD
+  // Converter trainingDate para string YYYY-MM-DD (usando data local, não UTC)
   let dateStr: string;
   if (typeof data.trainingDate === 'string') {
+    // Se já é string, pegar apenas a parte da data
     dateStr = data.trainingDate.split('T')[0];
   } else if (data.trainingDate instanceof Date) {
-    dateStr = data.trainingDate.toISOString().split('T')[0];
+    // Usar data local ao invés de UTC para evitar problema de timezone
+    const d = data.trainingDate;
+    dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   } else {
-    dateStr = new Date(String(data.trainingDate)).toISOString().split('T')[0];
+    // Converter para Date e usar data local
+    const d = new Date(String(data.trainingDate));
+    dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
   
   console.log('createWorkoutLog - dateStr:', dateStr);
