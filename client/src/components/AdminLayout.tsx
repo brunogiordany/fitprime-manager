@@ -20,7 +20,8 @@ import {
   Palette,
   TestTube,
   LayoutDashboard,
-  ArrowLeft
+  ArrowLeft,
+  MessageCircle
 } from "lucide-react";
 import { Redirect, useLocation, Link } from "wouter";
 import { toast } from "sonner";
@@ -83,6 +84,7 @@ export default function AdminLayout({
     { value: "pixels", label: "Pixels", icon: Palette, path: "/admin/pixels" },
     { value: "ab-testing", label: "A/B Testing", icon: TestTube, path: "/admin/ab-testing" },
     { value: "roi", label: "ROI Dashboard", icon: DollarSign, path: "/admin/roi" },
+    { value: "whatsapp", label: "WhatsApp Admin", icon: MessageCircle, path: "/admin/whatsapp" },
   ];
   
   const handleTabChange = (value: string) => {

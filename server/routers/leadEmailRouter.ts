@@ -957,10 +957,16 @@ function getWelcomeEmailTemplate(): string {
       </ul>
       
       <p style="text-align: center;">
-        <a href="{{baseUrl}}/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+        <a href="{{baseUrl}}/cadastro-trial" class="cta">Começar Meu Teste Grátis</a>
       </p>
       
       <p>Qualquer dúvida, estamos aqui para ajudar!</p>
+      
+      <p style="text-align: center; margin-top: 20px;">
+        <a href="https://wa.me/5511999999999?text=Olá!%20Vim%20do%20quiz%20do%20FitPrime%20e%20tenho%20algumas%20dúvidas" style="display: inline-block; background: #25D366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-size: 14px;">
+          💬 Tirar Dúvidas no WhatsApp
+        </a>
+      </p>
       
       <p>Abraço,<br><strong>Equipe FitPrime</strong></p>
     </div>
@@ -1109,7 +1115,13 @@ function getFollowup3Template(): string {
       </ul>
       
       <p style="text-align: center;">
-        <a href="{{baseUrl}}/pricing" class="cta">Começar Agora - 7 Dias Grátis</a>
+        <a href="{{baseUrl}}/cadastro-trial" class="cta">Começar Meu Teste Grátis</a>
+      </p>
+      
+      <p style="text-align: center; margin-top: 20px;">
+        <a href="https://wa.me/5511999999999?text=Olá!%20Vim%20do%20quiz%20do%20FitPrime%20e%20tenho%20algumas%20dúvidas" style="display: inline-block; background: #25D366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-size: 14px;">
+          💬 Tirar Dúvidas no WhatsApp
+        </a>
       </p>
       
       <p>Se não for pra você, tudo bem. Mas se for, não deixe essa oportunidade passar.</p>

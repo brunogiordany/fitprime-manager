@@ -4374,3 +4374,14 @@
 - [x] Passar dados do quiz (nome, email, whatsapp) para página de cadastro-trial
 - [x] Preencher automaticamente os campos no formulário de cadastro
 - [x] Evitar que lead precise digitar novamente os mesmos dados
+
+
+## Correção de Links dos Emails (v6.34)
+- [x] Corrigir link do email de boas-vindas de /pricing para /cadastro-trial
+- [x] Adicionar botão de WhatsApp para tirar dúvidas nos emails
+- [x] Revisar todos os templates de email e corrigir links errados
+- [x] Limpar localStorage após cadastro ser concluído
+
+## Link WhatsApp Admin no Menu (v6.35)
+- [x] Verificar se painel WhatsApp Admin está acessível no menu super admin
+- [x] Adicionar link no menu se não existir

@@ -241,6 +241,10 @@ export default function TrialSignupPage() {
       
       toast.success("Conta criada com sucesso! Redirecionando para o login...");
       
+      // Limpar dados do quiz do localStorage após cadastro concluído
+      localStorage.removeItem('quizResult');
+      localStorage.removeItem('quizTrialResult');
+      
       // Redirecionar para a página de login com email pré-preenchido
       const encodedEmail = encodeURIComponent(formData.email);
       setLocation(`/?email=${encodedEmail}`);

@@ -136,7 +136,7 @@ export async function processTrialNotifications(): Promise<{ sent: number; error
 
       try {
         // Enviar email
-        const upgradeLink = `https://fitprimemanager.com/pricing?utm_source=trial_expiring&utm_medium=email&utm_campaign=${notificationType}`;
+        const upgradeLink = `https://fitprimemanager.com/cadastro-trial?utm_source=trial_expiring&utm_medium=email&utm_campaign=${notificationType}`;
         
         const success = await sendTrialExpiringEmail(
           user.email,
