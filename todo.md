@@ -4754,3 +4754,11 @@
 - [x] Webhook admin-stevo para receber mensagens de leads (chat bidirecional)
 - [x] Mensagens recebidas salvas no histórico do admin WhatsApp
 
+
+
+## BUG URGENTE v6.32 - Emails Duplicados (CORRIGIDO)
+- [x] Corrigir filtro de emails duplicados no sistema de automação
+- [x] Evitar envio de mesmo email para mesmo destinatário múltiplas vezes
+- [x] Verificar por EMAIL ao invés de leadId (mesmo email pode ter múltiplos quizzes)
+- [x] Dupla proteção: verificar sequência E template específico
+

@@ -85,14 +85,27 @@ async function isEmailSubscribed(db: any, email: string): Promise<boolean> {
   return subscription.isSubscribed;
 }
 
-// Verificar se lead já recebeu email de uma sequência
-async function hasReceivedSequence(db: any, leadId: number, sequenceId: number): Promise<boolean> {
+// Verificar se email já recebeu email de uma sequência (por email, não por leadId)
+async function hasReceivedSequence(db: any, email: string, sequenceId: number): Promise<boolean> {
   const [existing] = await db
     .select({ count: sql<number>`COUNT(*)` })
     .from(emailSends)
     .where(and(
-      eq(emailSends.leadId, leadId),
+      eq(emailSends.leadEmail, email),
       eq(emailSends.sequenceId, sequenceId)
+    ));
+  
+  return (existing?.count || 0) > 0;
+}
+
+// Verificar se email já recebeu um template específico (evita duplicação total)
+async function hasReceivedTemplate(db: any, email: string, templateId: number): Promise<boolean> {
+  const [existing] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(emailSends)
+    .where(and(
+      eq(emailSends.leadEmail, email),
+      eq(emailSends.templateId, templateId)
     ));
   
   return (existing?.count || 0) > 0;
@@ -140,11 +153,14 @@ async function processWelcomeSequence(db: any) {
       // Verificar se está inscrito
       if (!(await isEmailSubscribed(db, lead.leadEmail))) continue;
       
-      // Verificar se já recebeu esta sequência
-      if (await hasReceivedSequence(db, lead.id, sequence.id)) continue;
+      // Verificar se já recebeu esta sequência (por email)
+      if (await hasReceivedSequence(db, lead.leadEmail, sequence.id)) continue;
       
       // Agendar primeiro email da sequência
       const firstTemplate = templates[0];
+      
+      // Verificar se já recebeu este template específico (dupla proteção)
+      if (await hasReceivedTemplate(db, lead.leadEmail, firstTemplate.id)) continue;
       const scheduledAt = new Date();
       scheduledAt.setHours(scheduledAt.getHours() + firstTemplate.delayHours);
       scheduledAt.setDate(scheduledAt.getDate() + firstTemplate.delayDays);
@@ -208,11 +224,14 @@ async function processFollowupSequence(db: any) {
       // Verificar se está inscrito
       if (!(await isEmailSubscribed(db, lead.leadEmail))) continue;
       
-      // Verificar se já recebeu esta sequência
-      if (await hasReceivedSequence(db, lead.id, sequence.id)) continue;
+      // Verificar se já recebeu esta sequência (por email)
+      if (await hasReceivedSequence(db, lead.leadEmail, sequence.id)) continue;
       
       // Agendar primeiro email da sequência
       const firstTemplate = templates[0];
+      
+      // Verificar se já recebeu este template específico (dupla proteção)
+      if (await hasReceivedTemplate(db, lead.leadEmail, firstTemplate.id)) continue;
       const scheduledAt = new Date();
       
       await db.insert(emailSends).values({
