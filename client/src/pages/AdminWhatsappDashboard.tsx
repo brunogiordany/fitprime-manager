@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -137,6 +137,21 @@ export default function AdminWhatsappDashboard() {
   const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
   const [bulkMessage, setBulkMessage] = useState("");
   
+  // Estados Chat WhatsApp
+  const [messageSearchTerm, setMessageSearchTerm] = useState("");
+  const [messageTypeFilter, setMessageTypeFilter] = useState("all");
+  const [messageStatusFilter, setMessageStatusFilter] = useState("all");
+  const [messageDateFilter, setMessageDateFilter] = useState("all");
+  const [selectedContact, setSelectedContact] = useState<{
+    recipientPhone: string;
+    recipientName: string | null;
+    recipientType: string;
+    messages: Message[];
+    lastMessage: string;
+    lastMessageAt: Date;
+    messageCount: number;
+  } | null>(null);
+  
   // Estados CRM
   const [selectedStage, setSelectedStage] = useState("all");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
@@ -216,6 +231,96 @@ export default function AdminWhatsappDashboard() {
   const { data: tags } = trpc.adminWhatsapp.listTags.useQuery();
   
   const { data: whatsappStats } = trpc.adminWhatsapp.getWhatsappStats.useQuery({ period: 'week' });
+  
+  // Agrupar mensagens por contato para o chat estilo WhatsApp
+  const groupedMessages = useMemo(() => {
+    if (!messages || messages.length === 0) return [];
+    
+    const contactMap = new Map<string, {
+      recipientPhone: string;
+      recipientName: string | null;
+      recipientType: string;
+      messages: Message[];
+      lastMessage: string;
+      lastMessageAt: Date;
+      messageCount: number;
+    }>();
+    
+    // Filtrar mensagens
+    let filteredMessages = [...messages];
+    
+    if (messageSearchTerm) {
+      const search = messageSearchTerm.toLowerCase();
+      filteredMessages = filteredMessages.filter(msg => 
+        (msg.recipientName?.toLowerCase().includes(search)) ||
+        msg.recipientPhone.includes(search) ||
+        msg.message.toLowerCase().includes(search)
+      );
+    }
+    
+    if (messageTypeFilter !== 'all') {
+      filteredMessages = filteredMessages.filter(msg => msg.recipientType === messageTypeFilter);
+    }
+    
+    if (messageStatusFilter !== 'all') {
+      filteredMessages = filteredMessages.filter(msg => msg.status === messageStatusFilter);
+    }
+    
+    // Filtro de data
+    if (messageDateFilter !== 'all') {
+      const now = new Date();
+      let cutoffDate = new Date();
+      
+      switch (messageDateFilter) {
+        case 'today':
+          cutoffDate.setHours(0, 0, 0, 0);
+          break;
+        case '7days':
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case '30days':
+          cutoffDate.setDate(now.getDate() - 30);
+          break;
+        case '90days':
+          cutoffDate.setDate(now.getDate() - 90);
+          break;
+      }
+      
+      filteredMessages = filteredMessages.filter(msg => new Date(msg.createdAt) >= cutoffDate);
+    }
+    
+    // Agrupar por telefone
+    filteredMessages.forEach(msg => {
+      const existing = contactMap.get(msg.recipientPhone);
+      if (existing) {
+        existing.messages.push(msg);
+        existing.messageCount++;
+        const msgDate = new Date(msg.createdAt);
+        if (msgDate > existing.lastMessageAt) {
+          existing.lastMessageAt = msgDate;
+          existing.lastMessage = msg.message.substring(0, 50) + (msg.message.length > 50 ? '...' : '');
+        }
+      } else {
+        contactMap.set(msg.recipientPhone, {
+          recipientPhone: msg.recipientPhone,
+          recipientName: msg.recipientName,
+          recipientType: msg.recipientType,
+          messages: [msg],
+          lastMessage: msg.message.substring(0, 50) + (msg.message.length > 50 ? '...' : ''),
+          lastMessageAt: new Date(msg.createdAt),
+          messageCount: 1,
+        });
+      }
+    });
+    
+    // Ordenar mensagens dentro de cada contato por data
+    contactMap.forEach(contact => {
+      contact.messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    });
+    
+    // Retornar ordenado por última mensagem
+    return Array.from(contactMap.values()).sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
+  }, [messages, messageSearchTerm, messageTypeFilter, messageStatusFilter, messageDateFilter]);
   
   // Mutations
   const saveConfigMutation = trpc.adminWhatsapp.saveConfig.useMutation({
@@ -755,54 +860,167 @@ export default function AdminWhatsappDashboard() {
           
           {/* Messages Tab */}
           <TabsContent value="messages">
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Mensagens</CardTitle>
-                <CardDescription>Todas as mensagens enviadas pelo sistema</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {messagesLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="flex gap-4 h-[700px]">
+              {/* Lista de Contatos (Sidebar) */}
+              <div className="w-80 border rounded-lg bg-white flex flex-col">
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold mb-3">Conversas</h3>
+                  {/* Filtros */}
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input 
+                        placeholder="Buscar contato..." 
+                        className="pl-9 h-9"
+                        value={messageSearchTerm}
+                        onChange={(e) => setMessageSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={messageTypeFilter} onValueChange={setMessageTypeFilter}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="lead">Leads</SelectItem>
+                          <SelectItem value="personal">Personais</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={messageStatusFilter} onValueChange={setMessageStatusFilter}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="sent">Enviado</SelectItem>
+                          <SelectItem value="delivered">Entregue</SelectItem>
+                          <SelectItem value="read">Lido</SelectItem>
+                          <SelectItem value="failed">Falha</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Select value={messageDateFilter} onValueChange={setMessageDateFilter}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Período" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todo período</SelectItem>
+                        <SelectItem value="today">Hoje</SelectItem>
+                        <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                        <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                        <SelectItem value="90days">Últimos 90 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ) : messages && messages.length > 0 ? (
-                  <div className="space-y-3">
-                    {messages.map((msg: Message) => (
-                      <div key={msg.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <User className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{msg.recipientName || "Sem nome"}</span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-sm text-gray-500">{msg.recipientPhone}</span>
-                            <Badge variant={msg.status ? (statusBadges[msg.status]?.variant || "secondary") : "secondary"} className="ml-auto">
-                              {msg.status ? (statusBadges[msg.status]?.label || msg.status) : "Desconhecido"}
-                            </Badge>
+                </div>
+                {/* Lista de Contatos Agrupados */}
+                <div className="flex-1 overflow-y-auto">
+                  {messagesLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : groupedMessages.length > 0 ? (
+                    groupedMessages.map((contact) => (
+                      <div 
+                        key={contact.recipientPhone}
+                        className={`p-3 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
+                          selectedContact?.recipientPhone === contact.recipientPhone ? 'bg-green-50 border-l-4 border-l-green-500' : ''
+                        }`}
+                        onClick={() => setSelectedContact(contact)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="h-5 w-5 text-green-600" />
                           </div>
-                          <p className="text-gray-700 whitespace-pre-wrap">{msg.message}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(msg.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {msg.recipientType === "lead" ? "Lead" : "Personal"}
-                            </Badge>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-sm truncate">{contact.recipientName || 'Sem nome'}</span>
+                              <span className="text-xs text-gray-400">
+                                {format(new Date(contact.lastMessageAt), 'dd/MM', { locale: ptBR })}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-gray-500 truncate">{contact.lastMessage}</p>
+                              <Badge variant="outline" className="text-[10px] ml-1">
+                                {contact.messageCount}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageSquare className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm">Nenhuma conversa</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Área de Chat */}
+              <div className="flex-1 border rounded-lg bg-white flex flex-col">
+                {selectedContact ? (
+                  <>
+                    {/* Header do Chat */}
+                    <div className="p-4 border-b flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{selectedContact.recipientName || 'Sem nome'}</h4>
+                        <p className="text-sm text-gray-500">{selectedContact.recipientPhone}</p>
+                      </div>
+                      <Badge variant="outline" className="ml-auto">
+                        {selectedContact.recipientType === 'lead' ? 'Lead' : 'Personal'}
+                      </Badge>
+                    </div>
+                    
+                    {/* Mensagens */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23e5e7eb" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}>
+                      {selectedContact.messages.map((msg: Message) => (
+                        <div 
+                          key={msg.id} 
+                          className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className={`max-w-[70%] rounded-lg p-3 shadow-sm ${
+                            msg.direction === 'outgoing' 
+                              ? 'bg-green-500 text-white rounded-br-none' 
+                              : 'bg-white text-gray-800 rounded-bl-none'
+                          }`}>
+                            <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                            <div className={`flex items-center justify-end gap-1 mt-1 text-xs ${
+                              msg.direction === 'outgoing' ? 'text-green-100' : 'text-gray-400'
+                            }`}>
+                              <span>{format(new Date(msg.createdAt), 'HH:mm', { locale: ptBR })}</span>
+                              {msg.direction === 'outgoing' && (
+                                <span>
+                                  {msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓✓' : msg.status === 'sent' ? '✓' : '⚠'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Info Footer */}
+                    <div className="p-3 border-t bg-gray-50 text-center text-xs text-gray-500">
+                      <p>Mensagens automáticas enviadas pelo sistema FitPrime</p>
+                    </div>
+                  </>
                 ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p>Nenhuma mensagem enviada ainda</p>
+                  <div className="flex-1 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="font-medium text-lg mb-2">Selecione uma conversa</h3>
+                      <p className="text-sm">Clique em um contato para ver as mensagens</p>
+                    </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
           
           {/* Stats Tab - Estatísticas Completas do WhatsApp */}

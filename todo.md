@@ -4711,3 +4711,19 @@
 - [x] Gráfico visual do funil com métricas de custo por etapa
 - [x] Opção de negativação visível nas automações WhatsApp
 
+
+
+## TAREFAS v6.29 - Meta CAPI, Chat WhatsApp, Filtros
+- [ ] Meta Conversions API server-side com parâmetros de alta qualidade (email, IP, fbp, fbc)
+- [ ] Chat estilo WhatsApp com bubbles e agrupamento por contato
+- [ ] Filtros completos de mensagens (tipo, status, data, destinatário)
+
+
+
+## CORREÇÕES v6.29 - Chat WhatsApp e Filtros (CONCLUÍDO)
+- [x] Chat estilo WhatsApp com bubbles e agrupamento por contato
+- [x] Filtros completos de mensagens (tipo, status, data, busca)
+- [x] Lista de contatos com última mensagem e contagem
+- [x] Área de chat com mensagens ordenadas cronologicamente
+- [x] Meta Conversions API server-side já implementada com parâmetros de alta qualidade
+
