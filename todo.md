@@ -4741,3 +4741,16 @@
 - [x] Gráfico de funil de conversão com taxas entre etapas
 - [x] Taxa geral de conversão Lead → Cliente
 
+
+
+## TAREFAS v6.31 - Mensagens Pré-programadas e Webhook
+- [ ] Mensagens pré-programadas por etapa do funil no CRM
+- [ ] Webhook Stevo para receber mensagens (chat bidirecional)
+
+
+
+## CORREÇÕES v6.31 - Mensagens Pré-programadas e Webhook (CONCLUÍDO)
+- [x] Mensagens pré-programadas por etapa do funil no CRM (5 etapas com 3-4 templates cada)
+- [x] Webhook admin-stevo para receber mensagens de leads (chat bidirecional)
+- [x] Mensagens recebidas salvas no histórico do admin WhatsApp
+

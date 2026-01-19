@@ -121,6 +121,121 @@ async function startServer() {
     }
   });
   
+  // Admin Stevo webhook - receives WhatsApp messages for admin/leads
+  app.post('/api/webhook/admin-stevo', express.json(), async (req: any, res: any) => {
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const token = req.query.token;
+    
+    try {
+      console.log('[Admin Stevo Webhook] Recebido de IP:', clientIp);
+      
+      // Validar token
+      const { getDb } = await import('../db');
+      const { adminWhatsappConfig, adminWhatsappMessages, quizResponses } = await import('../../drizzle/schema');
+      const { eq, or, sql } = await import('drizzle-orm');
+      
+      const db = await getDb();
+      if (!db) {
+        return res.status(500).json({ error: 'Database not available' });
+      }
+      
+      const [config] = await db.select().from(adminWhatsappConfig).limit(1);
+      
+      if (!config?.stevoWebhookToken || config.stevoWebhookToken !== token) {
+        console.warn('[Admin Stevo Webhook] Token inválido:', token);
+        return res.status(401).json({ error: 'Unauthorized - Invalid token' });
+      }
+      
+      // Extrair dados da mensagem
+      const payload = req.body;
+      let from = '';
+      let messageText = '';
+      let messageType = 'text';
+      let isFromMe = false;
+      
+      // Formato MESSAGES_UPSERT
+      if (payload.data?.key?.remoteJid) {
+        from = payload.data.key.remoteJid.replace('@s.whatsapp.net', '');
+        isFromMe = payload.data.key.fromMe === true;
+        const message = payload.data.message;
+        if (message?.conversation) {
+          messageText = message.conversation;
+        } else if (message?.extendedTextMessage?.text) {
+          messageText = message.extendedTextMessage.text;
+        } else if (message?.imageMessage?.caption) {
+          messageText = message.imageMessage.caption;
+          messageType = 'image';
+        }
+      }
+      // Formato simplificado
+      else if (payload.from) {
+        from = payload.from.replace('@s.whatsapp.net', '');
+        messageText = payload.body || '';
+        messageType = payload.type || 'text';
+      }
+      
+      if (!from || isFromMe) {
+        return res.json({ success: true, processed: false, reason: 'no_sender_or_from_me' });
+      }
+      
+      // Normalizar telefone
+      let phone = from.replace(/\D/g, '');
+      if (phone.startsWith('55')) {
+        phone = phone.substring(2);
+      }
+      
+      console.log('[Admin Stevo Webhook] Mensagem de:', phone, '- Texto:', messageText);
+      
+      // Buscar lead pelo telefone
+      const [lead] = await db.select()
+        .from(quizResponses)
+        .where(or(
+          eq(quizResponses.leadPhone, phone),
+          eq(quizResponses.leadPhone, `55${phone}`),
+          sql`REPLACE(REPLACE(REPLACE(${quizResponses.leadPhone}, '(', ''), ')', ''), '-', '') LIKE ${`%${phone.slice(-9)}`}`
+        ))
+        .limit(1);
+      
+      if (lead) {
+        // Salvar mensagem recebida do lead
+        await db.insert(adminWhatsappMessages).values({
+          recipientType: 'lead',
+          recipientId: lead.id,
+          recipientPhone: phone,
+          recipientName: lead.leadName,
+          direction: 'inbound',
+          message: messageText,
+          messageType: messageType as any,
+          status: 'delivered',
+          deliveredAt: new Date(),
+        });
+        
+        console.log('[Admin Stevo Webhook] Mensagem salva para lead:', lead.leadName);
+        return res.json({ success: true, processed: true, leadId: lead.id });
+      }
+      
+      // Se não encontrou lead, salvar como mensagem de número desconhecido
+      await db.insert(adminWhatsappMessages).values({
+        recipientType: 'lead',
+        recipientId: 0, // ID 0 para desconhecidos
+        recipientPhone: phone,
+        recipientName: 'Desconhecido',
+        direction: 'inbound',
+        message: messageText,
+        messageType: messageType as any,
+        status: 'delivered',
+        deliveredAt: new Date(),
+      });
+      
+      console.log('[Admin Stevo Webhook] Mensagem salva de número desconhecido:', phone);
+      return res.json({ success: true, processed: true, unknown: true });
+      
+    } catch (error: any) {
+      console.error('[Admin Stevo Webhook] Error:', error);
+      res.status(500).json({ error: error?.message || 'Internal error' });
+    }
+  });
+  
   // Evolution API webhook - receives WhatsApp messages (alternative to Stevo)
   app.post('/api/webhook/evolution', express.json(), async (req: any, res: any) => {
     console.log('[Evolution Webhook] Recebido payload:', JSON.stringify(req.body, null, 2));

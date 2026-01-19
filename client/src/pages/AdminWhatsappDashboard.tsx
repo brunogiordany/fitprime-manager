@@ -101,6 +101,51 @@ interface Lead {
   recommendedProfile: string | null;
 }
 
+// Mensagens pré-programadas por etapa do funil
+const funnelStageMessages: Record<string, { title: string; messages: { id: string; label: string; template: string }[] }> = {
+  new_lead: {
+    title: "Novo Lead",
+    messages: [
+      { id: "nl1", label: "Boas-vindas", template: "Olá {{nome}}! \ud83d\udc4b\n\nVi que você se interessou pelo FitPrime! Sou da equipe de suporte e estou aqui para te ajudar.\n\nQuer conhecer melhor como a plataforma pode transformar sua gestão de alunos?" },
+      { id: "nl2", label: "Descobrir perfil", template: "{{nome}}, percebi que você ainda não completou nosso quiz de perfil! \ud83d\udcca\n\nEm apenas 2 minutos você descobre qual plano é ideal para o seu momento.\n\nVamos lá? \ud83d\ude80" },
+      { id: "nl3", label: "Oferta especial", template: "{{nome}}, tenho uma oferta especial para você! \ud83c\udf81\n\nComo você demonstrou interesse, liberamos 7 dias de teste GRÁTIS com acesso completo.\n\nQuer ativar agora?" }
+    ]
+  },
+  quiz_completed: {
+    title: "Quiz Completo",
+    messages: [
+      { id: "qc1", label: "Resultado do quiz", template: "{{nome}}, vi que você completou o quiz! \ud83c\udf89\n\nCom base nas suas respostas, o plano ideal para você é o {{plano}}.\n\nQuer que eu te explique os benefícios?" },
+      { id: "qc2", label: "Ativar trial", template: "{{nome}}, seu perfil foi analisado! \ud83d\udcca\n\nAgora é só ativar seu período de teste gratuito e começar a usar todas as funcionalidades.\n\nPosso te ajudar com isso?" },
+      { id: "qc3", label: "Dúvidas", template: "{{nome}}, vi que você fez o quiz mas ainda não ativou o trial. \ud83e\udd14\n\nTem alguma dúvida sobre a plataforma? Estou aqui para esclarecer tudo!" }
+    ]
+  },
+  trial_active: {
+    title: "Trial Ativo",
+    messages: [
+      { id: "ta1", label: "Dicas de uso", template: "{{nome}}, como está sendo sua experiência com o FitPrime? \ud83d\udcaa\n\nJá cadastrou seus primeiros alunos? Se precisar de ajuda, é só me chamar!" },
+      { id: "ta2", label: "Lembrete de funcionalidades", template: "{{nome}}, você já conhece todas as funcionalidades do FitPrime? \ud83d\ude80\n\n\u2705 Treinos personalizados com IA\n\u2705 Automação de cobranças\n\u2705 Mensagens automáticas\n\nQuer que eu te mostre como usar?" },
+      { id: "ta3", label: "Feedback", template: "{{nome}}, seu trial está ativo! \ud83c\udf1f\n\nO que você está achando até agora? Sua opinião é muito importante para nós!" }
+    ]
+  },
+  trial_expired: {
+    title: "Trial Expirado",
+    messages: [
+      { id: "te1", label: "Reativação", template: "{{nome}}, seu período de teste acabou! \u23f0\n\nMas não se preocupe, preparei uma condição especial para você continuar usando o FitPrime.\n\nQuer saber mais?" },
+      { id: "te2", label: "Desconto exclusivo", template: "{{nome}}, senti sua falta no FitPrime! \ud83d\ude22\n\nComo seu trial expirou, liberei um desconto EXCLUSIVO de 20% no primeiro mês.\n\nVamos reativar sua conta?" },
+      { id: "te3", label: "Última chance", template: "{{nome}}, última chance! \ud83d\udea8\n\nSeu trial expirou e seus dados serão removidos em 7 dias.\n\nAtive agora e garanta que nada seja perdido!" },
+      { id: "te4", label: "Entender motivo", template: "{{nome}}, percebi que seu trial expirou e você não ativou o plano. \ud83e\udd14\n\nPosso saber o que aconteceu? Talvez eu consiga te ajudar!" }
+    ]
+  },
+  converted: {
+    title: "Convertidos",
+    messages: [
+      { id: "cv1", label: "Boas-vindas cliente", template: "{{nome}}, seja muito bem-vindo(a) à família FitPrime! \ud83c\udf89\n\nEstamos muito felizes em ter você conosco. Qualquer dúvida, estou aqui!" },
+      { id: "cv2", label: "Suporte dedicado", template: "{{nome}}, como cliente FitPrime você tem suporte prioritário! \ud83c\udf1f\n\nPrecisa de ajuda com alguma funcionalidade? É só me chamar!" },
+      { id: "cv3", label: "Indicação", template: "{{nome}}, que tal ganhar 1 mês grátis? \ud83c\udf81\n\nIndique um amigo personal e quando ele assinar, você ganha 30 dias de bônus!\n\nQuer saber como funciona?" }
+    ]
+  }
+};
+
 // Mapeamento de triggers para labels amigáveis
 const triggerLabels: Record<string, string> = {
   lead_trial_signup: "Cadastro no Trial",
@@ -1683,14 +1728,89 @@ export default function AdminWhatsappDashboard() {
                 </CardContent>
               </Card>
               
-              {/* Sugestões de Mensagem */}
+              {/* Sugestões de Mensagem por Etapa */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Sugestões de Mensagem</CardTitle>
-                  <CardDescription>Clique para usar</CardDescription>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    Mensagens Pré-programadas
+                  </CardTitle>
+                  <CardDescription>
+                    {selectedStage === 'all' 
+                      ? 'Selecione uma etapa do funil para ver mensagens específicas' 
+                      : `Mensagens para: ${funnelStageMessages[selectedStage]?.title || selectedStage}`
+                    }
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {/* Mensagens pré-programadas baseadas no estágio */}
+                    {selectedStage !== 'all' && funnelStageMessages[selectedStage]?.messages.map((msg) => (
+                      <div 
+                        key={msg.id}
+                        className="p-3 border-2 border-green-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-400 transition-all"
+                        onClick={async () => {
+                          setBulkMessage(msg.template);
+                          try {
+                            await navigator.clipboard.writeText(msg.template);
+                            toast.success('Mensagem copiada!');
+                          } catch (err) {
+                            toast.success('Mensagem adicionada!');
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge className="bg-green-100 text-green-800 border-green-300">{msg.label}</Badge>
+                          <span className="text-xs text-green-600 font-medium">Recomendado</span>
+                        </div>
+                        <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-4">{msg.template}</p>
+                      </div>
+                    ))}
+                    
+                    {/* Mostrar todas as etapas quando "all" está selecionado */}
+                    {selectedStage === 'all' && Object.entries(funnelStageMessages).map(([stage, data]) => (
+                      <div key={stage} className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            stage === 'new_lead' ? 'bg-blue-500' :
+                            stage === 'quiz_completed' ? 'bg-purple-500' :
+                            stage === 'trial_active' ? 'bg-green-500' :
+                            stage === 'trial_expired' ? 'bg-orange-500' :
+                            'bg-emerald-500'
+                          }`} />
+                          <span className="text-sm font-medium text-gray-700">{data.title}</span>
+                          <span className="text-xs text-gray-400">({data.messages.length} mensagens)</span>
+                        </div>
+                        <div className="space-y-2 pl-4">
+                          {data.messages.slice(0, 2).map((msg) => (
+                            <div 
+                              key={msg.id}
+                              className="p-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all text-sm"
+                              onClick={async () => {
+                                setBulkMessage(msg.template);
+                                setSelectedStage(stage);
+                                try {
+                                  await navigator.clipboard.writeText(msg.template);
+                                  toast.success('Mensagem copiada!');
+                                } catch (err) {
+                                  toast.success('Mensagem adicionada!');
+                                }
+                              }}
+                            >
+                              <Badge variant="outline" className="text-xs mb-1">{msg.label}</Badge>
+                              <p className="text-xs text-gray-600 line-clamp-2">{msg.template}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Separador */}
+                    <div className="border-t pt-3 mt-3">
+                      <p className="text-xs text-gray-500 mb-2 font-medium">Sugestões salvas:</p>
+                    </div>
+                    
+                    {/* Sugestões salvas do banco */}
                     {messageSuggestions?.map((suggestion: any) => (
                       <div 
                         key={suggestion.id}
@@ -1700,9 +1820,9 @@ export default function AdminWhatsappDashboard() {
                           incrementSuggestionUsageMutation.mutate({ id: suggestion.id });
                           try {
                             await navigator.clipboard.writeText(suggestion.template);
-                            toast.success('Mensagem copiada para a área de transferência!');
+                            toast.success('Mensagem copiada!');
                           } catch (err) {
-                            toast.success('Mensagem adicionada ao campo de texto!');
+                            toast.success('Mensagem adicionada!');
                           }
                         }}
                       >
@@ -1713,9 +1833,9 @@ export default function AdminWhatsappDashboard() {
                         <p className="text-sm line-clamp-3">{suggestion.template}</p>
                       </div>
                     ))}
-                    {(!messageSuggestions || messageSuggestions.length === 0) && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        Nenhuma sugestão disponível
+                    {(!messageSuggestions || messageSuggestions.length === 0) && selectedStage === 'all' && (
+                      <div className="text-center py-2 text-gray-400 text-xs">
+                        Nenhuma sugestão salva ainda
                       </div>
                     )}
                   </div>
