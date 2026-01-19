@@ -4391,3 +4391,58 @@
 - [x] Identificar causa do bloqueio de paste em campos de input
 - [x] Remover bloqueio de onPaste em todos os componentes
 - [x] Testar funcionalidade de colar em todas as páginas
+
+
+## MEGA CHECKLIST - WhatsApp Admin e CRM Completo (v6.37)
+
+### Bugs Críticos
+- [x] Botão Selecionar Todos deve alternar para Desmarcar Todos
+- [x] Erro ao exportar PDF: Invalid arguments passed to jsPDF.text
+- [x] Link de Convite Geral não funciona (erro ao carregar) - melhorado tratamento de erro
+
+### CRM de Leads com Funil Automático
+- [x] Sistema de tags automáticas baseado no estágio do funil
+- [x] Estágios: Novo Lead → Quiz Completo → Trial Ativo → Trial Expirado → Convertido → Perdido
+- [x] Movimentação automática conforme lead avança no funil
+- [x] Filtros por estágio/tag na lista de leads
+- [x] Verificar se lead já é personal antes de enviar mensagem
+
+### Envio em Massa com Segurança
+- [x] Delay entre envios (6seg, 7seg alternando)
+- [x] Limite diário de mensagens para proteger número
+- [x] Alertas de uso (quantas já enviou, quantas ainda pode)
+- [x] Janela de confirmação antes de envio em massa
+- [x] Contador de mensagens enviadas no dia
+
+### Sugestões de Mensagem por Estágio
+- [x] Templates prontos para cada estágio do funil
+- [x] Novo Lead: Boas-vindas e apresentação
+- [x] Quiz Completo: Incentivo ao trial
+- [x] Trial Ativo: Dicas de uso
+- [x] Trial Expirando: Urgência para conversão
+- [x] Trial Expirado: Oferta especial
+- [x] Convertido: Onboarding e suporte
+
+### Múltiplos Números WhatsApp
+- [x] Suporte a cadastrar múltiplos números
+- [x] Distribuição inteligente de envios entre números
+- [x] Status individual de cada número
+- [x] Dados/IA salvos no banco (não no número)
+
+### Estatísticas WhatsApp no Admin
+- [x] Total de mensagens enviadas/recebidas
+- [x] Taxa de resposta
+- [x] Mensagens por período
+- [x] Filtros por tag/estágio de lead
+
+### Cobranças Integradas aos Planos
+- [x] Vincular cobrança ao plano do aluno
+- [x] Envio automático de cobrança baseado no plano
+- [x] Agenda de cobrança visual (/cobrancas/agenda)
+- [x] Lembretes automáticos 2 dias antes e no dia
+
+### Mais Automações de Marketing
+- [ ] Sequência de nutrição para leads frios
+- [ ] Reativação de leads inativos (30, 60, 90 dias)
+- [ ] Aniversário do lead
+- [ ] Follow-up pós-trial

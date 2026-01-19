@@ -9,7 +9,15 @@ import {
   adminWhatsappQueue,
   quizResponses,
   personals,
-  users
+  users,
+  leadFunnelStages,
+  leadFunnelHistory,
+  whatsappMessageSuggestions,
+  whatsappNumbers,
+  whatsappBulkSendQueue,
+  whatsappDailyStats,
+  leadTags,
+  leadTagAssignments
 } from "../../drizzle/schema";
 import { eq, desc, and, sql, gte, lte, or, isNull, ne } from "drizzle-orm";
 import { sendWhatsAppMessage, getWebhook, setWebhook } from "../stevo";
@@ -718,4 +726,610 @@ Equipe FitPrime`,
       
       return personalsList;
     }),
+
+  // ==================== CRM DE LEADS - FUNIL ====================
+  
+  // Listar leads com estágio do funil e tags
+  listLeadsWithFunnel: ownerProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      stage: z.string().optional(),
+      tagIds: z.array(z.number()).optional(),
+      limit: z.number().default(50),
+      offset: z.number().default(0),
+    }))
+    .query(async ({ input }: { input: { search?: string; stage?: string; tagIds?: number[]; limit: number; offset: number } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Buscar leads com estágio do funil
+      const leads = await db.select({
+        id: quizResponses.id,
+        name: quizResponses.leadName,
+        email: quizResponses.leadEmail,
+        phone: quizResponses.leadPhone,
+        createdAt: quizResponses.createdAt,
+        studentsCount: quizResponses.studentsCount,
+        recommendedProfile: quizResponses.recommendedProfile,
+        convertedToTrial: quizResponses.convertedToTrial,
+        convertedToPaid: quizResponses.convertedToPaid,
+      })
+        .from(quizResponses)
+        .where(sql`${quizResponses.leadPhone} IS NOT NULL AND ${quizResponses.leadPhone} != ''`)
+        .orderBy(desc(quizResponses.createdAt))
+        .limit(input.limit)
+        .offset(input.offset);
+      
+      // Buscar estágios do funil para cada lead
+      const leadIds = leads.map(l => l.id);
+      const stages = leadIds.length > 0 
+        ? await db.select()
+            .from(leadFunnelStages)
+            .where(sql`${leadFunnelStages.leadId} IN (${sql.join(leadIds.map(id => sql`${id}`), sql`, `)})`)
+        : [];
+      
+      // Buscar tags para cada lead
+      const tagAssignments = leadIds.length > 0
+        ? await db.select({
+            leadId: leadTagAssignments.leadId,
+            tagId: leadTagAssignments.tagId,
+            tagName: leadTags.name,
+            tagColor: leadTags.color,
+          })
+            .from(leadTagAssignments)
+            .leftJoin(leadTags, eq(leadTagAssignments.tagId, leadTags.id))
+            .where(sql`${leadTagAssignments.leadId} IN (${sql.join(leadIds.map(id => sql`${id}`), sql`, `)})`)
+        : [];
+      
+      // Combinar dados
+      const leadsWithFunnel = leads.map(lead => {
+        const stageInfo = stages.find(s => s.leadId === lead.id);
+        const leadTags = tagAssignments.filter(t => t.leadId === lead.id);
+        
+        // Determinar estágio automaticamente se não existir
+        let stage = stageInfo?.stage || 'new_lead';
+        if (!stageInfo) {
+          if (lead.convertedToPaid) stage = 'converted';
+          else if (lead.convertedToTrial) stage = 'trial_active';
+          else if (lead.recommendedProfile) stage = 'quiz_completed';
+        }
+        
+        return {
+          ...lead,
+          stage,
+          tags: leadTags.map(t => ({ id: t.tagId, name: t.tagName, color: t.tagColor })),
+        };
+      });
+      
+      // Filtrar por estágio se necessário
+      let filteredLeads = leadsWithFunnel;
+      if (input.stage && input.stage !== 'all') {
+        filteredLeads = filteredLeads.filter(l => l.stage === input.stage);
+      }
+      
+      // Filtrar por tags se necessário
+      if (input.tagIds && input.tagIds.length > 0) {
+        filteredLeads = filteredLeads.filter(l => 
+          l.tags.some(t => input.tagIds!.includes(t.id!))
+        );
+      }
+      
+      // Filtrar por busca
+      if (input.search) {
+        const searchLower = input.search.toLowerCase();
+        filteredLeads = filteredLeads.filter(l =>
+          l.name?.toLowerCase().includes(searchLower) ||
+          l.email?.toLowerCase().includes(searchLower) ||
+          l.phone?.includes(input.search!)
+        );
+      }
+      
+      return filteredLeads;
+    }),
+  
+  // Atualizar estágio do lead no funil
+  updateLeadStage: ownerProcedure
+    .input(z.object({
+      leadId: z.number(),
+      stage: z.string(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ input }: { input: { leadId: number; stage: string; notes?: string } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Buscar estágio atual
+      const [currentStage] = await db.select()
+        .from(leadFunnelStages)
+        .where(eq(leadFunnelStages.leadId, input.leadId))
+        .limit(1);
+      
+      const previousStage = currentStage?.stage || null;
+      
+      if (currentStage) {
+        // Atualizar estágio existente
+        await db.update(leadFunnelStages)
+          .set({
+            stage: input.stage as any,
+            previousStage,
+            changedAt: new Date(),
+            changedBy: 'admin',
+            notes: input.notes,
+          })
+          .where(eq(leadFunnelStages.id, currentStage.id));
+      } else {
+        // Criar novo registro de estágio
+        await db.insert(leadFunnelStages).values({
+          leadId: input.leadId,
+          stage: input.stage as any,
+          previousStage: null,
+          changedBy: 'admin',
+          notes: input.notes,
+        });
+      }
+      
+      // Registrar no histórico
+      await db.insert(leadFunnelHistory).values({
+        leadId: input.leadId,
+        fromStage: previousStage,
+        toStage: input.stage,
+        changedBy: 'admin',
+        reason: input.notes,
+      });
+      
+      return { success: true };
+    }),
+  
+  // Obter contagem de leads por estágio
+  getFunnelStats: ownerProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    
+    // Buscar todos os leads
+    const leads = await db.select({
+      id: quizResponses.id,
+      convertedToTrial: quizResponses.convertedToTrial,
+      convertedToPaid: quizResponses.convertedToPaid,
+      recommendedProfile: quizResponses.recommendedProfile,
+    })
+      .from(quizResponses)
+      .where(sql`${quizResponses.leadPhone} IS NOT NULL`);
+    
+    // Buscar estágios salvos
+    const stages = await db.select()
+      .from(leadFunnelStages);
+    
+    // Contar por estágio
+    const stageCounts: Record<string, number> = {
+      new_lead: 0,
+      quiz_started: 0,
+      quiz_completed: 0,
+      trial_started: 0,
+      trial_active: 0,
+      trial_expiring: 0,
+      trial_expired: 0,
+      converted: 0,
+      lost: 0,
+      reengagement: 0,
+    };
+    
+    for (const lead of leads) {
+      const stageInfo = stages.find(s => s.leadId === lead.id);
+      let stage = stageInfo?.stage || 'new_lead';
+      
+      if (!stageInfo) {
+        if (lead.convertedToPaid) stage = 'converted';
+        else if (lead.convertedToTrial) stage = 'trial_active';
+        else if (lead.recommendedProfile) stage = 'quiz_completed';
+      }
+      
+      stageCounts[stage] = (stageCounts[stage] || 0) + 1;
+    }
+    
+    return stageCounts;
+  }),
+  
+  // ==================== SUGESTÕES DE MENSAGEM ====================
+  
+  // Listar sugestões de mensagem por estágio
+  getMessageSuggestions: ownerProcedure
+    .input(z.object({
+      stage: z.string().optional(),
+    }))
+    .query(async ({ input }: { input: { stage?: string } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      let query = db.select().from(whatsappMessageSuggestions);
+      
+      if (input.stage) {
+        query = query.where(eq(whatsappMessageSuggestions.stage, input.stage)) as any;
+      }
+      
+      const suggestions = await query.orderBy(desc(whatsappMessageSuggestions.usageCount));
+      return suggestions;
+    }),
+  
+  // Incrementar uso de sugestão
+  incrementSuggestionUsage: ownerProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }: { input: { id: number } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      await db.update(whatsappMessageSuggestions)
+        .set({ usageCount: sql`${whatsappMessageSuggestions.usageCount} + 1` })
+        .where(eq(whatsappMessageSuggestions.id, input.id));
+      
+      return { success: true };
+    }),
+  
+  // ==================== MÚLTIPLOS NÚMEROS WHATSAPP ====================
+  
+  // Listar números WhatsApp
+  listWhatsappNumbers: ownerProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    
+    const numbers = await db.select().from(whatsappNumbers).orderBy(whatsappNumbers.priority);
+    return numbers;
+  }),
+  
+  // Adicionar número WhatsApp
+  addWhatsappNumber: ownerProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      phone: z.string().min(1),
+      stevoApiKey: z.string().optional(),
+      stevoInstanceName: z.string().optional(),
+      stevoServer: z.string().default("sm15"),
+      dailyMessageLimit: z.number().default(200),
+      priority: z.number().default(1),
+    }))
+    .mutation(async ({ input }: { input: { name: string; phone: string; stevoApiKey?: string; stevoInstanceName?: string; stevoServer: string; dailyMessageLimit: number; priority: number } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const [result] = await db.insert(whatsappNumbers).values(input);
+      return { success: true, id: result.insertId };
+    }),
+  
+  // Atualizar número WhatsApp
+  updateWhatsappNumber: ownerProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      stevoApiKey: z.string().optional(),
+      stevoInstanceName: z.string().optional(),
+      stevoServer: z.string().optional(),
+      dailyMessageLimit: z.number().optional(),
+      priority: z.number().optional(),
+      isActive: z.boolean().optional(),
+    }))
+    .mutation(async ({ input }: { input: { id: number; name?: string; stevoApiKey?: string; stevoInstanceName?: string; stevoServer?: string; dailyMessageLimit?: number; priority?: number; isActive?: boolean } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const { id, ...updateData } = input;
+      await db.update(whatsappNumbers)
+        .set(updateData)
+        .where(eq(whatsappNumbers.id, id));
+      
+      return { success: true };
+    }),
+  
+  // Deletar número WhatsApp
+  deleteWhatsappNumber: ownerProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }: { input: { id: number } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      await db.delete(whatsappNumbers).where(eq(whatsappNumbers.id, input.id));
+      return { success: true };
+    }),
+  
+  // ==================== ENVIO EM MASSA COM DELAY E SEGURANÇA ====================
+  
+  // Obter limites de envio do dia
+  getDailyLimits: ownerProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Buscar números ativos
+    const numbers = await db.select().from(whatsappNumbers).where(eq(whatsappNumbers.isActive, true));
+    
+    // Buscar mensagens enviadas hoje
+    const [sentToday] = await db.select({ count: sql<number>`COUNT(*)` })
+      .from(adminWhatsappMessages)
+      .where(and(
+        gte(adminWhatsappMessages.createdAt, today),
+        eq(adminWhatsappMessages.status, 'sent')
+      ));
+    
+    // Calcular limites
+    const totalLimit = numbers.reduce((sum, n) => sum + (n.dailyMessageLimit || 200), 0);
+    const used = sentToday?.count || 0;
+    const remaining = Math.max(0, totalLimit - used);
+    
+    // Alertas
+    const alerts: string[] = [];
+    if (remaining < 20) {
+      alerts.push('⚠️ Limite diário quase atingido! Restam apenas ' + remaining + ' mensagens.');
+    }
+    if (used > totalLimit * 0.8) {
+      alerts.push('🔶 Você já usou mais de 80% do limite diário.');
+    }
+    
+    return {
+      totalLimit,
+      used,
+      remaining,
+      alerts,
+      numbers: numbers.map(n => ({
+        id: n.id,
+        name: n.name,
+        phone: n.phone,
+        limit: n.dailyMessageLimit,
+        sentToday: n.messagesSentToday,
+        status: n.status,
+      })),
+    };
+  }),
+  
+  // Enviar em massa com delay e segurança
+  sendBulkWithDelay: ownerProcedure
+    .input(z.object({
+      leadIds: z.array(z.number()),
+      message: z.string().min(1),
+      delayMin: z.number().default(6000), // 6 segundos mínimo
+      delayMax: z.number().default(7000), // 7 segundos máximo
+    }))
+    .mutation(async ({ input }: { input: { leadIds: number[]; message: string; delayMin: number; delayMax: number } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Verificar limites
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const numbers = await db.select().from(whatsappNumbers).where(eq(whatsappNumbers.isActive, true));
+      const totalLimit = numbers.reduce((sum, n) => sum + (n.dailyMessageLimit || 200), 0);
+      
+      const [sentToday] = await db.select({ count: sql<number>`COUNT(*)` })
+        .from(adminWhatsappMessages)
+        .where(and(
+          gte(adminWhatsappMessages.createdAt, today),
+          eq(adminWhatsappMessages.status, 'sent')
+        ));
+      
+      const used = sentToday?.count || 0;
+      const remaining = totalLimit - used;
+      
+      if (input.leadIds.length > remaining) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Limite diário insuficiente. Restam ${remaining} mensagens, mas você está tentando enviar ${input.leadIds.length}.`
+        });
+      }
+      
+      // Buscar configuração principal ou primeiro número ativo
+      let config = await db.select().from(adminWhatsappConfig).limit(1).then(r => r[0]);
+      if (!config?.stevoApiKey && numbers.length > 0) {
+        const firstNumber = numbers[0];
+        config = {
+          stevoApiKey: firstNumber.stevoApiKey,
+          stevoInstanceName: firstNumber.stevoInstanceName,
+          stevoServer: firstNumber.stevoServer,
+        } as any;
+      }
+      
+      if (!config?.stevoApiKey) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "WhatsApp não configurado" });
+      }
+      
+      // Buscar leads
+      const leads = await db.select()
+        .from(quizResponses)
+        .where(sql`${quizResponses.id} IN (${sql.join(input.leadIds.map(id => sql`${id}`), sql`, `)})`);
+      
+      // Criar lote de envio
+      const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      const results = { queued: 0, failed: 0, errors: [] as string[] };
+      
+      let delayAccumulator = 0;
+      for (const lead of leads) {
+        if (!lead.leadPhone) {
+          results.failed++;
+          results.errors.push(`${lead.leadName}: Sem telefone`);
+          continue;
+        }
+        
+        // Calcular delay alternado (6s, 7s, 6s, 7s...)
+        const delay = delayAccumulator % 2 === 0 ? input.delayMin : input.delayMax;
+        delayAccumulator++;
+        
+        // Substituir variáveis
+        const personalizedMessage = input.message
+          .replace(/{{nome}}/g, lead.leadName || '')
+          .replace(/{{email}}/g, lead.leadEmail || '')
+          .replace(/{{plano}}/g, lead.recommendedPlan || '');
+        
+        // Adicionar à fila
+        await db.insert(whatsappBulkSendQueue).values({
+          batchId,
+          leadId: lead.id,
+          phone: lead.leadPhone,
+          message: personalizedMessage,
+          status: 'pending',
+          delayMs: delay,
+          scheduledAt: new Date(Date.now() + (delayAccumulator * delay)),
+        });
+        
+        results.queued++;
+      }
+      
+      // Processar fila em background (simplificado - em produção usar job queue)
+      processWhatsappQueue(db, config, batchId).catch(console.error);
+      
+      return {
+        batchId,
+        ...results,
+        message: `${results.queued} mensagens adicionadas à fila. Envio com delay de ${input.delayMin/1000}-${input.delayMax/1000}s entre cada.`
+      };
+    }),
+  
+  // Obter status do lote de envio
+  getBulkSendStatus: ownerProcedure
+    .input(z.object({ batchId: z.string() }))
+    .query(async ({ input }: { input: { batchId: string } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const items = await db.select()
+        .from(whatsappBulkSendQueue)
+        .where(eq(whatsappBulkSendQueue.batchId, input.batchId));
+      
+      const stats = {
+        total: items.length,
+        pending: items.filter(i => i.status === 'pending').length,
+        sending: items.filter(i => i.status === 'sending').length,
+        sent: items.filter(i => i.status === 'sent').length,
+        failed: items.filter(i => i.status === 'failed').length,
+      };
+      
+      return stats;
+    }),
+  
+  // ==================== ESTATÍSTICAS WHATSAPP ADMIN ====================
+  
+  // Obter estatísticas completas
+  getWhatsappStats: ownerProcedure
+    .input(z.object({
+      period: z.enum(['today', 'week', 'month']).default('today'),
+    }))
+    .query(async ({ input }: { input: { period: string } }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Calcular data inicial
+      const now = new Date();
+      let startDate = new Date();
+      if (input.period === 'today') {
+        startDate.setHours(0, 0, 0, 0);
+      } else if (input.period === 'week') {
+        startDate.setDate(now.getDate() - 7);
+      } else {
+        startDate.setDate(now.getDate() - 30);
+      }
+      
+      // Mensagens no período
+      const messages = await db.select()
+        .from(adminWhatsappMessages)
+        .where(gte(adminWhatsappMessages.createdAt, startDate));
+      
+      // Estatísticas
+      const stats = {
+        totalSent: messages.filter(m => m.direction === 'outbound' && m.status === 'sent').length,
+        totalReceived: messages.filter(m => m.direction === 'inbound').length,
+        totalFailed: messages.filter(m => m.status === 'failed').length,
+        byRecipientType: {
+          lead: messages.filter(m => m.recipientType === 'lead').length,
+          personal: messages.filter(m => m.recipientType === 'personal').length,
+        },
+        byDay: {} as Record<string, { sent: number; received: number }>,
+      };
+      
+      // Agrupar por dia
+      for (const msg of messages) {
+        const day = msg.createdAt?.toISOString().split('T')[0] || 'unknown';
+        if (!stats.byDay[day]) {
+          stats.byDay[day] = { sent: 0, received: 0 };
+        }
+        if (msg.direction === 'outbound' && msg.status === 'sent') {
+          stats.byDay[day].sent++;
+        } else if (msg.direction === 'inbound') {
+          stats.byDay[day].received++;
+        }
+      }
+      
+      return stats;
+    }),
+  
+  // Listar todas as tags disponíveis
+  listTags: ownerProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    
+    const tags = await db.select().from(leadTags).orderBy(leadTags.name);
+    return tags;
+  }),
 });
+
+// Função auxiliar para processar fila de envio em background
+async function processWhatsappQueue(db: any, config: any, batchId: string) {
+  const items = await db.select()
+    .from(whatsappBulkSendQueue)
+    .where(and(
+      eq(whatsappBulkSendQueue.batchId, batchId),
+      eq(whatsappBulkSendQueue.status, 'pending')
+    ))
+    .orderBy(whatsappBulkSendQueue.scheduledAt);
+  
+  for (const item of items) {
+    // Atualizar status para sending
+    await db.update(whatsappBulkSendQueue)
+      .set({ status: 'sending' })
+      .where(eq(whatsappBulkSendQueue.id, item.id));
+    
+    try {
+      // Enviar mensagem
+      const result = await sendWhatsAppMessage({
+        phone: item.phone,
+        message: item.message,
+        config: {
+          apiKey: config.stevoApiKey,
+          instanceName: config.stevoInstanceName,
+          server: config.stevoServer || 'sm15',
+        },
+      });
+      
+      // Atualizar status
+      await db.update(whatsappBulkSendQueue)
+        .set({
+          status: result.success ? 'sent' : 'failed',
+          sentAt: result.success ? new Date() : null,
+          errorMessage: result.error,
+        })
+        .where(eq(whatsappBulkSendQueue.id, item.id));
+      
+      // Salvar no histórico de mensagens
+      await db.insert(adminWhatsappMessages).values({
+        recipientType: 'lead',
+        recipientId: item.leadId,
+        recipientPhone: item.phone,
+        direction: 'outbound',
+        message: item.message,
+        status: result.success ? 'sent' : 'failed',
+        stevoMessageId: result.messageId,
+        errorMessage: result.error,
+        sentAt: result.success ? new Date() : null,
+      });
+      
+    } catch (error: any) {
+      await db.update(whatsappBulkSendQueue)
+        .set({
+          status: 'failed',
+          errorMessage: error.message,
+          retryCount: sql`${whatsappBulkSendQueue.retryCount} + 1`,
+        })
+        .where(eq(whatsappBulkSendQueue.id, item.id));
+    }
+    
+    // Delay antes da próxima mensagem
+    await new Promise(resolve => setTimeout(resolve, item.delayMs || 6000));
+  }
+}

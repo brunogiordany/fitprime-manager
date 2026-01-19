@@ -364,10 +364,16 @@ export default function Charges() {
               Gerencie cobranças e acompanhe métricas financeiras
             </p>
           </div>
-          <Button onClick={() => setIsNewDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Cobrança
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setLocation('/cobrancas/agenda')}>
+              <Calendar className="h-4 w-4 mr-2" />
+              Agenda
+            </Button>
+            <Button onClick={() => setIsNewDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Cobrança
+            </Button>
+          </div>
         </div>
 
         {/* Métricas SaaS */}

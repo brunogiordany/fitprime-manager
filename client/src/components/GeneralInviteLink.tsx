@@ -17,6 +17,8 @@ export function GeneralInviteLink() {
     undefined,
     {
       enabled: showModal,
+      retry: 2,
+      retryDelay: 1000,
     }
   );
 
@@ -119,10 +121,21 @@ export function GeneralInviteLink() {
                 <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
               </div>
             ) : error ? (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg space-y-3">
                 <p className="text-red-700 text-sm">
                   Erro ao carregar link de convite. Tente novamente.
                 </p>
+                <p className="text-red-600 text-xs">
+                  {error.message}
+                </p>
+                <Button
+                  onClick={() => refetch()}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Tentar Novamente
+                </Button>
               </div>
             ) : data ? (
               <div className="space-y-4">

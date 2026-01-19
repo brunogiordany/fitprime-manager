@@ -452,22 +452,23 @@ export async function generateTrainingEvolutionPDF(
       }
       
       xPos = margin + 3;
-      doc.text(safeFormatDate(log.trainingDate, 'dd/MM/yy') || '-', xPos, yPos + 5);
+      const dateText = safeFormatDate(log.trainingDate, 'dd/MM/yy') || '-';
+      doc.text(String(dateText), xPos, yPos + 5);
       xPos += colWidths[0];
       
-      const workoutName = (log.workoutName || 'Treino').substring(0, 20);
+      const workoutName = String(log.workoutName || 'Treino').substring(0, 20);
       doc.text(workoutName, xPos, yPos + 5);
       xPos += colWidths[1];
       
-      doc.text(`${log.totalDuration || 0}min`, xPos, yPos + 5);
+      doc.text(String(`${log.totalDuration || 0}min`), xPos, yPos + 5);
       xPos += colWidths[2];
       
-      doc.text((log.totalSets || 0).toString(), xPos, yPos + 5);
+      doc.text(String(log.totalSets || 0), xPos, yPos + 5);
       xPos += colWidths[3];
       
-      const volume = parseFloat(log.totalVolume || '0');
+      const volume = parseFloat(String(log.totalVolume || '0'));
       const volumeText = volume >= 1000 ? `${(volume / 1000).toFixed(1)}t` : `${volume.toFixed(0)}kg`;
-      doc.text(volumeText, xPos, yPos + 5);
+      doc.text(String(volumeText), xPos, yPos + 5);
       
       yPos += 10;
     });

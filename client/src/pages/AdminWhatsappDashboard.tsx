@@ -134,6 +134,20 @@ export default function AdminWhatsappDashboard() {
   const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
   const [bulkMessage, setBulkMessage] = useState("");
   
+  // Estados CRM
+  const [selectedStage, setSelectedStage] = useState("all");
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [addNumberDialogOpen, setAddNumberDialogOpen] = useState(false);
+  const [newNumberForm, setNewNumberForm] = useState({
+    name: "",
+    phone: "",
+    stevoApiKey: "",
+    stevoInstanceName: "",
+    stevoServer: "sm15",
+    dailyMessageLimit: 200,
+    priority: 1,
+  });
+  
   // Form states
   const [configForm, setConfigForm] = useState({
     stevoApiKey: "",
@@ -167,6 +181,26 @@ export default function AdminWhatsappDashboard() {
   
   const { data: leads } = trpc.adminWhatsapp.listLeadsForMessaging.useQuery({ search: searchLeads, limit: 100 });
   
+  // Queries CRM
+  const { data: leadsWithFunnel } = trpc.adminWhatsapp.listLeadsWithFunnel.useQuery({ 
+    search: searchLeads, 
+    stage: selectedStage !== 'all' ? selectedStage : undefined,
+    tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+    limit: 100 
+  });
+  
+  const { data: funnelStats } = trpc.adminWhatsapp.getFunnelStats.useQuery();
+  
+  const { data: messageSuggestions } = trpc.adminWhatsapp.getMessageSuggestions.useQuery({ stage: selectedStage !== 'all' ? selectedStage : undefined });
+  
+  const { data: whatsappNumbers } = trpc.adminWhatsapp.listWhatsappNumbers.useQuery();
+  
+  const { data: dailyLimits } = trpc.adminWhatsapp.getDailyLimits.useQuery();
+  
+  const { data: tags } = trpc.adminWhatsapp.listTags.useQuery();
+  
+  const { data: whatsappStats } = trpc.adminWhatsapp.getWhatsappStats.useQuery({ period: 'week' });
+  
   // Mutations
   const saveConfigMutation = trpc.adminWhatsapp.saveConfig.useMutation({
     onSuccess: () => {
@@ -188,6 +222,73 @@ export default function AdminWhatsappDashboard() {
       toast.error(`Erro de conexão: ${error.message}`);
     },
   });
+  
+  const sendBulkMessageMutation = trpc.adminWhatsapp.sendBulkWithDelay.useMutation({
+    onSuccess: () => {
+      toast.success("Mensagens enviadas com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp", "messages"] });
+      setSelectedLeads([]);
+      setBulkMessage("");
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  // Mutations CRM
+  const updateLeadStageMutation = trpc.adminWhatsapp.updateLeadStage.useMutation({
+    onSuccess: () => {
+      toast.success("Estágio do lead atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const addWhatsappNumberMutation = trpc.adminWhatsapp.addWhatsappNumber.useMutation({
+    onSuccess: () => {
+      toast.success("Número adicionado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+      setAddNumberDialogOpen(false);
+      setNewNumberForm({
+        name: "",
+        phone: "",
+        stevoApiKey: "",
+        stevoInstanceName: "",
+        stevoServer: "sm15",
+        dailyMessageLimit: 200,
+        priority: 1,
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const deleteWhatsappNumberMutation = trpc.adminWhatsapp.deleteWhatsappNumber.useMutation({
+    onSuccess: () => {
+      toast.success("Número removido!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const sendBulkWithDelayMutation = trpc.adminWhatsapp.sendBulkWithDelay.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+      setSelectedLeads([]);
+      setBulkMessage("");
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const incrementSuggestionUsageMutation = trpc.adminWhatsapp.incrementSuggestionUsage.useMutation();
   
   const createAutomationMutation = trpc.adminWhatsapp.createAutomation.useMutation({
     onSuccess: () => {
@@ -228,19 +329,6 @@ export default function AdminWhatsappDashboard() {
     onSuccess: (data) => {
       toast.success(`${data.created} automações padrão criadas!`);
       queryClient.invalidateQueries({ queryKey: ["adminWhatsapp", "automations"] });
-    },
-    onError: (error: any) => {
-      toast.error(error.message);
-    },
-  });
-  
-  const sendBulkMessageMutation = trpc.adminWhatsapp.sendBulkToLeads.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.sent} mensagens enviadas, ${data.failed} falharam.`);
-      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
-      setSendMessageDialogOpen(false);
-      setSelectedLeads([]);
-      setBulkMessage("");
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -302,9 +390,17 @@ export default function AdminWhatsappDashboard() {
   
   const selectAllLeads = () => {
     if (leads) {
-      setSelectedLeads(leads.map((l: Lead) => l.id));
+      // Se todos já estão selecionados, desmarcar todos
+      if (selectedLeads.length === leads.length && leads.length > 0) {
+        setSelectedLeads([]);
+      } else {
+        // Senão, selecionar todos
+        setSelectedLeads(leads.map((l: Lead) => l.id));
+      }
     }
   };
+  
+  const allSelected = leads && leads.length > 0 && selectedLeads.length === leads.length;
   
   const isConnected = config?.connectionStatus === "connected";
   
@@ -350,10 +446,14 @@ export default function AdminWhatsappDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="overview">
               <BarChart3 className="h-4 w-4 mr-2" />
               Visão Geral
+            </TabsTrigger>
+            <TabsTrigger value="crm">
+              <Filter className="h-4 w-4 mr-2" />
+              CRM Funil
             </TabsTrigger>
             <TabsTrigger value="automations">
               <Zap className="h-4 w-4 mr-2" />
@@ -366,6 +466,10 @@ export default function AdminWhatsappDashboard() {
             <TabsTrigger value="send">
               <Send className="h-4 w-4 mr-2" />
               Enviar
+            </TabsTrigger>
+            <TabsTrigger value="numbers">
+              <Phone className="h-4 w-4 mr-2" />
+              Números
             </TabsTrigger>
           </TabsList>
           
@@ -648,7 +752,7 @@ export default function AdminWhatsappDashboard() {
                       />
                     </div>
                     <Button variant="outline" onClick={selectAllLeads}>
-                      Selecionar Todos
+                      {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
                     </Button>
                   </div>
                   
@@ -749,8 +853,384 @@ Use {{nome}} para personalizar com o nome do lead."
               </Card>
             </div>
           </TabsContent>
+          
+          {/* CRM Funil Tab */}
+          <TabsContent value="crm">
+            {/* Alerta de Limites */}
+            {dailyLimits?.alerts && dailyLimits.alerts.length > 0 && (
+              <div className="mb-6 space-y-2">
+                {dailyLimits.alerts.map((alert: string, i: number) => (
+                  <div key={i} className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+                    {alert}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Estatísticas do Funil */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              {[
+                { key: 'new_lead', label: 'Novos Leads', color: 'bg-blue-500' },
+                { key: 'quiz_completed', label: 'Quiz Completo', color: 'bg-purple-500' },
+                { key: 'trial_active', label: 'Trial Ativo', color: 'bg-green-500' },
+                { key: 'trial_expired', label: 'Trial Expirado', color: 'bg-orange-500' },
+                { key: 'converted', label: 'Convertidos', color: 'bg-emerald-500' },
+              ].map(stage => (
+                <Card 
+                  key={stage.key} 
+                  className={`cursor-pointer transition-all ${selectedStage === stage.key ? 'ring-2 ring-green-500' : ''}`}
+                  onClick={() => setSelectedStage(selectedStage === stage.key ? 'all' : stage.key)}
+                >
+                  <CardContent className="pt-4">
+                    <div className={`w-3 h-3 rounded-full ${stage.color} mb-2`} />
+                    <div className="text-2xl font-bold">{funnelStats?.[stage.key] || 0}</div>
+                    <div className="text-sm text-gray-500">{stage.label}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Lista de Leads com Funil */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Leads no Funil</CardTitle>
+                      <CardDescription>Gerencie leads por estágio e tags</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        placeholder="Buscar..." 
+                        className="w-48"
+                        value={searchLeads}
+                        onChange={(e) => setSearchLeads(e.target.value)}
+                      />
+                      <Select value={selectedStage} onValueChange={setSelectedStage}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Estágio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="new_lead">Novo Lead</SelectItem>
+                          <SelectItem value="quiz_completed">Quiz Completo</SelectItem>
+                          <SelectItem value="trial_active">Trial Ativo</SelectItem>
+                          <SelectItem value="trial_expired">Trial Expirado</SelectItem>
+                          <SelectItem value="converted">Convertido</SelectItem>
+                          <SelectItem value="lost">Perdido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                    {leadsWithFunnel?.map((lead: any) => (
+                      <div 
+                        key={lead.id} 
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedLeads.includes(lead.id) ? 'bg-green-50 border-green-300' : 'hover:bg-gray-50'}`}
+                        onClick={() => toggleLeadSelection(lead.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <input 
+                              type="checkbox" 
+                              checked={selectedLeads.includes(lead.id)}
+                              onChange={() => toggleLeadSelection(lead.id)}
+                              className="h-4 w-4"
+                            />
+                            <div>
+                              <div className="font-medium">{lead.name || 'Sem nome'}</div>
+                              <div className="text-sm text-gray-500">{lead.phone}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {lead.tags?.map((tag: any) => (
+                              <Badge key={tag.id} style={{ backgroundColor: tag.color || '#6b7280' }} className="text-white text-xs">
+                                {tag.name}
+                              </Badge>
+                            ))}
+                            <Badge variant="outline" className="text-xs">
+                              {lead.stage?.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!leadsWithFunnel || leadsWithFunnel.length === 0) && (
+                      <div className="text-center py-8 text-gray-500">
+                        Nenhum lead encontrado
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm text-gray-500">{selectedLeads.length} selecionado(s)</span>
+                    <Button variant="outline" size="sm" onClick={selectAllLeads}>
+                      {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Sugestões de Mensagem */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sugestões de Mensagem</CardTitle>
+                  <CardDescription>Clique para usar</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {messageSuggestions?.map((suggestion: any) => (
+                      <div 
+                        key={suggestion.id}
+                        className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
+                        onClick={() => {
+                          setBulkMessage(suggestion.template);
+                          incrementSuggestionUsageMutation.mutate({ id: suggestion.id });
+                          toast.success('Mensagem copiada!');
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <Badge variant="outline" className="text-xs">{suggestion.stage?.replace('_', ' ')}</Badge>
+                          <span className="text-xs text-gray-400">Usado {suggestion.usageCount}x</span>
+                        </div>
+                        <p className="text-sm line-clamp-3">{suggestion.template}</p>
+                      </div>
+                    ))}
+                    {(!messageSuggestions || messageSuggestions.length === 0) && (
+                      <div className="text-center py-4 text-gray-500 text-sm">
+                        Nenhuma sugestão disponível
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Compor Mensagem */}
+                  <div className="mt-4 pt-4 border-t">
+                    <Label className="mb-2 block">Mensagem Personalizada</Label>
+                    <Textarea 
+                      placeholder="Digite sua mensagem...\n\nUse {{nome}} para personalizar"
+                      className="min-h-[100px]"
+                      value={bulkMessage}
+                      onChange={(e) => setBulkMessage(e.target.value)}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Badge variant="outline" className="cursor-pointer" onClick={() => setBulkMessage(prev => prev + '{{nome}}')}>
+                        {'{{nome}}'}
+                      </Badge>
+                      <Badge variant="outline" className="cursor-pointer" onClick={() => setBulkMessage(prev => prev + '{{plano}}')}>
+                        {'{{plano}}'}
+                      </Badge>
+                    </div>
+                    <Button 
+                      className="w-full mt-4"
+                      disabled={selectedLeads.length === 0 || !bulkMessage.trim() || sendBulkWithDelayMutation.isPending}
+                      onClick={() => sendBulkWithDelayMutation.mutate({ leadIds: selectedLeads, message: bulkMessage })}
+                    >
+                      {sendBulkWithDelayMutation.isPending ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</>
+                      ) : (
+                        <><Send className="h-4 w-4 mr-2" />Enviar para {selectedLeads.length} lead(s)</>
+                      )}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Envio com delay de 6-7s entre mensagens para segurança
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          {/* Números WhatsApp Tab */}
+          <TabsContent value="numbers">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Limites Diários */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Limites Diários</CardTitle>
+                  <CardDescription>Controle de envio para segurança</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Limite Total</span>
+                      <span className="font-bold">{dailyLimits?.totalLimit || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Usado Hoje</span>
+                      <span className="font-bold text-blue-600">{dailyLimits?.used || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Restante</span>
+                      <span className="font-bold text-green-600">{dailyLimits?.remaining || 0}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min(100, ((dailyLimits?.used || 0) / (dailyLimits?.totalLimit || 1)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Estatísticas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Estatísticas da Semana</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Enviadas</span>
+                      <span className="font-bold">{whatsappStats?.totalSent || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Recebidas</span>
+                      <span className="font-bold">{whatsappStats?.totalReceived || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Falhas</span>
+                      <span className="font-bold text-red-500">{whatsappStats?.totalFailed || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Para Leads</span>
+                      <span className="font-bold">{whatsappStats?.byRecipientType?.lead || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Para Personals</span>
+                      <span className="font-bold">{whatsappStats?.byRecipientType?.personal || 0}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Números Cadastrados */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Números WhatsApp</CardTitle>
+                      <CardDescription>Gerencie múltiplos números</CardDescription>
+                    </div>
+                    <Button size="sm" onClick={() => setAddNumberDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {whatsappNumbers?.map((num: any) => (
+                      <div key={num.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{num.name}</div>
+                            <div className="text-sm text-gray-500">{num.phone}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={num.isActive ? 'default' : 'secondary'}>
+                              {num.isActive ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => deleteWhatsappNumberMutation.mutate({ id: num.id })}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-gray-400">
+                          Limite: {num.dailyMessageLimit}/dia | Enviadas hoje: {num.messagesSentToday || 0}
+                        </div>
+                      </div>
+                    ))}
+                    {(!whatsappNumbers || whatsappNumbers.length === 0) && (
+                      <div className="text-center py-4 text-gray-500">
+                        Nenhum número cadastrado
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Dialog Adicionar Número */}
+      <Dialog open={addNumberDialogOpen} onOpenChange={setAddNumberDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar Número WhatsApp</DialogTitle>
+            <DialogDescription>Configure um novo número para envio de mensagens</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Nome</Label>
+                <Input 
+                  placeholder="Ex: Principal"
+                  value={newNumberForm.name}
+                  onChange={(e) => setNewNumberForm(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Telefone</Label>
+                <Input 
+                  placeholder="5511999999999"
+                  value={newNumberForm.phone}
+                  onChange={(e) => setNewNumberForm(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>API Key (Stevo)</Label>
+              <Input 
+                placeholder="Seu token"
+                value={newNumberForm.stevoApiKey}
+                onChange={(e) => setNewNumberForm(prev => ({ ...prev, stevoApiKey: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Instance Name</Label>
+              <Input 
+                placeholder="Nome da instância"
+                value={newNumberForm.stevoInstanceName}
+                onChange={(e) => setNewNumberForm(prev => ({ ...prev, stevoInstanceName: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Limite Diário</Label>
+                <Input 
+                  type="number"
+                  value={newNumberForm.dailyMessageLimit}
+                  onChange={(e) => setNewNumberForm(prev => ({ ...prev, dailyMessageLimit: parseInt(e.target.value) || 200 }))}
+                />
+              </div>
+              <div>
+                <Label>Prioridade</Label>
+                <Input 
+                  type="number"
+                  value={newNumberForm.priority}
+                  onChange={(e) => setNewNumberForm(prev => ({ ...prev, priority: parseInt(e.target.value) || 1 }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddNumberDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              onClick={() => addWhatsappNumberMutation.mutate(newNumberForm)}
+              disabled={addWhatsappNumberMutation.isPending}
+            >
+              {addWhatsappNumberMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Adicionar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Config Dialog */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>

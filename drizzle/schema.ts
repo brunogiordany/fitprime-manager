@@ -3128,3 +3128,146 @@ export const adminWhatsappQueue = mysqlTable("admin_whatsapp_queue", {
 
 export type AdminWhatsappQueueItem = typeof adminWhatsappQueue.$inferSelect;
 export type InsertAdminWhatsappQueue = typeof adminWhatsappQueue.$inferInsert;
+
+
+// ==================== LEAD FUNNEL STAGES (Estágios do Funil de Leads) ====================
+export const leadFunnelStages = mysqlTable("lead_funnel_stages", {
+  id: int("id").autoincrement().primaryKey(),
+  leadId: int("leadId").notNull(), // ID do lead (quiz_responses.id)
+  stage: mysqlEnum("stage", [
+    "new_lead",           // Novo lead - acabou de preencher captura
+    "quiz_started",       // Iniciou o quiz
+    "quiz_completed",     // Completou o quiz
+    "trial_started",      // Iniciou trial
+    "trial_active",       // Trial ativo
+    "trial_expiring",     // Trial expirando (2 dias antes)
+    "trial_expired",      // Trial expirou
+    "converted",          // Converteu para pago
+    "lost",               // Perdido (não converteu)
+    "reengagement"        // Em reengajamento
+  ]).notNull().default("new_lead"),
+  previousStage: varchar("previousStage", { length: 50 }), // Estágio anterior
+  changedAt: timestamp("changedAt").defaultNow().notNull(),
+  changedBy: varchar("changedBy", { length: 50 }).default("system"), // "system" ou "admin"
+  notes: text("notes"), // Notas sobre a mudança
+});
+
+export type LeadFunnelStage = typeof leadFunnelStages.$inferSelect;
+export type InsertLeadFunnelStage = typeof leadFunnelStages.$inferInsert;
+
+// ==================== LEAD FUNNEL HISTORY (Histórico de Movimentação no Funil) ====================
+export const leadFunnelHistory = mysqlTable("lead_funnel_history", {
+  id: int("id").autoincrement().primaryKey(),
+  leadId: int("leadId").notNull(),
+  fromStage: varchar("fromStage", { length: 50 }),
+  toStage: varchar("toStage", { length: 50 }).notNull(),
+  changedAt: timestamp("changedAt").defaultNow().notNull(),
+  changedBy: varchar("changedBy", { length: 50 }).default("system"),
+  reason: text("reason"), // Motivo da mudança
+});
+
+export type LeadFunnelHistory = typeof leadFunnelHistory.$inferSelect;
+export type InsertLeadFunnelHistory = typeof leadFunnelHistory.$inferInsert;
+
+// ==================== WHATSAPP MESSAGE SUGGESTIONS (Sugestões de Mensagem por Estágio) ====================
+export const whatsappMessageSuggestions = mysqlTable("whatsapp_message_suggestions", {
+  id: int("id").autoincrement().primaryKey(),
+  stage: varchar("stage", { length: 50 }).notNull(), // Estágio do funil
+  title: varchar("title", { length: 255 }).notNull(), // Título da sugestão
+  message: text("message").notNull(), // Template da mensagem
+  variables: text("variables"), // JSON com variáveis disponíveis
+  isDefault: boolean("isDefault").default(false), // Se é sugestão padrão do sistema
+  usageCount: int("usageCount").default(0), // Quantas vezes foi usada
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WhatsappMessageSuggestion = typeof whatsappMessageSuggestions.$inferSelect;
+export type InsertWhatsappMessageSuggestion = typeof whatsappMessageSuggestions.$inferInsert;
+
+// ==================== WHATSAPP NUMBERS (Múltiplos Números WhatsApp) ====================
+export const whatsappNumbers = mysqlTable("whatsapp_numbers", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(), // Nome identificador (ex: "Principal", "Vendas")
+  phone: varchar("phone", { length: 20 }).notNull(), // Número do WhatsApp
+  
+  // Credenciais Stevo
+  stevoApiKey: varchar("stevoApiKey", { length: 255 }),
+  stevoInstanceName: varchar("stevoInstanceName", { length: 255 }),
+  stevoServer: varchar("stevoServer", { length: 50 }).default("sm15"),
+  
+  // Status
+  status: mysqlEnum("status", ["disconnected", "connecting", "connected", "error", "banned"]).default("disconnected"),
+  lastConnectedAt: timestamp("lastConnectedAt"),
+  lastErrorMessage: text("lastErrorMessage"),
+  
+  // Limites e controle
+  dailyMessageLimit: int("dailyMessageLimit").default(200), // Limite diário de mensagens
+  messagesSentToday: int("messagesSentToday").default(0), // Mensagens enviadas hoje
+  lastMessageSentAt: timestamp("lastMessageSentAt"),
+  lastLimitResetAt: timestamp("lastLimitResetAt"), // Última vez que o contador foi resetado
+  
+  // Estatísticas
+  totalMessagesSent: int("totalMessagesSent").default(0),
+  totalMessagesReceived: int("totalMessagesReceived").default(0),
+  totalConversations: int("totalConversations").default(0),
+  
+  // Prioridade para envio em massa
+  priority: int("priority").default(1), // 1 = mais alta
+  isActive: boolean("isActive").default(true),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WhatsappNumber = typeof whatsappNumbers.$inferSelect;
+export type InsertWhatsappNumber = typeof whatsappNumbers.$inferInsert;
+
+// ==================== WHATSAPP BULK SEND QUEUE (Fila de Envio em Massa) ====================
+export const whatsappBulkSendQueue = mysqlTable("whatsapp_bulk_send_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  batchId: varchar("batchId", { length: 50 }).notNull(), // ID do lote de envio
+  leadId: int("leadId").notNull(), // ID do lead
+  phone: varchar("phone", { length: 20 }).notNull(), // Telefone destino
+  message: text("message").notNull(), // Mensagem a enviar
+  
+  // Controle de envio
+  status: mysqlEnum("status", ["pending", "sending", "sent", "failed", "cancelled"]).default("pending"),
+  whatsappNumberId: int("whatsappNumberId").references(() => whatsappNumbers.id), // Número usado para enviar
+  scheduledAt: timestamp("scheduledAt"), // Quando deve ser enviado
+  sentAt: timestamp("sentAt"), // Quando foi enviado
+  errorMessage: text("errorMessage"),
+  retryCount: int("retryCount").default(0),
+  
+  // Delay entre mensagens
+  delayMs: int("delayMs").default(6000), // Delay em ms antes de enviar esta mensagem
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WhatsappBulkSendQueue = typeof whatsappBulkSendQueue.$inferSelect;
+export type InsertWhatsappBulkSendQueue = typeof whatsappBulkSendQueue.$inferInsert;
+
+// ==================== WHATSAPP DAILY STATS (Estatísticas Diárias WhatsApp) ====================
+export const whatsappDailyStats = mysqlTable("whatsapp_daily_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  date: date("date").notNull(),
+  whatsappNumberId: int("whatsappNumberId").references(() => whatsappNumbers.id),
+  
+  // Contadores
+  messagesSent: int("messagesSent").default(0),
+  messagesReceived: int("messagesReceived").default(0),
+  messagesFailed: int("messagesFailed").default(0),
+  conversationsStarted: int("conversationsStarted").default(0),
+  
+  // Por tipo de lead
+  messagesNewLeads: int("messagesNewLeads").default(0),
+  messagesTrialActive: int("messagesTrialActive").default(0),
+  messagesTrialExpiring: int("messagesTrialExpiring").default(0),
+  messagesConverted: int("messagesConverted").default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WhatsappDailyStat = typeof whatsappDailyStats.$inferSelect;
+export type InsertWhatsappDailyStat = typeof whatsappDailyStats.$inferInsert;
