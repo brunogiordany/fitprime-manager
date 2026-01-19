@@ -1,0 +1,1 @@
+ALTER TABLE `student_invites` MODIFY COLUMN `studentId` int;

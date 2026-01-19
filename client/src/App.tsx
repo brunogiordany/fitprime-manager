@@ -134,6 +134,7 @@ function Router() {
       <Route path="/alunos/:studentId/contratar" component={ContractPlan} />
       <Route path="/cobrancas" component={Charges} />
       <Route path="/cobrancas/agenda" component={ChargesCalendar} />
+      <Route path="/agenda-cobranca" component={ChargesCalendar} />
       <Route path="/planos" component={Plans} />
       <Route path="/automacoes" component={Automations} />
       <Route path="/ia-atendimento" component={AiAssistantSettings} />

@@ -612,7 +612,7 @@ export type InsertExerciseLog = typeof exerciseLogs.$inferInsert;
 export const studentInvites = mysqlTable("student_invites", {
   id: int("id").autoincrement().primaryKey(),
   personalId: int("personalId").notNull().references(() => personals.id),
-  studentId: int("studentId").notNull().references(() => students.id),
+  studentId: int("studentId").references(() => students.id), // Nullable para convites gerais
   inviteToken: varchar("inviteToken", { length: 64 }).notNull().unique(),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 20 }),

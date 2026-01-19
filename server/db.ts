@@ -1914,11 +1914,13 @@ export async function acceptStudentInvite(token: string, userId: number) {
     acceptedAt: new Date(),
   }).where(eq(studentInvites.id, invite.id));
   
-  // Link user to student
-  await db.update(students).set({
-    userId: userId,
-    status: 'active',
-  }).where(eq(students.id, invite.studentId));
+  // Link user to student (apenas se for convite específico)
+  if (invite.studentId) {
+    await db.update(students).set({
+      userId: userId,
+      status: 'active',
+    }).where(eq(students.id, invite.studentId));
+  }
   
   // Update user role to student
   await db.update(users).set({

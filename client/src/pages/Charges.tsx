@@ -63,20 +63,25 @@ import {
 export default function Charges() {
   const [, setLocation] = useLocation();
   const searchParams = useSearch();
+  const urlParams = new URLSearchParams(searchParams);
   const showNewDialog = searchParams.includes('new=true');
-  const preselectedStudentId = new URLSearchParams(searchParams).get('studentId') || '';
+  const preselectedStudentId = urlParams.get('studentId') || '';
+  const preselectedPlanId = urlParams.get('planId') || '';
+  const preselectedPlanName = urlParams.get('planName') || '';
+  const preselectedPlanPrice = urlParams.get('planPrice') || '';
   
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(showNewDialog);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(showNewDialog || !!preselectedPlanId);
   const [expandedStudents, setExpandedStudents] = useState<Set<number>>(new Set());
   const [newCharge, setNewCharge] = useState({
     studentId: preselectedStudentId,
-    description: "",
-    amount: "",
+    description: preselectedPlanName ? `Cobrança - ${decodeURIComponent(preselectedPlanName)}` : "",
+    amount: preselectedPlanPrice || "",
     dueDate: format(new Date(), "yyyy-MM-dd"),
     type: "monthly" as "monthly" | "session" | "package" | "other",
-    notes: "",
+    notes: preselectedPlanId ? `Plano ID: ${preselectedPlanId}` : "",
+    planId: preselectedPlanId,
   });
 
   const utils = trpc.useUtils();
@@ -86,6 +91,8 @@ export default function Charges() {
   });
 
   const { data: students } = trpc.students.list.useQuery({});
+
+  const { data: plans } = trpc.plans.list.useQuery();
 
   const { data: stats } = trpc.charges.stats.useQuery();
 
@@ -100,6 +107,7 @@ export default function Charges() {
         dueDate: format(new Date(), "yyyy-MM-dd"),
         type: "monthly",
         notes: "",
+        planId: "",
       });
       utils.charges.list.invalidate();
       utils.charges.stats.invalidate();
@@ -711,6 +719,42 @@ export default function Charges() {
                     {students?.map((student) => (
                       <SelectItem key={student.id} value={student.id.toString()}>
                         {student.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Plano (opcional)</Label>
+                <Select
+                  value={newCharge.planId || 'none'}
+                  onValueChange={(value) => {
+                    if (value === 'none') {
+                      setNewCharge({ ...newCharge, planId: '' });
+                      return;
+                    }
+                    const selectedPlan = plans?.find(p => p.id.toString() === value);
+                    if (selectedPlan) {
+                      setNewCharge({ 
+                        ...newCharge, 
+                        planId: value,
+                        description: `Cobrança - ${selectedPlan.name}`,
+                        amount: selectedPlan.price?.toString() || '',
+                        notes: `Plano: ${selectedPlan.name}`,
+                      });
+                    } else {
+                      setNewCharge({ ...newCharge, planId: '' });
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um plano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum (cobrança manual)</SelectItem>
+                    {plans?.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.id.toString()}>
+                        {plan.name} - {formatCurrency(parseFloat(plan.price || '0'))}
                       </SelectItem>
                     ))}
                   </SelectContent>

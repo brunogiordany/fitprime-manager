@@ -4446,3 +4446,21 @@
 - [ ] Reativação de leads inativos (30, 60, 90 dias)
 - [ ] Aniversário do lead
 - [ ] Follow-up pós-trial
+
+
+## CHECKLIST URGENTE v4.5 - Bugs e Funcionalidades
+
+### BUGS CRÍTICOS
+- [x] 1. Erro Link de Convite Geral - insert query com campos faltando (email, phone null) - CORRIGIDO (studentId agora nullable)
+- [x] 2. Erro página WhatsApp Admin - Cannot read properties of undefined (reading 'trim') - CORRIGIDO
+- [x] 3. Filtro de leads no CRM não funciona - não filtra por estágio - CORRIGIDO
+- [x] 4. Sugestão de mensagem não copia - mostra toast mas não cola nada no textarea - CORRIGIDO (agora copia para clipboard)
+
+### FUNCIONALIDADES PENDENTES
+- [x] 5. Botão "Enviar Cobrança" nos Planos e Pacotes (menu 3 pontos) - direciona para tela de cobrança com plano selecionado
+- [x] 6. Criar aba "Agenda de Cobrança" no menu lateral (acima de Cobranças, abaixo de Diário de Treino)
+- [x] 7. Na Agenda de Cobrança: habilitar opção de enviar cobrança
+- [x] 8. Integrar cobranças aos planos - gerar cobranças automaticamente baseado nos planos dos alunos
+- [x] 9. Melhorar tela CRM - está muito fraca e com poucas opções
+- [x] 10. Trazer estatísticas WhatsApp do painel Personal para Admin com filtros por tags
+- [x] 11. Remover aba "Enviar" duplicada do WhatsApp Admin (CRM já tem essa função)

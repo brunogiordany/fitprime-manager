@@ -2168,7 +2168,7 @@ export const appRouter = router({
         // Buscar personal pelo userId (precisamos criar função ou usar outra abordagem)
         // Por enquanto, vamos retornar um nome genérico
         const personal = { name: 'Seu Personal Trainer' };
-        const student = await db.getStudentById(invite.studentId, invite.personalId);
+        const student = invite.studentId ? await db.getStudentById(invite.studentId, invite.personalId) : null;
         return { 
           valid: true, 
           personalName: personal?.name || 'Personal',
@@ -2195,8 +2195,10 @@ export const appRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este convite expirou' });
         }
         
-        // Vincular usuário ao aluno
-        await db.linkStudentToUser(invite.studentId, ctx.user.id);
+        // Vincular usuário ao aluno (apenas se for convite específico)
+        if (invite.studentId) {
+          await db.linkStudentToUser(invite.studentId, ctx.user.id);
+        }
         
         // Marcar convite como aceito
         await db.updateStudentInvite(invite.id, { status: 'accepted' });
@@ -2229,14 +2231,16 @@ export const appRouter = router({
         const bcrypt = await import('bcryptjs');
         const passwordHash = await bcrypt.hash(input.password, 10);
         
-        // Atualizar dados do aluno com as informações do cadastro e senha
-        await db.updateStudent(invite.studentId, invite.personalId, {
-          name: input.name,
-          email: input.email,
-          phone: input.phone,
-          passwordHash: passwordHash,
-          status: 'active',
-        });
+        // Atualizar dados do aluno com as informações do cadastro e senha (apenas se for convite específico)
+        if (invite.studentId) {
+          await db.updateStudent(invite.studentId, invite.personalId, {
+            name: input.name,
+            email: input.email,
+            phone: input.phone,
+            passwordHash: passwordHash,
+            status: 'active',
+          });
+        }
         
         // Marcar convite como aceito
         await db.updateStudentInvite(invite.id, { status: 'accepted' });
@@ -2305,7 +2309,7 @@ export const appRouter = router({
         // Verificar se já existe um link geral válido (studentId = 0 indica convite geral)
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
         const existingInvites = allInvites.filter(i => 
-          i.studentId === 0 && 
+          (i.studentId === null || i.studentId === 0) && 
           i.status === 'pending' && 
           new Date(i.expiresAt) > new Date()
         ).slice(0, 1);
@@ -2324,11 +2328,13 @@ export const appRouter = router({
           expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + 365); // Expira em 1 ano
           
-          // Criar convite geral (studentId = 0 indica convite geral reutilizável)
+          // Criar convite geral (studentId = null indica convite geral reutilizável)
           await db.createStudentInvite({
             personalId: ctx.personal.id,
-            studentId: 0, // Convite geral (0 = sem aluno específico)
+            studentId: null, // Convite geral (null = sem aluno específico)
             inviteToken,
+            email: null,
+            phone: null,
             expiresAt,
             status: 'pending',
           });
@@ -2369,7 +2375,7 @@ export const appRouter = router({
         if (invite.personalId !== input.personalId) {
           throw new TRPCError({ code: 'FORBIDDEN', message: 'Link de convite inválido' });
         }
-        if (invite.studentId !== 0) {
+        if (invite.studentId !== null && invite.studentId !== 0) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este link de convite não é um convite geral' });
         }
         if (invite.status !== 'pending') {
@@ -2482,7 +2488,7 @@ export const appRouter = router({
         }
         
         // Validar que é um convite geral
-        if (invite.studentId !== 0) {
+        if (invite.studentId !== null && invite.studentId !== 0) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Este não é um convite geral' });
         }
         
@@ -2497,7 +2503,7 @@ export const appRouter = router({
       .mutation(async ({ ctx }) => {
         // Buscar todos os convites gerais do personal
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
-        const generalInvites = allInvites.filter(i => i.studentId === 0);
+        const generalInvites = allInvites.filter(i => i.studentId === null || i.studentId === 0);
         
         // Cancelar todos os convites gerais existentes
         for (const invite of generalInvites) {
@@ -2515,8 +2521,10 @@ export const appRouter = router({
         // Criar novo convite geral
         await db.createStudentInvite({
           personalId: ctx.personal.id,
-          studentId: 0, // Convite geral
+          studentId: null, // Convite geral (null = sem aluno específico)
           inviteToken,
+          email: null,
+          phone: null,
           expiresAt,
           status: 'pending',
         });
@@ -2541,7 +2549,7 @@ export const appRouter = router({
       .query(async ({ ctx }) => {
         // Buscar todos os convites do personal
         const allInvites = await db.getStudentInvitesByPersonalId(ctx.personal.id);
-        const generalInvites = allInvites.filter(i => i.studentId === 0);
+        const generalInvites = allInvites.filter(i => i.studentId === null || i.studentId === 0);
         
         // Calcular estatísticas para cada link
         const analytics = generalInvites.map(invite => {

@@ -463,9 +463,9 @@ export default function AdminWhatsappDashboard() {
               <MessageSquare className="h-4 w-4 mr-2" />
               Mensagens
             </TabsTrigger>
-            <TabsTrigger value="send">
-              <Send className="h-4 w-4 mr-2" />
-              Enviar
+            <TabsTrigger value="stats">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Estatísticas
             </TabsTrigger>
             <TabsTrigger value="numbers">
               <Phone className="h-4 w-4 mr-2" />
@@ -731,124 +731,177 @@ export default function AdminWhatsappDashboard() {
             </Card>
           </TabsContent>
           
-          {/* Send Tab */}
-          <TabsContent value="send">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Lista de Leads */}
+          {/* Stats Tab - Estatísticas Completas do WhatsApp */}
+          <TabsContent value="stats">
+            <div className="space-y-6">
+              {/* Resumo de Estatísticas */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Enviadas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{whatsappStats?.totalSent || 0}</div>
+                    <p className="text-xs text-gray-500">Esta semana</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Total Recebidas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{whatsappStats?.totalReceived || 0}</div>
+                    <p className="text-xs text-gray-500">Esta semana</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Taxa de Entrega</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-emerald-600">
+                      {whatsappStats?.totalSent ? Math.round(((whatsappStats.totalSent - (whatsappStats.totalFailed || 0)) / whatsappStats.totalSent) * 100) : 0}%
+                    </div>
+                    <p className="text-xs text-gray-500">Sucesso</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-500">Falhas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-600">{whatsappStats?.totalFailed || 0}</div>
+                    <p className="text-xs text-gray-500">Esta semana</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Estatísticas por Estágio do Funil */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Selecionar Leads</CardTitle>
-                  <CardDescription>Escolha os leads para enviar mensagem</CardDescription>
+                  <CardTitle>Leads por Estágio</CardTitle>
+                  <CardDescription>Distribuição dos leads no funil de vendas</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-2 mb-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input 
-                        placeholder="Buscar por nome, email ou telefone..." 
-                        className="pl-10"
-                        value={searchLeads}
-                        onChange={(e) => setSearchLeads(e.target.value)}
-                      />
-                    </div>
-                    <Button variant="outline" onClick={selectAllLeads}>
-                      {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
-                    </Button>
-                  </div>
-                  
-                  <div className="border rounded-lg max-h-96 overflow-y-auto">
-                    {leads && leads.length > 0 ? (
-                      leads.map((lead: Lead) => (
-                        <div 
-                          key={lead.id} 
-                          className={`flex items-center gap-3 p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${selectedLeads.includes(lead.id) ? 'bg-green-50' : ''}`}
-                          onClick={() => toggleLeadSelection(lead.id)}
-                        >
-                          <input 
-                            type="checkbox" 
-                            checked={selectedLeads.includes(lead.id)}
-                            onChange={() => {}}
-                            className="h-4 w-4 rounded border-gray-300"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{lead.name || "Sem nome"}</div>
-                            <div className="text-sm text-gray-500 truncate">{lead.phone}</div>
-                          </div>
-                          <Badge variant="outline" className="text-xs">
-                            {lead.recommendedProfile || "N/A"}
-                          </Badge>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-8 text-center text-gray-500">
-                        Nenhum lead encontrado
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[
+                      { key: 'new_lead', label: 'Novos', color: 'bg-blue-500', textColor: 'text-blue-600' },
+                      { key: 'quiz_completed', label: 'Quiz', color: 'bg-purple-500', textColor: 'text-purple-600' },
+                      { key: 'trial_active', label: 'Trial', color: 'bg-green-500', textColor: 'text-green-600' },
+                      { key: 'trial_expired', label: 'Expirado', color: 'bg-orange-500', textColor: 'text-orange-600' },
+                      { key: 'converted', label: 'Convertido', color: 'bg-emerald-500', textColor: 'text-emerald-600' },
+                    ].map(stage => (
+                      <div key={stage.key} className="text-center p-4 bg-gray-50 rounded-lg">
+                        <div className={`w-4 h-4 rounded-full ${stage.color} mx-auto mb-2`} />
+                        <div className={`text-2xl font-bold ${stage.textColor}`}>{funnelStats?.[stage.key] || 0}</div>
+                        <div className="text-sm text-gray-500">{stage.label}</div>
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="mt-4 text-sm text-gray-500">
-                    {selectedLeads.length} lead(s) selecionado(s)
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-              
-              {/* Formulário de Mensagem */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Compor Mensagem</CardTitle>
-                  <CardDescription>Escreva a mensagem para enviar aos leads selecionados</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Mensagem</Label>
-                      <Textarea 
-                        placeholder="Digite sua mensagem aqui...
 
-Use {{nome}} para personalizar com o nome do lead."
-                        className="min-h-[200px] mt-2"
-                        value={bulkMessage}
-                        onChange={(e) => setBulkMessage(e.target.value)}
-                      />
+              {/* Limites e Uso Diário */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Limites Diários</CardTitle>
+                    <CardDescription>Controle de envio para segurança do número</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Limite Total</span>
+                        <span className="font-bold">{dailyLimits?.totalLimit || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Usado Hoje</span>
+                        <span className="font-bold text-blue-600">{dailyLimits?.used || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Restante</span>
+                        <span className="font-bold text-green-600">{dailyLimits?.remaining || 0}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className={`h-3 rounded-full transition-all ${((dailyLimits?.used || 0) / (dailyLimits?.totalLimit || 1)) > 0.8 ? 'bg-red-500' : ((dailyLimits?.used || 0) / (dailyLimits?.totalLimit || 1)) > 0.5 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(100, ((dailyLimits?.used || 0) / (dailyLimits?.totalLimit || 1)) * 100)}%` }}
+                        />
+                      </div>
+                      {dailyLimits?.alerts && dailyLimits.alerts.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          {dailyLimits.alerts.map((alert: string, i: number) => (
+                            <div key={i} className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-sm">
+                              {alert}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Variáveis disponíveis:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="cursor-pointer" onClick={() => setBulkMessage(prev => prev + "{{nome}}")}>
-                          {"{{nome}}"}
-                        </Badge>
-                        <Badge variant="outline" className="cursor-pointer" onClick={() => setBulkMessage(prev => prev + "{{email}}")}>
-                          {"{{email}}"}
-                        </Badge>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Automações</CardTitle>
+                    <CardDescription>Status das automações configuradas</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Total de Automações</span>
+                        <span className="font-bold">{automations?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Ativas</span>
+                        <span className="font-bold text-green-600">{automations?.filter((a: any) => a.isActive).length || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Inativas</span>
+                        <span className="font-bold text-gray-400">{automations?.filter((a: any) => !a.isActive).length || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Mensagens Automáticas Hoje</span>
+                        <span className="font-bold text-blue-600">{stats?.messagesToday || 0}</span>
                       </div>
                     </div>
-                    
-                    <Button 
-                      className="w-full" 
-                      size="lg"
-                      disabled={selectedLeads.length === 0 || !bulkMessage.trim() || sendBulkMessageMutation.isPending || !isConnected}
-                      onClick={() => sendBulkMessageMutation.mutate({ leadIds: selectedLeads, message: bulkMessage })}
-                    >
-                      {sendBulkMessageMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Enviando...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Enviar para {selectedLeads.length} lead(s)
-                        </>
-                      )}
-                    </Button>
-                    
-                    {!isConnected && (
-                      <p className="text-sm text-red-500 text-center">
-                        Configure o WhatsApp antes de enviar mensagens
-                      </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Filtro por Tags */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Leads por Tags</CardTitle>
+                  <CardDescription>Filtre e visualize leads por tags</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {tags?.map((tag: any) => (
+                      <Badge 
+                        key={tag.id} 
+                        style={{ backgroundColor: selectedTagIds.includes(tag.id) ? tag.color : 'transparent', color: selectedTagIds.includes(tag.id) ? 'white' : tag.color, borderColor: tag.color }}
+                        className="cursor-pointer border"
+                        onClick={() => {
+                          if (selectedTagIds.includes(tag.id)) {
+                            setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                          } else {
+                            setSelectedTagIds([...selectedTagIds, tag.id]);
+                          }
+                        }}
+                      >
+                        {tag.name} ({tag.leadsCount || 0})
+                      </Badge>
+                    ))}
+                    {(!tags || tags.length === 0) && (
+                      <p className="text-sm text-gray-500">Nenhuma tag criada ainda</p>
                     )}
                   </div>
+                  {selectedTagIds.length > 0 && (
+                    <Button variant="outline" size="sm" onClick={() => setSelectedTagIds([])}>
+                      Limpar Filtros
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -984,10 +1037,15 @@ Use {{nome}} para personalizar com o nome do lead."
                       <div 
                         key={suggestion.id}
                         className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
-                        onClick={() => {
+                        onClick={async () => {
                           setBulkMessage(suggestion.template);
                           incrementSuggestionUsageMutation.mutate({ id: suggestion.id });
-                          toast.success('Mensagem copiada!');
+                          try {
+                            await navigator.clipboard.writeText(suggestion.template);
+                            toast.success('Mensagem copiada para a área de transferência!');
+                          } catch (err) {
+                            toast.success('Mensagem adicionada ao campo de texto!');
+                          }
                         }}
                       >
                         <div className="flex items-center justify-between mb-1">

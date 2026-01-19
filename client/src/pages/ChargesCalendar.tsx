@@ -30,7 +30,9 @@ import {
   Send,
   MessageCircle,
   Bell,
+  Plus,
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, parseISO } from "date-fns";
@@ -51,6 +53,7 @@ interface Charge {
 }
 
 export default function ChargesCalendar() {
+  const [, setLocation] = useLocation();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedCharge, setSelectedCharge] = useState<Charge | null>(null);
@@ -222,16 +225,22 @@ export default function ChargesCalendar() {
               Visualize e gerencie cobranças no calendário
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-              <ChevronLeft className="h-4 w-4" />
+          <div className="flex items-center gap-4">
+            <Button onClick={() => setLocation('/cobrancas?new=true')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Cobrança
             </Button>
-            <span className="font-medium min-w-[150px] text-center">
-              {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-            </span>
-            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="font-medium min-w-[150px] text-center">
+                {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+              </span>
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 

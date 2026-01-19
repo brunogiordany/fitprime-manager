@@ -32,8 +32,10 @@ import {
   Calculator,
   ArrowRightLeft,
   Copy,
-  Sparkles
+  Sparkles,
+  Send
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -74,6 +76,7 @@ const getMonthsInCycle = (billingCycle: BillingCycle): number => {
 };
 
 export default function Plans() {
+  const [, setLocation] = useLocation();
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<any>(null);
   const [calcMode, setCalcMode] = useState<'total' | 'session'>('total'); // Modo de cálculo
@@ -426,6 +429,10 @@ export default function Plans() {
                         <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
                           <Copy className="h-4 w-4 mr-2" />
                           Duplicar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setLocation(`/cobrancas?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}&planPrice=${plan.price}`)}>
+                          <Send className="h-4 w-4 mr-2" />
+                          Enviar Cobrança
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
