@@ -167,7 +167,18 @@ export const adminWhatsappRouter = router({
         "lead_trial_signup",
         "lead_trial_2days_before",
         "lead_trial_expired",
+        "lead_followup_2days",
+        "lead_followup_5days",
         "lead_followup_7days",
+        "lead_followup_10days",
+        "lead_followup_15days",
+        "lead_followup_21days",
+        "lead_followup_30days",
+        "lead_followup_45days",
+        "lead_followup_90days",
+        "lead_reactivation_cold",
+        "lead_reactivation_warm",
+        "lead_reactivation_hot",
         "personal_payment_2days",
         "personal_payment_dueday",
         "personal_payment_overdue",
@@ -386,6 +397,226 @@ Equipe FitPrime`,
         isActive: true,
         delayMinutes: 0,
         excludeExistingPersonals: false,
+      },
+      // ==================== SEQUÊNCIA DE NUTRIÇÃO DE LEADS ====================
+      {
+        name: "Follow-up 2 Dias",
+        description: "Nutrição: 2 dias após cadastro sem conversão",
+        trigger: "lead_followup_2days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 👋
+
+Vi que você conheceu o FitPrime há 2 dias. Como está sendo sua experiência?
+
+Se precisar de ajuda para configurar algo ou tiver dúvidas, é só me chamar!
+
+Estou aqui para te ajudar a ter sucesso. 💪`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 5 Dias",
+        description: "Nutrição: 5 dias após cadastro sem conversão",
+        trigger: "lead_followup_5days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Já se passaram 5 dias desde que você conheceu o FitPrime. 📅
+
+💡 *Dica do dia*: Você sabia que pode criar treinos personalizados com IA em segundos?
+
+Quer que eu te mostre como funciona? É muito fácil!
+
+Abraço,
+Equipe FitPrime`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 10 Dias",
+        description: "Nutrição: 10 dias após cadastro sem conversão",
+        trigger: "lead_followup_10days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Faz 10 dias que você conheceu o FitPrime. Quero compartilhar algo especial com você! 🎁
+
+📊 *Case de sucesso*: Personal trainers que usam o FitPrime economizam em média 10 horas por semana na gestão de alunos.
+
+Imagina o que você poderia fazer com esse tempo extra?
+
+Vamos conversar? Estou aqui! 😊`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 15 Dias",
+        description: "Nutrição: 15 dias após cadastro sem conversão",
+        trigger: "lead_followup_15days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Já faz 15 dias... Senti sua falta por aqui! 😢
+
+Sei que a rotina de personal é corrida, mas quero te mostrar como o FitPrime pode facilitar sua vida.
+
+🎯 *Oferta especial*: Que tal um desconto exclusivo para você começar?
+
+Me conta: qual é o maior desafio que você enfrenta hoje na gestão dos seus alunos?`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 21 Dias",
+        description: "Nutrição: 21 dias após cadastro sem conversão",
+        trigger: "lead_followup_21days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+3 semanas se passaram desde nosso primeiro contato. 📆
+
+💡 Você sabia que 80% dos personals que testam o FitPrime decidem assinar?
+
+O que está te impedindo de dar esse passo?
+
+Quero entender melhor sua situação para ver como posso te ajudar. Vamos conversar? 🤝`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 30 Dias",
+        description: "Nutrição: 30 dias após cadastro sem conversão",
+        trigger: "lead_followup_30days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+1 mês se passou desde que você conheceu o FitPrime. 📅
+
+🎁 *Última chance*: Preparei uma condição especial só para você!
+
+Use o cupom *VOLTEI30* e ganhe *30% de desconto* na primeira mensalidade.
+
+Essa oferta é válida apenas por 48 horas!
+
+Clique aqui para assinar: {{link_assinatura}}
+
+Não perca! 💪`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 45 Dias",
+        description: "Nutrição: 45 dias após cadastro sem conversão",
+        trigger: "lead_followup_45days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Faz um tempo que não nos falamos... 😔
+
+Quero te contar que lançamos novas funcionalidades incríveis no FitPrime:
+
+✨ Treinos com IA ainda mais inteligentes
+✨ Automações de WhatsApp
+✨ Relatórios detalhados
+
+Que tal dar uma nova chance? Estou aqui se quiser conversar!
+
+Abraço,
+Equipe FitPrime`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Follow-up 90 Dias",
+        description: "Reativação: 90 dias após cadastro sem conversão",
+        trigger: "lead_followup_90days" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Faz 3 meses que você conheceu o FitPrime. Muita coisa mudou desde então! 🚀
+
+🎁 *Oferta de reativação*: Como sinal de que queremos você de volta, estou oferecendo:
+
+✅ *50% de desconto* na primeira mensalidade
+✅ *7 dias grátis* para testar novamente
+
+Use o cupom: *VOLTEI90*
+
+Clique aqui: {{link_assinatura}}
+
+Essa é sua chance de transformar sua carreira! 💪`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      // ==================== REATIVAÇÃO POR TEMPERATURA ====================
+      {
+        name: "Reativação Lead Frio",
+        description: "Reativação de leads frios (sem interação há muito tempo)",
+        trigger: "lead_reactivation_cold" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Faz um tempo que não nos falamos, mas quero te contar uma novidade! 🌟
+
+O FitPrime evoluiu muito e agora oferece:
+
+🤖 IA que cria treinos personalizados em segundos
+📱 App exclusivo para seus alunos
+💰 Gestão financeira completa
+
+Que tal conhecer as novidades? Posso te mostrar!
+
+Abraço,
+Equipe FitPrime`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Reativação Lead Morno",
+        description: "Reativação de leads mornos (alguma interação recente)",
+        trigger: "lead_reactivation_warm" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 
+
+Vi que você demonstrou interesse no FitPrime recentemente. 👀
+
+Posso te ajudar com alguma dúvida? Estou aqui para isso!
+
+🎁 *Oferta especial*: Se assinar hoje, ganhe 20% de desconto!
+
+Vamos conversar? 😊`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
+      },
+      {
+        name: "Reativação Lead Quente",
+        description: "Reativação de leads quentes (alta intenção de compra)",
+        trigger: "lead_reactivation_hot" as const,
+        targetType: "lead" as const,
+        messageTemplate: `Olá {{nome}}! 🔥
+
+Vi que você está muito perto de começar sua jornada com o FitPrime!
+
+🚨 *Últimas vagas*: Estamos com uma promoção especial que termina hoje!
+
+✅ Acesso completo
+✅ Suporte prioritário
+✅ Treinamento exclusivo
+
+Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
+        isActive: true,
+        delayMinutes: 0,
+        excludeExistingPersonals: true,
       },
     ];
     
@@ -735,10 +966,13 @@ Equipe FitPrime`,
       search: z.string().optional(),
       stage: z.string().optional(),
       tagIds: z.array(z.number()).optional(),
+      dateFilter: z.string().optional(), // all, 7days, 15days, 30days, 60days, 90days
+      lastInteractionFilter: z.string().optional(), // all, never, 1day, 3days, 7days, 15days, 30days
+      sourceFilter: z.string().optional(), // all, quiz, quiz_trial, direct, referral
       limit: z.number().default(50),
       offset: z.number().default(0),
     }))
-    .query(async ({ input }: { input: { search?: string; stage?: string; tagIds?: number[]; limit: number; offset: number } }) => {
+    .query(async ({ input }: { input: { search?: string; stage?: string; tagIds?: number[]; dateFilter?: string; lastInteractionFilter?: string; sourceFilter?: string; limit: number; offset: number } }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
       
@@ -798,6 +1032,8 @@ Equipe FitPrime`,
           ...lead,
           stage,
           tags: leadTags.map(t => ({ id: t.tagId, name: t.tagName, color: t.tagColor })),
+          lastInteraction: stageInfo?.changedAt || null,
+          source: lead.recommendedProfile ? 'quiz' : 'direct', // Determinar origem baseado nos dados
         };
       });
       
@@ -822,6 +1058,55 @@ Equipe FitPrime`,
           l.email?.toLowerCase().includes(searchLower) ||
           l.phone?.includes(input.search!)
         );
+      }
+      
+      // Filtrar por data de cadastro
+      if (input.dateFilter && input.dateFilter !== 'all') {
+        const now = new Date();
+        let daysAgo = 0;
+        switch (input.dateFilter) {
+          case '7days': daysAgo = 7; break;
+          case '15days': daysAgo = 15; break;
+          case '30days': daysAgo = 30; break;
+          case '60days': daysAgo = 60; break;
+          case '90days': daysAgo = 90; break;
+        }
+        if (daysAgo > 0) {
+          const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+          filteredLeads = filteredLeads.filter(l => {
+            const createdAt = l.createdAt ? new Date(l.createdAt) : null;
+            return createdAt && createdAt >= cutoffDate;
+          });
+        }
+      }
+      
+      // Filtrar por última interação
+      if (input.lastInteractionFilter && input.lastInteractionFilter !== 'all') {
+        const now = new Date();
+        if (input.lastInteractionFilter === 'never') {
+          filteredLeads = filteredLeads.filter(l => !l.lastInteraction);
+        } else {
+          let daysAgo = 0;
+          switch (input.lastInteractionFilter) {
+            case '1day': daysAgo = 1; break;
+            case '3days': daysAgo = 3; break;
+            case '7days': daysAgo = 7; break;
+            case '15days': daysAgo = 15; break;
+            case '30days': daysAgo = 30; break;
+          }
+          if (daysAgo > 0) {
+            const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+            filteredLeads = filteredLeads.filter(l => {
+              const lastInteraction = l.lastInteraction ? new Date(l.lastInteraction) : null;
+              return lastInteraction && lastInteraction >= cutoffDate;
+            });
+          }
+        }
+      }
+      
+      // Filtrar por origem
+      if (input.sourceFilter && input.sourceFilter !== 'all') {
+        filteredLeads = filteredLeads.filter(l => l.source === input.sourceFilter);
       }
       
       return filteredLeads;

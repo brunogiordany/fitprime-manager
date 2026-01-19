@@ -137,6 +137,11 @@ export default function AdminWhatsappDashboard() {
   // Estados CRM
   const [selectedStage, setSelectedStage] = useState("all");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  // Filtros Avançados
+  const [dateFilter, setDateFilter] = useState("all"); // all, 7days, 15days, 30days, custom
+  const [lastInteractionFilter, setLastInteractionFilter] = useState("all"); // all, never, 1day, 3days, 7days, 15days, 30days
+  const [sourceFilter, setSourceFilter] = useState("all"); // all, quiz, quiz_trial, direct, referral
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [addNumberDialogOpen, setAddNumberDialogOpen] = useState(false);
   const [newNumberForm, setNewNumberForm] = useState({
     name: "",
@@ -186,6 +191,9 @@ export default function AdminWhatsappDashboard() {
     search: searchLeads, 
     stage: selectedStage !== 'all' ? selectedStage : undefined,
     tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+    dateFilter: dateFilter !== 'all' ? dateFilter : undefined,
+    lastInteractionFilter: lastInteractionFilter !== 'all' ? lastInteractionFilter : undefined,
+    sourceFilter: sourceFilter !== 'all' ? sourceFilter : undefined,
     limit: 100 
   });
   
@@ -952,15 +960,15 @@ export default function AdminWhatsappDashboard() {
                       <CardTitle>Leads no Funil</CardTitle>
                       <CardDescription>Gerencie leads por estágio e tags</CardDescription>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Input 
                         placeholder="Buscar..." 
-                        className="w-48"
+                        className="w-40"
                         value={searchLeads}
                         onChange={(e) => setSearchLeads(e.target.value)}
                       />
                       <Select value={selectedStage} onValueChange={setSelectedStage}>
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger className="w-32">
                           <SelectValue placeholder="Estágio" />
                         </SelectTrigger>
                         <SelectContent>
@@ -973,8 +981,85 @@ export default function AdminWhatsappDashboard() {
                           <SelectItem value="lost">Perdido</SelectItem>
                         </SelectContent>
                       </Select>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                        className={showAdvancedFilters ? 'bg-green-50 border-green-300' : ''}
+                      >
+                        <Filter className="h-4 w-4 mr-1" />
+                        Filtros
+                      </Button>
                     </div>
                   </div>
+                  {/* Filtros Avançados */}
+                  {showAdvancedFilters && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Data de Cadastro</label>
+                          <Select value={dateFilter} onValueChange={setDateFilter}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Período" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos</SelectItem>
+                              <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                              <SelectItem value="15days">Últimos 15 dias</SelectItem>
+                              <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                              <SelectItem value="60days">Últimos 60 dias</SelectItem>
+                              <SelectItem value="90days">Últimos 90 dias</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Última Interação</label>
+                          <Select value={lastInteractionFilter} onValueChange={setLastInteractionFilter}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Interação" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos</SelectItem>
+                              <SelectItem value="never">Nunca interagiu</SelectItem>
+                              <SelectItem value="1day">Últimas 24h</SelectItem>
+                              <SelectItem value="3days">Últimos 3 dias</SelectItem>
+                              <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                              <SelectItem value="15days">Últimos 15 dias</SelectItem>
+                              <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Origem</label>
+                          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Origem" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todas</SelectItem>
+                              <SelectItem value="quiz">Quiz</SelectItem>
+                              <SelectItem value="quiz_trial">Quiz Trial</SelectItem>
+                              <SelectItem value="direct">Direto</SelectItem>
+                              <SelectItem value="referral">Indicação</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setDateFilter('all');
+                            setLastInteractionFilter('all');
+                            setSourceFilter('all');
+                          }}
+                        >
+                          Limpar Filtros
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-[500px] overflow-y-auto">

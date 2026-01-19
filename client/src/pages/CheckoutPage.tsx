@@ -41,6 +41,8 @@ export default function CheckoutPage() {
         currency: 'BRL',
         numItems: 1,
       });
+      // Evento personalizado FP_CheckoutStarted para públicos customizados
+      pixelEvents.fpCheckoutStarted(selectedPlan.id, selectedPlan.name, selectedPlan.price);
     }
   }, [search]);
   
@@ -57,6 +59,8 @@ export default function CheckoutPage() {
       value: plan.price,
       currency: 'BRL',
     });
+    // Evento personalizado FP_PaymentStarted para públicos customizados
+    pixelEvents.fpPaymentStarted(plan.id, plan.price);
     
     setIsRedirecting(true);
     // Redirecionar para o checkout da Cakto

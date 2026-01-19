@@ -850,6 +850,163 @@ export const pixelEvents = {
     time_seconds: params.seconds,
     page: params.page,
   }),
+  
+  // ==================== EVENTOS PERSONALIZADOS FITPRIME PARA PÚBLICOS ====================
+  // Use estes eventos para criar públicos customizados no Facebook Ads
+  // Cada evento representa uma etapa específica do funil FitPrime
+  
+  // FP_LeadCapture - Quando preenche dados no /quiz-trial (captura de lead)
+  // Público: Leads que demonstraram interesse inicial
+  fpLeadCapture: (userData: UserData, source?: string) => trackPixelEvent('FP_LeadCapture', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'lead_capture',
+    source: source || 'quiz_trial',
+    value: 0,
+  }, userData),
+  
+  // FP_QuizStarted - Quando inicia o quiz
+  // Público: Leads engajados que começaram o quiz
+  fpQuizStarted: (userData?: UserData) => trackPixelEvent('FP_QuizStarted', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'quiz_started',
+  }, userData),
+  
+  // FP_QuizCompleted - Quando completa o quiz
+  // Público: Leads qualificados que completaram o quiz
+  fpQuizCompleted: (score: number, recommendedPlan: string, userData?: UserData) => trackPixelEvent('FP_QuizCompleted', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'quiz_completed',
+    quiz_score: score,
+    recommended_plan: recommendedPlan,
+  }, userData),
+  
+  // FP_TrialPageView - Quando visualiza página de cadastro trial
+  // Público: Leads interessados em trial
+  fpTrialPageView: (userData?: UserData) => trackPixelEvent('FP_TrialPageView', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'trial_page_view',
+    content_name: 'Trial Signup Page',
+  }, userData),
+  
+  // FP_TrialCreated - Quando cria conta trial
+  // Público: Usuários em trial (alta intenção de compra)
+  fpTrialCreated: (userData: UserData) => trackPixelEvent('FP_TrialCreated', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'trial_created',
+    content_name: 'Trial Account Created',
+    value: 0,
+    predicted_ltv: 97 * 12, // LTV estimado se converter
+  }, userData),
+  
+  // FP_TrialExpiring - Quando trial está para expirar (2 dias)
+  // Público: Usuários em trial prestes a expirar (urgência)
+  fpTrialExpiring: (daysRemaining: number, userData?: UserData) => trackPixelEvent('FP_TrialExpiring', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'trial_expiring',
+    days_remaining: daysRemaining,
+  }, userData),
+  
+  // FP_TrialExpired - Quando trial expirou
+  // Público: Usuários com trial expirado (reativação)
+  fpTrialExpired: (userData?: UserData) => trackPixelEvent('FP_TrialExpired', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'trial_expired',
+  }, userData),
+  
+  // FP_PricingView - Quando visualiza página de preços
+  // Público: Leads avaliando preços (alta intenção)
+  fpPricingView: (source?: string, userData?: UserData) => trackPixelEvent('FP_PricingView', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'pricing_view',
+    source: source || 'direct',
+  }, userData),
+  
+  // FP_PlanSelected - Quando seleciona um plano
+  // Público: Leads que selecionaram plano (muito alta intenção)
+  fpPlanSelected: (planId: string, planName: string, value: number, userData?: UserData) => trackPixelEvent('FP_PlanSelected', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'plan_selected',
+    content_ids: [planId],
+    content_name: planName,
+    value: value,
+    currency: 'BRL',
+  }, userData),
+  
+  // FP_CheckoutStarted - Quando inicia checkout
+  // Público: Leads no checkout (abandonadores de carrinho)
+  fpCheckoutStarted: (planId: string, planName: string, value: number, userData?: UserData) => trackPixelEvent('FP_CheckoutStarted', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'checkout_started',
+    content_ids: [planId],
+    content_name: planName,
+    value: value,
+    currency: 'BRL',
+  }, userData),
+  
+  // FP_PaymentStarted - Quando adiciona info de pagamento
+  // Público: Leads que iniciaram pagamento
+  fpPaymentStarted: (planId: string, value: number, userData?: UserData) => trackPixelEvent('FP_PaymentStarted', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'payment_started',
+    content_ids: [planId],
+    value: value,
+    currency: 'BRL',
+  }, userData),
+  
+  // FP_Purchase - Quando finaliza compra
+  // Público: Clientes (lookalike de compradores)
+  fpPurchase: (planId: string, planName: string, value: number, transactionId: string, userData?: UserData) => trackPixelEvent('FP_Purchase', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'purchase',
+    content_ids: [planId],
+    content_name: planName,
+    value: value,
+    currency: 'BRL',
+    transaction_id: transactionId,
+  }, userData),
+  
+  // FP_Subscription - Quando ativa assinatura recorrente
+  // Público: Assinantes ativos (lookalike de assinantes)
+  fpSubscription: (planId: string, planName: string, value: number, userData?: UserData) => trackPixelEvent('FP_Subscription', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'subscription',
+    content_ids: [planId],
+    content_name: planName,
+    value: value,
+    currency: 'BRL',
+    predicted_ltv: value * 12,
+  }, userData),
+  
+  // FP_Churned - Quando cancela assinatura
+  // Público: Ex-clientes (reativação)
+  fpChurned: (planId: string, reason?: string, userData?: UserData) => trackPixelEvent('FP_Churned', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'churned',
+    content_ids: [planId],
+    churn_reason: reason,
+  }, userData),
+  
+  // FP_Reactivated - Quando reativa assinatura
+  // Público: Clientes reativados
+  fpReactivated: (planId: string, planName: string, value: number, userData?: UserData) => trackPixelEvent('FP_Reactivated', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'reactivated',
+    content_ids: [planId],
+    content_name: planName,
+    value: value,
+    currency: 'BRL',
+  }, userData),
+  
+  // FP_Upgraded - Quando faz upgrade de plano
+  // Público: Clientes que fizeram upgrade
+  fpUpgraded: (fromPlan: string, toPlan: string, newValue: number, userData?: UserData) => trackPixelEvent('FP_Upgraded', {
+    content_category: 'fitprime_funnel',
+    funnel_stage: 'upgraded',
+    from_plan: fromPlan,
+    to_plan: toPlan,
+    value: newValue,
+    currency: 'BRL',
+  }, userData),
 };
 
 // Identificar usuário para matching avançado

@@ -66,6 +66,8 @@ export default function TrialSignupPage() {
       contentCategory: 'trial',
       value: 0,
     });
+    // Evento personalizado FP_TrialPageView para públicos customizados
+    pixelEvents.fpTrialPageView();
     
     // Preencher automaticamente com dados do quiz se existirem
     // Tentar primeiro quizResult, depois quizTrialResult
@@ -238,6 +240,9 @@ export default function TrialSignupPage() {
         status: 'completed',
         value: 0,
       });
+      
+      // Evento personalizado FP_TrialCreated para públicos customizados
+      pixelEvents.fpTrialCreated(userData);
       
       toast.success("Conta criada com sucesso! Redirecionando para o login...");
       

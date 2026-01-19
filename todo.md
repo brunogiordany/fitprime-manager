@@ -4464,3 +4464,59 @@
 - [x] 9. Melhorar tela CRM - está muito fraca e com poucas opções
 - [x] 10. Trazer estatísticas WhatsApp do painel Personal para Admin com filtros por tags
 - [x] 11. Remover aba "Enviar" duplicada do WhatsApp Admin (CRM já tem essa função)
+
+
+## CHECKLIST v4.6 - Automações e Melhorias CRM
+
+### Evento Facebook no Quiz Trial
+- [x] Disparar evento "Lead" ou "CompleteRegistration" quando usuário clicar no botão do /quiz-trial
+- [x] Evento deve ser disparado ANTES de redirecionar para /quiz
+- [x] Trocar texto do botão de "Começar Quiz" para "Começar Teste Grátis"
+
+### Melhorar CRM com Filtros Avançados
+- [ ] Filtro por data de cadastro (últimos 7 dias, 15 dias, 30 dias, personalizado)
+- [ ] Filtro por última interação (nunca interagiu, 1 dia, 3 dias, 7 dias, 15 dias, 30 dias)
+- [ ] Filtro por origem do lead (quiz, landing page, indicação, manual)
+
+### Automações de Reativação de Leads
+- [ ] Sequência de nutrição para leads frios
+- [ ] Reativação automática em: 2, 5, 7, 10, 15, 21, 30, 45, 90 dias
+- [ ] Mensagens personalizadas por tempo de inatividade
+- [ ] Worker para processar reativações automaticamente
+
+
+### Mapeamento de Eventos Facebook no Funil
+- [x] Verificar evento no /quiz - TEM evento Lead quando completa quiz (QualificationQuizV4.tsx)
+- [x] Evento "CompleteRegistration" no /cadastro-trial - JÁ EXISTE (TrialSignupPage.tsx)
+- [x] Eventos personalizados para cada etapa do funil:
+  - [x] Lead (quiz-trial) - captura de dados - IMPLEMENTADO
+  - [x] Lead (quiz) - quando completa quiz - JÁ EXISTIA
+  - [x] ViewContent (cadastro-trial) - visualização da página - JÁ EXISTIA
+  - [x] CompleteRegistration (cadastro-trial) - criação de conta - JÁ EXISTIA
+  - [x] StartTrial (cadastro-trial) - após criar conta - JÁ EXISTIA
+  - [x] InitiateCheckout (CheckoutPage.tsx) - quando entra na página de checkout - JÁ EXISTIA
+  - [x] AddPaymentInfo (CheckoutPage.tsx) - quando clica em finalizar - JÁ EXISTIA
+  - [ ] Purchase (webhook Stripe) - quando compra é confirmada - VERIFICAR NO BACKEND
+- [x] PROBLEMA: Evento Lead duplicado entre /quiz-trial e /quiz - CORRIGIDO (quiz agora usa ViewContent)
+- [ ] Documentar fluxo de eventos para análise de funil
+
+
+### Eventos Personalizados Facebook para Públicos Customizados
+- [x] Criar eventos personalizados no tracking-pixels.ts:
+  - [x] FP_LeadCapture - Captura de dados no /quiz-trial
+  - [x] FP_QuizStarted - Início do quiz
+  - [x] FP_QuizCompleted - Conclusão do quiz
+  - [x] FP_TrialPageView - Visualização página cadastro trial
+  - [x] FP_TrialCreated - Criação de conta trial
+  - [x] FP_TrialExpiring - Trial expirando (2 dias)
+  - [x] FP_TrialExpired - Trial expirado
+  - [x] FP_PricingView - Visualização página de preços
+  - [x] FP_CheckoutStarted - Início do checkout
+  - [x] FP_PaymentStarted - Adição de info pagamento
+  - [x] FP_Purchase - Compra finalizada
+  - [x] FP_Subscription - Assinatura ativada
+  - [x] FP_Churned - Cancelamento de assinatura
+  - [x] FP_Reactivated - Reativação de assinatura
+  - [x] FP_Upgraded - Upgrade de plano
+- [x] Implementar eventos em cada página do funil
+- [ ] Documentar eventos para criação de públicos no Facebook Ads

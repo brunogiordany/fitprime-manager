@@ -403,7 +403,17 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
         ...trackingData,
       });
       
-      // Meta Pixel - Lead event quando completa o quiz
+      // Meta Pixel - ViewContent quando completa o quiz (Lead já foi disparado no /quiz-trial)
+      // Usar ViewContent para não duplicar evento Lead
+      pixelEvents.viewContent({
+        contentId: 'quiz_completed',
+        contentName: 'Quiz Completed',
+        contentType: 'quiz',
+        contentCategory: 'quiz',
+        value: quizResult.painScore + quizResult.solutionScore,
+      });
+      
+      // Evento personalizado FP_QuizCompleted para públicos customizados
       const userData = {
         email: leadData.email,
         phone: leadData.phone,
@@ -411,11 +421,11 @@ export default function QualificationQuizV4({ onComplete }: QualificationQuizV4P
         lastName: leadData.name.split(' ').slice(1).join(' '),
         city: leadData.city,
       };
-      pixelEvents.lead(userData, {
-        contentName: 'Quiz Completed',
-        contentCategory: 'quiz',
-        value: quizResult.painScore + quizResult.solutionScore,
-      });
+      pixelEvents.fpQuizCompleted(
+        quizResult.painScore + quizResult.solutionScore,
+        quizResult.recommendedPlan,
+        userData
+      );
 
       if (onComplete) {
         onComplete(quizResult);

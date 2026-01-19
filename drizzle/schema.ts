@@ -3023,7 +3023,18 @@ export const adminWhatsappAutomations = mysqlTable("admin_whatsapp_automations",
     "lead_trial_signup",        // Lead se cadastrou no trial
     "lead_trial_2days_before",  // 2 dias antes do trial vencer
     "lead_trial_expired",       // Trial expirou
+    "lead_followup_2days",      // Follow-up 2 dias após cadastro
+    "lead_followup_5days",      // Follow-up 5 dias após cadastro
     "lead_followup_7days",      // Follow-up 7 dias após cadastro
+    "lead_followup_10days",     // Follow-up 10 dias após cadastro
+    "lead_followup_15days",     // Follow-up 15 dias após cadastro
+    "lead_followup_21days",     // Follow-up 21 dias após cadastro
+    "lead_followup_30days",     // Follow-up 30 dias após cadastro
+    "lead_followup_45days",     // Follow-up 45 dias após cadastro
+    "lead_followup_90days",     // Follow-up 90 dias após cadastro
+    "lead_reactivation_cold",   // Reativação lead frio
+    "lead_reactivation_warm",   // Reativação lead morno
+    "lead_reactivation_hot",    // Reativação lead quente
     "personal_payment_2days",   // 2 dias antes do vencimento
     "personal_payment_dueday",  // No dia do vencimento
     "personal_payment_overdue", // Pagamento em atraso

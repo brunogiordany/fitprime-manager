@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { trackPageView, trackQuizCompleted } from "@/lib/analytics";
+import { pixelEvents } from "@/lib/tracking-pixels";
 import { getTrackingData, saveUtmParams } from "@/lib/tracking";
 
 // Tipos
@@ -566,11 +567,27 @@ export default function QuizTrialPage() {
                 className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-lg font-semibold"
                 onClick={() => {
                   if (validateLeadData()) {
+                    // Disparar eventos do Facebook ANTES de ir para o quiz
+                    const userData = {
+                      email: leadData.email,
+                      phone: leadData.phone,
+                      firstName: leadData.name.split(' ')[0],
+                      lastName: leadData.name.split(' ').slice(1).join(' '),
+                      city: leadData.city,
+                    };
+                    // Evento padrão Lead para otimização de campanhas
+                    pixelEvents.lead(userData, {
+                      contentName: 'Quiz Trial Lead Capture',
+                      contentCategory: 'quiz_trial',
+                      value: 0,
+                    });
+                    // Evento personalizado FP_LeadCapture para públicos customizados
+                    pixelEvents.fpLeadCapture(userData, 'quiz_trial');
                     setShowLeadForm(false);
                   }
                 }}
               >
-                Começar Quiz
+                Começar Teste Grátis
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
