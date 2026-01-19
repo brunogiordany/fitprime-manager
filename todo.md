@@ -4668,3 +4668,17 @@
 - [x] Corrigir erro "Invalid arguments passed to jsPDF.text" ao exportar PDF
 - [x] Ordenar cobranças do mais próximo para o mais distante (por data de vencimento)
 
+
+
+## CORREÇÕES v6.25 - Negativação de Automações
+- [ ] Adicionar filtros de negativação nas automações de email/WhatsApp
+- [ ] Excluir personais com plano ativo (assinatura paga) das mensagens de trial
+- [ ] Excluir personais com trial ativo das mensagens de boas-vindas trial
+- [ ] Excluir personais convertidos das mensagens de trial
+
+
+
+## PRÓXIMAS TAREFAS v6.26 - Mensagens WhatsApp
+- [ ] Criar filtro completo de mensagens (por tipo, status, data, destinatário)
+- [ ] Criar janela de mensagens estilo WhatsApp (chat bubbles, agrupado por contato)
+

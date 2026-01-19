@@ -15,7 +15,9 @@ import {
   adminWhatsappConfig,
   quizResponses,
   leadTags,
-  leadTagAssignments
+  leadTagAssignments,
+  users,
+  personals
 } from "../../drizzle/schema";
 import { eq, and, sql, desc, gte, lte, isNull, or, not, inArray } from "drizzle-orm";
 import { sendWhatsAppMessage } from "../stevo";
@@ -43,6 +45,66 @@ function replaceTemplateVariables(content: string, lead: any): string {
     .replace(/\{\{faturamento\}\}/g, lead.revenue || "Não informado")
     .replace(/\{\{link_assinatura\}\}/g, subscriptionLink)
     .replace(/\{\{baseUrl\}\}/g, baseUrl);
+}
+
+// Verificar se lead já é um personal ativo (com plano pago ou trial ativo)
+// Isso evita enviar mensagens de trial/boas-vindas para quem já é cliente
+async function isActivePersonal(db: any, email: string | null, phone: string | null): Promise<boolean> {
+  if (!email && !phone) return false;
+  
+  try {
+    // Verificar por email
+    if (email) {
+      const [userByEmail] = await db
+        .select({
+          userId: users.id,
+          subscriptionStatus: personals.subscriptionStatus,
+          trialEndsAt: personals.trialEndsAt,
+        })
+        .from(users)
+        .leftJoin(personals, eq(personals.userId, users.id))
+        .where(eq(users.email, email))
+        .limit(1);
+      
+      if (userByEmail && userByEmail.subscriptionStatus) {
+        // Personal ativo: tem assinatura paga (active) ou trial ainda válido
+        if (userByEmail.subscriptionStatus === 'active') return true;
+        if (userByEmail.subscriptionStatus === 'trial') {
+          const trialEndsAt = userByEmail.trialEndsAt ? new Date(userByEmail.trialEndsAt) : null;
+          if (trialEndsAt && trialEndsAt > new Date()) return true;
+        }
+      }
+    }
+    
+    // Verificar por telefone
+    if (phone) {
+      // Normalizar telefone (remover caracteres especiais)
+      const normalizedPhone = phone.replace(/\D/g, '');
+      const [userByPhone] = await db
+        .select({
+          userId: users.id,
+          subscriptionStatus: personals.subscriptionStatus,
+          trialEndsAt: personals.trialEndsAt,
+        })
+        .from(users)
+        .leftJoin(personals, eq(personals.userId, users.id))
+        .where(sql`REPLACE(REPLACE(REPLACE(REPLACE(${users.phone}, '-', ''), ' ', ''), '(', ''), ')', '') = ${normalizedPhone}`)
+        .limit(1);
+      
+      if (userByPhone && userByPhone.subscriptionStatus) {
+        if (userByPhone.subscriptionStatus === 'active') return true;
+        if (userByPhone.subscriptionStatus === 'trial') {
+          const trialEndsAt = userByPhone.trialEndsAt ? new Date(userByPhone.trialEndsAt) : null;
+          if (trialEndsAt && trialEndsAt > new Date()) return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('[LeadWhatsappWorker] Erro ao verificar se é personal ativo:', error);
+    return false; // Em caso de erro, permitir envio (fail-safe)
+  }
 }
 
 // Verificar se lead já recebeu mensagem de uma automação
@@ -111,6 +173,12 @@ async function processWelcomeAutomation(db: any, config: any): Promise<WorkerRes
   
   for (const lead of recentLeads) {
     if (!lead.leadPhone) continue;
+    
+    // NEGATIVAÇÃO: Verificar se lead já é personal ativo (plano pago ou trial válido)
+    if (await isActivePersonal(db, lead.leadEmail, lead.leadPhone)) {
+      console.log(`[LeadWhatsappWorker] Lead ${lead.leadName} já é personal ativo, pulando boas-vindas`);
+      continue;
+    }
     
     // Verificar se já recebeu esta automação
     if (await hasReceivedAutomation(db, lead.leadPhone, automation.id)) {
@@ -201,6 +269,12 @@ async function processFollowupAutomation(db: any, config: any): Promise<WorkerRe
   for (const lead of leads) {
     if (!lead.leadPhone) continue;
     
+    // NEGATIVAÇÃO: Verificar se lead já é personal ativo (plano pago ou trial válido)
+    if (await isActivePersonal(db, lead.leadEmail, lead.leadPhone)) {
+      console.log(`[LeadWhatsappWorker] Lead ${lead.leadName} já é personal ativo, pulando follow-up`);
+      continue;
+    }
+    
     // Verificar se já recebeu esta automação
     if (await hasReceivedAutomation(db, lead.leadPhone, automation.id)) {
       continue;
@@ -284,6 +358,12 @@ async function processReactivationAutomation(db: any, config: any): Promise<Work
   
   for (const lead of leads) {
     if (!lead.leadPhone) continue;
+    
+    // NEGATIVAÇÃO: Verificar se lead já é personal ativo (plano pago ou trial válido)
+    if (await isActivePersonal(db, lead.leadEmail, lead.leadPhone)) {
+      console.log(`[LeadWhatsappWorker] Lead ${lead.leadName} já é personal ativo, pulando reativação`);
+      continue;
+    }
     
     // Calcular temperatura do lead
     const temperature = calculateLeadTemperature(lead);
@@ -403,6 +483,12 @@ async function processHistoricalLeads(db: any, config: any): Promise<WorkerResul
   
   for (const lead of historicalLeads) {
     if (!lead.leadPhone) continue;
+    
+    // NEGATIVAÇÃO: Verificar se lead já é personal ativo (plano pago ou trial válido)
+    if (await isActivePersonal(db, lead.leadEmail, lead.leadPhone)) {
+      console.log(`[LeadWhatsappWorker] Lead ${lead.leadName} já é personal ativo, pulando histórico`);
+      continue;
+    }
     
     // Calcular temperatura do lead
     const temperature = calculateLeadTemperature(lead);
