@@ -4682,3 +4682,32 @@
 - [ ] Criar filtro completo de mensagens (por tipo, status, data, destinatário)
 - [ ] Criar janela de mensagens estilo WhatsApp (chat bubbles, agrupado por contato)
 
+
+
+## TAREFAS v6.27 - Meta Ads, Automações e Funil Visual
+- [ ] Melhorar atribuição Meta Ads via Conversions API
+- [ ] Revisar automações e adicionar opção de negativação visível na interface
+- [ ] Criar gráfico visual do funil com métricas de custo por etapa
+
+
+
+## TAREFAS v6.28 - Unificação de Telas de Funil
+- [ ] Analisar estrutura atual das páginas AdminFunnelDashboard, QuizDashboard e AdminWhatsappDashboard
+- [ ] Criar nova estrutura unificada no AdminFunnelDashboard com abas internas
+- [ ] Mover "Eventos do Funil" para dentro do Funil de Vendas
+- [ ] Mover "Quiz Dashboard" para dentro do Funil de Vendas
+- [ ] Criar abas internas: Visão Geral, Eventos Meta, Quiz Analytics, CRM
+- [ ] Remover abas duplicadas do AdminWhatsappDashboard
+- [ ] Adicionar gráfico visual do funil com métricas de custo por etapa
+- [ ] Adicionar campo para inserir custo de anúncios para calcular CPL/CPA
+
+
+
+## CORREÇÕES v6.28 - Unificação de Telas de Funil (CONCLUÍDO)
+- [x] Unificar telas de funil em AdminFunnelDashboard
+- [x] Criar abas internas: Visão Geral, Funil Visual, Quiz Analytics, Eventos Meta, Custos/ROI
+- [x] Remover aba Eventos do Funil do AdminWhatsappDashboard
+- [x] Calculadora de CPL, CPA e ROAS com input de gasto em ads
+- [x] Gráfico visual do funil com métricas de custo por etapa
+- [x] Opção de negativação visível nas automações WhatsApp
+

@@ -178,6 +178,8 @@ export default function AdminWhatsappDashboard() {
     sendWindowEnd: "20:00",
     sendOnWeekends: false,
     excludeExistingPersonals: true,
+    excludeActiveTrials: true,
+    excludeConverted: true,
     excludeRecentMessages: 24,
   });
   
@@ -416,6 +418,8 @@ export default function AdminWhatsappDashboard() {
       sendWindowEnd: "20:00",
       sendOnWeekends: false,
       excludeExistingPersonals: true,
+      excludeActiveTrials: true,
+      excludeConverted: true,
       excludeRecentMessages: 24,
     });
   };
@@ -434,6 +438,8 @@ export default function AdminWhatsappDashboard() {
       sendWindowEnd: automation.sendWindowEnd ?? "20:00",
       sendOnWeekends: automation.sendOnWeekends ?? false,
       excludeExistingPersonals: automation.excludeExistingPersonals ?? true,
+      excludeActiveTrials: (automation as any).excludeActiveTrials ?? true,
+      excludeConverted: (automation as any).excludeConverted ?? true,
       excludeRecentMessages: automation.excludeRecentMessages ?? 24,
     });
     setAutomationDialogOpen(true);
@@ -538,10 +544,7 @@ export default function AdminWhatsappDashboard() {
               <Phone className="h-4 w-4 mr-2" />
               Números
             </TabsTrigger>
-            <TabsTrigger value="funnel-events">
-              <Activity className="h-4 w-4 mr-2" />
-              Eventos do Funil
-            </TabsTrigger>
+            
           </TabsList>
           
           {/* Overview Tab */}
@@ -1454,250 +1457,7 @@ export default function AdminWhatsappDashboard() {
             </div>
           </TabsContent>
           
-          {/* Eventos do Funil Tab */}
-          <TabsContent value="funnel-events">
-            <div className="space-y-6">
-              {/* Cabeçalho */}
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-bold">Eventos do Funil</h2>
-                  <p className="text-sm text-gray-500">Visualize e gerencie os eventos personalizados do Facebook Pixel</p>
-                </div>
-                <Button variant="outline" onClick={() => window.open('https://business.facebook.com/events_manager', '_blank')}>
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Ver no Facebook Events Manager
-                </Button>
-              </div>
-              
-              {/* Cards de Eventos */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* FP_LeadCapture */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                      FP_LeadCapture
-                    </CardTitle>
-                    <CardDescription>Captura de dados no quiz-trial</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_QuizStarted */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                      FP_QuizStarted
-                    </CardTitle>
-                    <CardDescription>Início do quiz</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_QuizCompleted */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      FP_QuizCompleted
-                    </CardTitle>
-                    <CardDescription>Quiz finalizado</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_TrialCreated */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      FP_TrialCreated
-                    </CardTitle>
-                    <CardDescription>Conta trial criada</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_CheckoutStarted */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      FP_CheckoutStarted
-                    </CardTitle>
-                    <CardDescription>Início do checkout</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_PaymentStarted */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                      FP_PaymentStarted
-                    </CardTitle>
-                    <CardDescription>Pagamento iniciado</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_Purchase */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-600"></div>
-                      FP_Purchase
-                    </CardTitle>
-                    <CardDescription>Compra finalizada</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-                
-                {/* FP_Subscription */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                      FP_Subscription
-                    </CardTitle>
-                    <CardDescription>Assinatura ativada</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">-</div>
-                    <p className="text-xs text-gray-500">Eventos disparados</p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Fluxo do Funil */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fluxo do Funil de Conversão</CardTitle>
-                  <CardDescription>Visualização do funil de eventos personalizados</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between overflow-x-auto py-4">
-                    {/* Etapa 1 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                        <User className="h-8 w-8 text-blue-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Lead Capture</span>
-                      <span className="text-xs text-gray-500">quiz-trial</span>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
-                    
-                    {/* Etapa 2 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-                        <Activity className="h-8 w-8 text-purple-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Quiz Started</span>
-                      <span className="text-xs text-gray-500">quiz</span>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
-                    
-                    {/* Etapa 3 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                        <CheckCircle2 className="h-8 w-8 text-green-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Quiz Completed</span>
-                      <span className="text-xs text-gray-500">quiz</span>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
-                    
-                    {/* Etapa 4 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
-                        <Users className="h-8 w-8 text-emerald-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Trial Created</span>
-                      <span className="text-xs text-gray-500">cadastro-trial</span>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
-                    
-                    {/* Etapa 5 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
-                        <Clock className="h-8 w-8 text-yellow-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Checkout Started</span>
-                      <span className="text-xs text-gray-500">checkout</span>
-                    </div>
-                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
-                    
-                    {/* Etapa 6 */}
-                    <div className="flex flex-col items-center min-w-[120px]">
-                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                        <TrendingUp className="h-8 w-8 text-green-600" />
-                      </div>
-                      <span className="text-xs font-medium text-center">Purchase</span>
-                      <span className="text-xs text-gray-500">sucesso</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Instruções para criar públicos */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Tag className="h-5 w-5" />
-                    Como criar públicos personalizados
-                  </CardTitle>
-                  <CardDescription>Use os eventos FP_* para criar públicos de remarketing segmentados</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-blue-900 mb-2">Público: Leads Quentes</h4>
-                      <p className="text-sm text-blue-700">Pessoas que completaram o quiz mas não criaram conta trial</p>
-                      <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">FP_QuizCompleted - FP_TrialCreated</code>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium text-green-900 mb-2">Público: Abandonaram Checkout</h4>
-                      <p className="text-sm text-green-700">Pessoas que iniciaram checkout mas não finalizaram</p>
-                      <code className="text-xs bg-green-100 px-2 py-1 rounded mt-2 inline-block">FP_CheckoutStarted - FP_Purchase</code>
-                    </div>
-                    <div className="p-4 bg-purple-50 rounded-lg">
-                      <h4 className="font-medium text-purple-900 mb-2">Público: Trial Expirado</h4>
-                      <p className="text-sm text-purple-700">Pessoas cujo trial expirou sem converter</p>
-                      <code className="text-xs bg-purple-100 px-2 py-1 rounded mt-2 inline-block">FP_TrialExpired - FP_Purchase</code>
-                    </div>
-                    <div className="p-4 bg-orange-50 rounded-lg">
-                      <h4 className="font-medium text-orange-900 mb-2">Público: Clientes Ativos</h4>
-                      <p className="text-sm text-orange-700">Pessoas que finalizaram a compra (para upsell)</p>
-                      <code className="text-xs bg-orange-100 px-2 py-1 rounded mt-2 inline-block">FP_Purchase ou FP_Subscription</code>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          
         </Tabs>
       </div>
       
@@ -1953,12 +1713,64 @@ Use {{nome}}, {{email}} para personalizar."
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Switch 
-                checked={automationForm.excludeExistingPersonals}
-                onCheckedChange={(checked) => setAutomationForm(prev => ({ ...prev, excludeExistingPersonals: checked }))}
-              />
-              <Label>Não enviar para quem já é personal</Label>
+            {/* Seção de Negativação */}
+            <div className="border-t pt-4 mt-4">
+              <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                <XCircle className="h-4 w-4 text-red-500" />
+                Filtros de Negativação
+              </h4>
+              <p className="text-xs text-gray-500 mb-4">Configure quais perfis NÃO devem receber esta automação</p>
+              
+              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-normal">Excluir Personais Ativos</Label>
+                    <p className="text-xs text-gray-500">Não enviar para quem já tem plano pago ativo</p>
+                  </div>
+                  <Switch 
+                    checked={automationForm.excludeExistingPersonals}
+                    onCheckedChange={(checked) => setAutomationForm(prev => ({ ...prev, excludeExistingPersonals: checked }))}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-normal">Excluir Trials Ativos</Label>
+                    <p className="text-xs text-gray-500">Não enviar para quem está em período de trial</p>
+                  </div>
+                  <Switch 
+                    checked={automationForm.excludeActiveTrials ?? true}
+                    onCheckedChange={(checked) => setAutomationForm(prev => ({ ...prev, excludeActiveTrials: checked }))}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-normal">Excluir Convertidos</Label>
+                    <p className="text-xs text-gray-500">Não enviar para quem já converteu (fez compra)</p>
+                  </div>
+                  <Switch 
+                    checked={automationForm.excludeConverted ?? true}
+                    onCheckedChange={(checked) => setAutomationForm(prev => ({ ...prev, excludeConverted: checked }))}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="font-normal">Excluir Mensagens Recentes</Label>
+                    <p className="text-xs text-gray-500">Não enviar se já recebeu mensagem nas últimas X horas</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="number"
+                      className="w-20"
+                      value={automationForm.excludeRecentMessages}
+                      onChange={(e) => setAutomationForm(prev => ({ ...prev, excludeRecentMessages: parseInt(e.target.value) || 24 }))}
+                    />
+                    <span className="text-xs text-gray-500">horas</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
