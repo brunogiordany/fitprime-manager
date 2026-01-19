@@ -1,43 +1,62 @@
 import { useEffect } from 'react';
 
 /**
- * Componente de proteção global IMPOSSÍVEL DE CONTORNAR
- * Bloqueia TUDO que pode ser usado para espionagem
+ * Componente de proteção global
+ * Bloqueia ferramentas de desenvolvedor mas PERMITE copiar/colar em inputs
  */
 export function ProtectionLayer() {
   useEffect(() => {
-    // Função para bloquear evento
-    const preventDefault = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      return false;
-    };
-
     // ============================================
-    // 1. BLOQUEAR CONTEXTO (BOTÃO DIREITO)
+    // 1. BLOQUEAR CONTEXTO (BOTÃO DIREITO) - exceto em inputs
     // ============================================
-    const contextMenuHandler = (e: any) => {
+    const contextMenuHandler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Permitir menu de contexto em inputs, textareas e contenteditable
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"]')
+      ) {
+        return; // Permitir
+      }
+      
       if (e.button === 2 || e.type === 'contextmenu') {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
         return false;
       }
     };
 
-    // Múltiplas camadas de proteção
     document.addEventListener('contextmenu', contextMenuHandler, { capture: true, passive: false });
-    document.addEventListener('mousedown', contextMenuHandler, { capture: true, passive: false });
-    document.addEventListener('mouseup', contextMenuHandler, { capture: true, passive: false });
-    document.addEventListener('mousepress', contextMenuHandler, { capture: true, passive: false });
     window.addEventListener('contextmenu', contextMenuHandler, { capture: true, passive: false });
 
     // ============================================
-    // 2. BLOQUEAR TECLADO (F12, CTRL+U, ETC)
+    // 2. BLOQUEAR TECLADO (F12, CTRL+U, ETC) - PERMITIR CTRL+C/V/X em inputs
     // ============================================
     const keyboardHandler = (e: KeyboardEvent) => {
-      // Lista de combinações bloqueadas
+      const target = e.target as HTMLElement;
+      const isInputField = 
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"]');
+
+      // Se estiver em um campo de input, permitir CTRL+C, CTRL+V, CTRL+X, CTRL+A
+      if (isInputField) {
+        const isCopyPasteKey = 
+          (e.ctrlKey || e.metaKey) && 
+          (e.key === 'c' || e.key === 'C' || 
+           e.key === 'v' || e.key === 'V' || 
+           e.key === 'x' || e.key === 'X' ||
+           e.key === 'a' || e.key === 'A');
+        
+        if (isCopyPasteKey) {
+          return; // Permitir copiar/colar/recortar/selecionar tudo em inputs
+        }
+      }
+
+      // Lista de combinações bloqueadas (apenas DevTools)
       const isBlocked =
         e.key === 'F12' ||
         (e.ctrlKey && e.key === 'u') ||
@@ -49,102 +68,107 @@ export function ProtectionLayer() {
         (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'I')) ||
         (e.metaKey && e.altKey && (e.key === 'u' || e.key === 'U')) ||
         (e.metaKey && e.altKey && (e.key === 'j' || e.key === 'J')) ||
-        (e.ctrlKey && (e.key === 'c' || e.key === 'C')) ||
-        (e.ctrlKey && (e.key === 'x' || e.key === 'X')) ||
-        (e.ctrlKey && (e.key === 'v' || e.key === 'V')) ||
-        (e.metaKey && (e.key === 'c' || e.key === 'C')) ||
-        (e.metaKey && (e.key === 'x' || e.key === 'X')) ||
-        (e.metaKey && (e.key === 'v' || e.key === 'V')) ||
         (e.metaKey && (e.key === 'u' || e.key === 'U'));
 
       if (isBlocked) {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
         return false;
       }
     };
 
     document.addEventListener('keydown', keyboardHandler, { capture: true, passive: false });
     window.addEventListener('keydown', keyboardHandler, { capture: true, passive: false });
-    document.addEventListener('keypress', keyboardHandler, { capture: true, passive: false });
-    window.addEventListener('keypress', keyboardHandler, { capture: true, passive: false });
 
     // ============================================
-    // 3. BLOQUEAR CLIPBOARD (COPY/PASTE/CUT)
+    // 3. CLIPBOARD - PERMITIR em inputs, bloquear fora
     // ============================================
-    const clipboardHandler = (e: any) => {
+    const clipboardHandler = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      // Permitir clipboard em inputs, textareas e contenteditable
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"]')
+      ) {
+        return; // Permitir copiar/colar em campos de input
+      }
+      
+      // Bloquear fora de inputs (proteção de conteúdo)
       e.preventDefault();
       e.stopPropagation();
-      e.stopImmediatePropagation();
       return false;
     };
 
     document.addEventListener('copy', clipboardHandler, { capture: true, passive: false });
     document.addEventListener('cut', clipboardHandler, { capture: true, passive: false });
     document.addEventListener('paste', clipboardHandler, { capture: true, passive: false });
-    window.addEventListener('copy', clipboardHandler, { capture: true, passive: false });
-    window.addEventListener('cut', clipboardHandler, { capture: true, passive: false });
-    window.addEventListener('paste', clipboardHandler, { capture: true, passive: false });
 
     // ============================================
-    // 4. BLOQUEAR SELEÇÃO E DRAG
+    // 4. SELEÇÃO - PERMITIR em inputs
     // ============================================
-    const selectionHandler = (e: any) => {
+    const selectionHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+      // Permitir seleção em inputs, textareas e contenteditable
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"]')
+      ) {
+        return; // Permitir seleção em campos de input
+      }
+      
       e.preventDefault();
       return false;
     };
 
     document.addEventListener('selectstart', selectionHandler, { capture: true, passive: false });
-    document.addEventListener('dragstart', selectionHandler, { capture: true, passive: false });
-    document.addEventListener('drag', selectionHandler, { capture: true, passive: false });
-    document.addEventListener('drop', selectionHandler, { capture: true, passive: false });
 
     // ============================================
-    // 5. CSS AGRESSIVO - USER-SELECT NONE
+    // 5. CSS - USER-SELECT (inputs já permitidos)
     // ============================================
     const style = document.createElement('style');
+    style.id = 'protection-layer-styles';
     style.textContent = `
-      html, body, * {
-        -webkit-user-select: none !important;
-        -moz-user-select: none !important;
-        -ms-user-select: none !important;
-        user-select: none !important;
-        -webkit-touch-callout: none !important;
-        -webkit-user-drag: none !important;
-        -webkit-app-region: no-drag !important;
+      /* Bloquear seleção geral, mas permitir em inputs */
+      body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
       }
       
-      input, textarea, [contenteditable="true"], [contenteditable="plaintext-only"] {
+      /* Permitir seleção e interação em campos de formulário */
+      input, 
+      textarea, 
+      select,
+      [contenteditable="true"], 
+      [contenteditable="plaintext-only"],
+      .allow-select {
         -webkit-user-select: text !important;
         -moz-user-select: text !important;
         -ms-user-select: text !important;
         user-select: text !important;
+        cursor: text;
       }
       
-      body {
-        -webkit-user-drag: none !important;
+      /* Garantir que botões e links funcionem */
+      button, a, [role="button"] {
+        cursor: pointer;
       }
     `;
-    document.documentElement.appendChild(style);
-
-    // ============================================
-    // 6. BLOQUEAR CONSOLE
-    // ============================================
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      const noop = () => {};
-      console.log = noop;
-      console.warn = noop;
-      console.error = noop;
-      console.debug = noop;
-      console.info = noop;
-      console.trace = noop;
-      console.time = noop;
-      console.timeEnd = noop;
+    
+    // Remover estilo antigo se existir
+    const oldStyle = document.getElementById('protection-layer-styles');
+    if (oldStyle) {
+      oldStyle.remove();
     }
+    document.head.appendChild(style);
 
     // ============================================
-    // 7. BLOQUEAR DEVTOOLS
+    // 6. BLOQUEAR DEVTOOLS (apenas detecção)
     // ============================================
     let devtoolsDetected = false;
     const devtoolsInterval = setInterval(() => {
@@ -155,34 +179,8 @@ export function ProtectionLayer() {
 
       if (isOpen && !devtoolsDetected) {
         devtoolsDetected = true;
-        console.log('%c⚠️ Proteção Ativa', 'color: red; font-weight: bold; font-size: 16px;');
       }
     }, 500);
-
-    // ============================================
-    // 8. BLOQUEAR INSPECIONAR ELEMENTO
-    // ============================================
-    // Bloquear quando tenta inspecionar
-    document.addEventListener('mousedown', (e: any) => {
-      if (e.button === 2) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        return false;
-      }
-    }, true);
-
-    // ============================================
-    // 9. PROTEGER CONTRA MODIFICAÇÃO DO OBJETO WINDOW
-    // ============================================
-    Object.defineProperty(window, 'devtools', {
-      get() {
-        return undefined;
-      },
-      set() {
-        return false;
-      },
-    });
 
     // ============================================
     // CLEANUP
@@ -190,19 +188,13 @@ export function ProtectionLayer() {
     return () => {
       clearInterval(devtoolsInterval);
       document.removeEventListener('contextmenu', contextMenuHandler, true as any);
-      document.removeEventListener('mousedown', contextMenuHandler, true as any);
-      document.removeEventListener('mouseup', contextMenuHandler, true as any);
       window.removeEventListener('contextmenu', contextMenuHandler, true as any);
       document.removeEventListener('keydown', keyboardHandler, true as any);
       window.removeEventListener('keydown', keyboardHandler, true as any);
       document.removeEventListener('copy', clipboardHandler, true as any);
       document.removeEventListener('cut', clipboardHandler, true as any);
       document.removeEventListener('paste', clipboardHandler, true as any);
-      window.removeEventListener('copy', clipboardHandler, true as any);
-      window.removeEventListener('cut', clipboardHandler, true as any);
-      window.removeEventListener('paste', clipboardHandler, true as any);
       document.removeEventListener('selectstart', selectionHandler, true as any);
-      document.removeEventListener('dragstart', selectionHandler, true as any);
       style.remove();
     };
   }, []);

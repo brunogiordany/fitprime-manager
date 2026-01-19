@@ -4385,3 +4385,9 @@
 ## Link WhatsApp Admin no Menu (v6.35)
 - [x] Verificar se painel WhatsApp Admin está acessível no menu super admin
 - [x] Adicionar link no menu se não existir
+
+
+## Bug Crítico - Não Consegue Colar (v6.36)
+- [x] Identificar causa do bloqueio de paste em campos de input
+- [x] Remover bloqueio de onPaste em todos os componentes
+- [x] Testar funcionalidade de colar em todas as páginas
