@@ -4548,3 +4548,14 @@
 - [ ] Selecionar leads por tag para envio em massa
 - [ ] Visualizar tags na lista de leads do CRM
 
+
+
+## CHECKLIST v4.8 - Correções Conta Trial e WhatsApp
+
+### BUGS CRÍTICOS
+- [x] 1. Conta trial mostrando "Plano Starter R$ 97/mês" ao invés de "Plano Trial" - CORRIGIDO
+- [x] 2. Número WhatsApp errado (5515997612063) - deve ser 45999480236 (oficial FitPrime) - CORRIGIDO
+- [x] 3. Link WhatsApp usando domínio incorreto - usar wa.me oficial do Meta - CORRIGIDO
+- [x] 4. Botão "Renovar Assinatura" com link não funcional - direcionar para página com todos os planos - CORRIGIDO
+- [x] 5. Página de planos não mostra o plano mais barato de R$ 39,90 - CORRIGIDO (CompletePricingPage já tem Beginner)
+

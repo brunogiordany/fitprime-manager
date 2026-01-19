@@ -105,6 +105,7 @@ function Router() {
       <Route path="/quiz-trial" component={QuizTrialPage} />
       <Route path="/cadastro-trial" component={TrialSignupPage} />
       <Route path="/planospersonal" component={PricingPage} />
+      <Route path="/planos-fitprime" component={CompletePricingPage} />
       <Route path="/apresentacao" component={PresentationPage} />
       <Route path="/convite/:token" component={Invite} />
       {/* /login agora redireciona para / */}

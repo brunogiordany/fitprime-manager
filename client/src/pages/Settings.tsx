@@ -99,14 +99,20 @@ export default function Settings() {
   const { data: currentPlanDetails } = trpc.subscription.currentPlanDetails.useQuery();
   
   // Determinar plano atual
-  const getPlanFromId = (planId: string | undefined) => {
-    if (!planId) return PLANS.starter;
+  const getPlanFromId = (planId: string | undefined, isTrial: boolean = false) => {
+    // Se é trial, retorna plano trial
+    if (isTrial) return PLANS.trial;
+    if (!planId) return PLANS.trial; // Default para trial se não tem plano
     const planMap: Record<string, keyof typeof PLANS> = {
+      'fitprime_br_trial': 'trial',
+      'fitprime_br_beginner': 'beginner',
       'fitprime_br_starter': 'starter',
       'fitprime_br_pro': 'pro', 
       'fitprime_br_business': 'business',
       'fitprime_br_premium': 'premium',
       'fitprime_br_enterprise': 'enterprise',
+      'trial': 'trial',
+      'beginner': 'beginner',
       'starter': 'starter',
       'pro': 'pro',
       'business': 'business',
@@ -114,10 +120,12 @@ export default function Settings() {
       'enterprise': 'enterprise',
     };
     const mappedId = planMap[planId];
-    return mappedId ? PLANS[mappedId] : PLANS.starter;
+    return mappedId ? PLANS[mappedId] : PLANS.trial;
   };
   
-  const currentPlan = getPlanFromId(subscription?.planId);
+  // Verifica se é trial baseado no status da subscription
+  const isTrial = subscription?.status === 'trial' || subscription?.status === 'trialing' || !subscription?.planId;
+  const currentPlan = getPlanFromId(subscription?.planId, isTrial);
   const isAnnualPlan = subscription?.planId?.includes('_anual') || false;
   const studentUsage = subscription?.currentStudents || 0;
   const studentLimit = isAnnualPlan ? currentPlan.annualStudentLimit : (subscription?.studentLimit || currentPlan.studentLimit);

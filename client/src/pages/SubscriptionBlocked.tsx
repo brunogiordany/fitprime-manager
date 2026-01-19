@@ -9,12 +9,16 @@ interface SubscriptionBlockedProps {
   message: string;
 }
 
-// URL de checkout da Cakto para o FitPrime Manager
-const CAKTO_CHECKOUT_URL = "https://pay.cakto.com.br/8965eb5a-5433-43a0-a60e-5c34f2bdc84c";
+// URL de checkout da Cakto para o FitPrime Manager - Redireciona para página de planos
+const PLANS_URL = "/planos-fitprime";
+
+// Número oficial do WhatsApp FitPrime
+const FITPRIME_WHATSAPP = "5545999480236";
 
 export default function SubscriptionBlocked({ status, daysOverdue, message }: SubscriptionBlockedProps) {
   const handleRenew = () => {
-    window.open(CAKTO_CHECKOUT_URL, '_blank');
+    // Redireciona para página de planos ao invés de checkout direto
+    window.location.href = PLANS_URL;
   };
 
   return (
@@ -101,7 +105,7 @@ export default function SubscriptionBlocked({ status, daysOverdue, message }: Su
             <p className="text-center text-sm text-gray-500">
               Precisa de ajuda?{" "}
               <a 
-                href="https://wa.me/5515997612063" 
+                href={`https://wa.me/${FITPRIME_WHATSAPP}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-green-600 hover:underline"

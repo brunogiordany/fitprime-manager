@@ -23,6 +23,50 @@ export interface Plan {
 }
 
 export const PLANS: Record<string, Plan> = {
+  trial: {
+    id: "trial",
+    name: "Trial",
+    price: 0,
+    annualPrice: 0,
+    annualMonthlyPrice: 0,
+    studentLimit: 5,
+    annualStudentLimit: 5,
+    extraStudentPrice: 0,
+    description: "Teste grátis por 24 horas",
+    offerId: "",
+    annualOfferId: "",
+    checkoutUrl: "",
+    annualCheckoutUrl: "",
+    features: [
+      "Até 5 alunos",
+      "Acesso por 24 horas",
+      "Montagem de treinos com IA",
+      "Portal do aluno",
+      "Sem cartão de crédito"
+    ]
+  },
+  beginner: {
+    id: "beginner",
+    name: "Beginner",
+    price: 39.90,
+    annualPrice: 383, // R$39.90 x 12 x 0.8 = R$383.04 ≈ R$383
+    annualMonthlyPrice: 31.92, // R$383 / 12
+    studentLimit: 5,
+    annualStudentLimit: 6, // 5 x 1.2 = 6
+    extraStudentPrice: 7.98,
+    description: "Para quem está começando",
+    offerId: "beginner_offer",
+    annualOfferId: "beginner_annual_offer",
+    checkoutUrl: "https://pay.cakto.com.br/beginner",
+    annualCheckoutUrl: "https://pay.cakto.com.br/beginner_annual",
+    features: [
+      "Até 5 alunos",
+      "Montagem de treinos",
+      "Portal do aluno",
+      "Agenda básica",
+      "Suporte por email"
+    ]
+  },
   starter: {
     id: "starter",
     name: "Starter",
