@@ -37,7 +37,10 @@ import {
   Loader2,
   Search,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  Tag,
+  TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -142,6 +145,9 @@ export default function AdminWhatsappDashboard() {
   const [lastInteractionFilter, setLastInteractionFilter] = useState("all"); // all, never, 1day, 3days, 7days, 15days, 30days
   const [sourceFilter, setSourceFilter] = useState("all"); // all, quiz, quiz_trial, direct, referral
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  // Estados de Tags
+  const [createTagDialogOpen, setCreateTagDialogOpen] = useState(false);
+  const [newTagForm, setNewTagForm] = useState({ name: "", color: "#3b82f6", description: "" });
   const [addNumberDialogOpen, setAddNumberDialogOpen] = useState(false);
   const [newNumberForm, setNewNumberForm] = useState({
     name: "",
@@ -297,6 +303,59 @@ export default function AdminWhatsappDashboard() {
   });
   
   const incrementSuggestionUsageMutation = trpc.adminWhatsapp.incrementSuggestionUsage.useMutation();
+  
+  // Mutations de Tags
+  const createTagMutation = trpc.adminWhatsapp.createTag.useMutation({
+    onSuccess: () => {
+      toast.success("Tag criada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+      setCreateTagDialogOpen(false);
+      setNewTagForm({ name: "", color: "#3b82f6", description: "" });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const deleteTagMutation = trpc.adminWhatsapp.deleteTag.useMutation({
+    onSuccess: () => {
+      toast.success("Tag excluída!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const assignTagToLeadMutation = trpc.adminWhatsapp.assignTagToLead.useMutation({
+    onSuccess: () => {
+      toast.success("Tag atribuída!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const removeTagFromLeadMutation = trpc.adminWhatsapp.removeTagFromLead.useMutation({
+    onSuccess: () => {
+      toast.success("Tag removida!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+  
+  const assignTagToMultipleLeadsMutation = trpc.adminWhatsapp.assignTagToMultipleLeads.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Tag atribuída a ${data.assigned} leads!`);
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
   
   const createAutomationMutation = trpc.adminWhatsapp.createAutomation.useMutation({
     onSuccess: () => {
@@ -478,6 +537,10 @@ export default function AdminWhatsappDashboard() {
             <TabsTrigger value="numbers">
               <Phone className="h-4 w-4 mr-2" />
               Números
+            </TabsTrigger>
+            <TabsTrigger value="funnel-events">
+              <Activity className="h-4 w-4 mr-2" />
+              Eventos do Funil
             </TabsTrigger>
           </TabsList>
           
@@ -879,30 +942,98 @@ export default function AdminWhatsappDashboard() {
 
               {/* Filtro por Tags */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Leads por Tags</CardTitle>
-                  <CardDescription>Filtre e visualize leads por tags</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Leads por Tags</CardTitle>
+                    <CardDescription>Filtre e visualize leads por tags</CardDescription>
+                  </div>
+                  <Dialog open={createTagDialogOpen} onOpenChange={setCreateTagDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Nova Tag
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Criar Nova Tag</DialogTitle>
+                        <DialogDescription>Crie uma tag para segmentar seus leads</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div>
+                          <Label>Nome da Tag</Label>
+                          <Input 
+                            placeholder="Ex: Lead Quente"
+                            value={newTagForm.name}
+                            onChange={(e) => setNewTagForm(prev => ({ ...prev, name: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label>Cor</Label>
+                          <div className="flex gap-2 mt-2">
+                            {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(color => (
+                              <button
+                                key={color}
+                                className={`w-8 h-8 rounded-full border-2 ${newTagForm.color === color ? 'border-gray-900' : 'border-transparent'}`}
+                                style={{ backgroundColor: color }}
+                                onClick={() => setNewTagForm(prev => ({ ...prev, color }))}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Descrição (opcional)</Label>
+                          <Input 
+                            placeholder="Descrição da tag"
+                            value={newTagForm.description}
+                            onChange={(e) => setNewTagForm(prev => ({ ...prev, description: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setCreateTagDialogOpen(false)}>Cancelar</Button>
+                        <Button 
+                          onClick={() => createTagMutation.mutate(newTagForm)}
+                          disabled={createTagMutation.isPending || !newTagForm.name}
+                        >
+                          {createTagMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar Tag'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {tags?.map((tag: any) => (
-                      <Badge 
-                        key={tag.id} 
-                        style={{ backgroundColor: selectedTagIds.includes(tag.id) ? tag.color : 'transparent', color: selectedTagIds.includes(tag.id) ? 'white' : tag.color, borderColor: tag.color }}
-                        className="cursor-pointer border"
-                        onClick={() => {
-                          if (selectedTagIds.includes(tag.id)) {
-                            setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
-                          } else {
-                            setSelectedTagIds([...selectedTagIds, tag.id]);
-                          }
-                        }}
-                      >
-                        {tag.name} ({tag.leadsCount || 0})
-                      </Badge>
+                      <div key={tag.id} className="group relative">
+                        <Badge 
+                          style={{ backgroundColor: selectedTagIds.includes(tag.id) ? tag.color : 'transparent', color: selectedTagIds.includes(tag.id) ? 'white' : tag.color, borderColor: tag.color }}
+                          className="cursor-pointer border pr-6"
+                          onClick={() => {
+                            if (selectedTagIds.includes(tag.id)) {
+                              setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                            } else {
+                              setSelectedTagIds([...selectedTagIds, tag.id]);
+                            }
+                          }}
+                        >
+                          {tag.name}
+                        </Badge>
+                        <button
+                          className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Excluir tag "${tag.name}"?`)) {
+                              deleteTagMutation.mutate({ id: tag.id });
+                            }
+                          }}
+                        >
+                          <XCircle className="h-3 w-3 text-red-500" />
+                        </button>
+                      </div>
                     ))}
                     {(!tags || tags.length === 0) && (
-                      <p className="text-sm text-gray-500">Nenhuma tag criada ainda</p>
+                      <p className="text-sm text-gray-500">Nenhuma tag criada ainda. Clique em "Nova Tag" para criar.</p>
                     )}
                   </div>
                   {selectedTagIds.length > 0 && (
@@ -1103,9 +1234,32 @@ export default function AdminWhatsappDashboard() {
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-sm text-gray-500">{selectedLeads.length} selecionado(s)</span>
-                    <Button variant="outline" size="sm" onClick={selectAllLeads}>
-                      {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {selectedLeads.length > 0 && (
+                        <Select onValueChange={(tagId) => {
+                          if (tagId) {
+                            assignTagToMultipleLeadsMutation.mutate({ leadIds: selectedLeads, tagId: parseInt(tagId) });
+                          }
+                        }}>
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Atribuir Tag" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {tags?.map((tag: any) => (
+                              <SelectItem key={tag.id} value={tag.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                                  {tag.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Button variant="outline" size="sm" onClick={selectAllLeads}>
+                        {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1294,6 +1448,251 @@ export default function AdminWhatsappDashboard() {
                         Nenhum número cadastrado
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          {/* Eventos do Funil Tab */}
+          <TabsContent value="funnel-events">
+            <div className="space-y-6">
+              {/* Cabeçalho */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold">Eventos do Funil</h2>
+                  <p className="text-sm text-gray-500">Visualize e gerencie os eventos personalizados do Facebook Pixel</p>
+                </div>
+                <Button variant="outline" onClick={() => window.open('https://business.facebook.com/events_manager', '_blank')}>
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Ver no Facebook Events Manager
+                </Button>
+              </div>
+              
+              {/* Cards de Eventos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* FP_LeadCapture */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      FP_LeadCapture
+                    </CardTitle>
+                    <CardDescription>Captura de dados no quiz-trial</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_QuizStarted */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                      FP_QuizStarted
+                    </CardTitle>
+                    <CardDescription>Início do quiz</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_QuizCompleted */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      FP_QuizCompleted
+                    </CardTitle>
+                    <CardDescription>Quiz finalizado</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_TrialCreated */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                      FP_TrialCreated
+                    </CardTitle>
+                    <CardDescription>Conta trial criada</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_CheckoutStarted */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      FP_CheckoutStarted
+                    </CardTitle>
+                    <CardDescription>Início do checkout</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_PaymentStarted */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                      FP_PaymentStarted
+                    </CardTitle>
+                    <CardDescription>Pagamento iniciado</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_Purchase */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-600"></div>
+                      FP_Purchase
+                    </CardTitle>
+                    <CardDescription>Compra finalizada</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+                
+                {/* FP_Subscription */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
+                      FP_Subscription
+                    </CardTitle>
+                    <CardDescription>Assinatura ativada</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">-</div>
+                    <p className="text-xs text-gray-500">Eventos disparados</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Fluxo do Funil */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Fluxo do Funil de Conversão</CardTitle>
+                  <CardDescription>Visualização do funil de eventos personalizados</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between overflow-x-auto py-4">
+                    {/* Etapa 1 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                        <User className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Lead Capture</span>
+                      <span className="text-xs text-gray-500">quiz-trial</span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                    
+                    {/* Etapa 2 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                        <Activity className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Quiz Started</span>
+                      <span className="text-xs text-gray-500">quiz</span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                    
+                    {/* Etapa 3 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                        <CheckCircle2 className="h-8 w-8 text-green-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Quiz Completed</span>
+                      <span className="text-xs text-gray-500">quiz</span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                    
+                    {/* Etapa 4 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+                        <Users className="h-8 w-8 text-emerald-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Trial Created</span>
+                      <span className="text-xs text-gray-500">cadastro-trial</span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                    
+                    {/* Etapa 5 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                        <Clock className="h-8 w-8 text-yellow-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Checkout Started</span>
+                      <span className="text-xs text-gray-500">checkout</span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                    
+                    {/* Etapa 6 */}
+                    <div className="flex flex-col items-center min-w-[120px]">
+                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                        <TrendingUp className="h-8 w-8 text-green-600" />
+                      </div>
+                      <span className="text-xs font-medium text-center">Purchase</span>
+                      <span className="text-xs text-gray-500">sucesso</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Instruções para criar públicos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    Como criar públicos personalizados
+                  </CardTitle>
+                  <CardDescription>Use os eventos FP_* para criar públicos de remarketing segmentados</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">Público: Leads Quentes</h4>
+                      <p className="text-sm text-blue-700">Pessoas que completaram o quiz mas não criaram conta trial</p>
+                      <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">FP_QuizCompleted - FP_TrialCreated</code>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-900 mb-2">Público: Abandonaram Checkout</h4>
+                      <p className="text-sm text-green-700">Pessoas que iniciaram checkout mas não finalizaram</p>
+                      <code className="text-xs bg-green-100 px-2 py-1 rounded mt-2 inline-block">FP_CheckoutStarted - FP_Purchase</code>
+                    </div>
+                    <div className="p-4 bg-purple-50 rounded-lg">
+                      <h4 className="font-medium text-purple-900 mb-2">Público: Trial Expirado</h4>
+                      <p className="text-sm text-purple-700">Pessoas cujo trial expirou sem converter</p>
+                      <code className="text-xs bg-purple-100 px-2 py-1 rounded mt-2 inline-block">FP_TrialExpired - FP_Purchase</code>
+                    </div>
+                    <div className="p-4 bg-orange-50 rounded-lg">
+                      <h4 className="font-medium text-orange-900 mb-2">Público: Clientes Ativos</h4>
+                      <p className="text-sm text-orange-700">Pessoas que finalizaram a compra (para upsell)</p>
+                      <code className="text-xs bg-orange-100 px-2 py-1 rounded mt-2 inline-block">FP_Purchase ou FP_Subscription</code>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

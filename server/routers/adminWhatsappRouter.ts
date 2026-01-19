@@ -1552,6 +1552,181 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
     const tags = await db.select().from(leadTags).orderBy(leadTags.name);
     return tags;
   }),
+  
+  // Criar nova tag
+  createTag: ownerProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      color: z.string().default("#6b7280"),
+      description: z.string().optional(),
+      isAutomatic: z.boolean().default(false),
+      autoRule: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const [tag] = await db.insert(leadTags).values({
+        name: input.name,
+        color: input.color,
+        description: input.description || null,
+        isAutomatic: input.isAutomatic,
+        autoRule: input.autoRule || null,
+      });
+      
+      return { success: true, tagId: tag.insertId };
+    }),
+  
+  // Atualizar tag
+  updateTag: ownerProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      color: z.string().optional(),
+      description: z.string().optional(),
+      isAutomatic: z.boolean().optional(),
+      autoRule: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const updateData: any = {};
+      if (input.name !== undefined) updateData.name = input.name;
+      if (input.color !== undefined) updateData.color = input.color;
+      if (input.description !== undefined) updateData.description = input.description;
+      if (input.isAutomatic !== undefined) updateData.isAutomatic = input.isAutomatic;
+      if (input.autoRule !== undefined) updateData.autoRule = input.autoRule;
+      
+      await db.update(leadTags)
+        .set(updateData)
+        .where(eq(leadTags.id, input.id));
+      
+      return { success: true };
+    }),
+  
+  // Deletar tag
+  deleteTag: ownerProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Remover atribuições da tag
+      await db.delete(leadTagAssignments).where(eq(leadTagAssignments.tagId, input.id));
+      
+      // Deletar a tag
+      await db.delete(leadTags).where(eq(leadTags.id, input.id));
+      
+      return { success: true };
+    }),
+  
+  // Atribuir tag a um lead
+  assignTagToLead: ownerProcedure
+    .input(z.object({
+      leadId: z.number(),
+      tagId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      // Verificar se já existe
+      const [existing] = await db.select()
+        .from(leadTagAssignments)
+        .where(and(
+          eq(leadTagAssignments.leadId, input.leadId),
+          eq(leadTagAssignments.tagId, input.tagId)
+        ))
+        .limit(1);
+      
+      if (existing) {
+        return { success: true, message: "Tag já atribuída" };
+      }
+      
+      await db.insert(leadTagAssignments).values({
+        leadId: input.leadId,
+        tagId: input.tagId,
+        assignedBy: "admin",
+      });
+      
+      return { success: true };
+    }),
+  
+  // Remover tag de um lead
+  removeTagFromLead: ownerProcedure
+    .input(z.object({
+      leadId: z.number(),
+      tagId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      await db.delete(leadTagAssignments)
+        .where(and(
+          eq(leadTagAssignments.leadId, input.leadId),
+          eq(leadTagAssignments.tagId, input.tagId)
+        ));
+      
+      return { success: true };
+    }),
+  
+  // Atribuir tag a múltiplos leads
+  assignTagToMultipleLeads: ownerProcedure
+    .input(z.object({
+      leadIds: z.array(z.number()),
+      tagId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      let assigned = 0;
+      for (const leadId of input.leadIds) {
+        // Verificar se já existe
+        const [existing] = await db.select()
+          .from(leadTagAssignments)
+          .where(and(
+            eq(leadTagAssignments.leadId, leadId),
+            eq(leadTagAssignments.tagId, input.tagId)
+          ))
+          .limit(1);
+        
+        if (!existing) {
+          await db.insert(leadTagAssignments).values({
+            leadId,
+            tagId: input.tagId,
+            assignedBy: "admin",
+          });
+          assigned++;
+        }
+      }
+      
+      return { success: true, assigned };
+    }),
+  
+  // Obter tags de um lead
+  getLeadTags: ownerProcedure
+    .input(z.object({ leadId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const tags = await db.select({
+        id: leadTags.id,
+        name: leadTags.name,
+        color: leadTags.color,
+        description: leadTags.description,
+        assignedAt: leadTagAssignments.assignedAt,
+        assignedBy: leadTagAssignments.assignedBy,
+      })
+        .from(leadTagAssignments)
+        .leftJoin(leadTags, eq(leadTagAssignments.tagId, leadTags.id))
+        .where(eq(leadTagAssignments.leadId, input.leadId));
+      
+      return tags;
+    }),
 });
 
 // Função auxiliar para processar fila de envio em background

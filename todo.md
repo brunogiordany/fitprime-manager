@@ -4520,3 +4520,31 @@
   - [x] FP_Upgraded - Upgrade de plano
 - [x] Implementar eventos em cada página do funil
 - [ ] Documentar eventos para criação de públicos no Facebook Ads
+
+
+## CHECKLIST v4.7 - Painel de Eventos e Sistema de Tags
+
+### Painel de Eventos do Funil (Admin)
+- [x] Criar nova aba "Eventos do Funil" no painel admin
+- [x] Listar todos os eventos personalizados do Facebook (FP_*)
+- [x] Mostrar cards com cada evento e descrição
+- [x] Visualizar fluxo do funil de conversão
+- [x] Instruções para criar públicos personalizados no Facebook
+- [ ] Conectar com dados reais da tabela pixelEvents (futuro)
+
+### Sistema de Tags no CRM
+- [x] Criar tabela de tags no banco de dados (já existia)
+- [x] Implementar CRUD de tags (criar, editar, excluir)
+- [x] Permitir atribuir múltiplas tags a cada lead
+- [x] Filtrar leads por tags no CRM
+- [x] Atribuir tags em massa para leads selecionados
+- [ ] Criar tags automáticas baseadas em interações:
+  - [ ] Tag "quiz_completed" quando completa quiz
+  - [ ] Tag "trial_started" quando inicia trial
+  - [ ] Tag "trial_expired" quando trial expira
+  - [ ] Tag "converted" quando converte
+  - [ ] Tag "high_engagement" quando interage muito
+  - [ ] Tag "cold_lead" quando não interage há 30+ dias
+- [ ] Selecionar leads por tag para envio em massa
+- [ ] Visualizar tags na lista de leads do CRM
+
