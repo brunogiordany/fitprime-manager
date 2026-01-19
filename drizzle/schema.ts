@@ -3282,3 +3282,61 @@ export const whatsappDailyStats = mysqlTable("whatsapp_daily_stats", {
 
 export type WhatsappDailyStat = typeof whatsappDailyStats.$inferSelect;
 export type InsertWhatsappDailyStat = typeof whatsappDailyStats.$inferInsert;
+
+// ==================== ACTIVITY LOGS (Log de Atividades) ====================
+export const activityLogs = mysqlTable("activity_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Tipo de atividade
+  activityType: mysqlEnum("activityType", [
+    "whatsapp_sent",
+    "whatsapp_received",
+    "whatsapp_failed",
+    "whatsapp_bulk_sent",
+    "email_sent",
+    "email_failed",
+    "email_opened",
+    "email_clicked",
+    "lead_created",
+    "lead_updated",
+    "lead_converted",
+    "lead_tag_added",
+    "lead_tag_removed",
+    "funnel_stage_changed",
+    "automation_triggered",
+    "user_login",
+    "user_action"
+  ]).notNull(),
+  
+  // Entidade relacionada
+  entityType: varchar("entityType", { length: 50 }),
+  entityId: int("entityId"),
+  
+  // Detalhes da atividade
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  metadata: json("metadata"),
+  
+  // Contexto
+  leadId: int("leadId"),
+  leadName: varchar("leadName", { length: 255 }),
+  leadPhone: varchar("leadPhone", { length: 20 }),
+  leadEmail: varchar("leadEmail", { length: 255 }),
+  
+  // Usuário que realizou a ação
+  userId: int("userId"),
+  userName: varchar("userName", { length: 255 }),
+  
+  // Status
+  status: mysqlEnum("status", ["success", "failed", "pending", "cancelled"]).default("success"),
+  errorMessage: text("errorMessage"),
+  
+  // IDs de referência externa
+  externalId: varchar("externalId", { length: 255 }),
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = typeof activityLogs.$inferInsert;

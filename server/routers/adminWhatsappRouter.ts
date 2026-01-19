@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, ownerProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { logActivity } from "./activityLogRouter";
 import { getDb } from "../db";
 import { 
   adminWhatsappConfig, 
@@ -738,6 +739,22 @@ Não perca essa oportunidade! Posso te ajudar a finalizar agora? 💪`,
         stevoMessageId: result.messageId,
         errorMessage: result.error,
         sentAt: result.success ? new Date() : null,
+      });
+      
+      // Registrar no log de atividades
+      await logActivity({
+        activityType: result.success ? "whatsapp_sent" : "whatsapp_failed",
+        title: result.success ? `WhatsApp enviado para ${recipientName || recipientPhone}` : `Falha ao enviar WhatsApp para ${recipientName || recipientPhone}`,
+        description: input.message.substring(0, 200),
+        entityType: input.recipientType,
+        entityId: input.recipientId,
+        leadId: input.recipientType === "lead" ? input.recipientId : undefined,
+        leadName: recipientName || undefined,
+        leadPhone: recipientPhone || undefined,
+        status: result.success ? "success" : "failed",
+        errorMessage: result.error || undefined,
+        externalId: result.messageId || undefined,
+        metadata: { messageLength: input.message.length },
       });
       
       if (!result.success) {

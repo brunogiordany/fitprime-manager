@@ -4816,3 +4816,17 @@
 - [x] Links de email corrigidos para fitprimemanager.com (não fitprime.com.br)
 - [x] Controle de emails repetidos (não envia mesmo template 2x para mesmo lead)
 - [ ] Página de Gestão de Leads mostrando 0 leads (investigar filtro de data)
+
+## Log de Atividades - 19/01/2026
+- [ ] Criar tabela activity_logs no schema do banco de dados
+- [ ] Criar router de activity logs com funções de registro e listagem
+- [ ] Integrar registro de logs nas funções de envio de WhatsApp e Email
+- [ ] Criar página de visualização de logs no admin
+
+## Log de Atividades - 19/01/2026 (CONCLUÍDO)
+- [x] Criar tabela activity_logs no schema do banco de dados
+- [x] Criar router de activity logs com funções de registro e listagem
+- [x] Integrar registro de logs nas funções de envio de WhatsApp e Email
+- [x] Criar página de visualização de logs no admin (/admin/activity-logs)
+- [x] Adicionar link no menu admin
+- [x] Exportação CSV dos logs

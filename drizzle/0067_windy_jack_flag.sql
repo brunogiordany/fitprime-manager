@@ -1,0 +1,20 @@
+CREATE TABLE `activity_logs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`activityType` enum('whatsapp_sent','whatsapp_received','whatsapp_failed','whatsapp_bulk_sent','email_sent','email_failed','email_opened','email_clicked','lead_created','lead_updated','lead_converted','lead_tag_added','lead_tag_removed','funnel_stage_changed','automation_triggered','user_login','user_action') NOT NULL,
+	`entityType` varchar(50),
+	`entityId` int,
+	`title` varchar(255) NOT NULL,
+	`description` text,
+	`metadata` json,
+	`leadId` int,
+	`leadName` varchar(255),
+	`leadPhone` varchar(20),
+	`leadEmail` varchar(255),
+	`userId` int,
+	`userName` varchar(255),
+	`status` enum('success','failed','pending','cancelled') DEFAULT 'success',
+	`errorMessage` text,
+	`externalId` varchar(255),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `activity_logs_id` PRIMARY KEY(`id`)
+);

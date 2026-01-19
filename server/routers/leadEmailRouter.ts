@@ -633,6 +633,21 @@ export const leadEmailRouter = router({
           resendId: result.data?.id,
         });
         
+        // Registrar no log de atividades
+        await logActivity({
+          activityType: "email_sent",
+          title: `Email enviado: ${subject}`,
+          description: `Email enviado para ${lead.leadName || lead.leadEmail}`,
+          entityType: "email",
+          entityId: input.templateId,
+          leadId: lead.id,
+          leadName: lead.leadName || undefined,
+          leadEmail: lead.leadEmail || undefined,
+          status: "success",
+          externalId: result.data?.id || undefined,
+          metadata: { templateId: input.templateId, subject },
+        });
+        
         return { success: true, emailId: result.data?.id };
       } catch (error: any) {
         // Registrar falha

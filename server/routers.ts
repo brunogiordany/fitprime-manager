@@ -26,6 +26,7 @@ import { leadEmailRouter } from "./routers/leadEmailRouter";
 import { deduplicationRouter } from "./routers/deduplicationRouter";
 import { conversionMetricsRouter } from "./routers/conversionMetricsRouter";
 import { adminWhatsappRouter } from "./routers/adminWhatsappRouter";
+import { activityLogRouter } from "./routers/activityLogRouter";
 import { and, eq, gt } from "drizzle-orm";
 import { studentInvites } from "../drizzle/schema";
 
@@ -390,6 +391,7 @@ export const appRouter = router({
   deduplication: deduplicationRouter,
   conversionMetrics: conversionMetricsRouter,
   adminWhatsapp: adminWhatsappRouter,
+  activityLogs: activityLogRouter,
   
   // ==================== ADMINISTRAÇÃO DO SISTEMA (OWNER ONLY) ====================
   admin: router({

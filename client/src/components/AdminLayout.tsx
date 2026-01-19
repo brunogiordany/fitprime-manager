@@ -85,6 +85,7 @@ export default function AdminLayout({
     { value: "ab-testing", label: "A/B Testing", icon: TestTube, path: "/admin/ab-testing" },
     { value: "roi", label: "ROI Dashboard", icon: DollarSign, path: "/admin/roi" },
     { value: "whatsapp", label: "WhatsApp Admin", icon: MessageCircle, path: "/admin/whatsapp" },
+    { value: "activity-logs", label: "Log de Atividades", icon: Activity, path: "/admin/activity-logs" },
   ];
   
   const handleTabChange = (value: string) => {
