@@ -142,6 +142,8 @@ export default function AdminWhatsappDashboard() {
   const [messageTypeFilter, setMessageTypeFilter] = useState("all");
   const [messageStatusFilter, setMessageStatusFilter] = useState("all");
   const [messageDateFilter, setMessageDateFilter] = useState("all");
+  const [replyMessage, setReplyMessage] = useState("");
+  const [isSendingReply, setIsSendingReply] = useState(false);
   const [selectedContact, setSelectedContact] = useState<{
     recipientPhone: string;
     recipientName: string | null;
@@ -384,6 +386,19 @@ export default function AdminWhatsappDashboard() {
     },
     onError: (error: any) => {
       toast.error(error.message);
+    },
+  });
+  
+  const sendReplyMutation = trpc.adminWhatsapp.sendMessage.useMutation({
+    onSuccess: () => {
+      toast.success("Mensagem enviada!");
+      queryClient.invalidateQueries({ queryKey: ["adminWhatsapp", "messages"] });
+      setReplyMessage("");
+      setIsSendingReply(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+      setIsSendingReply(false);
     },
   });
   
@@ -1005,9 +1020,57 @@ export default function AdminWhatsappDashboard() {
                       ))}
                     </div>
                     
-                    {/* Info Footer */}
-                    <div className="p-3 border-t bg-gray-50 text-center text-xs text-gray-500">
-                      <p>Mensagens automáticas enviadas pelo sistema FitPrime</p>
+                    {/* Input de Resposta */}
+                    <div className="p-3 border-t bg-white">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="Digite sua mensagem..."
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && replyMessage.trim() && selectedContact) {
+                              e.preventDefault();
+                              setIsSendingReply(true);
+                              // Encontrar o recipientId da primeira mensagem do contato
+                              const firstMsg = selectedContact.messages[0];
+                              if (firstMsg) {
+                                sendReplyMutation.mutate({
+                                  recipientType: selectedContact.recipientType as "lead" | "personal",
+                                  recipientId: firstMsg.recipientId,
+                                  message: replyMessage.trim(),
+                                });
+                              }
+                            }
+                          }}
+                          className="flex-1"
+                          disabled={isSendingReply}
+                        />
+                        <Button
+                          size="sm"
+                          className="bg-green-500 hover:bg-green-600"
+                          disabled={!replyMessage.trim() || isSendingReply}
+                          onClick={() => {
+                            if (selectedContact && replyMessage.trim()) {
+                              setIsSendingReply(true);
+                              const firstMsg = selectedContact.messages[0];
+                              if (firstMsg) {
+                                sendReplyMutation.mutate({
+                                  recipientType: selectedContact.recipientType as "lead" | "personal",
+                                  recipientId: firstMsg.recipientId,
+                                  message: replyMessage.trim(),
+                                });
+                              }
+                            }
+                          }}
+                        >
+                          {isSendingReply ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1 text-center">Pressione Enter para enviar</p>
                     </div>
                   </>
                 ) : (
@@ -1160,6 +1223,141 @@ export default function AdminWhatsappDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Analytics por Automação */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Desempenho por Automação</CardTitle>
+                  <CardDescription>Taxas de envio, entrega e conversão por automação</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2">Automação</th>
+                          <th className="text-center py-3 px-2">Enviadas</th>
+                          <th className="text-center py-3 px-2">Entregues</th>
+                          <th className="text-center py-3 px-2">Lidas</th>
+                          <th className="text-center py-3 px-2">Taxa Entrega</th>
+                          <th className="text-center py-3 px-2">Taxa Leitura</th>
+                          <th className="text-center py-3 px-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {automations?.map((automation: any) => {
+                          // Calcular métricas por automação
+                          const automationMessages = messages?.filter((m: any) => 
+                            m.automationId === automation.id || 
+                            (m.message && automation.messageTemplate && m.message.includes(automation.messageTemplate.substring(0, 30)))
+                          ) || [];
+                          const sent = automationMessages.length;
+                          const delivered = automationMessages.filter((m: any) => m.status === 'delivered' || m.status === 'read').length;
+                          const read = automationMessages.filter((m: any) => m.status === 'read').length;
+                          const deliveryRate = sent > 0 ? Math.round((delivered / sent) * 100) : 0;
+                          const readRate = delivered > 0 ? Math.round((read / delivered) * 100) : 0;
+                          
+                          return (
+                            <tr key={automation.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-2">
+                                <div className="font-medium">{automation.name}</div>
+                                <div className="text-xs text-gray-500">{automation.triggerType}</div>
+                              </td>
+                              <td className="text-center py-3 px-2 font-medium">{sent}</td>
+                              <td className="text-center py-3 px-2 text-green-600">{delivered}</td>
+                              <td className="text-center py-3 px-2 text-blue-600">{read}</td>
+                              <td className="text-center py-3 px-2">
+                                <Badge variant={deliveryRate >= 90 ? 'default' : deliveryRate >= 70 ? 'secondary' : 'destructive'} className="text-xs">
+                                  {deliveryRate}%
+                                </Badge>
+                              </td>
+                              <td className="text-center py-3 px-2">
+                                <Badge variant={readRate >= 50 ? 'default' : readRate >= 30 ? 'secondary' : 'outline'} className="text-xs">
+                                  {readRate}%
+                                </Badge>
+                              </td>
+                              <td className="text-center py-3 px-2">
+                                {automation.isActive ? (
+                                  <Badge className="bg-green-100 text-green-700">Ativa</Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-gray-500">Inativa</Badge>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {(!automations || automations.length === 0) && (
+                    <div className="text-center py-8 text-gray-500">
+                      <Zap className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                      <p>Nenhuma automação configurada</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Gráfico de Conversão do Funil */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Funil de Conversão</CardTitle>
+                  <CardDescription>Taxa de conversão entre etapas do funil</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { from: 'Novos Leads', to: 'Quiz Completo', fromKey: 'new_lead', toKey: 'quiz_completed', color: 'bg-blue-500' },
+                      { from: 'Quiz Completo', to: 'Trial Ativo', fromKey: 'quiz_completed', toKey: 'trial_active', color: 'bg-purple-500' },
+                      { from: 'Trial Ativo', to: 'Convertido', fromKey: 'trial_active', toKey: 'converted', color: 'bg-green-500' },
+                    ].map((step, idx) => {
+                      const fromCount = funnelStats?.[step.fromKey] || 0;
+                      const toCount = funnelStats?.[step.toKey] || 0;
+                      const rate = fromCount > 0 ? Math.round((toCount / fromCount) * 100) : 0;
+                      
+                      return (
+                        <div key={idx} className="flex items-center gap-4">
+                          <div className="w-32 text-right">
+                            <div className="font-medium text-sm">{step.from}</div>
+                            <div className="text-lg font-bold">{fromCount}</div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full ${step.color} transition-all`}
+                                  style={{ width: `${rate}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-bold w-12">{rate}%</span>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-gray-400 mx-auto" />
+                          </div>
+                          <div className="w-32">
+                            <div className="font-medium text-sm">{step.to}</div>
+                            <div className="text-lg font-bold">{toCount}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Taxa Geral de Conversão */}
+                  <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-green-700">Taxa Geral de Conversão</div>
+                        <div className="text-xs text-green-600">Lead → Cliente Pagante</div>
+                      </div>
+                      <div className="text-3xl font-bold text-green-700">
+                        {((funnelStats?.new_lead || 0) + (funnelStats?.quiz_completed || 0)) > 0 
+                          ? Math.round(((funnelStats?.converted || 0) / ((funnelStats?.new_lead || 0) + (funnelStats?.quiz_completed || 0))) * 100)
+                          : 0}%
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Filtro por Tags */}
               <Card>

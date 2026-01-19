@@ -4727,3 +4727,17 @@
 - [x] Área de chat com mensagens ordenadas cronologicamente
 - [x] Meta Conversions API server-side já implementada com parâmetros de alta qualidade
 
+
+
+## TAREFAS v6.30 - Resposta Chat e Analytics
+- [ ] Funcionalidade de responder mensagens pelo chat (integração bidirecional Stevo)
+- [ ] Dashboard de analytics de mensagens (taxas de abertura, resposta, conversão por automação)
+
+
+
+## CORREÇÕES v6.30 - Chat e Analytics
+- [x] Funcionalidade de responder mensagens pelo chat (integração Stevo)
+- [x] Dashboard de analytics por automação (enviadas, entregues, lidas, taxas)
+- [x] Gráfico de funil de conversão com taxas entre etapas
+- [x] Taxa geral de conversão Lead → Cliente
+
