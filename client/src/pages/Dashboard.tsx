@@ -124,15 +124,15 @@ export default function Dashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'scheduled':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Agendada</Badge>;
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800 premium:bg-blue-950/50 premium:text-blue-400 premium:border-blue-700">Agendada</Badge>;
       case 'confirmed':
-        return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Confirmada</Badge>;
+        return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800 premium:bg-[rgba(0,255,136,0.15)] premium:text-[#00FF88] premium:border-[rgba(0,255,136,0.4)]">Confirmada</Badge>;
       case 'completed':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Realizada</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800 premium:bg-[rgba(0,255,136,0.15)] premium:text-[#00FF88] premium:border-[rgba(0,255,136,0.4)]">Realizada</Badge>;
       case 'cancelled':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Cancelada</Badge>;
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700 premium:bg-gray-800/50 premium:text-gray-400 premium:border-gray-600">Cancelada</Badge>;
       case 'no_show':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Falta</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800 premium:bg-red-950/50 premium:text-red-400 premium:border-red-700">Falta</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -243,14 +243,14 @@ export default function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 premium:from-[#00FF88] premium:to-[#00CC6A] premium:shadow-[0_0_15px_rgba(0,255,136,0.4)] flex items-center justify-center">
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-lg">Plano {currentPlan.name}</h3>
                     {isAnnualPlan && (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-700">
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-700 premium:bg-[rgba(0,255,136,0.15)] premium:text-[#00FF88] premium:border-[rgba(0,255,136,0.4)]">
                         <Zap className="h-3 w-3 mr-1" />
                         Anual
                       </Badge>
@@ -265,7 +265,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3">
                 {/* Barra de progresso */}
                 <div className="hidden sm:block w-32">
-                  <div className="h-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-full overflow-hidden">
+                  <div className="h-2 bg-emerald-100 dark:bg-emerald-900/50 premium:bg-[rgba(0,255,136,0.2)] rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all ${
                         usagePercent >= 90 ? 'bg-red-500' : 
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/50 premium:border-[rgba(0,255,136,0.4)] premium:text-[#00FF88] premium:hover:bg-[rgba(0,255,136,0.1)]"
                   onClick={() => setLocation('/configuracoes?tab=plano')}
                 >
                   {usagePercent >= 80 ? (
@@ -296,8 +296,8 @@ export default function Dashboard() {
             </div>
             
             {usagePercent >= 90 && (
-              <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 rounded-lg">
-                <p className="text-sm text-orange-700 dark:text-orange-400 flex items-center gap-2">
+              <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/40 premium:bg-orange-950/40 border border-orange-200 dark:border-orange-800 premium:border-orange-700 rounded-lg">
+                <p className="text-sm text-orange-700 dark:text-orange-400 premium:text-orange-400 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
                   Você está perto do limite de alunos. Considere fazer upgrade para continuar crescendo!
                 </p>

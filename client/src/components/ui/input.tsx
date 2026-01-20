@@ -58,6 +58,7 @@ function Input({
         "dark:bg-input dark:border-border",
         "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        "premium:bg-[rgba(15,23,41,0.6)] premium:border-[rgba(0,255,136,0.3)] premium:focus-visible:border-[#00FF88] premium:focus-visible:shadow-[0_0_10px_rgba(0,255,136,0.2)]",
         className
       )}
       onCompositionStart={handleCompositionStart}

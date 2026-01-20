@@ -224,7 +224,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
           
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-              <SelectTrigger className="w-[180px] bg-white dark:bg-slate-800 dark:border-slate-700">
+              <SelectTrigger className="w-[180px] bg-white dark:bg-slate-800 dark:border-slate-700 premium:bg-[#0d1520] premium:border-[rgba(0,255,136,0.3)] premium:text-gray-200">
                 <SelectValue placeholder="Filtrar por aluno" />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +238,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             </Select>
             
             <Select value={exportPeriod} onValueChange={setExportPeriod}>
-              <SelectTrigger className="w-[140px] bg-white dark:bg-slate-800 dark:border-slate-700">
+              <SelectTrigger className="w-[140px] bg-white dark:bg-slate-800 dark:border-slate-700 premium:bg-[#0d1520] premium:border-[rgba(0,255,136,0.3)] premium:text-gray-200">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
@@ -254,7 +254,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
               size="sm"
               onClick={handleExportPDF}
               disabled={exportPDFMutation.isPending}
-              className="bg-white dark:bg-secondary hover:bg-blue-50 dark:hover:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400"
+              className="bg-white dark:bg-secondary hover:bg-blue-50 dark:hover:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 premium:bg-[#0d1520] premium:border-[rgba(0,255,136,0.3)] premium:text-[#00FF88] premium:hover:bg-[rgba(0,255,136,0.1)]"
             >
               {exportPDFMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -278,52 +278,52 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
           <div className="space-y-6">
             {/* Cards de Resumo - Linha 1 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 dark:bg-emerald-950/40 premium:bg-emerald-950/50 rounded-lg p-4 border border-emerald-200 dark:border-emerald-700 premium:border-emerald-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-emerald-200 dark:border-emerald-800 premium:border-[rgba(0,255,136,0.3)] premium:shadow-[0_0_10px_rgba(0,255,136,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500 rounded-lg">
-                    <Dumbbell className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-emerald-500 premium:bg-[#00FF88] premium:shadow-[0_0_10px_rgba(0,255,136,0.5)] rounded-lg">
+                    <Dumbbell className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{dashboard.totalWorkouts}</p>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-500">Total de Treinos</p>
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 premium:text-[#00FF88]">{dashboard.totalWorkouts}</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-500 premium:text-[#00FF88]/70">Total de Treinos</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-blue-950/40 premium:bg-blue-950/50 rounded-lg p-4 border border-blue-200 dark:border-blue-700 premium:border-blue-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-blue-200 dark:border-blue-800 premium:border-[rgba(0,200,255,0.3)] premium:shadow-[0_0_10px_rgba(0,200,255,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500 rounded-lg">
-                    <Activity className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-blue-500 premium:bg-[#00C8FF] premium:shadow-[0_0_10px_rgba(0,200,255,0.5)] rounded-lg">
+                    <Activity className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400 premium:text-[#00C8FF]">
                       {((dashboard.totalVolume || 0) / 1000).toFixed(1)}t
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-500">Volume Total</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-500 premium:text-[#00C8FF]/70">Volume Total</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-purple-950/40 premium:bg-purple-950/50 rounded-lg p-4 border border-purple-200 dark:border-purple-700 premium:border-purple-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-purple-200 dark:border-purple-800 premium:border-[rgba(180,100,255,0.3)] premium:shadow-[0_0_10px_rgba(180,100,255,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500 rounded-lg">
-                    <Target className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-purple-500 premium:bg-[#B464FF] premium:shadow-[0_0_10px_rgba(180,100,255,0.5)] rounded-lg">
+                    <Target className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{dashboard.totalSets}</p>
-                    <p className="text-xs text-purple-600 dark:text-purple-500">Total de Séries</p>
+                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-400 premium:text-[#B464FF]">{dashboard.totalSets}</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-500 premium:text-[#B464FF]/70">Total de Séries</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-orange-950/40 premium:bg-orange-950/50 rounded-lg p-4 border border-orange-200 dark:border-orange-700 premium:border-orange-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-orange-200 dark:border-orange-800 premium:border-[rgba(255,120,50,0.3)] premium:shadow-[0_0_10px_rgba(255,120,50,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-500 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-orange-500 premium:bg-[#FF7832] premium:shadow-[0_0_10px_rgba(255,120,50,0.5)] rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{dashboard.totalReps}</p>
-                    <p className="text-xs text-orange-600 dark:text-orange-500">Total de Reps</p>
+                    <p className="text-2xl font-bold text-orange-700 dark:text-orange-400 premium:text-[#FF7832]">{dashboard.totalReps}</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-500 premium:text-[#FF7832]/70">Total de Reps</p>
                   </div>
                 </div>
               </div>
@@ -331,53 +331,53 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             
             {/* Cards de Resumo - Linha 2 (Novas Métricas) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 dark:bg-cyan-950/40 premium:bg-cyan-950/50 rounded-lg p-4 border border-cyan-200 dark:border-cyan-700 premium:border-cyan-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-cyan-200 dark:border-cyan-800 premium:border-[rgba(0,220,200,0.3)] premium:shadow-[0_0_10px_rgba(0,220,200,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-cyan-500 rounded-lg">
-                    <Calendar className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-cyan-500 premium:bg-[#00DCC8] premium:shadow-[0_0_10px_rgba(0,220,200,0.5)] rounded-lg">
+                    <Calendar className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-400">{extendedMetrics?.avgPerWeek || 0}</p>
-                    <p className="text-xs text-cyan-600 dark:text-cyan-500">Média/Semana</p>
+                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-400 premium:text-[#00DCC8]">{extendedMetrics?.avgPerWeek || 0}</p>
+                    <p className="text-xs text-cyan-600 dark:text-cyan-500 premium:text-[#00DCC8]/70">Média/Semana</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-indigo-950/40 premium:bg-indigo-950/50 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 premium:border-indigo-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-indigo-200 dark:border-indigo-800 premium:border-[rgba(100,120,255,0.3)] premium:shadow-[0_0_10px_rgba(100,120,255,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-500 rounded-lg">
-                    <BarChart3 className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-indigo-500 premium:bg-[#6478FF] premium:shadow-[0_0_10px_rgba(100,120,255,0.5)] rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{extendedMetrics?.currentMonth || 0}</p>
+                      <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 premium:text-[#6478FF]">{extendedMetrics?.currentMonth || 0}</p>
                       {extendedMetrics && <TrendIndicator value={extendedMetrics.monthVariation} />}
                     </div>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-500">Este Mês</p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-500 premium:text-[#6478FF]/70">Este Mês</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-gray-800/40 premium:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 premium:border-gray-500">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-gray-200 dark:border-gray-700 premium:border-[rgba(150,160,180,0.3)] premium:shadow-[0_0_10px_rgba(150,160,180,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-500 rounded-lg">
-                    <Clock className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-gray-500 premium:bg-[#96A0B4] premium:shadow-[0_0_10px_rgba(150,160,180,0.5)] rounded-lg">
+                    <Clock className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{extendedMetrics?.previousMonth || 0}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Mês Anterior</p>
+                    <p className="text-2xl font-bold text-gray-700 dark:text-gray-300 premium:text-[#96A0B4]">{extendedMetrics?.previousMonth || 0}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 premium:text-[#96A0B4]/70">Mês Anterior</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-amber-950/40 premium:bg-amber-950/50 rounded-lg p-4 border border-amber-200 dark:border-amber-700 premium:border-amber-600">
+              <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-amber-200 dark:border-amber-800 premium:border-[rgba(255,180,50,0.3)] premium:shadow-[0_0_10px_rgba(255,180,50,0.1)]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500 rounded-lg">
-                    <Users className="h-5 w-5 text-white" />
+                  <div className="p-2 bg-amber-500 premium:bg-[#FFB432] premium:shadow-[0_0_10px_rgba(255,180,50,0.5)] rounded-lg">
+                    <Users className="h-5 w-5 text-white premium:text-[#0a0f1a]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{students.length}</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-500">Total Alunos</p>
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400 premium:text-[#FFB432]">{students.length}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-500 premium:text-[#FFB432]/70">Total Alunos</p>
                   </div>
                 </div>
               </div>
@@ -385,10 +385,10 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             
             {/* Alerta de Alunos Inativos */}
             {inactiveStudents.length > 0 && selectedStudentId === "all" && (
-              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="bg-red-50 dark:bg-red-950/30 premium:bg-[#0d1520] border border-red-200 dark:border-red-800 premium:border-[rgba(255,80,80,0.3)] premium:shadow-[0_0_10px_rgba(255,80,80,0.1)] rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <h4 className="font-medium text-red-700 dark:text-red-400">
+                  <AlertTriangle className="h-5 w-5 text-red-600 premium:text-[#FF5050]" />
+                  <h4 className="font-medium text-red-700 dark:text-red-400 premium:text-[#FF5050]">
                     Alunos Inativos ({inactiveStudents.length})
                   </h4>
                   <Badge variant="destructive" className="ml-auto">
@@ -399,13 +399,13 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                   {inactiveStudents.slice(0, 6).map((student: any) => (
                     <div 
                       key={student.id} 
-                      className="flex items-center justify-between bg-white rounded-lg p-2 border border-red-100"
+                      className="flex items-center justify-between bg-white dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-2 border border-red-100 dark:border-red-900 premium:border-[rgba(255,80,80,0.2)]"
                     >
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium text-gray-700 truncate block">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 premium:text-gray-200 truncate block">
                           {student.name}
                         </span>
-                        <span className="text-xs text-red-500">
+                        <span className="text-xs text-red-500 premium:text-[#FF5050]/80">
                           {student.neverTrained 
                             ? 'Nunca treinou' 
                             : `${student.daysInactive || '?'} dias inativo`
@@ -416,7 +416,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 flex-shrink-0"
+                          className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 premium:text-[#00FF88] premium:hover:text-[#00FF88] premium:hover:bg-[rgba(0,255,136,0.1)] flex-shrink-0"
                           onClick={() => {
                             const phone = student.phone?.replace(/\D/g, '');
                             const message = encodeURIComponent(`Olá ${student.name}! Sentimos sua falta nos treinos. Está tudo bem? 💪`);
@@ -430,7 +430,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                   ))}
                 </div>
                 {inactiveStudents.length > 6 && (
-                  <p className="text-xs text-red-600 mt-2 text-center">
+                  <p className="text-xs text-red-600 dark:text-red-400 premium:text-[#FF5050]/80 mt-2 text-center">
                     + {inactiveStudents.length - 6} alunos inativos
                   </p>
                 )}
@@ -441,8 +441,8 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Ranking */}
               {selectedStudentId === "all" && topStudents.length > 0 && (
-                <div className="bg-white/80 rounded-lg p-4 border border-yellow-200">
-                  <h4 className="text-sm font-medium text-yellow-700 mb-3 flex items-center gap-2">
+                <div className="bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-yellow-200 dark:border-yellow-800 premium:border-[rgba(255,200,50,0.3)] premium:shadow-[0_0_10px_rgba(255,200,50,0.1)]">
+                  <h4 className="text-sm font-medium text-yellow-700 dark:text-yellow-400 premium:text-[#FFC832] mb-3 flex items-center gap-2">
                     <Trophy className="h-4 w-4" />
                     Top 5 Alunos Mais Ativos
                   </h4>
@@ -450,7 +450,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                     {topStudents.map((student, index) => (
                       <div 
                         key={student.id}
-                        className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50"
+                        className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 premium:from-[rgba(255,200,50,0.1)] premium:to-[rgba(255,180,50,0.1)]"
                       >
                         <div className={`
                           w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
@@ -461,10 +461,10 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                         `}>
                           {index + 1}
                         </div>
-                        <span className="flex-1 text-sm font-medium text-gray-700 truncate">
+                        <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-200 premium:text-gray-200 truncate">
                           {student.name}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400">
                           {student.lastWorkoutDate 
                             ? new Date(student.lastWorkoutDate).toLocaleDateString('pt-BR')
                             : 'Nunca'}
@@ -477,8 +477,8 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
               
               {/* Gráfico de Treinos por Mês */}
               {dashboard.workoutsByMonth && dashboard.workoutsByMonth.length > 0 && (
-                <div className={`bg-white/80 rounded-lg p-4 border border-blue-200 ${selectedStudentId !== "all" || topStudents.length === 0 ? 'md:col-span-2' : ''}`}>
-                  <h4 className="text-sm font-medium text-blue-700 mb-3 flex items-center gap-2">
+                <div className={`bg-white/80 dark:bg-[#1a2332] premium:bg-[#0d1520] rounded-lg p-4 border border-blue-200 dark:border-blue-800 premium:border-[rgba(100,120,255,0.3)] premium:shadow-[0_0_10px_rgba(100,120,255,0.1)] ${selectedStudentId !== "all" || topStudents.length === 0 ? 'md:col-span-2' : ''}`}>
+                  <h4 className="text-sm font-medium text-blue-700 dark:text-blue-400 premium:text-[#6478FF] mb-3 flex items-center gap-2">
                     <BarChart3 className="h-4 w-4" />
                     Treinos por Mês
                   </h4>

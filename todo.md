@@ -4894,3 +4894,11 @@
 
 ## Revisão Paleta Premium - 20/01/2026
 - [x] Revisar paleta de cores do tema Premium para visual mais vibrante e profissional
+
+## Estilo Premium Completo - 20/01/2026
+- [ ] Atualizar variáveis CSS do tema Premium com cores exatas do PDF
+- [ ] Adicionar classes CSS para bordas neon e efeitos glow
+- [ ] Atualizar componentes base (cards, buttons, inputs) com estilo Premium
+- [ ] Aplicar estilo Premium nas páginas principais (Dashboard, Alunos)
+- [ ] Aplicar estilo Premium nas páginas secundárias (WhatsApp, Relatórios, etc)
+- [ ] Testar todas as páginas no tema Premium
