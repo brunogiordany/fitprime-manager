@@ -4840,3 +4840,7 @@
 - [x] Adicionar filtro para alternar entre visualizações (séries/exercícios/volume)
 - [x] Ordenação automática por métrica selecionada (maior para menor)
 - [x] Análise de equilíbrio muscular com alertas de desproporção
+
+## Bugs Urgentes - 20/01/2026
+- [x] WhatsApp Mensagens: página travada, não consegue rolar para ver outros alunos
+- [x] Diário do Maromba: erro "An unexpected error occurred" ao acessar

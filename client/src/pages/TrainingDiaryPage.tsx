@@ -220,81 +220,6 @@ export default function TrainingDiaryPage() {
   const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [muscleMetric, setMuscleMetric] = useState<'sets' | 'exercises' | 'volume'>('sets');
-  // Ordenar dados de grupos musculares pela métrica selecionada
-  const sortedMuscleGroupData = useMemo(() => {
-    if (!muscleGroupData || muscleGroupData.length === 0) return [];
-    return [...muscleGroupData].sort((a: any, b: any) => {
-      const valueA = muscleMetric === 'sets' ? a.sets : 
-                     muscleMetric === 'exercises' ? a.exercises : a.volume;
-      const valueB = muscleMetric === 'sets' ? b.sets : 
-                     muscleMetric === 'exercises' ? b.exercises : b.volume;
-      return valueB - valueA; // Ordem decrescente
-    });
-  }, [muscleGroupData, muscleMetric]);
-
-  // Análise de equilíbrio muscular - pares antagonistas
-  const muscleBalanceAnalysis = useMemo(() => {
-    if (!muscleGroupData || muscleGroupData.length === 0) return [];
-    
-    // Definir pares antagonistas
-    const antagonistPairs = [
-      { muscle1: 'Peito', muscle2: 'Costas', name: 'Peito vs Costas' },
-      { muscle1: 'Bíceps', muscle2: 'Tríceps', name: 'Bíceps vs Tríceps' },
-      { muscle1: 'Quadríceps', muscle2: 'Posteriores da Coxa', name: 'Quadríceps vs Posteriores' },
-      { muscle1: 'Ombros', muscle2: 'Costas', name: 'Ombros vs Costas (postura)' },
-      { muscle1: 'Abdômen', muscle2: 'Costas', name: 'Core (Abdômen vs Lombar)' },
-    ];
-    
-    const analysis: any[] = [];
-    
-    antagonistPairs.forEach(pair => {
-      const muscle1Data = muscleGroupData.find((g: any) => 
-        g.name.toLowerCase().includes(pair.muscle1.toLowerCase())
-      );
-      const muscle2Data = muscleGroupData.find((g: any) => 
-        g.name.toLowerCase().includes(pair.muscle2.toLowerCase())
-      );
-      
-      if (muscle1Data && muscle2Data) {
-        const sets1 = muscle1Data.sets || 0;
-        const sets2 = muscle2Data.sets || 0;
-        const total = sets1 + sets2;
-        
-        if (total > 0) {
-          const ratio = sets1 / (sets2 || 1);
-          const percentage1 = (sets1 / total) * 100;
-          const percentage2 = (sets2 / total) * 100;
-          
-          // Determinar status do equilíbrio
-          let status: 'balanced' | 'warning' | 'imbalanced' = 'balanced';
-          let message = 'Equilíbrio adequado';
-          
-          if (ratio > 2 || ratio < 0.5) {
-            status = 'imbalanced';
-            message = ratio > 2 
-              ? `${pair.muscle1} muito dominante (${ratio.toFixed(1)}:1)`
-              : `${pair.muscle2} muito dominante (${(1/ratio).toFixed(1)}:1)`;
-          } else if (ratio > 1.5 || ratio < 0.67) {
-            status = 'warning';
-            message = ratio > 1.5
-              ? `${pair.muscle1} levemente dominante`
-              : `${pair.muscle2} levemente dominante`;
-          }
-          
-          analysis.push({
-            name: pair.name,
-            muscle1: { name: pair.muscle1, sets: sets1, percentage: percentage1 },
-            muscle2: { name: pair.muscle2, sets: sets2, percentage: percentage2 },
-            ratio,
-            status,
-            message
-          });
-        }
-      }
-    });
-    
-    return analysis;
-  }, [muscleGroupData]);
 
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
@@ -376,6 +301,83 @@ export default function TrainingDiaryPage() {
   const { data: muscleGroupData } = trpc.trainingDiary.muscleGroupAnalysis.useQuery(
     selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
   );
+  
+  // Ordenar dados de grupos musculares pela métrica selecionada
+  const sortedMuscleGroupData = useMemo(() => {
+    if (!muscleGroupData || muscleGroupData.length === 0) return [];
+    return [...muscleGroupData].sort((a: any, b: any) => {
+      const valueA = muscleMetric === 'sets' ? a.sets : 
+                     muscleMetric === 'exercises' ? a.exercises : a.volume;
+      const valueB = muscleMetric === 'sets' ? b.sets : 
+                     muscleMetric === 'exercises' ? b.exercises : b.volume;
+      return valueB - valueA; // Ordem decrescente
+    });
+  }, [muscleGroupData, muscleMetric]);
+
+  // Análise de equilíbrio muscular - pares antagonistas
+  const muscleBalanceAnalysis = useMemo(() => {
+    if (!muscleGroupData || muscleGroupData.length === 0) return [];
+    
+    // Definir pares antagonistas
+    const antagonistPairs = [
+      { muscle1: 'Peito', muscle2: 'Costas', name: 'Peito vs Costas' },
+      { muscle1: 'Bíceps', muscle2: 'Tríceps', name: 'Bíceps vs Tríceps' },
+      { muscle1: 'Quadríceps', muscle2: 'Posteriores da Coxa', name: 'Quadríceps vs Posteriores' },
+      { muscle1: 'Ombros', muscle2: 'Costas', name: 'Ombros vs Costas (postura)' },
+      { muscle1: 'Abdômen', muscle2: 'Costas', name: 'Core (Abdômen vs Lombar)' },
+    ];
+    
+    const analysis: any[] = [];
+    
+    antagonistPairs.forEach(pair => {
+      const muscle1Data = muscleGroupData.find((g: any) => 
+        g.name.toLowerCase().includes(pair.muscle1.toLowerCase())
+      );
+      const muscle2Data = muscleGroupData.find((g: any) => 
+        g.name.toLowerCase().includes(pair.muscle2.toLowerCase())
+      );
+      
+      if (muscle1Data && muscle2Data) {
+        const sets1 = muscle1Data.sets || 0;
+        const sets2 = muscle2Data.sets || 0;
+        const total = sets1 + sets2;
+        
+        if (total > 0) {
+          const ratio = sets1 / (sets2 || 1);
+          const percentage1 = (sets1 / total) * 100;
+          const percentage2 = (sets2 / total) * 100;
+          
+          // Determinar status do equilíbrio
+          let status: 'balanced' | 'warning' | 'imbalanced' = 'balanced';
+          let message = 'Equilíbrio adequado';
+          
+          if (ratio > 2 || ratio < 0.5) {
+            status = 'imbalanced';
+            message = ratio > 2 
+              ? `${pair.muscle1} muito dominante (${ratio.toFixed(1)}:1)`
+              : `${pair.muscle2} muito dominante (${(1/ratio).toFixed(1)}:1)`;
+          } else if (ratio > 1.5 || ratio < 0.67) {
+            status = 'warning';
+            message = ratio > 1.5
+              ? `${pair.muscle1} levemente dominante`
+              : `${pair.muscle2} levemente dominante`;
+          }
+          
+          analysis.push({
+            name: pair.name,
+            muscle1: { name: pair.muscle1, sets: sets1, percentage: percentage1 },
+            muscle2: { name: pair.muscle2, sets: sets2, percentage: percentage2 },
+            ratio,
+            status,
+            message
+          });
+        }
+      }
+    });
+    
+    return analysis;
+  }, [muscleGroupData]);
+  
   const { data: workouts } = trpc.workouts.list.useQuery({ studentId: 0 });
   
   // Query para buscar sessões do período (hoje e próximos 7 dias + últimos 7 dias)

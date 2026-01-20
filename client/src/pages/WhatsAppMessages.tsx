@@ -232,7 +232,7 @@ export default function WhatsAppMessages() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-80px)] flex flex-col">
+      <div className="h-[calc(100vh-80px)] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-2">
           <div className="flex items-center justify-between">
@@ -310,9 +310,9 @@ export default function WhatsAppMessages() {
         )}
 
         {/* Chat Container */}
-        <div className="flex-1 flex bg-gray-100 dark:bg-gray-900 overflow-hidden">
+        <div className="flex-1 flex bg-gray-100 dark:bg-gray-900 overflow-hidden min-h-0">
           {/* Lista de Conversas - Sidebar */}
-          <div className={`${selectedStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r`}>
+          <div className={`${selectedStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r overflow-hidden min-h-0`}>
             {/* Header da lista */}
             <div className="flex-shrink-0 p-4 border-b bg-green-600 text-white">
               <div className="flex items-center justify-between mb-3">
@@ -341,7 +341,7 @@ export default function WhatsAppMessages() {
             </div>
 
             {/* Lista de conversas */}
-            <ScrollArea className="flex-1">
+            <div className="flex-1 overflow-y-auto">
               {filteredStudents.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <WifiOff className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -379,7 +379,7 @@ export default function WhatsAppMessages() {
                   </button>
                 ))
               )}
-            </ScrollArea>
+            </div>
           </div>
 
           {/* Área de Chat */}
