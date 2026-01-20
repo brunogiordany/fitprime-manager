@@ -4967,3 +4967,17 @@
 
 - [x] UX quebrada: aba "Dash" com texto cortado no mobile - agora mostra apenas ícones no mobile
 - [x] Novo Registro: adicionar opção de selecionar treino do aluno para carregar exercícios automaticamente
+
+
+## Bug Análise Muscular In_Progress - 20/01/2026
+- [x] Registros em andamento aparecem com 0 séries na análise por grupo muscular
+  - Problema: Os campos completedSets/totalVolume/totalReps não eram atualizados para registros in_progress
+  - Solução: Agora a análise recalcula os totais baseado nas séries com dados preenchidos (weight > 0 ou reps > 0)
+- [x] Verificar se os dados dos exercícios estão sendo contabilizados corretamente para status in_progress
+
+
+## Melhoria Análise Muscular - Técnicas Avançadas - 20/01/2026
+- [ ] Contabilizar Rest-Pause na análise por grupo muscular (contar como séries extras)
+- [ ] Contabilizar Drop Set na análise por grupo muscular (contar reduções como séries extras)
+- [ ] Contabilizar Série Válida na análise por grupo muscular
+- [ ] Contabilizar Série até Falha na análise por grupo muscular

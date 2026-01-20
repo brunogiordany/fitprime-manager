@@ -1,0 +1,410 @@
+{
+  "query": "SELECT wle.id as exerciseId, wle.exerciseName, wls.setNumber, wls.weight, wls.reps, wls.isCompleted\nFROM workout_log_exercises wle\nLEFT JOIN workout_log_sets wls ON wls.workoutLogExerciseId = wle.id\nWHERE wle.workoutLogId IN (SELECT id FROM workout_logs WHERE studentId = 1 AND status = 'in_progress')\nORDER BY wle.id, wls.setNumber\nLIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT wle.id as exerciseId, wle.exerciseName, wls.setNumber, wls.weight, wls.reps, wls.isCompleted\nFROM workout_log_exercises wle\nLEFT JOIN workout_log_sets wls ON wls.workoutLogExerciseId = wle.id\nWHERE wle.workoutLogId IN (SELECT id FROM workout_logs WHERE studentId = 1 AND status = 'in_progress')\nORDER BY wle.id, wls.setNumber\nLIMIT 50;",
+  "rows": [
+    {
+      "exerciseId": "28",
+      "exerciseName": "Puxada Frontal",
+      "setNumber": "1",
+      "weight": "30.00",
+      "reps": "15",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "28",
+      "exerciseName": "Puxada Frontal",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "28",
+      "exerciseName": "Puxada Frontal",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "28",
+      "exerciseName": "Puxada Frontal",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "29",
+      "exerciseName": "Remada Curvada",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "29",
+      "exerciseName": "Remada Curvada",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "29",
+      "exerciseName": "Remada Curvada",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "29",
+      "exerciseName": "Remada Curvada",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "30",
+      "exerciseName": "Remada Unilateral",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "30",
+      "exerciseName": "Remada Unilateral",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "30",
+      "exerciseName": "Remada Unilateral",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "31",
+      "exerciseName": "Pulldown",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "31",
+      "exerciseName": "Pulldown",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "31",
+      "exerciseName": "Pulldown",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "32",
+      "exerciseName": "Rosca Direta com Barra",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "32",
+      "exerciseName": "Rosca Direta com Barra",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "32",
+      "exerciseName": "Rosca Direta com Barra",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "33",
+      "exerciseName": "Rosca Alternada",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "33",
+      "exerciseName": "Rosca Alternada",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "33",
+      "exerciseName": "Rosca Alternada",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "34",
+      "exerciseName": "Rosca Martelo",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "34",
+      "exerciseName": "Rosca Martelo",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "34",
+      "exerciseName": "Rosca Martelo",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "43",
+      "exerciseName": "Agachamento Livre",
+      "setNumber": "1",
+      "weight": "60.00",
+      "reps": "15",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "43",
+      "exerciseName": "Agachamento Livre",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "43",
+      "exerciseName": "Agachamento Livre",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "43",
+      "exerciseName": "Agachamento Livre",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "44",
+      "exerciseName": "Leg Press 45°",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "44",
+      "exerciseName": "Leg Press 45°",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "44",
+      "exerciseName": "Leg Press 45°",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "44",
+      "exerciseName": "Leg Press 45°",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "45",
+      "exerciseName": "Cadeira Extensora",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "45",
+      "exerciseName": "Cadeira Extensora",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "45",
+      "exerciseName": "Cadeira Extensora",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "46",
+      "exerciseName": "Mesa Flexora",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "46",
+      "exerciseName": "Mesa Flexora",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "46",
+      "exerciseName": "Mesa Flexora",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "46",
+      "exerciseName": "Mesa Flexora",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "47",
+      "exerciseName": "Stiff",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "47",
+      "exerciseName": "Stiff",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "47",
+      "exerciseName": "Stiff",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "48",
+      "exerciseName": "Panturrilha em Pé",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "48",
+      "exerciseName": "Panturrilha em Pé",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "48",
+      "exerciseName": "Panturrilha em Pé",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "48",
+      "exerciseName": "Panturrilha em Pé",
+      "setNumber": "4",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "49",
+      "exerciseName": "Abdominal Crunch",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "49",
+      "exerciseName": "Abdominal Crunch",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "49",
+      "exerciseName": "Abdominal Crunch",
+      "setNumber": "3",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "50",
+      "exerciseName": "Prancha",
+      "setNumber": "1",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    },
+    {
+      "exerciseId": "50",
+      "exerciseName": "Prancha",
+      "setNumber": "2",
+      "weight": "NULL",
+      "reps": "NULL",
+      "isCompleted": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "exerciseId\texerciseName\tsetNumber\tweight\treps\tisCompleted\n28\tPuxada Frontal\t1\t30.00\t15\t0\n28\tPuxada Frontal\t2\tNULL\tNULL\t0\n28\tPuxada Frontal\t3\tNULL\tNULL\t0\n28\tPuxada Frontal\t4\tNULL\tNULL\t0\n29\tRemada Curvada\t1\tNULL\tNULL\t0\n29\tRemada Curvada\t2\tNULL\tNULL\t0\n29\tRemada Curvada\t3\tNULL\tNULL\t0\n29\tRemada Curvada\t4\tNULL\tNULL\t0\n30\tRemada Unilateral\t1\tNULL\tNULL\t0\n30\tRemada Unilateral\t2\tNULL\tNULL\t0\n30\tRemada Unilateral\t3\tNULL\tNULL\t0\n31\tPulldown\t1\tNULL\tNULL\t0\n31\tPulldown\t2\tNULL\tNULL\t0\n31\tPulldown\t3\tNULL\tNULL\t0\n32\tRosca Direta com Barra\t1\tNULL\tNULL\t0\n32\tRosca Direta com Barra\t2\tNULL\tNULL\t0\n32\tRosca Direta com Barra\t3\tNULL\tNULL\t0\n33\tRosca Alternada\t1\tNULL\tNULL\t0\n33\tRosca Alternada\t2\tNULL\tNULL\t0\n33\tRosca Alternada\t3\tNULL\tNULL\t0\n34\tRosca Martelo\t1\tNULL\tNULL\t0\n34\tRosca Martelo\t2\tNULL\tNULL\t0\n34\tRosca Martelo\t3\tNULL\tNULL\t0\n43\tAgachamento Livre\t1\t60.00\t15\t0\n43\tAgachamento Livre\t2\tNULL\tNULL\t0\n43\tAgachamento Livre\t3\tNULL\tNULL\t0\n43\tAgachamento Livre\t4\tNULL\tNULL\t0\n44\tLeg Press 45°\t1\tNULL\tNULL\t0\n44\tLeg Press 45°\t2\tNULL\tNULL\t0\n44\tLeg Press 45°\t3\tNULL\tNULL\t0\n44\tLeg Press 45°\t4\tNULL\tNULL\t0\n45\tCadeira Extensora\t1\tNULL\tNULL\t0\n45\tCadeira Extensora\t2\tNULL\tNULL\t0\n45\tCadeira Extensora\t3\tNULL\tNULL\t0\n46\tMesa Flexora\t1\tNULL\tNULL\t0\n46\tMesa Flexora\t2\tNULL\tNULL\t0\n46\tMesa Flexora\t3\tNULL\tNULL\t0\n46\tMesa Flexora\t4\tNULL\tNULL\t0\n47\tStiff\t1\tNULL\tNULL\t0\n47\tStiff\t2\tNULL\tNULL\t0\n47\tStiff\t3\tNULL\tNULL\t0\n48\tPanturrilha em Pé\t1\tNULL\tNULL\t0\n48\tPanturrilha em Pé\t2\tNULL\tNULL\t0\n48\tPanturrilha em Pé\t3\tNULL\tNULL\t0\n48\tPanturrilha em Pé\t4\tNULL\tNULL\t0\n49\tAbdominal Crunch\t1\tNULL\tNULL\t0\n49\tAbdominal Crunch\t2\tNULL\tNULL\t0\n49\tAbdominal Crunch\t3\tNULL\tNULL\t0\n50\tPrancha\t1\tNULL\tNULL\t0\n50\tPrancha\t2\tNULL\tNULL\t0\n",
+  "stderr": "",
+  "execution_time_ms": 380
+}

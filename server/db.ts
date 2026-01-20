@@ -3143,21 +3143,73 @@ export async function getMuscleGroupAnalysis(
     conditions.push(lte(workoutLogs.trainingDate, new Date(filters.endDate)));
   }
   
-  // Buscar todos os exercícios dos logs completados
-  const logIds = await db.select({ id: workoutLogs.id })
+  // Buscar todos os exercícios dos logs
+  const logIds = await db.select({ id: workoutLogs.id, status: workoutLogs.status })
     .from(workoutLogs)
     .where(and(...conditions));
   
   if (logIds.length === 0) return [];
   
-  const exercises = await db.select({
+  const exerciseIds = logIds.map(l => l.id);
+  
+  // Buscar exercícios com seus dados
+  const exercisesRaw = await db.select({
+    id: workoutLogExercises.id,
     muscleGroup: workoutLogExercises.muscleGroup,
     totalVolume: workoutLogExercises.totalVolume,
     completedSets: workoutLogExercises.completedSets,
     totalReps: workoutLogExercises.totalReps,
+    workoutLogId: workoutLogExercises.workoutLogId,
   })
     .from(workoutLogExercises)
-    .where(inArray(workoutLogExercises.workoutLogId, logIds.map(l => l.id)));
+    .where(inArray(workoutLogExercises.workoutLogId, exerciseIds));
+  
+  // Para registros in_progress, precisamos recalcular os totais baseado nas séries com dados
+  // Buscar todas as séries dos exercícios
+  const exerciseIdsForSets = exercisesRaw.map(e => e.id);
+  const allSets = exerciseIdsForSets.length > 0 ? await db.select({
+    workoutLogExerciseId: workoutLogSets.workoutLogExerciseId,
+    weight: workoutLogSets.weight,
+    reps: workoutLogSets.reps,
+    isCompleted: workoutLogSets.isCompleted,
+  })
+    .from(workoutLogSets)
+    .where(inArray(workoutLogSets.workoutLogExerciseId, exerciseIdsForSets)) : [];
+  
+  // Agrupar séries por exercício e calcular totais reais
+  const setsByExercise: Record<number, { weight: number; reps: number; isCompleted: boolean }[]> = {};
+  for (const set of allSets) {
+    if (!setsByExercise[set.workoutLogExerciseId]) {
+      setsByExercise[set.workoutLogExerciseId] = [];
+    }
+    setsByExercise[set.workoutLogExerciseId].push({
+      weight: parseFloat(set.weight?.toString() || '0'),
+      reps: set.reps || 0,
+      isCompleted: set.isCompleted || false,
+    });
+  }
+  
+  // Recalcular totais para cada exercício
+  const exercises = exercisesRaw.map(ex => {
+    const sets = setsByExercise[ex.id] || [];
+    // Contar séries que têm dados preenchidos (weight > 0 ou reps > 0)
+    const setsWithData = sets.filter(s => s.weight > 0 || s.reps > 0);
+    const calculatedSets = setsWithData.length;
+    const calculatedVolume = setsWithData.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+    const calculatedReps = setsWithData.reduce((sum, s) => sum + s.reps, 0);
+    
+    // Usar os valores calculados se forem maiores que os armazenados
+    const storedSets = ex.completedSets || 0;
+    const storedVolume = parseFloat(ex.totalVolume?.toString() || '0');
+    const storedReps = ex.totalReps || 0;
+    
+    return {
+      muscleGroup: ex.muscleGroup,
+      totalVolume: Math.max(calculatedVolume, storedVolume).toString(),
+      completedSets: Math.max(calculatedSets, storedSets),
+      totalReps: Math.max(calculatedReps, storedReps),
+    };
+  });
   
   // Normalizar nomes de grupos musculares
   // Função para normalizar grupos musculares compostos
