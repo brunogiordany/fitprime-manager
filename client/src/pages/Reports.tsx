@@ -334,11 +334,11 @@ export default function Reports() {
         {/* Header */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6" />
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 premium:text-white">
+              <BarChart3 className="h-6 w-6 premium:text-emerald-400" />
               Relatórios de Desempenho
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground premium:text-gray-400">
               Análise detalhada da evolução e frequência dos alunos
             </p>
           </div>
@@ -409,26 +409,26 @@ export default function Reports() {
 
         {/* KPIs */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-cyan-500/30 card-glow-cyan">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Alunos</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium premium:text-cyan-400">Total de Alunos</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground premium:text-cyan-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalStudents || 0}</div>
+              <div className="text-2xl font-bold premium:text-cyan-300">{stats?.totalStudents || 0}</div>
               <p className="text-xs text-muted-foreground">
                 ativos no sistema
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/30 card-glow-green">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taxa de Presença</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium premium:text-emerald-400">Taxa de Presença</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground premium:text-emerald-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold premium:text-[#00FF88]">
                 {attendanceStats.completed + attendanceStats.noShow > 0
                   ? Math.round((attendanceStats.completed / (attendanceStats.completed + attendanceStats.noShow)) * 100)
                   : 0}%
@@ -439,13 +439,13 @@ export default function Reports() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-violet-500/30 card-glow-violet">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium premium:text-violet-400">Receita Mensal</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground premium:text-violet-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold premium:text-violet-300">
                 R$ {(stats?.monthlyRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -454,13 +454,13 @@ export default function Reports() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-amber-500/30 card-glow-amber">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sessões do Mês</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium premium:text-amber-400">Sessões do Mês</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground premium:text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.sessionsThisMonth || 0}</div>
+              <div className="text-2xl font-bold premium:text-amber-300">{stats?.sessionsThisMonth || 0}</div>
               <p className="text-xs text-muted-foreground">
                 {stats?.completedSessions || 0} realizadas
               </p>
@@ -480,13 +480,13 @@ export default function Reports() {
           <TabsContent value="attendance" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               {/* Gráfico de sessões por mês */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Activity className="h-5 w-5 premium:text-emerald-400" />
                     Sessões por Mês
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Evolução do número de sessões realizadas
                   </CardDescription>
                 </CardHeader>
@@ -500,13 +500,13 @@ export default function Reports() {
               </Card>
 
               {/* Distribuição de status */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Target className="h-5 w-5 premium:text-emerald-400" />
                     Distribuição de Sessões
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Status das sessões no período
                   </CardDescription>
                 </CardHeader>
@@ -523,13 +523,13 @@ export default function Reports() {
               </Card>
 
               {/* Taxa de presença por mês */}
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <TrendingUp className="h-5 w-5 premium:text-emerald-400" />
                     Taxa de Presença Mensal
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Percentual de sessões realizadas vs agendadas
                   </CardDescription>
                 </CardHeader>
@@ -549,13 +549,13 @@ export default function Reports() {
           <TabsContent value="revenue" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               {/* Receita por mês */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <DollarSign className="h-5 w-5 premium:text-emerald-400" />
                     Receita Mensal
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Evolução da receita ao longo do tempo
                   </CardDescription>
                 </CardHeader>
@@ -572,13 +572,13 @@ export default function Reports() {
               </Card>
 
               {/* Status de pagamentos */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Activity className="h-5 w-5 premium:text-emerald-400" />
                     Status de Pagamentos
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Distribuição por status
                   </CardDescription>
                 </CardHeader>
@@ -594,13 +594,13 @@ export default function Reports() {
               </Card>
 
               {/* Resumo financeiro */}
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle>Resumo Financeiro</CardTitle>
+                  <CardTitle className="premium:text-white">Resumo Financeiro</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-3">
-                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 premium:bg-emerald-500/10 premium:border-emerald-500/30">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                         <span className="font-medium text-emerald-700">Recebido</span>
@@ -610,7 +610,7 @@ export default function Reports() {
                       </p>
                     </div>
                     
-                    <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+                    <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200 premium:bg-yellow-500/10 premium:border-yellow-500/30">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="h-5 w-5 text-yellow-600" />
                         <span className="font-medium text-yellow-700">Pendente</span>
@@ -620,7 +620,7 @@ export default function Reports() {
                       </p>
                     </div>
                     
-                    <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                    <div className="p-4 rounded-lg bg-red-50 border border-red-200 premium:bg-red-500/10 premium:border-red-500/30">
                       <div className="flex items-center gap-2 mb-2">
                         <AlertCircle className="h-5 w-5 text-red-600" />
                         <span className="font-medium text-red-700">Atrasado</span>
@@ -639,13 +639,13 @@ export default function Reports() {
           <TabsContent value="students" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               {/* Top alunos por frequência */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Users className="h-5 w-5 premium:text-emerald-400" />
                     Top Alunos por Frequência
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Alunos com melhor taxa de presença
                   </CardDescription>
                 </CardHeader>
@@ -683,40 +683,40 @@ export default function Reports() {
               </Card>
 
               {/* Estatísticas gerais */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Activity className="h-5 w-5 premium:text-emerald-400" />
                     Estatísticas Gerais
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="premium:text-gray-400">
                     Visão geral do desempenho
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-muted-foreground">Total de Sessões</span>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 premium:bg-white/5">
+                      <span className="text-muted-foreground premium:text-gray-400">Total de Sessões</span>
                       <span className="font-bold">{Array.isArray(sessions) ? sessions.length : 0}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-muted-foreground">Sessões Realizadas</span>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 premium:bg-white/5">
+                      <span className="text-muted-foreground premium:text-gray-400">Sessões Realizadas</span>
                       <span className="font-bold text-emerald-600">{attendanceStats.completed}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-muted-foreground">Faltas</span>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 premium:bg-white/5">
+                      <span className="text-muted-foreground premium:text-gray-400">Faltas</span>
                       <span className="font-bold text-red-600">{attendanceStats.noShow}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-muted-foreground">Média de Sessões/Aluno</span>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 premium:bg-white/5">
+                      <span className="text-muted-foreground premium:text-gray-400">Média de Sessões/Aluno</span>
                       <span className="font-bold">
                         {students && students.length > 0 
                           ? Math.round((Array.isArray(sessions) ? sessions.length : 0) / students.length)
                           : 0}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-muted-foreground">Receita Média/Aluno</span>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 premium:bg-white/5">
+                      <span className="text-muted-foreground premium:text-gray-400">Receita Média/Aluno</span>
                       <span className="font-bold">
                         R$ {students && students.length > 0 
                           ? (revenueStats.paid / students.length).toLocaleString('pt-BR', { minimumFractionDigits: 2 })

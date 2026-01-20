@@ -4901,10 +4901,19 @@
 - [ ] Atualizar componentes base (cards, buttons, inputs) com estilo Premium
 - [ ] Aplicar estilo Premium nas páginas principais (Dashboard, Alunos)
 - [ ] Aplicar estilo Premium nas páginas secundárias (WhatsApp, Relatórios, etc)
-- [ ] Testar todas as páginas no tema Premium
+- [x] Testar todas as páginas no tema Premium
 
 ## Correção UX Automações - 20/01/2026
 - [x] Corrigir layout dos cards de automação no mobile - desencavalar botão de três pontinhos
 - [x] Corrigir layout da página de IA de Atendimento no mobile - textos cortados
 - [x] Corrigir scroll da página WhatsApp Mensagens no mobile - página travada
 - [x] Corrigir layout da página WhatsApp Estatísticas - aplicado tema Premium com cards neon
+
+
+## Tema Premium Completo - 20/01/2026
+- [x] Adicionar animações globais de hover glow no CSS
+- [x] Aplicar tema Premium na página de Treinos
+- [x] Aplicar tema Premium na página de Agenda
+- [x] Aplicar tema Premium na página de Cobranças
+- [x] Aplicar tema Premium na página de Relatórios
+- [x] Testar todas as páginas no tema Premium

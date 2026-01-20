@@ -508,8 +508,8 @@ export default function Workouts() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Treinos</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight premium:text-white">Treinos</h1>
+            <p className="text-muted-foreground premium:text-gray-400">
               Gerencie os treinos dos seus alunos
             </p>
           </div>
@@ -523,7 +523,7 @@ export default function Workouts() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 premium:border-violet-500/50 premium:text-violet-400 premium:hover:bg-violet-500/10 premium:hover:border-violet-500 btn-hover-glow">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Gerar com IA
                 </Button>
@@ -1283,11 +1283,11 @@ export default function Workouts() {
         )}
 
         {/* Filters */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-64">
-                <Label className="mb-2 block">Aluno</Label>
+                <Label className="mb-2 block premium:text-gray-300">Aluno</Label>
                 <Select value={selectedStudent} onValueChange={setSelectedStudent}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um aluno" />
@@ -1302,7 +1302,7 @@ export default function Workouts() {
                 </Select>
               </div>
               <div className="flex-1">
-                <Label className="mb-2 block">Buscar</Label>
+                <Label className="mb-2 block premium:text-gray-300">Buscar</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1314,7 +1314,7 @@ export default function Workouts() {
                 </div>
               </div>
               <div className="w-full sm:w-40">
-                <Label className="mb-2 block">Objetivo</Label>
+                <Label className="mb-2 block premium:text-gray-300">Objetivo</Label>
                 <Select value={goalFilter} onValueChange={setGoalFilter}>
                   <SelectTrigger>
                     <SelectValue />
@@ -1330,7 +1330,7 @@ export default function Workouts() {
                 </Select>
               </div>
               <div className="w-full sm:w-40">
-                <Label className="mb-2 block">Status</Label>
+                <Label className="mb-2 block premium:text-gray-300">Status</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
                     <SelectValue />
@@ -1348,11 +1348,11 @@ export default function Workouts() {
 
         {/* Workouts List */}
         {!selectedStudent ? (
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium">Selecione um aluno</p>
-              <p className="text-muted-foreground text-sm">
+              <Users className="h-12 w-12 text-muted-foreground/50 mb-4 premium:text-emerald-500/50" />
+              <p className="text-lg font-medium premium:text-white">Selecione um aluno</p>
+              <p className="text-muted-foreground text-sm premium:text-gray-400">
                 Escolha um aluno acima para ver e gerenciar seus treinos
               </p>
             </CardContent>
@@ -1374,7 +1374,7 @@ export default function Workouts() {
               const difficultyBadge = getDifficultyBadge(workout.difficulty);
               const goalBadge = getGoalBadge((workout as any).goal);
               return (
-                <Card key={workout.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setLocation(`/treinos/${workout.id}`)}>
+                <Card key={workout.id} className="cursor-pointer hover:shadow-md transition-shadow premium:bg-[#0d1520] premium:border-emerald-500/30 premium:hover:border-emerald-500/50 premium:hover:shadow-[0_0_25px_rgba(0,255,136,0.15)] card-hover-glow" onClick={() => setLocation(`/treinos/${workout.id}`)}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">

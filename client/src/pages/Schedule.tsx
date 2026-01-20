@@ -741,8 +741,8 @@ export default function Schedule() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight premium:text-white">Agenda</h1>
+            <p className="text-muted-foreground premium:text-gray-400">
               Gerencie suas sessões e acompanhe a agenda
             </p>
           </div>
@@ -765,13 +765,13 @@ export default function Schedule() {
         </div>
 
         {/* Navigation */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-center gap-3">
               <Button variant="outline" size="icon" onClick={() => navigateDate("prev")}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <h2 className="text-lg font-semibold capitalize min-w-[280px] text-center">
+              <h2 className="text-lg font-semibold capitalize min-w-[280px] text-center premium:text-white">
                 {viewMode === "month"
                   ? format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
                   : viewMode === "week" 
@@ -846,12 +846,12 @@ export default function Schedule() {
           </div>
         ) : viewMode === "month" ? (
           /* Month View - Similar to Belasis */
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
             <CardContent className="p-0">
               {/* Week day headers */}
-              <div className="grid grid-cols-7 border-b">
+              <div className="grid grid-cols-7 border-b premium:border-emerald-500/20">
                 {['dom.', 'seg.', 'ter.', 'qua.', 'qui.', 'sex.', 'sáb.'].map((day) => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0">
+                  <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0 premium:border-emerald-500/20 premium:text-gray-400">
                     {day}
                   </div>
                 ))}
@@ -859,7 +859,7 @@ export default function Schedule() {
               
               {/* Calendar grid */}
               {calendarWeeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-cols-7 border-b last:border-b-0">
+                <div key={weekIndex} className="grid grid-cols-7 border-b last:border-b-0 premium:border-emerald-500/20">
                   {week.map((day) => {
                     const daySessions = getSessionsForDay(day);
                     const isToday = isSameDay(day, new Date());
@@ -868,9 +868,9 @@ export default function Schedule() {
                     return (
                       <div
                         key={day.toISOString()}
-                        className={`min-h-[120px] p-1 border-r last:border-r-0 ${
-                          !isCurrentMonth ? 'bg-muted/30' : ''
-                        } ${isToday ? 'bg-primary/5' : ''}`}
+                        className={`min-h-[120px] p-1 border-r last:border-r-0 premium:border-emerald-500/20 ${
+                          !isCurrentMonth ? 'bg-muted/30 premium:bg-[#0a0f1a]/50' : ''
+                        } ${isToday ? 'bg-primary/5 premium:bg-emerald-500/10' : ''}`}
                       >
                         <div className={`text-right text-sm p-1 ${
                           isToday 
@@ -916,7 +916,7 @@ export default function Schedule() {
               const isToday = isSameDay(day, new Date());
               
               return (
-                <Card key={day.toISOString()} className={isToday ? "ring-2 ring-primary" : ""}>
+                <Card key={day.toISOString()} className={`premium:bg-[#0d1520] premium:border-emerald-500/20 card-hover-glow ${isToday ? "ring-2 ring-primary premium:ring-emerald-500" : ""}`}>
                   <CardHeader className="pb-2">
                     <CardTitle className={`text-sm ${isToday ? "text-primary" : ""}`}>
                       {format(day, "EEE", { locale: ptBR })}
@@ -955,13 +955,13 @@ export default function Schedule() {
           </div>
         ) : (
           /* Day View */
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 premium:text-white">
+                <CalendarIcon className="h-5 w-5 premium:text-emerald-400" />
                 Sessões do Dia
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="premium:text-gray-400">
                 {getSessionsForDay(currentDate).length} sessões agendadas
               </CardDescription>
             </CardHeader>

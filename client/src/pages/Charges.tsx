@@ -367,8 +367,8 @@ export default function Charges() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Cobranças</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight premium:text-white">Cobranças</h1>
+            <p className="text-muted-foreground premium:text-gray-400">
               Gerencie cobranças e acompanhe métricas financeiras
             </p>
           </div>
@@ -386,13 +386,13 @@ export default function Charges() {
 
         {/* Métricas SaaS */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)] card-glow-green">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">MRR</CardTitle>
-              <RefreshCw className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-sm font-medium premium:text-emerald-400">MRR</CardTitle>
+              <RefreshCw className="h-4 w-4 text-emerald-600 premium:text-emerald-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">
+              <div className="text-2xl font-bold text-emerald-600 premium:text-[#00FF88]">
                 {formatCurrency(saasMetrics?.mrr || 0)}
               </div>
               <div className="flex items-center gap-1 text-xs">
@@ -409,13 +409,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)] card-glow-cyan">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">ARR</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium premium:text-cyan-400">ARR</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-600 premium:text-cyan-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 premium:text-cyan-300">
                 {formatCurrency(saasMetrics?.arr || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -424,13 +424,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-amber-500/40 premium:shadow-[0_0_15px_rgba(245,158,11,0.15)] card-glow-amber">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Churn Rate</CardTitle>
-              <Percent className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-sm font-medium premium:text-amber-400">Churn Rate</CardTitle>
+              <Percent className="h-4 w-4 text-amber-600 premium:text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600">
+              <div className="text-2xl font-bold text-amber-600 premium:text-amber-300">
                 {(saasMetrics?.churnRate || 0).toFixed(1)}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -439,13 +439,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)] card-glow-violet">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">LTV</CardTitle>
-              <DollarSign className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium premium:text-violet-400">LTV</CardTitle>
+              <DollarSign className="h-4 w-4 text-purple-600 premium:text-violet-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-purple-600 premium:text-violet-300">
                 {formatCurrency(saasMetrics?.ltv || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -457,13 +457,13 @@ export default function Charges() {
 
         {/* Stats Operacionais */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-yellow-500/30 card-glow-amber">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
+              <CardTitle className="text-sm font-medium premium:text-yellow-400">Total Pendente</CardTitle>
+              <Clock className="h-4 w-4 text-yellow-600 premium:text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-yellow-600 premium:text-yellow-300">
                 {formatCurrency(stats?.totalPending || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -472,13 +472,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-red-500/30 card-glow-red">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Atrasado</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <CardTitle className="text-sm font-medium premium:text-red-400">Total Atrasado</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-red-600 premium:text-red-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-red-600 premium:text-red-300">
                 {formatCurrency(stats?.totalOverdue || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -487,13 +487,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/30 card-glow-green">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recebido no Mês</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-sm font-medium premium:text-emerald-400">Recebido no Mês</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 premium:text-emerald-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">
+              <div className="text-2xl font-bold text-emerald-600 premium:text-[#00FF88]">
                 {formatCurrency(stats?.totalPaidThisMonth || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -502,13 +502,13 @@ export default function Charges() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-cyan-500/30 card-glow-cyan">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Alunos Ativos</CardTitle>
-              <Users className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium premium:text-cyan-400">Alunos Ativos</CardTitle>
+              <Users className="h-4 w-4 text-blue-600 premium:text-cyan-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 premium:text-cyan-300">
                 {saasMetrics?.activeStudents || 0}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -519,7 +519,7 @@ export default function Charges() {
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/20">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">

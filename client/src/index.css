@@ -383,4 +383,123 @@ html {
   .premium .icon-glow {
     filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.5));
   }
+  
+  /* ========== ANIMAÇÕES DE HOVER PREMIUM ========== */
+  
+  /* Animação de glow pulsante */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.3);
+    }
+  }
+  
+  @keyframes border-glow {
+    0%, 100% {
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+    50% {
+      border-color: rgba(0, 255, 136, 0.6);
+    }
+  }
+  
+  /* Card com hover glow animado */
+  .premium .card-hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+  }
+  
+  .premium .card-hover-glow:hover {
+    border-color: rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.2), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  /* Card com glow colorido (para KPIs) */
+  .premium .card-glow-green {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .card-glow-green:hover {
+    box-shadow: 0 0 35px rgba(0, 255, 136, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .premium .card-glow-cyan {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .card-glow-cyan:hover {
+    box-shadow: 0 0 35px rgba(0, 200, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .premium .card-glow-violet {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .card-glow-violet:hover {
+    box-shadow: 0 0 35px rgba(139, 92, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .premium .card-glow-amber {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .card-glow-amber:hover {
+    box-shadow: 0 0 35px rgba(245, 158, 11, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .premium .card-glow-red {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .card-glow-red:hover {
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  /* Botão com hover glow */
+  .premium .btn-hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium .btn-hover-glow:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  /* Linha da tabela com hover glow */
+  .premium .row-hover-glow {
+    transition: all 0.2s ease;
+  }
+  
+  .premium .row-hover-glow:hover {
+    background: rgba(0, 255, 136, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(0, 255, 136, 0.2);
+  }
+  
+  /* Ícone com hover glow */
+  .premium .icon-hover-glow {
+    transition: all 0.3s ease;
+  }
+  
+  .premium .icon-hover-glow:hover {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.6));
+    transform: scale(1.1);
+  }
+  
+  /* Aplicação automática de hover glow em todos os cards do tema premium */
+  .premium [data-slot="card"] {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium [data-slot="card"]:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.15), 0 4px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
 }
