@@ -833,7 +833,7 @@ export default function StudentPortalPage() {
         {/* Profile Progress - Esconde quando perfil está completo (anamnese + medidas) */}
         {!isProfileComplete && (
           <Card 
-            className="mb-6 border-emerald-200 bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors"
+            className="mb-6 border-emerald-200 bg-emerald-50 cursor-pointer hover:bg-emerald-100 transition-colors dark:border-emerald-800 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 premium:border-emerald-500/40 premium:bg-[#0d1520] premium:hover:bg-[#0d1520]/80 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]"
             onClick={() => {
               setActiveTab("anamnesis");
               setIsEditingAnamnesis(true);
@@ -841,14 +841,14 @@ export default function StudentPortalPage() {
           >
             <CardContent className="py-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-800">Complete seu perfil</span>
-                <span className="text-sm text-emerald-600">{profileProgress}%</span>
+                <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300 premium:text-[#00FF88]">Complete seu perfil</span>
+                <span className="text-sm text-emerald-600 dark:text-emerald-400 premium:text-emerald-400">{profileProgress}%</span>
               </div>
               <Progress value={profileProgress} className="h-2" />
-              <p className="text-xs text-emerald-700 mt-2">
+              <p className="text-xs text-emerald-700 mt-2 dark:text-emerald-400 premium:text-emerald-400/80">
                 Preencha sua anamnese para que seu personal possa criar treinos personalizados
               </p>
-              <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700">
+              <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:text-[#0a0f1a] premium:hover:bg-[#00FF88]/90 premium:shadow-[0_0_10px_rgba(0,255,136,0.5)]">
                 <Edit className="h-4 w-4 mr-2" />
                 Completar Agora
               </Button>
@@ -896,10 +896,10 @@ export default function StudentPortalPage() {
             
             <div className="grid md:grid-cols-2 gap-6">
               {/* Próximas Sessões */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)]">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-emerald-500" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <Calendar className="h-5 w-5 text-emerald-500 premium:text-cyan-400" />
                     Próximas Sessões
                   </CardTitle>
                 </CardHeader>
@@ -907,7 +907,7 @@ export default function StudentPortalPage() {
                   {upcomingSessions.length > 0 ? (
                     <div className="space-y-3">
                       {upcomingSessions.map((session: any) => (
-                        <div key={session.id} className="p-3 bg-gray-50 rounded-lg">
+                        <div key={session.id} className="p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] premium:border premium:border-cyan-500/30 rounded-lg">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium">
@@ -940,10 +940,10 @@ export default function StudentPortalPage() {
               </Card>
 
               {/* Cobranças Pendentes */}
-              <Card>
+              <Card className="premium:bg-[#0d1520] premium:border-amber-500/40 premium:shadow-[0_0_15px_rgba(245,158,11,0.15)]">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-amber-500" />
+                  <CardTitle className="flex items-center gap-2 premium:text-white">
+                    <CreditCard className="h-5 w-5 text-amber-500 premium:text-amber-400" />
                     Cobranças Pendentes
                   </CardTitle>
                 </CardHeader>
@@ -951,7 +951,7 @@ export default function StudentPortalPage() {
                   {pendingCharges.length > 0 ? (
                     <div className="space-y-3">
                       {pendingCharges.slice(0, 5).map((charge) => (
-                        <div key={charge.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                        <div key={charge.id} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 premium:bg-[#0a0f1a] premium:border premium:border-amber-500/30 rounded-lg">
                           <div>
                             <p className="font-medium">{charge.description}</p>
                             <p className="text-sm text-gray-500">

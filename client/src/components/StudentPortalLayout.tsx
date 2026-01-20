@@ -3,9 +3,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme, THEME_LABELS } from "@/contexts/ThemeContext";
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +36,12 @@ import {
   Home,
   ClipboardList,
   Camera,
-  HelpCircle
+  HelpCircle,
+  Sun,
+  Moon,
+  Sparkles,
+  Monitor,
+  Palette
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -149,6 +156,9 @@ function StudentPortalLayoutContent({
     undefined,
     { refetchInterval: 30000 }
   );
+  
+  // Hook de tema
+  const { theme, setTheme } = useTheme();
   
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -290,6 +300,59 @@ function StudentPortalLayoutContent({
                   <span>Meu Perfil</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuLabel className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <Palette className="h-3 w-3" />
+                  Tema
+                </DropdownMenuLabel>
+                <div className="px-2 py-1.5">
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                    <button
+                      onClick={() => setTheme('auto')}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 ${
+                        theme === 'auto' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-background'
+                      }`}
+                    >
+                      <Monitor className="h-3 w-3" />
+                      Auto
+                    </button>
+                    <button
+                      onClick={() => setTheme('white')}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 ${
+                        theme === 'white' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-background'
+                      }`}
+                    >
+                      <Sun className="h-3 w-3" />
+                      Claro
+                    </button>
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 ${
+                        theme === 'dark' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-background'
+                      }`}
+                    >
+                      <Moon className="h-3 w-3" />
+                      Escuro
+                    </button>
+                    <button
+                      onClick={() => setTheme('premium')}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 ${
+                        theme === 'premium' 
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' 
+                          : 'hover:bg-background'
+                      }`}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Premium
+                    </button>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={onLogout}
                   className="cursor-pointer text-red-600 focus:text-red-600"
@@ -335,7 +398,7 @@ function StudentPortalLayoutContent({
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 premium:bg-[#0a0f1a]">
           <div className="container mx-auto p-4 md:p-6">
             {children}
           </div>

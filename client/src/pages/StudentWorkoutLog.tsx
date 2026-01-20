@@ -334,9 +334,9 @@ export default function StudentWorkoutLog() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 premium:from-[#0a0f1a] premium:to-[#0d1520]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
+      <header className="bg-white dark:bg-gray-900 premium:bg-[#0d1520] border-b dark:border-gray-800 premium:border-emerald-500/30 sticky top-0 z-50">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setLocation("/portal")}>
@@ -360,7 +360,7 @@ export default function StudentWorkoutLog() {
 
       <main className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Info Card */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)]">
           <CardContent className="pt-6">
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -396,13 +396,13 @@ export default function StudentWorkoutLog() {
         </Card>
 
         {/* Day Selection */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Dumbbell className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 premium:text-white">
+              <Dumbbell className="h-5 w-5 premium:text-[#00FF88]" />
               Selecionar Dia de Treino
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="premium:text-gray-400">
               Escolha qual dia do treino você vai realizar
             </CardDescription>
           </CardHeader>
@@ -424,17 +424,17 @@ export default function StudentWorkoutLog() {
 
         {/* Exercise Logs */}
         {selectedDayId && exerciseLogs.length > 0 && (
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)]">
             <CardHeader>
-              <CardTitle>Exercícios</CardTitle>
-              <CardDescription>
+              <CardTitle className="premium:text-white">Exercícios</CardTitle>
+              <CardDescription className="premium:text-gray-400">
                 Registre o peso e repetições de cada série
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 {exerciseLogs.map((exercise, exerciseIndex) => (
-                  <div key={exercise.exerciseId} className="border rounded-lg p-4">
+                  <div key={exercise.exerciseId} className="border dark:border-gray-700 premium:border-violet-500/30 premium:bg-[#0a0f1a] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex flex-col gap-1">
                         <h4 className="font-semibold text-lg">{exercise.exerciseName}</h4>

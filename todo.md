@@ -4917,3 +4917,25 @@
 - [x] Aplicar tema Premium na página de Cobranças
 - [x] Aplicar tema Premium na página de Relatórios
 - [x] Testar todas as páginas no tema Premium
+
+
+## Correção Portal do Aluno - Tema Premium - 20/01/2026
+- [ ] Identificar todos os arquivos do Portal do Aluno
+- [ ] Adicionar seletor de layout (Classic/Premium) nas configurações do aluno
+- [ ] Corrigir cores dos cards na página inicial do Portal do Aluno
+- [ ] Corrigir página de Registrar Treino - cards com fundo amarelado
+- [ ] Corrigir página de Avaliações Físicas - cards com fundo claro
+- [ ] Corrigir cards de Recomendações Personalizadas - fundo claro
+- [ ] Corrigir cards de Cálculos Automáticos - bordas e cores
+- [ ] Testar todas as páginas do Portal do Aluno no tema Premium
+
+
+## Correção Portal do Aluno - Tema Premium - 20/01/2026
+- [x] Adicionar seletor de tema (Auto/Claro/Escuro/Premium) no menu do perfil do aluno
+- [x] Corrigir cores dos cards de Recomendações Nutricionais para tema Premium
+- [x] Corrigir cores dos cards de Feedback para tema Premium
+- [x] Corrigir cores da página de Registrar Treino para tema Premium
+- [x] Corrigir cores da página de Sessões para tema Premium
+- [x] Corrigir cores da página de Evolução/Avaliações para tema Premium
+- [x] Corrigir cores do card de Próximas Sessões no Dashboard
+- [x] Corrigir cores do card de Cobranças Pendentes no Dashboard

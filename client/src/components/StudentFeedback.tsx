@@ -132,13 +132,13 @@ export default function StudentFeedback() {
 
   return (
     <>
-      <Card className="border-emerald-200 bg-emerald-50/50">
+      <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/20 premium:border-emerald-500/40 premium:bg-[#0d1520] premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-emerald-700">
+          <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 premium:text-[#00FF88]">
             <MessageSquarePlus className="h-5 w-5" />
             Como foi seu treino?
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="premium:text-gray-400">
             Dê seu feedback para ajudar seu personal a melhorar seus treinos
           </CardDescription>
         </CardHeader>
@@ -147,7 +147,7 @@ export default function StudentFeedback() {
             {sessionsNeedingFeedback.map((session: Session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between p-3 bg-white rounded-lg border"
+                className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg border dark:border-gray-700"
               >
                 <div>
                   <p className="font-medium text-sm">
@@ -160,7 +160,7 @@ export default function StudentFeedback() {
                 <Button
                   size="sm"
                   onClick={() => handleOpenFeedback(session)}
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:text-[#0a0f1a] premium:hover:bg-[#00FF88]/90 premium:shadow-[0_0_10px_rgba(0,255,136,0.5)]"
                 >
                   <MessageSquarePlus className="h-4 w-4 mr-1" />
                   Avaliar

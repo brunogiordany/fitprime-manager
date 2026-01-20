@@ -229,19 +229,19 @@ export default function StudentNutritionRecommendations({
   return (
     <div className="space-y-4">
       {/* Header com resumo */}
-      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200 dark:from-emerald-900/20 dark:to-teal-900/20 dark:border-emerald-800 premium:from-[#0d1520] premium:to-[#0a0f1a] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2 text-emerald-800">
+              <CardTitle className="text-lg flex items-center gap-2 text-emerald-800 dark:text-emerald-300 premium:text-[#00FF88]">
                 <Sparkles className="h-5 w-5" />
                 Suas Recomendações Personalizadas
               </CardTitle>
-              <CardDescription className="text-emerald-600">
+              <CardDescription className="text-emerald-600 dark:text-emerald-400 premium:text-emerald-400/80">
                 Baseado no seu objetivo: {goalLabels[goal] || goal}
               </CardDescription>
             </div>
-            <Badge variant="outline" className="bg-white border-emerald-300 text-emerald-700">
+            <Badge variant="outline" className="bg-white border-emerald-300 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-400 premium:bg-emerald-500/20 premium:border-emerald-500/50 premium:text-emerald-400">
               {activityFactors[calculations.activityLevel]?.label || 'Moderado'}
             </Badge>
           </div>
@@ -250,51 +250,51 @@ export default function StudentNutritionRecommendations({
           {/* Cards de resumo */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {/* Meta Calórica */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-xl p-4 shadow-sm border border-emerald-100 dark:border-emerald-800 premium:border-orange-500/40 premium:shadow-[0_0_10px_rgba(255,120,50,0.1)]">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-orange-100">
-                  <Flame className="h-4 w-4 text-orange-500" />
+                <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30 premium:bg-orange-500/20">
+                  <Flame className="h-4 w-4 text-orange-500 premium:text-orange-400" />
                 </div>
-                <span className="text-xs text-gray-500">Meta Diária</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400">Meta Diária</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{calculations.targetCalories}</p>
-              <p className="text-xs text-gray-500">kcal/dia</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white premium:text-[#FF7832]">{calculations.targetCalories}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-orange-400/70">kcal/dia</p>
             </div>
             
             {/* Proteína */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-xl p-4 shadow-sm border border-emerald-100 dark:border-red-800 premium:border-red-500/40 premium:shadow-[0_0_10px_rgba(239,68,68,0.1)]">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-red-100">
-                  <Dumbbell className="h-4 w-4 text-red-500" />
+                <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 premium:bg-red-500/20">
+                  <Dumbbell className="h-4 w-4 text-red-500 premium:text-red-400" />
                 </div>
-                <span className="text-xs text-gray-500">Proteína</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400">Proteína</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{calculations.macros.protein}g</p>
-              <p className="text-xs text-gray-500">{calculations.macros.proteinPerKg}g/kg</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white premium:text-red-400">{calculations.macros.protein}g</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-red-400/70">{calculations.macros.proteinPerKg}g/kg</p>
             </div>
             
             {/* Carboidratos */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-xl p-4 shadow-sm border border-emerald-100 dark:border-amber-800 premium:border-amber-500/40 premium:shadow-[0_0_10px_rgba(245,158,11,0.1)]">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-amber-100">
-                  <Zap className="h-4 w-4 text-amber-500" />
+                <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 premium:bg-amber-500/20">
+                  <Zap className="h-4 w-4 text-amber-500 premium:text-amber-400" />
                 </div>
-                <span className="text-xs text-gray-500">Carboidratos</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400">Carboidratos</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{calculations.macros.carbs}g</p>
-              <p className="text-xs text-gray-500">energia</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white premium:text-amber-400">{calculations.macros.carbs}g</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-amber-400/70">energia</p>
             </div>
             
             {/* Gordura */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-emerald-100">
+            <div className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-xl p-4 shadow-sm border border-emerald-100 dark:border-purple-800 premium:border-violet-500/40 premium:shadow-[0_0_10px_rgba(139,92,246,0.1)]">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-purple-100">
-                  <Activity className="h-4 w-4 text-purple-500" />
+                <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 premium:bg-violet-500/20">
+                  <Activity className="h-4 w-4 text-purple-500 premium:text-violet-400" />
                 </div>
-                <span className="text-xs text-gray-500">Gorduras</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400">Gorduras</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{calculations.macros.fat}g</p>
-              <p className="text-xs text-gray-500">saudáveis</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white premium:text-violet-400">{calculations.macros.fat}g</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-violet-400/70">saudáveis</p>
             </div>
           </div>
         </CardContent>

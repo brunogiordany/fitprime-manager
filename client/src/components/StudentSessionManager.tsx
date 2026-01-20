@@ -211,13 +211,13 @@ export default function StudentSessionManager({
   return (
     <div className="space-y-6">
       {/* Próximas Sessões */}
-      <Card>
+      <Card className="premium:bg-[#0d1520] premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald-500" />
+          <CardTitle className="flex items-center gap-2 premium:text-white">
+            <Calendar className="h-5 w-5 text-emerald-500 premium:text-cyan-400" />
             Próximas Sessões
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="premium:text-gray-400">
             Confirme sua presença ou cancele com antecedência
           </CardDescription>
         </CardHeader>
@@ -231,7 +231,7 @@ export default function StudentSessionManager({
                 return (
                   <div
                     key={session.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-4"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] premium:border premium:border-cyan-500/30 rounded-lg gap-4"
                   >
                     <div className="flex items-start gap-4">
                       <div className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -261,7 +261,7 @@ export default function StudentSessionManager({
                         <Button
                           size="sm"
                           onClick={() => handleConfirm(session)}
-                          className="bg-emerald-600 hover:bg-emerald-700"
+                          className="bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:text-[#0a0f1a] premium:hover:bg-[#00FF88]/90 premium:shadow-[0_0_10px_rgba(0,255,136,0.5)]"
                         >
                           <CheckCircle2 className="h-4 w-4 mr-1" />
                           Confirmar
@@ -313,10 +313,10 @@ export default function StudentSessionManager({
       </Card>
 
       {/* Histórico */}
-      <Card>
+      <Card className="premium:bg-[#0d1520] premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-gray-500" />
+          <CardTitle className="flex items-center gap-2 premium:text-white">
+            <Clock className="h-5 w-5 text-gray-500 premium:text-violet-400" />
             Histórico de Sessões
           </CardTitle>
         </CardHeader>
@@ -326,7 +326,7 @@ export default function StudentSessionManager({
               {pastSessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-3 border-b last:border-0"
+                  className="flex items-center justify-between p-3 border-b last:border-0 dark:border-gray-700 premium:border-violet-500/20"
                 >
                   <div>
                     <p className="font-medium text-sm">

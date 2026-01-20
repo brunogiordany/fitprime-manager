@@ -246,10 +246,10 @@ export default function StudentEvolutionCharts({
     <div className="space-y-6">
       {/* Cards de Estatísticas - Linha 1: Peso e Frequência */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Scale className="h-8 w-8 text-emerald-500" />
+              <Scale className="h-8 w-8 text-emerald-500 premium:text-[#00FF88]" />
               {getTrendIcon(stats.weightChange)}
             </div>
             <p className="text-2xl font-bold mt-2">
@@ -274,13 +274,13 @@ export default function StudentEvolutionCharts({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Target className="h-8 w-8 text-emerald-500" />
-              <Calendar className="h-4 w-4 text-emerald-400" />
+              <Target className="h-8 w-8 text-emerald-500 premium:text-cyan-400" />
+              <Calendar className="h-4 w-4 text-emerald-400 premium:text-cyan-400" />
             </div>
-            <p className="text-2xl font-bold mt-2 text-emerald-600">{stats.attendanceRate.toFixed(0)}%</p>
+            <p className="text-2xl font-bold mt-2 text-emerald-600 premium:text-cyan-400">{stats.attendanceRate.toFixed(0)}%</p>
             <p className="text-xs text-muted-foreground">Taxa de Presença</p>
             <Badge
               variant="outline"
@@ -297,28 +297,28 @@ export default function StudentEvolutionCharts({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-blue-500/40 premium:shadow-[0_0_15px_rgba(59,130,246,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Dumbbell className="h-8 w-8 text-blue-500" />
+              <Dumbbell className="h-8 w-8 text-blue-500 premium:text-blue-400" />
               <Activity className="h-4 w-4 text-blue-400" />
             </div>
-            <p className="text-2xl font-bold mt-2">{stats.completedSessions}</p>
+            <p className="text-2xl font-bold mt-2 premium:text-blue-400">{stats.completedSessions}</p>
             <p className="text-xs text-muted-foreground">Sessões Realizadas</p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mt-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mt-2 premium:bg-blue-500/20 premium:text-blue-400 premium:border-blue-500/50">
               de {stats.totalSessions} agendadas
             </Badge>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-amber-500/40 premium:shadow-[0_0_15px_rgba(245,158,11,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Calendar className="h-8 w-8 text-amber-500" />
+              <Calendar className="h-8 w-8 text-amber-500 premium:text-amber-400" />
             </div>
-            <p className="text-2xl font-bold mt-2 text-amber-600">{stats.noShowSessions}</p>
+            <p className="text-2xl font-bold mt-2 text-amber-600 premium:text-amber-400">{stats.noShowSessions}</p>
             <p className="text-xs text-muted-foreground">Faltas</p>
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 mt-2">
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 mt-2 premium:bg-amber-500/20 premium:text-amber-400 premium:border-amber-500/50">
               {stats.noShowSessions === 0 ? "Nenhuma falta!" : "total"}
             </Badge>
           </CardContent>
@@ -327,56 +327,56 @@ export default function StudentEvolutionCharts({
 
       {/* Cards de Estatísticas - Linha 2: Este Mês e Avaliações */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Calendar className="h-8 w-8 text-purple-500" />
+              <Calendar className="h-8 w-8 text-purple-500 premium:text-violet-400" />
             </div>
-            <p className="text-2xl font-bold mt-2">{stats.thisMonth}</p>
+            <p className="text-2xl font-bold mt-2 premium:text-violet-400">{stats.thisMonth}</p>
             <p className="text-xs text-muted-foreground">Este Mês</p>
-            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 mt-2">
+            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 mt-2 premium:bg-violet-500/20 premium:text-violet-400 premium:border-violet-500/50">
               sessões realizadas
             </Badge>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-gray-500/40 premium:shadow-[0_0_15px_rgba(107,114,128,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Calendar className="h-8 w-8 text-gray-500" />
+              <Calendar className="h-8 w-8 text-gray-500 premium:text-gray-400" />
             </div>
-            <p className="text-2xl font-bold mt-2">{stats.lastMonth}</p>
+            <p className="text-2xl font-bold mt-2 premium:text-gray-300">{stats.lastMonth}</p>
             <p className="text-xs text-muted-foreground">Mês Passado</p>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 mt-2">
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 mt-2 premium:bg-gray-500/20 premium:text-gray-400 premium:border-gray-500/50">
               sessões realizadas
             </Badge>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-teal-500/40 premium:shadow-[0_0_15px_rgba(20,184,166,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <Ruler className="h-8 w-8 text-teal-500" />
+              <Ruler className="h-8 w-8 text-teal-500 premium:text-teal-400" />
             </div>
-            <p className="text-2xl font-bold mt-2">{measurements.length}</p>
+            <p className="text-2xl font-bold mt-2 premium:text-teal-400">{measurements.length}</p>
             <p className="text-xs text-muted-foreground">Avaliações Físicas</p>
-            <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 mt-2">
+            <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 mt-2 premium:bg-teal-500/20 premium:text-teal-400 premium:border-teal-500/50">
               registradas
             </Badge>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 dark:from-emerald-900/20 dark:to-emerald-900/30 dark:border-emerald-800 premium:from-[#0d1520] premium:to-[#0a0f1a] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <TrendingUp className="h-8 w-8 text-emerald-600" />
+              <TrendingUp className="h-8 w-8 text-emerald-600 premium:text-[#00FF88]" />
             </div>
-            <p className="text-2xl font-bold mt-2 text-emerald-700">
+            <p className="text-2xl font-bold mt-2 text-emerald-700 premium:text-[#00FF88]">
               {stats.thisMonth > stats.lastMonth ? "+" : ""}
               {stats.thisMonth - stats.lastMonth}
             </p>
-            <p className="text-xs text-emerald-600">vs Mês Anterior</p>
-            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-300 mt-2">
+            <p className="text-xs text-emerald-600 premium:text-emerald-400">vs Mês Anterior</p>
+            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-300 mt-2 premium:bg-emerald-500/20 premium:text-emerald-400 premium:border-emerald-500/50">
               {stats.thisMonth >= stats.lastMonth ? "Progredindo!" : "Manter foco"}
             </Badge>
           </CardContent>
