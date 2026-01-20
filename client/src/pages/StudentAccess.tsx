@@ -156,7 +156,7 @@ export default function StudentAccess() {
               <Shield className="h-6 w-6 text-emerald-600" />
               Acessos do Aluno
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
               Gerencie as permissões e funcionalidades disponíveis para cada aluno
             </p>
           </div>
@@ -231,12 +231,12 @@ export default function StudentAccess() {
                       </div>
                       <div className="flex items-center gap-2">
                         {blockedCount > 0 ? (
-                          <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50">
+                          <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-800">
                             <Lock className="h-3 w-3 mr-1" />
                             {blockedCount} bloqueado{blockedCount > 1 ? 's' : ''}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
+                          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             Acesso total
                           </Badge>
@@ -272,16 +272,16 @@ export default function StudentAccess() {
                             key={permission.key}
                             className={`p-4 rounded-lg border transition-colors ${
                               isEnabled 
-                                ? 'bg-white border-gray-200' 
-                                : 'bg-gray-50 border-gray-300'
+                                ? 'bg-white dark:bg-card border-gray-200 dark:border-border' 
+                                : 'bg-gray-50 dark:bg-secondary border-gray-300 dark:border-border'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-start gap-3">
                                 <div className={`p-2 rounded-lg ${
                                   isEnabled 
-                                    ? 'bg-emerald-100 text-emerald-600' 
-                                    : 'bg-gray-200 text-gray-500'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600' 
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
                                 }`}>
                                   {permission.icon}
                                 </div>
@@ -292,7 +292,7 @@ export default function StudentAccess() {
                                   >
                                     {permission.label}
                                   </Label>
-                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
                                     {permission.description}
                                   </p>
                                 </div>
@@ -316,15 +316,15 @@ export default function StudentAccess() {
         )}
 
         {/* Info */}
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
           <CardContent className="pt-6">
             <div className="flex gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 text-blue-600 h-fit">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 h-fit">
                 <Shield className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-medium text-blue-900">Como funciona?</h3>
-                <p className="text-sm text-blue-700 mt-1">
+                <h3 className="font-medium text-blue-900 dark:text-blue-300">Como funciona?</h3>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
                   Por padrão, todos os alunos têm acesso total às funcionalidades do portal. 
                   Você pode bloquear funcionalidades específicas conforme necessário. 
                   As alterações são aplicadas imediatamente no portal do aluno.

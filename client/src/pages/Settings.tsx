@@ -546,7 +546,7 @@ export default function Settings() {
             <Separator />
             
             {/* Status da Integração */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+            <div className="bg-gray-50 dark:bg-card rounded-lg p-4 space-y-4 dark:border dark:border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-full ${whatsappConfig.evolutionApiKey && whatsappConfig.instanceName ? 'bg-green-100' : 'bg-gray-100'}`}>
@@ -574,7 +574,7 @@ export default function Settings() {
                 </div>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-sm text-blue-700">
                   <strong>Como obter suas credenciais:</strong>
                 </p>
@@ -601,7 +601,7 @@ export default function Settings() {
               </div>
               
               {/* Webhook Configuration */}
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-4">
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 mt-4">
                 <p className="text-sm text-emerald-700">
                   <strong>✅ Webhook Configurado Automaticamente</strong>
                 </p>
@@ -694,7 +694,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Plano Atual */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl p-6 border border-emerald-200 dark:border-emerald-800">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -771,10 +771,10 @@ export default function Settings() {
                 <h4 className="font-medium">Fazer upgrade</h4>
                 
                 {/* Toggle Mensal/Anual */}
-                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                <div className="flex items-center gap-2 bg-gray-100 dark:bg-secondary rounded-lg p-1">
                   <button
                     className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                      !showAnnualUpgrades ? 'bg-white shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
+                      !showAnnualUpgrades ? 'bg-white dark:bg-card shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
                     }`}
                     onClick={() => setShowAnnualUpgrades(false)}
                   >
@@ -782,7 +782,7 @@ export default function Settings() {
                   </button>
                   <button
                     className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 ${
-                      showAnnualUpgrades ? 'bg-white shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
+                      showAnnualUpgrades ? 'bg-white dark:bg-card shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'
                     }`}
                     onClick={() => setShowAnnualUpgrades(true)}
                   >
@@ -794,7 +794,7 @@ export default function Settings() {
               
               {/* Informação sobre proration */}
               {currentPlanDetails && currentPlanDetails.daysRemaining > 0 && (
-                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-sm text-amber-700">
                     <strong>Upgrade proporcional:</strong> Você tem {currentPlanDetails.daysRemaining} dias restantes no período atual. 
                     O upgrade cobrará apenas a diferença proporcional.
@@ -817,7 +817,7 @@ export default function Settings() {
                     return (
                       <div 
                         key={plan.id}
-                        className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer relative"
+                        className="border rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer relative dark:border-border"
                         onClick={() => {
                           if (showAnnualUpgrades) {
                             window.open(plan.annualCheckoutUrl, '_blank');
@@ -858,7 +858,7 @@ export default function Settings() {
                         <p className="text-sm text-muted-foreground">Até {displayLimit} alunos</p>
                         
                         {!showAnnualUpgrades && upgrade?.isProrated && upgrade.prorationAmount > 0 ? (
-                          <div className="mt-2 p-2 bg-emerald-50 rounded-lg">
+                          <div className="mt-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                             <p className="text-xs text-emerald-700 font-medium">Pague agora apenas:</p>
                             <p className="text-lg font-bold text-emerald-600">R$ {upgrade.prorationAmount.toFixed(2)}</p>
                             <p className="text-xs text-emerald-600">({upgrade.daysRemaining} dias restantes)</p>
@@ -878,7 +878,7 @@ export default function Settings() {
               </div>
               
               {!isAnnualPlan && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <Zap className="h-5 w-5 text-blue-600" />
                     <span className="font-medium text-blue-700">Economize com o plano anual!</span>
@@ -918,7 +918,7 @@ export default function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
               <div className="flex items-center gap-2 text-emerald-700">
                 <Shield className="h-5 w-5" />
                 <span className="font-medium">Sua conta está protegida</span>
@@ -961,7 +961,7 @@ export default function Settings() {
               return (
                 <div className="space-y-4">
                   {/* Resumo do Upgrade */}
-                  <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                  <div className="p-4 bg-gray-50 dark:bg-secondary rounded-lg space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Plano atual:</span>
                       <span className="font-medium">{currentPlan.name}</span>
@@ -1013,7 +1013,7 @@ export default function Settings() {
                   </div>
                   
                   {/* Benefícios */}
-                  <div className="p-3 bg-emerald-50 rounded-lg">
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                     <p className="text-sm font-medium text-emerald-700 mb-2">Benefícios do upgrade:</p>
                     <ul className="text-sm text-emerald-600 space-y-1">
                       <li>✓ +{selectedUpgrade.additionalStudents || (selectedUpgrade.studentLimit - currentPlan.studentLimit)} alunos (total: {selectedUpgrade.studentLimit})</li>
@@ -1045,7 +1045,7 @@ export default function Settings() {
               // Fallback para planos sem proration calculado
               return (
                 <div className="space-y-4">
-                  <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                  <div className="p-4 bg-gray-50 dark:bg-secondary rounded-lg space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Plano atual:</span>
                       <span className="font-medium">{currentPlan.name}</span>

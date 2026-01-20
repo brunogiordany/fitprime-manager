@@ -325,13 +325,13 @@ export default function Automations() {
         </div>
 
         {/* Info Card */}
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30">
           <CardContent className="pt-6">
             <div className="flex gap-4">
               <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-blue-900">Integração com Stevo (WhatsApp)</p>
-                <p className="text-sm text-blue-700">
+                <p className="font-medium text-blue-900 dark:text-blue-300">Integração com Stevo (WhatsApp)</p>
+                <p className="text-sm text-blue-700 dark:text-blue-400">
                   As automações utilizam o <a href="https://stevo.chat" target="_blank" rel="noopener noreferrer" className="underline font-medium">Stevo</a> para envio de mensagens WhatsApp. 
                   Configure suas credenciais nas Configurações para ativar o envio automático.
                 </p>
@@ -356,8 +356,8 @@ export default function Automations() {
                     <div className="flex items-start gap-4">
                       <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
                         automation.isActive 
-                          ? 'bg-emerald-100 text-emerald-600' 
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600' 
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                       }`}>
                         <Zap className="h-5 w-5" />
                       </div>

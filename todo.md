@@ -4862,3 +4862,17 @@
 ## Tema Automático - 20/01/2026
 - [x] Adicionar opção "Auto" que detecta preferência do sistema operacional
 - [x] Atualizar seletor de tema na interface com 4 opções
+
+
+## Revisão Visual Temas Dark/Premium - 20/01/2026
+- [x] Atualizar variáveis CSS globais (bordas, contraste, backgrounds)
+- [ ] Melhorar tema Premium para ficar mais próximo do PDF
+- [x] Corrigir componentes base (cards com bordas, inputs, buttons, tabs)
+- [x] Revisar Dashboard principal
+- [x] Revisar página de Alunos e detalhes do aluno
+- [x] Revisar página de Configurações (todas as abas)
+- [x] Revisar Diário de Treino
+- [x] Revisar Automações
+- [x] Revisar Acessos do Aluno
+- [ ] Testar todas as telas nos 3 temas
+- [x] Corrigir scrollbar branca nos temas dark/premium

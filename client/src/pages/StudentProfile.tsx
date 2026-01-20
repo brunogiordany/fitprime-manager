@@ -1087,7 +1087,7 @@ export default function StudentProfile() {
                         <span className="text-muted-foreground">Status</span>
                         <Badge className={
                           student.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          student.status === 'inactive' ? 'bg-gray-100 text-gray-700' :
+                          student.status === 'inactive' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700' :
                           'bg-yellow-100 text-yellow-700'
                         }>
                           {student.status === 'active' ? 'Ativo' :
@@ -1163,14 +1163,14 @@ export default function StudentProfile() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Status de Conexão */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-card border dark:border-border">
                     <div className="flex items-center gap-3">
                       {student.userId ? (
                         <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
                           <CheckCircle className="h-5 w-5 text-emerald-600" />
                         </div>
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                           <XCircle className="h-5 w-5 text-gray-400" />
                         </div>
                       )}
@@ -1219,7 +1219,7 @@ export default function StudentProfile() {
                       <Input 
                         readOnly 
                         value={`${window.location.origin}/convite/${student.inviteToken || 'gerar-convite'}`}
-                        className="bg-gray-50"
+                        className="bg-gray-50 dark:bg-secondary"
                       />
                       <Button 
                         variant="outline" 
@@ -1273,7 +1273,7 @@ export default function StudentProfile() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-card border dark:border-border">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
                         <FileText className="h-5 w-5 text-purple-600" />
@@ -1294,7 +1294,7 @@ export default function StudentProfile() {
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-card border dark:border-border">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
                         <Ruler className="h-5 w-5 text-teal-600" />
@@ -1556,7 +1556,7 @@ export default function StudentProfile() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       {/* BF Estimado */}
-                      <div className={`p-4 rounded-lg border ${estimatedBF ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className={`p-4 rounded-lg border ${estimatedBF ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 dark:bg-secondary border-gray-200 dark:border-border'}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <Activity className="h-4 w-4 text-amber-600" />
                           <span className="text-sm font-medium text-amber-800">BF Estimado</span>
@@ -1568,7 +1568,7 @@ export default function StudentProfile() {
                       </div>
                       
                       {/* Bioimpedância */}
-                      <div className={`p-4 rounded-lg border ${bioBF ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className={`p-4 rounded-lg border ${bioBF ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 dark:bg-secondary border-gray-200 dark:border-border'}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <Activity className="h-4 w-4 text-blue-600" />
                           <span className="text-sm font-medium text-blue-800">Bioimpedância</span>
@@ -1580,7 +1580,7 @@ export default function StudentProfile() {
                       </div>
                       
                       {/* Adipômetro */}
-                      <div className={`p-4 rounded-lg border ${adipBF ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className={`p-4 rounded-lg border ${adipBF ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 dark:bg-secondary border-gray-200 dark:border-border'}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <Ruler className="h-4 w-4 text-purple-600" />
                           <span className="text-sm font-medium text-purple-800">Adipômetro</span>
@@ -1751,8 +1751,8 @@ export default function StudentProfile() {
                           <Badge className={
                             workout.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
                             workout.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-700'
-                          }>
+'bg-gray-100 dark:bg-gray-800 text-gray-700'
+                           }>
                             {workout.status === 'active' ? 'Ativo' :
                              workout.status === 'completed' ? 'Concluído' : 'Inativo'}
                           </Badge>
@@ -1911,7 +1911,7 @@ export default function StudentProfile() {
                           <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
                             session.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
                             session.status === 'no_show' ? 'bg-red-100 text-red-600' :
-                            session.status === 'cancelled' ? 'bg-gray-100 text-gray-600' :
+                            session.status === 'cancelled' ? 'bg-gray-100 dark:bg-gray-800 text-gray-600' :
                             'bg-blue-100 text-blue-600'
                           }`}>
                             <Calendar className="h-5 w-5" />
@@ -1933,7 +1933,7 @@ export default function StudentProfile() {
                           <Badge className={`${
                             session.status === 'completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' :
                             session.status === 'no_show' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
-                            session.status === 'cancelled' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100' :
+                            session.status === 'cancelled' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800' :
                             session.status === 'confirmed' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
                             'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
                           }`}>
@@ -2121,7 +2121,7 @@ export default function StudentProfile() {
                               pkg.status === 'active' ? 'bg-emerald-500' :
                               pkg.status === 'paused' ? 'bg-yellow-500' :
                               pkg.status === 'defaulted' ? 'bg-red-500' :
-                              pkg.status === 'cancelled' ? 'bg-gray-500' :
+                              pkg.status === 'cancelled' ? 'bg-gray-500 dark:bg-gray-600' :
                               'bg-blue-500'
                             }`} />
                             <div>
@@ -2140,7 +2140,7 @@ export default function StudentProfile() {
                               pkg.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
                               pkg.status === 'paused' ? 'bg-yellow-100 text-yellow-700' :
                               pkg.status === 'defaulted' ? 'bg-red-100 text-red-700' :
-                              pkg.status === 'cancelled' ? 'bg-gray-100 text-gray-700' :
+                              pkg.status === 'cancelled' ? 'bg-gray-100 dark:bg-gray-800 text-gray-700' :
                               'bg-blue-100 text-blue-700'
                             }`}>
                               {pkg.status === 'active' ? 'Ativo' :
@@ -2212,7 +2212,7 @@ export default function StudentProfile() {
                             charge.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
                             charge.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                             charge.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'
+                            'bg-gray-100 dark:bg-gray-800 text-gray-700'
                           }>
                             {charge.status === 'paid' ? 'Pago' :
                              charge.status === 'pending' ? 'Pendente' :
@@ -2361,7 +2361,7 @@ export default function StudentProfile() {
                           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
                             invite.status === 'accepted' ? 'bg-green-100' :
                             invite.status === 'pending' ? 'bg-blue-100' :
-                            invite.status === 'expired' ? 'bg-gray-100' :
+                            invite.status === 'expired' ? 'bg-gray-100 dark:bg-gray-800' :
                             'bg-red-100'
                           }`}>
                             {invite.status === 'accepted' ? (

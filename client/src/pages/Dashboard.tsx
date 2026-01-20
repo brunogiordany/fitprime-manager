@@ -239,7 +239,7 @@ export default function Dashboard() {
         </div>
 
         {/* Indicador de Plano Atual */}
-        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 dark:border-emerald-800">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
                   onClick={() => setLocation('/configuracoes?tab=plano')}
                 >
                   {usagePercent >= 80 ? (
@@ -314,7 +314,7 @@ export default function Dashboard() {
 
         {/* Alunos que Precisam de Análise */}
         {studentsNeedingAnalysis && studentsNeedingAnalysis.length > 0 && (
-          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 dark:border-purple-800">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-purple-700">
                 <Brain className="h-5 w-5" />
@@ -329,7 +329,7 @@ export default function Dashboard() {
                 {studentsNeedingAnalysis.slice(0, 5).map((student) => (
                   <div 
                     key={student.id} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/80 hover:bg-white transition-colors cursor-pointer border border-purple-100"
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/80 hover:bg-white transition-colors cursor-pointer border border-purple-100 dark:bg-purple-950/30 dark:hover:bg-purple-900/40 dark:border-purple-800"
                     onClick={() => setLocation(`/alunos/${student.id}/medidas`)}
                   >
                     <div className="flex items-center gap-3">
@@ -418,7 +418,7 @@ export default function Dashboard() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30"
                             onClick={(e) => {
                               e.stopPropagation();
                               updateSessionMutation.mutate({ id: session.id, status: 'completed' });
@@ -429,7 +429,7 @@ export default function Dashboard() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
                             onClick={(e) => {
                               e.stopPropagation();
                               updateSessionMutation.mutate({ id: session.id, status: 'no_show' });

@@ -254,7 +254,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
               size="sm"
               onClick={handleExportPDF}
               disabled={exportPDFMutation.isPending}
-              className="bg-white hover:bg-blue-50 border-blue-200 text-blue-700"
+              className="bg-white dark:bg-secondary hover:bg-blue-50 dark:hover:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400"
             >
               {exportPDFMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -278,52 +278,52 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
           <div className="space-y-6">
             {/* Cards de Resumo - Linha 1 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 rounded-lg p-4 border border-emerald-200">
+              <div className="bg-white/80 dark:bg-emerald-950/30 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500 rounded-lg">
                     <Dumbbell className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-emerald-700">{dashboard.totalWorkouts}</p>
-                    <p className="text-xs text-emerald-600">Total de Treinos</p>
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{dashboard.totalWorkouts}</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-500">Total de Treinos</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-blue-200">
+              <div className="bg-white/80 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-500 rounded-lg">
                     <Activity className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-700">
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
                       {((dashboard.totalVolume || 0) / 1000).toFixed(1)}t
                     </p>
-                    <p className="text-xs text-blue-600">Volume Total</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-500">Volume Total</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-purple-200">
+              <div className="bg-white/80 dark:bg-purple-950/30 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-500 rounded-lg">
                     <Target className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-purple-700">{dashboard.totalSets}</p>
-                    <p className="text-xs text-purple-600">Total de Séries</p>
+                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{dashboard.totalSets}</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-500">Total de Séries</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-orange-200">
+              <div className="bg-white/80 dark:bg-orange-950/30 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-500 rounded-lg">
                     <TrendingUp className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-orange-700">{dashboard.totalReps}</p>
-                    <p className="text-xs text-orange-600">Total de Reps</p>
+                    <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{dashboard.totalReps}</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-500">Total de Reps</p>
                   </div>
                 </div>
               </div>
@@ -331,53 +331,53 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             
             {/* Cards de Resumo - Linha 2 (Novas Métricas) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 rounded-lg p-4 border border-cyan-200">
+              <div className="bg-white/80 dark:bg-cyan-950/30 rounded-lg p-4 border border-cyan-200 dark:border-cyan-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-cyan-500 rounded-lg">
                     <Calendar className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-cyan-700">{extendedMetrics?.avgPerWeek || 0}</p>
-                    <p className="text-xs text-cyan-600">Média/Semana</p>
+                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-400">{extendedMetrics?.avgPerWeek || 0}</p>
+                    <p className="text-xs text-cyan-600 dark:text-cyan-500">Média/Semana</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-indigo-200">
+              <div className="bg-white/80 dark:bg-indigo-950/30 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-indigo-500 rounded-lg">
                     <BarChart3 className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-indigo-700">{extendedMetrics?.currentMonth || 0}</p>
+                      <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{extendedMetrics?.currentMonth || 0}</p>
                       {extendedMetrics && <TrendIndicator value={extendedMetrics.monthVariation} />}
                     </div>
-                    <p className="text-xs text-indigo-600">Este Mês</p>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-500">Este Mês</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-gray-200">
+              <div className="bg-white/80 dark:bg-gray-800/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-500 rounded-lg">
                     <Clock className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-700">{extendedMetrics?.previousMonth || 0}</p>
-                    <p className="text-xs text-gray-600">Mês Anterior</p>
+                    <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{extendedMetrics?.previousMonth || 0}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Mês Anterior</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-4 border border-amber-200">
+              <div className="bg-white/80 dark:bg-amber-950/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500 rounded-lg">
                     <Users className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-amber-700">{students.length}</p>
-                    <p className="text-xs text-amber-600">Total Alunos</p>
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{students.length}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-500">Total Alunos</p>
                   </div>
                 </div>
               </div>
@@ -385,10 +385,10 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             
             {/* Alerta de Alunos Inativos */}
             {inactiveStudents.length > 0 && selectedStudentId === "all" && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <h4 className="font-medium text-red-700">
+                  <h4 className="font-medium text-red-700 dark:text-red-400">
                     Alunos Inativos ({inactiveStudents.length})
                   </h4>
                   <Badge variant="destructive" className="ml-auto">

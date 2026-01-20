@@ -87,91 +87,92 @@ html {
   --primary-foreground: oklch(0.15 0.02 155);
   --sidebar-primary: oklch(0.65 0.18 160);
   --sidebar-primary-foreground: oklch(0.15 0.02 155);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
+  --background: oklch(0.12 0.01 250);
+  --foreground: oklch(0.92 0.005 250);
+  --card: oklch(0.16 0.015 250);
+  --card-foreground: oklch(0.92 0.005 250);
+  --popover: oklch(0.18 0.015 250);
+  --popover-foreground: oklch(0.92 0.005 250);
+  --secondary: oklch(0.2 0.01 250);
+  --secondary-foreground: oklch(0.85 0.005 250);
+  --muted: oklch(0.22 0.01 250);
+  --muted-foreground: oklch(0.65 0.01 250);
+  --accent: oklch(0.22 0.01 250);
+  --accent-foreground: oklch(0.92 0.005 250);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  /* Bordas mais visíveis no dark mode */
+  --border: oklch(0.35 0.01 250);
+  --input: oklch(0.25 0.01 250);
+  --ring: oklch(0.65 0.18 160);
   --chart-1: oklch(0.65 0.18 160);
   --chart-2: oklch(0.6 0.15 170);
   --chart-3: oklch(0.55 0.12 180);
   --chart-4: oklch(0.7 0.1 150);
   --chart-5: oklch(0.5 0.15 165);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --sidebar: oklch(0.1 0.01 250);
+  --sidebar-foreground: oklch(0.92 0.005 250);
+  --sidebar-accent: oklch(0.18 0.01 250);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.3 0.01 250);
+  --sidebar-ring: oklch(0.65 0.18 160);
 }
 
 /* Tema Premium - Baseado no PDF FitPrime (azul escuro profundo + verde neon) */
 .premium {
-  /* Verde neon brilhante como cor primária */
-  --primary: oklch(0.8 0.25 155);
-  --primary-foreground: oklch(0.12 0.02 250);
-  --sidebar-primary: oklch(0.8 0.25 155);
-  --sidebar-primary-foreground: oklch(0.12 0.02 250);
+  /* Verde neon brilhante como cor primária - #00FF88 do PDF */
+  --primary: oklch(0.85 0.28 155);
+  --primary-foreground: oklch(0.1 0.02 250);
+  --sidebar-primary: oklch(0.85 0.28 155);
+  --sidebar-primary-foreground: oklch(0.1 0.02 250);
   
-  /* Fundo azul escuro profundo */
-  --background: oklch(0.12 0.02 250);
-  --foreground: oklch(0.95 0.01 250);
+  /* Fundo azul escuro profundo - #0A0F1C do PDF */
+  --background: oklch(0.1 0.025 250);
+  --foreground: oklch(0.95 0.005 250);
   
-  /* Cards com fundo ligeiramente mais claro */
-  --card: oklch(0.16 0.025 250);
-  --card-foreground: oklch(0.95 0.01 250);
+  /* Cards com fundo ligeiramente mais claro - #111827 */
+  --card: oklch(0.15 0.02 250);
+  --card-foreground: oklch(0.95 0.005 250);
   
   /* Popover */
-  --popover: oklch(0.18 0.025 250);
-  --popover-foreground: oklch(0.95 0.01 250);
+  --popover: oklch(0.17 0.02 250);
+  --popover-foreground: oklch(0.95 0.005 250);
   
   /* Secundário */
-  --secondary: oklch(0.2 0.02 250);
-  --secondary-foreground: oklch(0.85 0.01 250);
+  --secondary: oklch(0.18 0.015 250);
+  --secondary-foreground: oklch(0.85 0.005 250);
   
   /* Muted - tons mais suaves */
-  --muted: oklch(0.22 0.02 250);
-  --muted-foreground: oklch(0.65 0.02 250);
+  --muted: oklch(0.2 0.015 250);
+  --muted-foreground: oklch(0.6 0.01 250);
   
   /* Accent - verde neon suave */
-  --accent: oklch(0.25 0.04 155);
-  --accent-foreground: oklch(0.95 0.01 155);
+  --accent: oklch(0.22 0.05 155);
+  --accent-foreground: oklch(0.95 0.005 155);
   
   /* Destructive */
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
   
-  /* Bordas com verde neon sutil */
-  --border: oklch(0.4 0.08 155 / 20%);
-  --input: oklch(0.4 0.08 155 / 25%);
-  --ring: oklch(0.8 0.25 155);
+  /* Bordas visíveis - #1E293B com toque de verde */
+  --border: oklch(0.32 0.02 250);
+  --input: oklch(0.2 0.015 250);
+  --ring: oklch(0.85 0.28 155);
   
   /* Charts com tons de verde e ciano */
-  --chart-1: oklch(0.8 0.25 155);
-  --chart-2: oklch(0.7 0.2 165);
-  --chart-3: oklch(0.6 0.18 175);
-  --chart-4: oklch(0.75 0.15 145);
-  --chart-5: oklch(0.65 0.22 185);
+  --chart-1: oklch(0.85 0.28 155);
+  --chart-2: oklch(0.75 0.22 165);
+  --chart-3: oklch(0.65 0.18 175);
+  --chart-4: oklch(0.8 0.15 145);
+  --chart-5: oklch(0.7 0.22 185);
   
-  /* Sidebar premium */
-  --sidebar: oklch(0.1 0.015 250);
-  --sidebar-foreground: oklch(0.95 0.01 250);
-  --sidebar-accent: oklch(0.2 0.04 155);
-  --sidebar-accent-foreground: oklch(0.95 0.01 155);
-  --sidebar-border: oklch(0.4 0.08 155 / 15%);
-  --sidebar-ring: oklch(0.8 0.25 155);
+  /* Sidebar premium - mais escura */
+  --sidebar: oklch(0.08 0.02 250);
+  --sidebar-foreground: oklch(0.95 0.005 250);
+  --sidebar-accent: oklch(0.18 0.05 155);
+  --sidebar-accent-foreground: oklch(0.95 0.005 155);
+  --sidebar-border: oklch(0.28 0.015 250);
+  --sidebar-ring: oklch(0.85 0.28 155);
 }
 
 @layer base {
@@ -180,6 +181,48 @@ html {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Scrollbar styling para dark mode e premium */
+  .dark ::-webkit-scrollbar,
+  .premium ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .dark ::-webkit-scrollbar-track,
+  .premium ::-webkit-scrollbar-track {
+    background: oklch(0.15 0.01 250);
+    border-radius: 4px;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.01 250);
+    border-radius: 4px;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0.01 250);
+  }
+  
+  .premium ::-webkit-scrollbar-thumb {
+    background: oklch(0.3 0.03 155);
+    border-radius: 4px;
+  }
+  
+  .premium ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.4 0.05 155);
+  }
+  
+  /* Firefox scrollbar */
+  .dark {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.35 0.01 250) oklch(0.15 0.01 250);
+  }
+  
+  .premium {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.3 0.03 155) oklch(0.12 0.02 250);
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

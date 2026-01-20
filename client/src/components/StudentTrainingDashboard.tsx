@@ -79,57 +79,57 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
     <div className="space-y-6">
       {/* Cards de Resumo */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-500 rounded-lg">
                 <Dumbbell className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-700">{dashboard.totalWorkouts}</p>
-                <p className="text-xs text-emerald-600">Total de Treinos</p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{dashboard.totalWorkouts}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-500">Total de Treinos</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30 border-blue-200 dark:border-blue-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-500 rounded-lg">
                 <Activity className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-700">{(dashboard.totalVolume / 1000).toFixed(1)}t</p>
-                <p className="text-xs text-blue-600">Volume Total</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{(dashboard.totalVolume / 1000).toFixed(1)}t</p>
+                <p className="text-xs text-blue-600 dark:text-blue-500">Volume Total</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30 border-purple-200 dark:border-purple-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-500 rounded-lg">
                 <Target className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-purple-700">{dashboard.totalSets}</p>
-                <p className="text-xs text-purple-600">Total de Séries</p>
+                <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{dashboard.totalSets}</p>
+                <p className="text-xs text-purple-600 dark:text-purple-500">Total de Séries</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30 border-orange-200 dark:border-orange-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-500 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-orange-700">{dashboard.totalReps}</p>
-                <p className="text-xs text-orange-600">Total de Reps</p>
+                <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{dashboard.totalReps}</p>
+                <p className="text-xs text-orange-600 dark:text-orange-500">Total de Reps</p>
               </div>
             </div>
           </CardContent>
