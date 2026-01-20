@@ -4876,3 +4876,18 @@
 - [x] Revisar Acessos do Aluno
 - [ ] Testar todas as telas nos 3 temas
 - [x] Corrigir scrollbar branca nos temas dark/premium
+
+## Revisão Completa Temas Dark/Premium - 20/01/2026
+- [ ] WhatsApp Mensagens - dark mode
+- [ ] WhatsApp Estatísticas - dark mode
+- [ ] Relatórios - dark mode
+- [ ] Relatórios Cardio - dark mode
+- [ ] Cobranças - dark mode
+- [ ] Planos - dark mode
+- [ ] Treinos - dark mode
+- [ ] Sessões - dark mode
+- [ ] Agenda - dark mode
+- [ ] Alunos (lista) - dark mode
+- [ ] Diário de Treino - dark mode
+- [ ] Loading skeleton - dark mode
+- [ ] Modais e dialogs - dark mode

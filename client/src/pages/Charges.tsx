@@ -627,8 +627,8 @@ export default function Charges() {
                                 className="flex items-center justify-between p-4 hover:bg-accent/30"
                               >
                                 <div className="flex items-center gap-4">
-                                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <Calendar className="h-4 w-4 text-gray-500" />
+                                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                                    <Calendar className="h-4 w-4 text-muted-foreground" />
                                   </div>
                                   <div>
                                     <p className="font-medium text-sm">

@@ -465,7 +465,7 @@ export default function Workouts() {
       cardio: { label: "Cardio", className: "bg-blue-100 text-blue-700" },
       flexibility: { label: "Flexibilidade", className: "bg-purple-100 text-purple-700" },
       functional: { label: "Funcional", className: "bg-orange-100 text-orange-700" },
-      mixed: { label: "Misto", className: "bg-gray-100 text-gray-700" },
+      mixed: { label: "Misto", className: "bg-muted text-muted-foreground" },
     };
     return types[type || "mixed"] || types.mixed;
   };
@@ -488,7 +488,7 @@ export default function Workouts() {
       strength: { label: "Força", className: "bg-red-100 text-red-700" },
       bulking: { label: "Bulking", className: "bg-orange-100 text-orange-700" },
       cutting: { label: "Cutting", className: "bg-pink-100 text-pink-700" },
-      general: { label: "Geral", className: "bg-gray-100 text-gray-700" },
+      general: { label: "Geral", className: "bg-muted text-muted-foreground" },
     };
     return goals[goal || "general"] || goals.general;
   };
@@ -638,14 +638,14 @@ export default function Workouts() {
                               )}
                               
                               {aiPreview.adaptationInfo.adaptationReason && (
-                                <div className="bg-white/50 rounded p-2">
+                                <div className="bg-background/50 dark:bg-background/30 rounded p-2">
                                   <p className="text-xs font-medium text-orange-700">Motivo da Adaptação:</p>
                                   <p className="text-xs text-muted-foreground">{aiPreview.adaptationInfo.adaptationReason}</p>
                                 </div>
                               )}
                               
                               {aiPreview.adaptationInfo.deficitsAddressed?.length > 0 && (
-                                <div className="bg-white/50 rounded p-2">
+                                <div className="bg-background/50 dark:bg-background/30 rounded p-2">
                                   <p className="text-xs font-medium text-orange-700">Déficits Abordados:</p>
                                   <div className="flex flex-wrap gap-1 mt-1">
                                     {aiPreview.adaptationInfo.deficitsAddressed.map((deficit: string, i: number) => (
@@ -658,7 +658,7 @@ export default function Workouts() {
                               )}
                               
                               {aiPreview.adaptationInfo.improvements?.length > 0 && (
-                                <div className="bg-white/50 rounded p-2">
+                                <div className="bg-background/50 dark:bg-background/30 rounded p-2">
                                   <p className="text-xs font-medium text-orange-700">Melhorias:</p>
                                   <div className="flex flex-wrap gap-1 mt-1">
                                     {aiPreview.adaptationInfo.improvements.map((improvement: string, i: number) => (
@@ -671,7 +671,7 @@ export default function Workouts() {
                               )}
                               
                               {aiPreview.adaptationInfo.measurementEvolution && (
-                                <div className="bg-white/50 rounded p-2">
+                                <div className="bg-background/50 dark:bg-background/30 rounded p-2">
                                   <p className="text-xs font-medium text-orange-700">Evolução das Medidas ({aiPreview.adaptationInfo.measurementEvolution.periodDays} dias):</p>
                                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
                                     {aiPreview.adaptationInfo.measurementEvolution.weightChange !== null && (
@@ -703,7 +703,7 @@ export default function Workouts() {
                               )}
                               
                               {aiPreview.adaptationInfo.workoutPerformance && (
-                                <div className="bg-white/50 rounded p-2">
+                                <div className="bg-background/50 dark:bg-background/30 rounded p-2">
                                   <p className="text-xs font-medium text-orange-700">Desempenho (Últimos 30 dias):</p>
                                   <div className="grid grid-cols-3 gap-2 mt-1">
                                     <div className="text-xs">
@@ -783,7 +783,7 @@ export default function Workouts() {
                                       <div className="flex items-center gap-3 mt-1 text-xs">
                                         <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{ex.sets} séries</span>
                                         <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{ex.reps} reps</span>
-                                        <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">{ex.restSeconds}s desc.</span>
+                                        <span className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded">{ex.restSeconds}s desc.</span>
                                       </div>
                                     </div>
                                   ))}
@@ -1651,7 +1651,7 @@ export default function Workouts() {
                   {/* Cards de Comparação */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* Treino 1 */}
-                    <Card className="border-gray-200">
+                    <Card className="border-border">
                       <CardHeader className="pb-2 px-3 sm:px-6">
                         <CardTitle className="text-sm sm:text-base truncate">
                           {comparisonResult.workout1?.name || 'Treino 1'}
@@ -1739,25 +1739,25 @@ export default function Workouts() {
                 {/* Métricas Rápidas */}
                 <div className="grid grid-cols-2 gap-2">
                   {studentAnalysis.latestMeasurement?.weight && (
-                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                    <div className="bg-muted/50 rounded-lg p-2 sm:p-3 text-center">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Peso</p>
                       <p className="text-sm sm:text-lg font-bold">{studentAnalysis.latestMeasurement.weight} kg</p>
                     </div>
                   )}
                   {studentAnalysis.latestMeasurement?.bodyFat && (
-                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                    <div className="bg-muted/50 rounded-lg p-2 sm:p-3 text-center">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Gordura</p>
                       <p className="text-sm sm:text-lg font-bold">{studentAnalysis.latestMeasurement.bodyFat}%</p>
                     </div>
                   )}
                   {studentAnalysis.workoutPerformance && (
-                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                    <div className="bg-muted/50 rounded-lg p-2 sm:p-3 text-center">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Treinos (30d)</p>
                       <p className="text-sm sm:text-lg font-bold">{studentAnalysis.workoutPerformance.totalWorkouts}</p>
                     </div>
                   )}
                   {studentAnalysis.workoutPerformance?.consistency && (
-                    <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                    <div className="bg-muted/50 rounded-lg p-2 sm:p-3 text-center">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Consistência</p>
                       <p className="text-sm sm:text-lg font-bold">{studentAnalysis.workoutPerformance.consistency}</p>
                     </div>
@@ -1905,12 +1905,12 @@ export default function Workouts() {
                 )}
                 
                 {/* Botão de Gerar Treino 2.0 */}
-                <Card className={`border-2 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50' : 'border-gray-200'}`}>
+                <Card className={`border-2 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30' : 'border-border'}`}>
                   <CardContent className="p-3">
                     <div className="space-y-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <RefreshCw className={`h-4 w-4 shrink-0 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'text-orange-600' : 'text-gray-400'}`} />
+                          <RefreshCw className={`h-4 w-4 shrink-0 ${studentAnalysis.analysis.shouldAdaptWorkout ? 'text-orange-600' : 'text-muted-foreground'}`} />
                           <h4 className="text-xs sm:text-sm font-semibold">
                             {studentAnalysis.analysis.shouldAdaptWorkout ? 'Recomendado: Criar Treino' : 'Adaptação Não Necessária'}
                           </h4>
@@ -1919,7 +1919,7 @@ export default function Workouts() {
                               high: 'bg-red-100 text-red-700',
                               medium: 'bg-orange-100 text-orange-700',
                               low: 'bg-yellow-100 text-yellow-700',
-                            }[studentAnalysis.analysis.adaptationPriority as 'high' | 'medium' | 'low'] || 'bg-gray-100'}`}>
+                            }[studentAnalysis.analysis.adaptationPriority as 'high' | 'medium' | 'low'] || 'bg-muted'}`}>
                               {{
                                 high: 'Alta',
                                 medium: 'Média',
@@ -2028,7 +2028,7 @@ export default function Workouts() {
             
             {studentAnalysis && (
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-sm font-medium mb-2">Conteúdo do PDF:</p>
                   <ul className="text-xs text-muted-foreground space-y-1">
                     <li>• Resumo da análise</li>

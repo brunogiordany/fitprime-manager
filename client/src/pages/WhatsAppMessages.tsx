@@ -343,8 +343,8 @@ export default function WhatsAppMessages() {
             {/* Lista de conversas - com scroll garantido no mobile */}
             <div className="flex-1 overflow-y-auto min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filteredStudents.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <WifiOff className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-12 text-muted-foreground">
+                  <WifiOff className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
                   <p className="font-medium">Nenhum aluno com WhatsApp</p>
                   <p className="text-sm">Cadastre alunos com telefone e opt-in</p>
                 </div>
@@ -372,7 +372,7 @@ export default function WhatsAppMessages() {
                           WhatsApp
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className="text-sm text-muted-foreground truncate">
                         {student.phone}
                       </p>
                     </div>
@@ -429,8 +429,8 @@ export default function WhatsAppMessages() {
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center bg-white/80 dark:bg-gray-900/80 rounded-2xl p-8 shadow-lg">
                         <MessageSquare className="h-16 w-16 mx-auto mb-4 text-green-500" />
-                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Nenhuma mensagem enviada</p>
-                        <p className="text-sm text-gray-500">Envie uma mensagem para este aluno!</p>
+                        <p className="text-lg font-medium text-foreground">Nenhuma mensagem enviada</p>
+                        <p className="text-sm text-muted-foreground">Envie uma mensagem para este aluno!</p>
                       </div>
                     </div>
                   ) : (
@@ -467,7 +467,7 @@ export default function WhatsAppMessages() {
                                     
                                     {/* Horário e status */}
                                     <div className={`flex items-center gap-1 mt-1 ${isPersonal ? 'justify-end' : 'justify-start'}`}>
-                                      <span className="text-[10px] text-gray-500">
+                                      <span className="text-[10px] text-muted-foreground">
                                         {format(new Date(msg.createdAt), "HH:mm")}
                                       </span>
                                       {isPersonal && (
@@ -519,8 +519,8 @@ export default function WhatsAppMessages() {
                   <div className="w-48 h-48 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                     <MessageSquare className="h-24 w-24 text-green-500" />
                   </div>
-                  <h2 className="text-2xl font-light text-gray-600 dark:text-gray-400 mb-2">WhatsApp Mensagens</h2>
-                  <p className="text-gray-500 dark:text-gray-500 mb-4">
+                  <h2 className="text-2xl font-light text-foreground/70 mb-2">WhatsApp Mensagens</h2>
+                  <p className="text-muted-foreground mb-4">
                     Selecione um aluno para enviar mensagem via WhatsApp
                   </p>
                   <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 text-left">
@@ -602,7 +602,7 @@ export default function WhatsAppMessages() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{student.name}</p>
-                        <p className="text-xs text-gray-500">{student.phone}</p>
+                        <p className="text-xs text-muted-foreground">{student.phone}</p>
                       </div>
                     </div>
                   ))}
@@ -619,7 +619,7 @@ export default function WhatsAppMessages() {
                 onChange={(e) => setBulkMessage(e.target.value)}
                 className="min-h-[100px]"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Dica: Use mensagens personalizadas como "Olá! Lembrete de treino amanhã 💪"
               </p>
             </div>
