@@ -1,0 +1,18 @@
+{
+  "query": "\nSELECT \n  wl.status,\n  COUNT(*) as count\nFROM workout_logs wl\nJOIN students s ON wl.studentId = s.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.status;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \nSELECT \n  wl.status,\n  COUNT(*) as count\nFROM workout_logs wl\nJOIN students s ON wl.studentId = s.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.status;\n",
+  "rows": [
+    {
+      "status": "completed",
+      "count": "7"
+    },
+    {
+      "status": "in_progress",
+      "count": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "status\tcount\ncompleted\t7\nin_progress\t4\n",
+  "stderr": "",
+  "execution_time_ms": 375
+}

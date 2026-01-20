@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  wl.id as log_id,\n  wl.training_date,\n  wl.status,\n  wl.day_name,\n  s.name as student_name,\n  COUNT(wle.id) as total_exercises,\n  SUM(wle.completed_sets) as total_sets,\n  SUM(wle.total_volume) as total_volume\nFROM workout_logs wl\nJOIN students s ON wl.student_id = s.id\nLEFT JOIN workout_log_exercises wle ON wle.workout_log_id = wl.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.id, wl.training_date, wl.status, wl.day_name, s.name\nORDER BY wl.training_date DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \nSELECT \n  wl.id as log_id,\n  wl.training_date,\n  wl.status,\n  wl.day_name,\n  s.name as student_name,\n  COUNT(wle.id) as total_exercises,\n  SUM(wle.completed_sets) as total_sets,\n  SUM(wle.total_volume) as total_volume\nFROM workout_logs wl\nJOIN students s ON wl.student_id = s.id\nLEFT JOIN workout_log_exercises wle ON wle.workout_log_id = wl.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.id, wl.training_date, wl.status, wl.day_name, s.name\nORDER BY wl.training_date DESC\nLIMIT 20;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'wl.student_id' in 'on clause'"
+  ]
+}

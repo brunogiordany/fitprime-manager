@@ -4945,3 +4945,15 @@
 - [x] Bug da data: ao salvar registro de treino, a data muda de dia 20 para dia 19 (problema de timezone) - corrigido safeDate para preservar data local
 - [x] UX das abas: reorganizar abas com nomes mais claros (Sessões, Treinos, Cardio, Evol., Dash) e ícones melhores
 - [ ] Melhorar layout dos exercícios no registro de treino
+
+
+## Bug Análise por Grupo Muscular - 20/01/2026
+- [x] Análise por grupo muscular não está puxando corretamente os apontamentos do diário de treino
+  - Problema: Grupos musculares fragmentados (ex: "Quadríceps/Glúteos", "Costas (Grande Dorsal)") não estavam sendo agrupados
+  - Solução: Melhorada função normalizeGroup para:
+    - Agrupar grupos compostos (ex: "Quadríceps/Glúteos" distribui entre Quadríceps e Glúteos)
+    - Normalizar variações (ex: "Costas (Grande Dorsal)" → "Costas")
+    - Ignorar "Aquecimento" na análise
+    - Distribuir volume/séries/reps proporcionalmente entre grupos compostos
+- [x] Verificar se a query está filtrando corretamente por aluno - OK (filtra por status='completed')
+- [x] Verificar se está contando todas as séries completadas - OK (soma completedSets)

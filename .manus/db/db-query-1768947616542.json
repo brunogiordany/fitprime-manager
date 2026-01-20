@@ -1,0 +1,120 @@
+{
+  "query": "\nSELECT \n  wl.id as log_id,\n  wl.trainingDate,\n  wl.status,\n  wl.dayName,\n  s.name as student_name,\n  COUNT(wle.id) as total_exercises,\n  SUM(COALESCE(wle.completedSets, 0)) as total_sets,\n  SUM(COALESCE(wle.totalVolume, 0)) as total_volume\nFROM workout_logs wl\nJOIN students s ON wl.studentId = s.id\nLEFT JOIN workout_log_exercises wle ON wle.workoutLogId = wl.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.id, wl.trainingDate, wl.status, wl.dayName, s.name\nORDER BY wl.trainingDate DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute \nSELECT \n  wl.id as log_id,\n  wl.trainingDate,\n  wl.status,\n  wl.dayName,\n  s.name as student_name,\n  COUNT(wle.id) as total_exercises,\n  SUM(COALESCE(wle.completedSets, 0)) as total_sets,\n  SUM(COALESCE(wle.totalVolume, 0)) as total_volume\nFROM workout_logs wl\nJOIN students s ON wl.studentId = s.id\nLEFT JOIN workout_log_exercises wle ON wle.workoutLogId = wl.id\nWHERE s.name LIKE '%Bruno%'\nGROUP BY wl.id, wl.trainingDate, wl.status, wl.dayName, s.name\nORDER BY wl.trainingDate DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "log_id": "210004",
+      "trainingDate": "2026-01-20",
+      "status": "in_progress",
+      "dayName": "Dia 6: Pernas (Ênfase Posterior e Quadríceps)",
+      "student_name": "Bruno",
+      "total_exercises": "7",
+      "total_sets": "0",
+      "total_volume": "0.00"
+    },
+    {
+      "log_id": "180001",
+      "trainingDate": "2026-01-19",
+      "status": "completed",
+      "dayName": "Dia 4: Empurrar (Peito, Ombro, Tríceps) - Ênfase Ombro/Peito",
+      "student_name": "Bruno",
+      "total_exercises": "8",
+      "total_sets": "24",
+      "total_volume": "10658.00"
+    },
+    {
+      "log_id": "150001",
+      "trainingDate": "2026-01-14",
+      "status": "completed",
+      "dayName": "Dia 2: Puxar (Costas, Bíceps, Trapézio) - Restrição Lombar",
+      "student_name": "Bruno",
+      "total_exercises": "8",
+      "total_sets": "18",
+      "total_volume": "5949.00"
+    },
+    {
+      "log_id": "120001",
+      "trainingDate": "2026-01-13",
+      "status": "completed",
+      "dayName": "Dia 3: Pernas (Quadríceps e Posterior) - Ênfase Quadríceps",
+      "student_name": "Bruno",
+      "total_exercises": "7",
+      "total_sets": "17",
+      "total_volume": "18598.00"
+    },
+    {
+      "log_id": "90001",
+      "trainingDate": "2026-01-12",
+      "status": "completed",
+      "dayName": "Sessão undefined",
+      "student_name": "Bruno",
+      "total_exercises": "8",
+      "total_sets": "5",
+      "total_volume": "1770.00"
+    },
+    {
+      "log_id": "7",
+      "trainingDate": "2026-01-02",
+      "status": "in_progress",
+      "dayName": "Treino C",
+      "student_name": "Bruno",
+      "total_exercises": "8",
+      "total_sets": "0",
+      "total_volume": "0.00"
+    },
+    {
+      "log_id": "6",
+      "trainingDate": "2026-01-02",
+      "status": "completed",
+      "dayName": "Treino C",
+      "student_name": "Bruno",
+      "total_exercises": "8",
+      "total_sets": "6",
+      "total_volume": "8720.00"
+    },
+    {
+      "log_id": "5",
+      "trainingDate": "2025-12-31",
+      "status": "in_progress",
+      "dayName": "Treino B",
+      "student_name": "Bruno",
+      "total_exercises": "7",
+      "total_sets": "0",
+      "total_volume": "0.00"
+    },
+    {
+      "log_id": "30001",
+      "trainingDate": "2025-12-31",
+      "status": "in_progress",
+      "dayName": "Treino B",
+      "student_name": "Bruno",
+      "total_exercises": "7",
+      "total_sets": "0",
+      "total_volume": "0.00"
+    },
+    {
+      "log_id": "1",
+      "trainingDate": "2025-12-31",
+      "status": "completed",
+      "dayName": "Treino B",
+      "student_name": "Bruno",
+      "total_exercises": "7",
+      "total_sets": "4",
+      "total_volume": "2273.00"
+    },
+    {
+      "log_id": "3",
+      "trainingDate": "2025-12-30",
+      "status": "completed",
+      "dayName": "Treino B - Pernas (Ênfase Quadríceps) e Panturrilhas",
+      "student_name": "Bruno",
+      "total_exercises": "6",
+      "total_sets": "7",
+      "total_volume": "9120.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "log_id\ttrainingDate\tstatus\tdayName\tstudent_name\ttotal_exercises\ttotal_sets\ttotal_volume\n210004\t2026-01-20\tin_progress\tDia 6: Pernas (Ênfase Posterior e Quadríceps)\tBruno\t7\t0\t0.00\n180001\t2026-01-19\tcompleted\tDia 4: Empurrar (Peito, Ombro, Tríceps) - Ênfase Ombro/Peito\tBruno\t8\t24\t10658.00\n150001\t2026-01-14\tcompleted\tDia 2: Puxar (Costas, Bíceps, Trapézio) - Restrição Lombar\tBruno\t8\t18\t5949.00\n120001\t2026-01-13\tcompleted\tDia 3: Pernas (Quadríceps e Posterior) - Ênfase Quadríceps\tBruno\t7\t17\t18598.00\n90001\t2026-01-12\tcompleted\tSessão undefined\tBruno\t8\t5\t1770.00\n7\t2026-01-02\tin_progress\tTreino C\tBruno\t8\t0\t0.00\n6\t2026-01-02\tcompleted\tTreino C\tBruno\t8\t6\t8720.00\n5\t2025-12-31\tin_progress\tTreino B\tBruno\t7\t0\t0.00\n30001\t2025-12-31\tin_progress\tTreino B\tBruno\t7\t0\t0.00\n1\t2025-12-31\tcompleted\tTreino B\tBruno\t7\t4\t2273.00\n3\t2025-12-30\tcompleted\tTreino B - Pernas (Ênfase Quadríceps) e Panturrilhas\tBruno\t6\t7\t9120.00\n",
+  "stderr": "",
+  "execution_time_ms": 373
+}

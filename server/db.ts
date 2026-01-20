@@ -3154,102 +3154,145 @@ export async function getMuscleGroupAnalysis(
     .where(inArray(workoutLogExercises.workoutLogId, logIds.map(l => l.id)));
   
   // Normalizar nomes de grupos musculares
-  const normalizeGroup = (group: string | null): string => {
-    if (!group) return 'Outros';
+  // Função para normalizar grupos musculares compostos
+  // Retorna um array de grupos para distribuir o trabalho proporcionalmente
+  const normalizeGroup = (group: string | null): string[] => {
+    if (!group) return ['Outros'];
     const g = group.toLowerCase().trim();
     
-    // Quadríceps - NÃO mapear "pernas" automaticamente para evitar duplicação
+    // Grupos compostos - dividir proporcionalmente
+    // Quadríceps/Glúteos ou Quadríceps com Glúteos
+    if ((g.includes('quadríceps') || g.includes('quadriceps')) && (g.includes('glúteo') || g.includes('gluteo'))) {
+      return ['Quadríceps', 'Glúteos'];
+    }
+    
+    // Posterior/Glúteos ou Isquiotibiais/Glúteos
+    if ((g.includes('posterior') || g.includes('isquiotibiai')) && (g.includes('glúteo') || g.includes('gluteo'))) {
+      return ['Posteriores da Coxa', 'Glúteos'];
+    }
+    
+    // Bíceps/Antebraço
+    if ((g.includes('bíceps') || g.includes('biceps')) && (g.includes('antebraço') || g.includes('antebraco'))) {
+      return ['Bíceps', 'Antebraço'];
+    }
+    
+    // Tríceps/Peito
+    if ((g.includes('tríceps') || g.includes('triceps')) && (g.includes('peito') || g.includes('peitoral'))) {
+      return ['Tríceps', 'Peito'];
+    }
+    
+    // Ombros/Trapézio
+    if ((g.includes('ombro') || g.includes('deltóide') || g.includes('deltoide')) && (g.includes('trapézio') || g.includes('trapezio'))) {
+      return ['Ombros', 'Trapézio'];
+    }
+    
+    // Grupos simples
+    // Quadríceps
     if (g.includes('quadríceps') || g.includes('quadriceps')) {
-      return 'Quadríceps';
+      return ['Quadríceps'];
     }
     
-    // Pernas (genérico) - manter como categoria separada
+    // Pernas (genérico) - mapear para Quadríceps
     if (g === 'pernas') {
-      return 'Pernas';
+      return ['Quadríceps'];
     }
     
-    // Glúteos
+    // Glúteos (incluindo variações como "Glúteos (Médio)")
     if (g.includes('glúteo') || g.includes('gluteo')) {
-      return 'Glúteos';
+      return ['Glúteos'];
     }
     
     // Posteriores da coxa / Isquiotibiais
     if (g.includes('posterior') || g.includes('isquiotibiai')) {
-      return 'Posteriores da Coxa';
+      return ['Posteriores da Coxa'];
     }
     
-    // Panturrilha
+    // Panturrilha (incluindo "Panturrilhas")
     if (g.includes('panturrilha')) {
-      return 'Panturrilha';
+      return ['Panturrilha'];
     }
     
-    // Peito
+    // Peito (incluindo "Peito Superior", "Peito Inferior", "Peito (Inferior)")
     if (g.includes('peito') || g.includes('peitoral')) {
-      return 'Peito';
+      return ['Peito'];
     }
     
-    // Costas
+    // Costas (incluindo "Costas (Grande Dorsal)", "Costas (Meio)")
     if (g.includes('costa') || g.includes('dorsal') || g.includes('latíssimo')) {
-      return 'Costas';
+      return ['Costas'];
     }
     
-    // Ombros
+    // Ombros (incluindo "Ombros (Lateral)", "Ombros (Anterior)", "Ombros (Posterior)")
     if (g.includes('ombro') || g.includes('deltóide') || g.includes('deltoide')) {
-      return 'Ombros';
+      return ['Ombros'];
     }
     
     // Bíceps
     if (g.includes('bíceps') || g.includes('biceps')) {
-      return 'Bíceps';
+      return ['Bíceps'];
     }
     
-    // Tríceps
+    // Tríceps (incluindo "Tríceps (Cabeça Longa)")
     if (g.includes('tríceps') || g.includes('triceps')) {
-      return 'Tríceps';
+      return ['Tríceps'];
     }
     
     // Abdômen / Core
     if (g.includes('abdômen') || g.includes('abdomen') || g.includes('core') || g.includes('abdominal')) {
-      return 'Abdômen';
+      return ['Abdômen'];
     }
     
     // Antebraço
     if (g.includes('antebraço') || g.includes('antebraco')) {
-      return 'Antebraço';
+      return ['Antebraço'];
     }
     
     // Trapézio
     if (g.includes('trapézio') || g.includes('trapezio')) {
-      return 'Trapézio';
+      return ['Trapézio'];
     }
     
     // Lombar
     if (g.includes('lombar')) {
-      return 'Lombar';
+      return ['Lombar'];
+    }
+    
+    // Aquecimento - ignorar na análise muscular
+    if (g.includes('aquecimento')) {
+      return ['Aquecimento'];
     }
     
     // Retornar o grupo original com primeira letra maiúscula
-    return group.charAt(0).toUpperCase() + group.slice(1);
+    return [group.charAt(0).toUpperCase() + group.slice(1)];
   };
   
-  // Agrupar por grupo muscular - sem duplicação
-  // Cada exercício conta apenas para o grupo que foi especificamente selecionado
+  // Agrupar por grupo muscular - com distribuição proporcional para grupos compostos
   const muscleGroups: Record<string, { volume: number; sets: number; reps: number; count: number }> = {};
   
   for (const ex of exercises) {
-    // Normalizar o grupo muscular - sem dividir em múltiplos grupos
-    const group = normalizeGroup(ex.muscleGroup);
+    // Normalizar o grupo muscular - pode retornar múltiplos grupos para distribuição
+    const groups = normalizeGroup(ex.muscleGroup);
     const volume = parseFloat(ex.totalVolume?.toString() || '0');
     const sets = ex.completedSets || 0;
     const reps = ex.totalReps || 0;
     
-    if (!muscleGroups[group]) {
-      muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
+    // Distribuir proporcionalmente entre os grupos
+    const proportion = 1 / groups.length;
+    
+    for (const group of groups) {
+      // Ignorar "Aquecimento" na análise
+      if (group === 'Aquecimento') continue;
+      
+      if (!muscleGroups[group]) {
+        muscleGroups[group] = { volume: 0, sets: 0, reps: 0, count: 0 };
+      }
+      // Para grupos compostos, distribuir o volume/sets/reps proporcionalmente
+      // Mas contar o exercício inteiro para cada grupo (para contagem de exercícios)
+      muscleGroups[group].volume += volume * proportion;
+      muscleGroups[group].sets += Math.round(sets * proportion);
+      muscleGroups[group].reps += Math.round(reps * proportion);
+      muscleGroups[group].count += 1; // Cada grupo recebe a contagem do exercício
     }
-    muscleGroups[group].volume += volume;
-    muscleGroups[group].sets += sets;
-    muscleGroups[group].reps += reps;
-    muscleGroups[group].count += 1;
   }
   
   // Converter para array e ordenar por volume

@@ -1,0 +1,58 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'workout_log_exercises';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'workout_log_exercises';",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "workoutLogId"
+    },
+    {
+      "COLUMN_NAME": "exerciseId"
+    },
+    {
+      "COLUMN_NAME": "orderIndex"
+    },
+    {
+      "COLUMN_NAME": "exerciseName"
+    },
+    {
+      "COLUMN_NAME": "muscleGroup"
+    },
+    {
+      "COLUMN_NAME": "plannedSets"
+    },
+    {
+      "COLUMN_NAME": "plannedReps"
+    },
+    {
+      "COLUMN_NAME": "plannedRest"
+    },
+    {
+      "COLUMN_NAME": "completedSets"
+    },
+    {
+      "COLUMN_NAME": "totalReps"
+    },
+    {
+      "COLUMN_NAME": "totalVolume"
+    },
+    {
+      "COLUMN_NAME": "maxWeight"
+    },
+    {
+      "COLUMN_NAME": "notes"
+    },
+    {
+      "COLUMN_NAME": "isCompleted"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nworkoutLogId\nexerciseId\norderIndex\nexerciseName\nmuscleGroup\nplannedSets\nplannedReps\nplannedRest\ncompletedSets\ntotalReps\ntotalVolume\nmaxWeight\nnotes\nisCompleted\ncreatedAt\n",
+  "stderr": "",
+  "execution_time_ms": 373
+}
