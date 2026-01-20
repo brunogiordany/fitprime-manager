@@ -53,7 +53,8 @@ import {
   Moon,
   Sparkles,
   Palette,
-  Check
+  Check,
+  Monitor
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -371,10 +372,21 @@ function DashboardLayoutContent({
                     <Palette className="h-3 w-3" />
                     Tema
                   </p>
-                  <div className="flex gap-1">
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => setTheme('auto')}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        theme === 'auto' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      <Monitor className="h-3 w-3" />
+                      Auto
+                    </button>
                     <button
                       onClick={() => setTheme('white')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         theme === 'white' 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-muted hover:bg-muted/80'
@@ -385,7 +397,7 @@ function DashboardLayoutContent({
                     </button>
                     <button
                       onClick={() => setTheme('dark')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         theme === 'dark' 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-muted hover:bg-muted/80'
@@ -396,7 +408,7 @@ function DashboardLayoutContent({
                     </button>
                     <button
                       onClick={() => setTheme('premium')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         theme === 'premium' 
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' 
                           : 'bg-muted hover:bg-muted/80'

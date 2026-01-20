@@ -4857,3 +4857,8 @@
 - [x] Criar variáveis CSS para cada tema no index.css
 - [x] Adicionar seletor de tema na sidebar ou configurações
 - [x] Testar os 3 temas em diferentes páginas
+
+
+## Tema Automático - 20/01/2026
+- [x] Adicionar opção "Auto" que detecta preferência do sistema operacional
+- [x] Atualizar seletor de tema na interface com 4 opções

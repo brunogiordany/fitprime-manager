@@ -1,25 +1,29 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Tipos de tema disponíveis
-export type Theme = "white" | "dark" | "premium";
+// Tipos de tema disponíveis (inclui 'auto' para seguir preferência do sistema)
+export type ThemePreference = "auto" | "white" | "dark" | "premium";
+export type ResolvedTheme = "white" | "dark" | "premium";
 
 // Labels amigáveis para exibição
-export const THEME_LABELS: Record<Theme, string> = {
+export const THEME_LABELS: Record<ThemePreference, string> = {
+  auto: "Automático",
   white: "Claro",
   dark: "Escuro",
   premium: "Premium",
 };
 
 // Descrições dos temas
-export const THEME_DESCRIPTIONS: Record<Theme, string> = {
+export const THEME_DESCRIPTIONS: Record<ThemePreference, string> = {
+  auto: "Segue a preferência do sistema operacional",
   white: "Tema claro padrão",
   dark: "Tema escuro para ambientes com pouca luz",
   premium: "Tema premium com visual sofisticado",
 };
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: ThemePreference;
+  resolvedTheme: ResolvedTheme;
+  setTheme: (theme: ThemePreference) => void;
   toggleTheme?: () => void;
   switchable: boolean;
 }
@@ -28,64 +32,115 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  defaultTheme?: Theme;
+  defaultTheme?: ThemePreference;
   switchable?: boolean;
+}
+
+// Função para detectar preferência do sistema
+function getSystemPreference(): "white" | "dark" {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "white";
+  }
+  return "white";
+}
+
+// Função para resolver o tema baseado na preferência
+function resolveTheme(preference: ThemePreference): ResolvedTheme {
+  if (preference === "auto") {
+    return getSystemPreference();
+  }
+  return preference;
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = "white",
+  defaultTheme = "auto",
   switchable = true,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  const [themePreference, setThemePreference] = useState<ThemePreference>(() => {
     if (switchable) {
       const stored = localStorage.getItem("fitprime-theme");
-      if (stored && ["white", "dark", "premium"].includes(stored)) {
-        return stored as Theme;
+      if (stored && ["auto", "white", "dark", "premium"].includes(stored)) {
+        return stored as ThemePreference;
       }
     }
     return defaultTheme;
   });
 
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => 
+    resolveTheme(themePreference)
+  );
+
+  // Listener para mudanças na preferência do sistema
+  useEffect(() => {
+    if (themePreference !== "auto") return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setResolvedTheme(e.matches ? "dark" : "white");
+    };
+
+    // Atualiza o tema resolvido quando a preferência do sistema muda
+    mediaQuery.addEventListener("change", handleChange);
+    
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, [themePreference]);
+
+  // Atualiza o tema resolvido quando a preferência muda
+  useEffect(() => {
+    setResolvedTheme(resolveTheme(themePreference));
+  }, [themePreference]);
+
+  // Aplica as classes CSS baseado no tema resolvido
   useEffect(() => {
     const root = document.documentElement;
     
     // Remove todas as classes de tema
     root.classList.remove("dark", "premium", "light");
     
-    // Adiciona a classe do tema atual
-    if (theme === "dark") {
+    // Adiciona a classe do tema resolvido
+    if (resolvedTheme === "dark") {
       root.classList.add("dark");
-    } else if (theme === "premium") {
+    } else if (resolvedTheme === "premium") {
       root.classList.add("premium");
       root.classList.add("dark"); // Premium também usa dark mode como base
     }
     // White não precisa de classe especial (é o padrão)
 
     if (switchable) {
-      localStorage.setItem("fitprime-theme", theme);
+      localStorage.setItem("fitprime-theme", themePreference);
     }
-  }, [theme, switchable]);
+  }, [resolvedTheme, themePreference, switchable]);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = (newTheme: ThemePreference) => {
     if (switchable) {
-      setThemeState(newTheme);
+      setThemePreference(newTheme);
     }
   };
 
-  // toggleTheme agora cicla entre os 3 temas
+  // toggleTheme agora cicla entre os 4 temas
   const toggleTheme = switchable
     ? () => {
-        setThemeState(prev => {
+        setThemePreference(prev => {
+          if (prev === "auto") return "white";
           if (prev === "white") return "dark";
           if (prev === "dark") return "premium";
-          return "white";
+          return "auto";
         });
       }
     : undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ 
+      theme: themePreference, 
+      resolvedTheme,
+      setTheme, 
+      toggleTheme, 
+      switchable 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -98,3 +153,6 @@ export function useTheme() {
   }
   return context;
 }
+
+// Alias para compatibilidade (Theme agora é ThemePreference)
+export type Theme = ThemePreference;
