@@ -3117,15 +3117,21 @@ export async function getTrainingDashboard(
 // Análise por grupo muscular
 export async function getMuscleGroupAnalysis(
   personalId: number,
-  filters?: { studentId?: number; startDate?: string; endDate?: string }
+  filters?: { studentId?: number; startDate?: string; endDate?: string; includeInProgress?: boolean }
 ) {
   const db = await getDb();
   if (!db) return [];
   
   const conditions = [
     eq(workoutLogs.personalId, personalId),
-    eq(workoutLogs.status, 'completed'),
   ];
+  
+  // Filtro de status: apenas completed ou incluir in_progress também
+  if (filters?.includeInProgress) {
+    conditions.push(inArray(workoutLogs.status, ['completed', 'in_progress']));
+  } else {
+    conditions.push(eq(workoutLogs.status, 'completed'));
+  }
   
   if (filters?.studentId) {
     conditions.push(eq(workoutLogs.studentId, filters.studentId));

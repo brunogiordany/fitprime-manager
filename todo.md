@@ -4957,3 +4957,13 @@
     - Distribuir volume/séries/reps proporcionalmente entre grupos compostos
 - [x] Verificar se a query está filtrando corretamente por aluno - OK (filtra por status='completed')
 - [x] Verificar se está contando todas as séries completadas - OK (soma completedSets)
+
+
+## Filtros Análise Muscular - 20/01/2026
+- [x] Adicionar filtro de período na análise muscular (Hoje, Ontem, 7 dias, 30 dias, 90 dias, Todo período)
+- [x] Adicionar toggle para incluir registros "in_progress" na análise
+- [x] Atualizar backend getMuscleGroupAnalysis para aceitar parâmetros de período e status
+- [x] Atualizar frontend com seletores visuais
+
+- [ ] UX quebrada: aba "Dash" com texto cortado no mobile
+- [ ] Novo Registro: adicionar opção de selecionar treino do aluno para carregar exercícios automaticamente (não apenas "Treino livre")

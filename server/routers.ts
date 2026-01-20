@@ -10405,6 +10405,7 @@ Seja motivador mas realista e profissional.`;
         studentId: z.number().optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
+        includeInProgress: z.boolean().optional(),
       }).optional())
       .query(async ({ ctx, input }) => {
         const db = await import('./db');

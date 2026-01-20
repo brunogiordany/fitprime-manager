@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Plus, 
@@ -238,6 +239,8 @@ export default function TrainingDiaryPage() {
   const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [muscleMetric, setMuscleMetric] = useState<'sets' | 'exercises' | 'volume'>('sets');
+  const [musclePeriod, setMusclePeriod] = useState<string>('all'); // Filtro de período para análise muscular
+  const [includeInProgress, setIncludeInProgress] = useState(false); // Incluir registros em andamento
 
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
@@ -316,8 +319,62 @@ export default function TrainingDiaryPage() {
   const { data: dashboard } = trpc.trainingDiary.dashboard.useQuery(
     selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
   );
+  // Calcular datas para filtro de período da análise muscular
+  const muscleAnalysisFilters = useMemo(() => {
+    const now = new Date();
+    const today = getLocalDateString(now);
+    
+    // Calcular data de início baseado no período selecionado
+    let startDate: string | undefined;
+    let endDate: string | undefined = today;
+    
+    switch (musclePeriod) {
+      case 'today':
+        startDate = today;
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        startDate = getLocalDateString(yesterday);
+        endDate = startDate;
+        break;
+      }
+      case '7days': {
+        const weekAgo = new Date(now);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        startDate = getLocalDateString(weekAgo);
+        break;
+      }
+      case '30days': {
+        const monthAgo = new Date(now);
+        monthAgo.setDate(monthAgo.getDate() - 30);
+        startDate = getLocalDateString(monthAgo);
+        break;
+      }
+      case '90days': {
+        const quarterAgo = new Date(now);
+        quarterAgo.setDate(quarterAgo.getDate() - 90);
+        startDate = getLocalDateString(quarterAgo);
+        break;
+      }
+      case 'all':
+      default:
+        // Sem filtro de data
+        startDate = undefined;
+        endDate = undefined;
+        break;
+    }
+    
+    return {
+      studentId: selectedStudentId ? parseInt(selectedStudentId) : undefined,
+      startDate,
+      endDate,
+      includeInProgress,
+    };
+  }, [selectedStudentId, musclePeriod, includeInProgress]);
+  
   const { data: muscleGroupData } = trpc.trainingDiary.muscleGroupAnalysis.useQuery(
-    selectedStudentId ? { studentId: parseInt(selectedStudentId) } : {}
+    muscleAnalysisFilters
   );
   
   // Ordenar dados de grupos musculares pela métrica selecionada
@@ -1539,42 +1596,88 @@ export default function TrainingDiaryPage() {
                 {/* Análise por Grupo Muscular */}
                 <Card className="shadow-sm">
                   <CardHeader className="pb-2 sm:pb-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                        <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-                        Análise por Grupo Muscular
-                      </CardTitle>
-                      <div className="flex gap-1">
-                        <Button
-                          variant={muscleMetric === 'sets' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setMuscleMetric('sets')}
-                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
-                        >
-                          Séries
-                        </Button>
-                        <Button
-                          variant={muscleMetric === 'exercises' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setMuscleMetric('exercises')}
-                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
-                        >
-                          Exercícios
-                        </Button>
-                        <Button
-                          variant={muscleMetric === 'volume' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setMuscleMetric('volume')}
-                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
-                        >
-                          Volume
-                        </Button>
+                    <div className="flex flex-col gap-3">
+                      {/* Título e botões de métrica */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                          <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Análise por Grupo Muscular
+                        </CardTitle>
+                        <div className="flex gap-1">
+                          <Button
+                            variant={muscleMetric === 'sets' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setMuscleMetric('sets')}
+                            className="text-xs h-6 sm:h-7 px-2 sm:px-3"
+                          >
+                            Séries
+                          </Button>
+                          <Button
+                            variant={muscleMetric === 'exercises' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setMuscleMetric('exercises')}
+                            className="text-xs h-6 sm:h-7 px-2 sm:px-3"
+                          >
+                            Exercícios
+                          </Button>
+                          <Button
+                            variant={muscleMetric === 'volume' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setMuscleMetric('volume')}
+                            className="text-xs h-6 sm:h-7 px-2 sm:px-3"
+                          >
+                            Volume
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Filtros de período e toggle in_progress */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        {/* Seletor de período */}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <Select value={musclePeriod} onValueChange={setMusclePeriod}>
+                            <SelectTrigger className="h-7 sm:h-8 w-[130px] sm:w-[150px] text-xs sm:text-sm">
+                              <SelectValue placeholder="Período" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="today">Hoje</SelectItem>
+                              <SelectItem value="yesterday">Ontem</SelectItem>
+                              <SelectItem value="7days">Últimos 7 dias</SelectItem>
+                              <SelectItem value="30days">Últimos 30 dias</SelectItem>
+                              <SelectItem value="90days">Últimos 90 dias</SelectItem>
+                              <SelectItem value="all">Todo período</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Toggle para incluir em andamento */}
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            id="include-in-progress"
+                            checked={includeInProgress}
+                            onCheckedChange={setIncludeInProgress}
+                            className="h-4 w-7"
+                          />
+                          <Label htmlFor="include-in-progress" className="text-xs sm:text-sm text-muted-foreground cursor-pointer">
+                            Incluir em andamento
+                          </Label>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                       {muscleMetric === 'sets' ? 'Ordenado por séries realizadas' : 
                        muscleMetric === 'exercises' ? 'Ordenado por quantidade de exercícios' : 
                        'Ordenado por volume (kg) movimentado'}
+                      {musclePeriod !== 'all' && (
+                        <span className="ml-1">
+                          ({musclePeriod === 'today' ? 'hoje' : 
+                            musclePeriod === 'yesterday' ? 'ontem' : 
+                            musclePeriod === '7days' ? 'últimos 7 dias' : 
+                            musclePeriod === '30days' ? 'últimos 30 dias' : 'últimos 90 dias'})
+                        </span>
+                      )}
+                      {includeInProgress && <span className="ml-1 text-amber-500">• incl. em andamento</span>}
                     </p>
                   </CardHeader>
                   <CardContent>
