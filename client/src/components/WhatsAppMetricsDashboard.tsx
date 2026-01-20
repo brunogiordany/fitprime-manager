@@ -329,70 +329,70 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 premium:from-[#0d1520] premium:to-[#0a0f1a] border-green-200 dark:border-green-800 premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-green-600 dark:text-green-400">Total Enviadas</p>
-                <p className="text-2xl font-bold text-green-700 dark:text-green-300">{sentMessages}</p>
+                <p className="text-xs font-medium text-green-600 dark:text-green-400 premium:text-emerald-400">Total Enviadas</p>
+                <p className="text-2xl font-bold text-green-700 dark:text-green-300 premium:text-[#00FF88]">{sentMessages}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <Send className="h-5 w-5 text-green-600" />
+              <div className="h-10 w-10 rounded-full bg-green-500/20 premium:bg-emerald-500/20 flex items-center justify-center">
+                <Send className="h-5 w-5 text-green-600 premium:text-emerald-400" />
               </div>
             </div>
-            <div className="mt-2 flex items-center text-xs text-green-600">
+            <div className="mt-2 flex items-center text-xs text-green-600 premium:text-emerald-400/70">
               <TrendingUp className="h-3 w-3 mr-1" />
               <span>{totalMessages} no total</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 premium:from-[#0d1520] premium:to-[#0a0f1a] border-blue-200 dark:border-blue-800 premium:border-cyan-500/40 premium:shadow-[0_0_15px_rgba(0,200,255,0.15)]">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Taxa de Entrega</p>
-                <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{deliveryRate}%</p>
+                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 premium:text-cyan-400">Taxa de Entrega</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-300 premium:text-cyan-300">{deliveryRate}%</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <CheckCheck className="h-5 w-5 text-blue-600" />
+              <div className="h-10 w-10 rounded-full bg-blue-500/20 premium:bg-cyan-500/20 flex items-center justify-center">
+                <CheckCheck className="h-5 w-5 text-blue-600 premium:text-cyan-400" />
               </div>
             </div>
-            <div className="mt-2 flex items-center text-xs text-blue-600">
+            <div className="mt-2 flex items-center text-xs text-blue-600 premium:text-cyan-400/70">
               <span>{deliveredMessages} entregues</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 premium:from-[#0d1520] premium:to-[#0a0f1a] border-purple-200 dark:border-purple-800 premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Taxa de Abertura</p>
-                <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{openRate}%</p>
+                <p className="text-xs font-medium text-purple-600 dark:text-purple-400 premium:text-violet-400">Taxa de Abertura</p>
+                <p className="text-2xl font-bold text-purple-700 dark:text-purple-300 premium:text-violet-300">{openRate}%</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <Eye className="h-5 w-5 text-purple-600" />
+              <div className="h-10 w-10 rounded-full bg-purple-500/20 premium:bg-violet-500/20 flex items-center justify-center">
+                <Eye className="h-5 w-5 text-purple-600 premium:text-violet-400" />
               </div>
             </div>
-            <div className="mt-2 flex items-center text-xs text-purple-600">
+            <div className="mt-2 flex items-center text-xs text-purple-600 premium:text-violet-400/70">
               <span>{readMessages} lidas</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 premium:from-[#0d1520] premium:to-[#0a0f1a] border-amber-200 dark:border-amber-800 premium:border-amber-500/40 premium:shadow-[0_0_15px_rgba(245,158,11,0.15)]">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Taxa de Resposta</p>
-                <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{responseRate}%</p>
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400 premium:text-amber-400">Taxa de Resposta</p>
+                <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 premium:text-amber-300">{responseRate}%</p>
               </div>
               <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <MessageSquare className="h-5 w-5 text-amber-600" />
+                <MessageSquare className="h-5 w-5 text-amber-600 premium:text-amber-400" />
               </div>
             </div>
-            <div className="mt-2 flex items-center text-xs text-amber-600">
+            <div className="mt-2 flex items-center text-xs text-amber-600 premium:text-amber-400/70">
               <span>{receivedMessages} recebidas</span>
             </div>
           </CardContent>
@@ -401,61 +401,61 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
 
       {/* Segunda linha de KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-red-500/30 premium:shadow-[0_0_10px_rgba(239,68,68,0.1)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <XCircle className="h-5 w-5 text-red-600" />
+              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 premium:bg-red-500/20 flex items-center justify-center">
+                <XCircle className="h-5 w-5 text-red-600 premium:text-red-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Falhas</p>
-                <p className="text-lg font-bold">{failedMessages}</p>
-                <p className="text-xs text-red-600">{failureRate}% do total</p>
+                <p className="text-xs text-gray-500 premium:text-gray-400">Falhas</p>
+                <p className="text-lg font-bold premium:text-white">{failedMessages}</p>
+                <p className="text-xs text-red-600 premium:text-red-400">{failureRate}% do total</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-yellow-500/30 premium:shadow-[0_0_10px_rgba(234,179,8,0.1)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-yellow-600" />
+              <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 premium:bg-yellow-500/20 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-yellow-600 premium:text-yellow-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Pendentes</p>
-                <p className="text-lg font-bold">{pendingMessages}</p>
-                <p className="text-xs text-yellow-600">aguardando</p>
+                <p className="text-xs text-gray-500 premium:text-gray-400">Pendentes</p>
+                <p className="text-lg font-bold premium:text-white">{pendingMessages}</p>
+                <p className="text-xs text-yellow-600 premium:text-yellow-400">aguardando</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/30 premium:shadow-[0_0_10px_rgba(0,255,136,0.1)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-green-600" />
+              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 premium:bg-emerald-500/20 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-green-600 premium:text-emerald-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Horário de Pico</p>
-                <p className="text-lg font-bold">{peakHourFormatted}</p>
-                <p className="text-xs text-green-600">mais ativo</p>
+                <p className="text-xs text-gray-500 premium:text-gray-400">Horário de Pico</p>
+                <p className="text-lg font-bold premium:text-[#00FF88]">{peakHourFormatted}</p>
+                <p className="text-xs text-green-600 premium:text-emerald-400">mais ativo</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-indigo-500/30 premium:shadow-[0_0_10px_rgba(99,102,241,0.1)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Users className="h-5 w-5 text-indigo-600" />
+              <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 premium:bg-indigo-500/20 flex items-center justify-center">
+                <Users className="h-5 w-5 text-indigo-600 premium:text-indigo-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Engajamento</p>
-                <p className="text-lg font-bold">{receivedMessages + sentChatMessages}</p>
-                <p className="text-xs text-indigo-600">interações</p>
+                <p className="text-xs text-gray-500 premium:text-gray-400">Engajamento</p>
+                <p className="text-lg font-bold premium:text-white">{receivedMessages + sentChatMessages}</p>
+                <p className="text-xs text-indigo-600 premium:text-indigo-400">interações</p>
               </div>
             </div>
           </CardContent>
@@ -465,10 +465,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Linha - Mensagens por Dia */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-emerald-500/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 premium:text-white">
+              <TrendingUp className="h-4 w-4 text-green-500 premium:text-emerald-400" />
               Mensagens por Dia
             </CardTitle>
           </CardHeader>
@@ -519,10 +519,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
         </Card>
 
         {/* Gráfico de Pizza - Status das Mensagens */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-cyan-500/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCheck className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 premium:text-white">
+              <CheckCheck className="h-4 w-4 text-blue-500 premium:text-cyan-400" />
               Status das Mensagens
             </CardTitle>
           </CardHeader>
@@ -558,10 +558,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
         </Card>
 
         {/* Gráfico de Barras - Atividade por Hora */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-amber-500/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-500" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 premium:text-white">
+              <Clock className="h-4 w-4 text-amber-500 premium:text-amber-400" />
               Atividade por Hora
             </CardTitle>
           </CardHeader>
@@ -587,10 +587,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
         </Card>
 
         {/* Gráfico de Barras - Tipos de Mensagem */}
-        <Card>
+        <Card className="premium:bg-[#0d1520] premium:border-violet-500/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 premium:text-white">
+              <MessageSquare className="h-4 w-4 text-purple-500 premium:text-violet-400" />
               Tipos de Mensagem
             </CardTitle>
           </CardHeader>
@@ -624,10 +624,10 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
 
       {/* Estatísticas de Automações */}
       {automationStats && (
-        <Card className="border-purple-200 dark:border-purple-800">
+        <Card className="border-purple-200 dark:border-purple-800 premium:bg-[#0d1520] premium:border-violet-500/40 premium:shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 premium:text-white">
+              <Zap className="h-4 w-4 text-purple-500 premium:text-violet-400" />
               Estatísticas de Automações
             </CardTitle>
           </CardHeader>
@@ -656,13 +656,13 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
                 <p className="text-sm font-medium mb-2">Por Tipo de Automação</p>
                 <div className="space-y-2">
                   {automationStats.byType.map((item: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                      <span className="text-sm">{item.name}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-green-600">
+                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/30 rounded-lg gap-2">
+                      <span className="text-sm font-medium">{item.name}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-green-600 dark:text-green-400 premium:text-emerald-400 premium:border-emerald-500/50">
                           {item.sent} enviadas
                         </Badge>
-                        <Badge variant="outline" className="text-blue-600">
+                        <Badge variant="outline" className="text-blue-600 dark:text-blue-400 premium:text-cyan-400 premium:border-cyan-500/50">
                           {item.successRate}% sucesso
                         </Badge>
                       </div>
@@ -676,9 +676,9 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
       )}
 
       {/* Insights */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 premium:from-[#0d1520] premium:to-[#0a0f1a] border-green-200 dark:border-green-800 premium:border-emerald-500/40 premium:shadow-[0_0_20px_rgba(0,255,136,0.15)]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2 text-green-700 dark:text-green-300">
+          <CardTitle className="text-sm font-medium flex items-center gap-2 text-green-700 dark:text-green-300 premium:text-[#00FF88]">
             <Zap className="h-4 w-4" />
             Insights Rápidos
           </CardTitle>
@@ -686,12 +686,12 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <ArrowUpRight className="h-3 w-3 text-green-600" />
+              <div className="h-6 w-6 rounded-full bg-green-500/20 premium:bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ArrowUpRight className="h-3 w-3 text-green-600 premium:text-emerald-400" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-300">Melhor horário</p>
-                <p className="text-green-600 dark:text-green-400">
+                <p className="font-medium text-green-700 dark:text-green-300 premium:text-emerald-300">Melhor horário</p>
+                <p className="text-green-600 dark:text-green-400 premium:text-emerald-400/80">
                   {peakHourFormatted !== "N/A" 
                     ? `Envie mensagens às ${peakHourFormatted} para maior engajamento`
                     : "Ainda não há dados suficientes"}
@@ -699,12 +699,12 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Eye className="h-3 w-3 text-blue-600" />
+              <div className="h-6 w-6 rounded-full bg-blue-500/20 premium:bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Eye className="h-3 w-3 text-blue-600 premium:text-cyan-400" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-300">Taxa de abertura</p>
-                <p className="text-green-600 dark:text-green-400">
+                <p className="font-medium text-green-700 dark:text-green-300 premium:text-cyan-300">Taxa de abertura</p>
+                <p className="text-green-600 dark:text-green-400 premium:text-cyan-400/80">
                   {parseFloat(openRate) > 70 
                     ? "Excelente! Suas mensagens estão sendo lidas"
                     : parseFloat(openRate) > 40
@@ -714,12 +714,12 @@ export default function WhatsAppMetricsDashboard({ messages, chatMessages = [], 
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <MessageSquare className="h-3 w-3 text-purple-600" />
+              <div className="h-6 w-6 rounded-full bg-purple-500/20 premium:bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <MessageSquare className="h-3 w-3 text-purple-600 premium:text-violet-400" />
               </div>
               <div>
-                <p className="font-medium text-green-700 dark:text-green-300">Engajamento</p>
-                <p className="text-green-600 dark:text-green-400">
+                <p className="font-medium text-green-700 dark:text-green-300 premium:text-violet-300">Engajamento</p>
+                <p className="text-green-600 dark:text-green-400 premium:text-violet-400/80">
                   {parseFloat(responseRate) > 50 
                     ? "Ótimo! Seus alunos estão respondendo bem"
                     : parseFloat(responseRate) > 20

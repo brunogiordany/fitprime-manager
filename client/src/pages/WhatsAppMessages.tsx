@@ -232,7 +232,7 @@ export default function WhatsAppMessages() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-80px)] flex flex-col overflow-hidden">
+      <div className="flex flex-col min-h-[calc(100vh-80px)] md:h-[calc(100vh-80px)]">
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-2">
           <div className="flex items-center justify-between">
@@ -310,7 +310,7 @@ export default function WhatsAppMessages() {
         )}
 
         {/* Chat Container */}
-        <div className="flex-1 flex bg-gray-100 dark:bg-gray-900 overflow-hidden min-h-0">
+        <div className="flex-1 flex flex-col md:flex-row bg-gray-100 dark:bg-gray-900 premium:bg-[#0a0f1a] min-h-0 overflow-hidden">
           {/* Lista de Conversas - Sidebar */}
           <div className={`${selectedStudent ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 lg:w-96 bg-white dark:bg-gray-950 border-r overflow-hidden min-h-0`}>
             {/* Header da lista */}
@@ -383,7 +383,7 @@ export default function WhatsAppMessages() {
           </div>
 
           {/* Área de Chat */}
-          <div className={`${selectedStudent ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-[#e5ddd5] dark:bg-gray-800`}>
+          <div className={`${selectedStudent ? 'flex' : 'hidden md:flex'} flex-col flex-1 min-h-0 bg-[#e5ddd5] dark:bg-gray-800 overflow-hidden`}>
             {selectedStudent ? (
               <>
                 {/* Header do chat */}
@@ -416,8 +416,9 @@ export default function WhatsAppMessages() {
 
                 {/* Área de mensagens */}
                 <div 
-                  className="flex-1 overflow-y-auto p-4"
+                  className="flex-1 overflow-y-auto p-4 min-h-0"
                   style={{
+                    WebkitOverflowScrolling: 'touch',
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                   }}
                 >

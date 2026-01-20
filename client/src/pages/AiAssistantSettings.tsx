@@ -280,40 +280,41 @@ export default function AiAssistantSettings() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Bot className="h-7 w-7 text-emerald-600" />
-              IA de Atendimento
-              <Badge variant="outline" className="ml-2 text-amber-600 border-amber-400 bg-amber-50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 flex-wrap">
+              <Bot className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-600 shrink-0" />
+              <span className="truncate">IA de Atendimento</span>
+              <Badge variant="outline" className="text-amber-600 border-amber-400 bg-amber-50 shrink-0">
                 BETA
               </Badge>
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
               Configure sua assistente virtual para atender leads e alunos automaticamente
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={formData.isEnabled ? "default" : "secondary"} className="gap-1">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Badge variant={formData.isEnabled ? "default" : "secondary"} className="gap-1 shrink-0">
               {formData.isEnabled ? (
                 <>
                   <CheckCircle2 className="h-3 w-3" />
-                  Ativa
+                  <span className="hidden xs:inline">Ativa</span>
                 </>
               ) : (
                 <>
                   <XCircle className="h-3 w-3" />
-                  Desativada
+                  <span className="hidden xs:inline">Desativada</span>
                 </>
               )}
             </Badge>
-            <Button onClick={handleSave} disabled={saveConfig.isPending}>
+            <Button onClick={handleSave} disabled={saveConfig.isPending} size="sm" className="sm:size-default">
               {saveConfig.isPending ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                <RefreshCw className="h-4 w-4 sm:mr-2 animate-spin" />
               ) : (
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 sm:mr-2" />
               )}
-              Salvar Configurações
+              <span className="hidden sm:inline">Salvar Configurações</span>
+              <span className="sm:hidden">Salvar</span>
             </Button>
           </div>
         </div>
@@ -341,28 +342,30 @@ export default function AiAssistantSettings() {
         
         {/* Tabs de Configuração */}
         <Tabs defaultValue="identity" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="identity" className="gap-2">
-              <Bot className="h-4 w-4" />
-              <span className="hidden sm:inline">Identidade</span>
-            </TabsTrigger>
-            <TabsTrigger value="behavior" className="gap-2">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Comportamento</span>
-            </TabsTrigger>
-            <TabsTrigger value="schedule" className="gap-2">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">Horários</span>
-            </TabsTrigger>
-            <TabsTrigger value="features" className="gap-2">
-              <Settings2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Funcionalidades</span>
-            </TabsTrigger>
-            <TabsTrigger value="escalation" className="gap-2">
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Escalação</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-max sm:grid sm:w-full sm:grid-cols-5 min-w-full gap-1">
+              <TabsTrigger value="identity" className="gap-2 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Bot className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Identidade</span>
+              </TabsTrigger>
+              <TabsTrigger value="behavior" className="gap-2 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <MessageSquare className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Comportamento</span>
+              </TabsTrigger>
+              <TabsTrigger value="schedule" className="gap-2 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Horários</span>
+              </TabsTrigger>
+              <TabsTrigger value="features" className="gap-2 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Settings2 className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Funcionalidades</span>
+              </TabsTrigger>
+              <TabsTrigger value="escalation" className="gap-2 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                <Shield className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Escalação</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           {/* Tab: Identidade */}
           <TabsContent value="identity" className="space-y-6">

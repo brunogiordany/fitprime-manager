@@ -352,76 +352,81 @@ export default function Automations() {
             {automations.map((automation) => (
               <Card key={automation.id} className="card-hover">
                 <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                        automation.isActive 
-                          ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                      }`}>
-                        <Zap className="h-5 w-5" />
+                  <div className="flex flex-col gap-4">
+                    {/* Header com ícone, nome e controles */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className={`h-10 w-10 shrink-0 rounded-lg flex items-center justify-center ${
+                          automation.isActive 
+                            ? 'bg-emerald-100 dark:bg-emerald-900/50 premium:bg-[rgba(0,255,136,0.15)] text-emerald-600 dark:text-emerald-400 premium:text-[#00FF88]' 
+                            : 'bg-gray-100 dark:bg-gray-800 premium:bg-[#1a2332] text-gray-400'
+                        }`}>
+                          <Zap className="h-5 w-5" />
+                        </div>
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold truncate">{automation.name}</h3>
+                            {getTriggerBadge(automation.trigger)}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {automation.messageTemplate}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
+                      {/* Controles - switch e menu */}
+                      <div className="flex items-center gap-3 shrink-0 ml-2">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{automation.name}</h3>
-                          {getTriggerBadge(automation.trigger)}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {automation.messageTemplate}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {automation.triggerHoursBefore}h antes
-                          </span>
-                          <span>
-                            Janela: {automation.sendWindowStart} - {automation.sendWindowEnd}
-                          </span>
-                          <span>
-                            Máx: {automation.maxMessagesPerDay}/dia
+                          <Switch
+                            checked={automation.isActive}
+                            onCheckedChange={() => handleToggleActive(automation)}
+                          />
+                          <span className="text-sm text-muted-foreground hidden sm:inline">
+                            {automation.isActive ? 'Ativa' : 'Inativa'}
                           </span>
                         </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted">
+                              <MoreHorizontal className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setSelectedAutomation(automation);
+                                setSendDialogOpen(true);
+                              }}
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              Enviar Agora
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditAutomation(automation)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeleteAutomation(automation.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Remover
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={automation.isActive}
-                          onCheckedChange={() => handleToggleActive(automation)}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {automation.isActive ? 'Ativa' : 'Inativa'}
-                        </span>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            onClick={() => {
-                              setSelectedAutomation(automation);
-                              setSendDialogOpen(true);
-                            }}
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Enviar Agora
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditAutomation(automation)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDeleteAutomation(automation.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remover
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    {/* Informações de horário */}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap pl-13 sm:pl-0">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {automation.triggerHoursBefore}h antes
+                      </span>
+                      <span>
+                        Janela: {automation.sendWindowStart} - {automation.sendWindowEnd}
+                      </span>
+                      <span>
+                        Máx: {automation.maxMessagesPerDay}/dia
+                      </span>
                     </div>
                   </div>
                 </CardContent>
