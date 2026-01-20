@@ -43,7 +43,8 @@ import {
   CloudOff,
   RefreshCw,
   Wifi,
-  WifiOff
+  WifiOff,
+  Scale
 } from "lucide-react";
 import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { toast } from "sonner";
@@ -219,6 +220,82 @@ export default function TrainingDiaryPage() {
   const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [muscleMetric, setMuscleMetric] = useState<'sets' | 'exercises' | 'volume'>('sets');
+  // Ordenar dados de grupos musculares pela métrica selecionada
+  const sortedMuscleGroupData = useMemo(() => {
+    if (!muscleGroupData || muscleGroupData.length === 0) return [];
+    return [...muscleGroupData].sort((a: any, b: any) => {
+      const valueA = muscleMetric === 'sets' ? a.sets : 
+                     muscleMetric === 'exercises' ? a.exercises : a.volume;
+      const valueB = muscleMetric === 'sets' ? b.sets : 
+                     muscleMetric === 'exercises' ? b.exercises : b.volume;
+      return valueB - valueA; // Ordem decrescente
+    });
+  }, [muscleGroupData, muscleMetric]);
+
+  // Análise de equilíbrio muscular - pares antagonistas
+  const muscleBalanceAnalysis = useMemo(() => {
+    if (!muscleGroupData || muscleGroupData.length === 0) return [];
+    
+    // Definir pares antagonistas
+    const antagonistPairs = [
+      { muscle1: 'Peito', muscle2: 'Costas', name: 'Peito vs Costas' },
+      { muscle1: 'Bíceps', muscle2: 'Tríceps', name: 'Bíceps vs Tríceps' },
+      { muscle1: 'Quadríceps', muscle2: 'Posteriores da Coxa', name: 'Quadríceps vs Posteriores' },
+      { muscle1: 'Ombros', muscle2: 'Costas', name: 'Ombros vs Costas (postura)' },
+      { muscle1: 'Abdômen', muscle2: 'Costas', name: 'Core (Abdômen vs Lombar)' },
+    ];
+    
+    const analysis: any[] = [];
+    
+    antagonistPairs.forEach(pair => {
+      const muscle1Data = muscleGroupData.find((g: any) => 
+        g.name.toLowerCase().includes(pair.muscle1.toLowerCase())
+      );
+      const muscle2Data = muscleGroupData.find((g: any) => 
+        g.name.toLowerCase().includes(pair.muscle2.toLowerCase())
+      );
+      
+      if (muscle1Data && muscle2Data) {
+        const sets1 = muscle1Data.sets || 0;
+        const sets2 = muscle2Data.sets || 0;
+        const total = sets1 + sets2;
+        
+        if (total > 0) {
+          const ratio = sets1 / (sets2 || 1);
+          const percentage1 = (sets1 / total) * 100;
+          const percentage2 = (sets2 / total) * 100;
+          
+          // Determinar status do equilíbrio
+          let status: 'balanced' | 'warning' | 'imbalanced' = 'balanced';
+          let message = 'Equilíbrio adequado';
+          
+          if (ratio > 2 || ratio < 0.5) {
+            status = 'imbalanced';
+            message = ratio > 2 
+              ? `${pair.muscle1} muito dominante (${ratio.toFixed(1)}:1)`
+              : `${pair.muscle2} muito dominante (${(1/ratio).toFixed(1)}:1)`;
+          } else if (ratio > 1.5 || ratio < 0.67) {
+            status = 'warning';
+            message = ratio > 1.5
+              ? `${pair.muscle1} levemente dominante`
+              : `${pair.muscle2} levemente dominante`;
+          }
+          
+          analysis.push({
+            name: pair.name,
+            muscle1: { name: pair.muscle1, sets: sets1, percentage: percentage1 },
+            muscle2: { name: pair.muscle2, sets: sets2, percentage: percentage2 },
+            ratio,
+            status,
+            message
+          });
+        }
+      }
+    });
+    
+    return analysis;
+  }, [muscleGroupData]);
+
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
   const [showSessionLogModal, setShowSessionLogModal] = useState(false);
@@ -1487,10 +1564,10 @@ export default function TrainingDiaryPage() {
                       <div className="space-y-4">
                         {/* Gráfico de barras horizontais */}
                         <div className="space-y-3">
-                          {muscleGroupData.map((group: any, index: number) => {
+                          {sortedMuscleGroupData.map((group: any, index: number) => {
                             const metricValue = muscleMetric === 'sets' ? group.sets : 
                                              muscleMetric === 'exercises' ? group.exercises : group.volume;
-                            const maxMetric = Math.max(...muscleGroupData.map((g: any) => 
+                            const maxMetric = Math.max(...sortedMuscleGroupData.map((g: any) => 
                               muscleMetric === 'sets' ? g.sets : 
                               muscleMetric === 'exercises' ? g.exercises : g.volume
                             ));
@@ -1551,6 +1628,48 @@ export default function TrainingDiaryPage() {
                             <p className="text-xs text-muted-foreground">Exercícios</p>
                           </div>
                         </div>
+                        
+                        {/* Análise de Equilíbrio Muscular */}
+                        {muscleBalanceAnalysis && muscleBalanceAnalysis.length > 0 && (
+                          <div className="pt-4 border-t">
+                            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                              <Scale className="h-4 w-4" />
+                              Equilíbrio Muscular (Pares Antagonistas)
+                            </h4>
+                            <div className="space-y-3">
+                              {muscleBalanceAnalysis.map((pair: any) => (
+                                <div key={pair.name} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-medium">{pair.name}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                      pair.status === 'balanced' ? 'bg-green-500/20 text-green-600' :
+                                      pair.status === 'warning' ? 'bg-yellow-500/20 text-yellow-600' :
+                                      'bg-red-500/20 text-red-600'
+                                    }`}>
+                                      {pair.message}
+                                    </span>
+                                  </div>
+                                  <div className="flex h-3 rounded-full overflow-hidden bg-muted">
+                                    <div 
+                                      className="bg-blue-500 transition-all"
+                                      style={{ width: `${pair.muscle1.percentage}%` }}
+                                      title={`${pair.muscle1.name}: ${pair.muscle1.sets} séries`}
+                                    />
+                                    <div 
+                                      className="bg-purple-500 transition-all"
+                                      style={{ width: `${pair.muscle2.percentage}%` }}
+                                      title={`${pair.muscle2.name}: ${pair.muscle2.sets} séries`}
+                                    />
+                                  </div>
+                                  <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>{pair.muscle1.name}: {pair.muscle1.sets}s</span>
+                                    <span>{pair.muscle2.name}: {pair.muscle2.sets}s</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">

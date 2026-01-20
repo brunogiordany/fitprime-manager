@@ -4838,3 +4838,5 @@
 ## Análise de Grupos Musculares - 19/01/2026
 - [x] Alterar métrica de ordenação para séries ao invés de quilos
 - [x] Adicionar filtro para alternar entre visualizações (séries/exercícios/volume)
+- [x] Ordenação automática por métrica selecionada (maior para menor)
+- [x] Análise de equilíbrio muscular com alertas de desproporção
