@@ -4850,3 +4850,10 @@
 - [x] Dashboard Diário do Maromba: melhorar layout mobile (cards menores, gráficos)
 - [x] Dashboard Diário do Maromba: otimizar seção de evolução de carga (usar select em vez de grid)
 - [x] WhatsApp Mensagens: verificar e garantir scroll da lista de alunos no mobile
+
+
+## Sistema de Temas - 20/01/2026
+- [x] Expandir ThemeContext para suportar múltiplos temas (white, dark, premium)
+- [x] Criar variáveis CSS para cada tema no index.css
+- [x] Adicionar seletor de tema na sidebar ou configurações
+- [x] Testar os 3 temas em diferentes páginas

@@ -1,9 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+// Tipos de tema disponíveis
+export type Theme = "white" | "dark" | "premium";
+
+// Labels amigáveis para exibição
+export const THEME_LABELS: Record<Theme, string> = {
+  white: "Claro",
+  dark: "Escuro",
+  premium: "Premium",
+};
+
+// Descrições dos temas
+export const THEME_DESCRIPTIONS: Record<Theme, string> = {
+  white: "Tema claro padrão",
+  dark: "Tema escuro para ambientes com pouca luz",
+  premium: "Tema premium com visual sofisticado",
+};
 
 interface ThemeContextType {
   theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme?: () => void;
   switchable: boolean;
 }
@@ -18,38 +34,58 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
-  switchable = false,
+  defaultTheme = "white",
+  switchable = true,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     if (switchable) {
-      const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
+      const stored = localStorage.getItem("fitprime-theme");
+      if (stored && ["white", "dark", "premium"].includes(stored)) {
+        return stored as Theme;
+      }
     }
     return defaultTheme;
   });
 
   useEffect(() => {
     const root = document.documentElement;
+    
+    // Remove todas as classes de tema
+    root.classList.remove("dark", "premium", "light");
+    
+    // Adiciona a classe do tema atual
     if (theme === "dark") {
       root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    } else if (theme === "premium") {
+      root.classList.add("premium");
+      root.classList.add("dark"); // Premium também usa dark mode como base
     }
+    // White não precisa de classe especial (é o padrão)
 
     if (switchable) {
-      localStorage.setItem("theme", theme);
+      localStorage.setItem("fitprime-theme", theme);
     }
   }, [theme, switchable]);
 
+  const setTheme = (newTheme: Theme) => {
+    if (switchable) {
+      setThemeState(newTheme);
+    }
+  };
+
+  // toggleTheme agora cicla entre os 3 temas
   const toggleTheme = switchable
     ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
+        setThemeState(prev => {
+          if (prev === "white") return "dark";
+          if (prev === "dark") return "premium";
+          return "white";
+        });
       }
     : undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );

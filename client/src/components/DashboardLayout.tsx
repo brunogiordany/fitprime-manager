@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useIsMobile } from "@/hooks/useMobile";
+import { useTheme, Theme, THEME_LABELS } from "@/contexts/ThemeContext";
 import { 
   LayoutDashboard, 
   LogOut, 
@@ -47,7 +48,12 @@ import {
   UserCircle,
   Bot,
   Phone,
-  Apple
+  Apple,
+  Sun,
+  Moon,
+  Sparkles,
+  Palette,
+  Check
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -164,6 +170,7 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme();
   
   // Verificação de status de pagamento da assinatura
   const { data: paymentStatus, isLoading: paymentLoading } = trpc.subscription.paymentStatus.useQuery(
@@ -357,6 +364,49 @@ function DashboardLayoutContent({
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Logar como Aluno</span>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {/* Seletor de Tema */}
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <Palette className="h-3 w-3" />
+                    Tema
+                  </p>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setTheme('white')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        theme === 'white' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      <Sun className="h-3 w-3" />
+                      Claro
+                    </button>
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        theme === 'dark' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      <Moon className="h-3 w-3" />
+                      Escuro
+                    </button>
+                    <button
+                      onClick={() => setTheme('premium')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        theme === 'premium' 
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Premium
+                    </button>
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
