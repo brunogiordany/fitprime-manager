@@ -4834,3 +4834,7 @@
 ## Bug de Timezone - Diário de Treino - 19/01/2026
 - [ ] Corrigir bug de timezone - data diminuindo 1 dia ao salvar registro no Diário de Treino
 - [x] Corrigir bug de timezone no Diário de Treino (data diminuindo 1 dia)
+
+## Análise de Grupos Musculares - 19/01/2026
+- [x] Alterar métrica de ordenação para séries ao invés de quilos
+- [x] Adicionar filtro para alternar entre visualizações (séries/exercícios/volume)

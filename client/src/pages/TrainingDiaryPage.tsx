@@ -218,6 +218,7 @@ export default function TrainingDiaryPage() {
 
   const [activeTab, setActiveTab] = useState("sessoes");
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [muscleMetric, setMuscleMetric] = useState<'sets' | 'exercises' | 'volume'>('sets');
   const [showNewLogModal, setShowNewLogModal] = useState(false);
   const [showLogDetailModal, setShowLogDetailModal] = useState(false);
   const [showSessionLogModal, setShowSessionLogModal] = useState(false);
@@ -1443,11 +1444,43 @@ export default function TrainingDiaryPage() {
                 {/* Análise por Grupo Muscular */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Análise por Grupo Muscular
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">Volume e frequência de treino por grupo muscular</p>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="h-5 w-5" />
+                        Análise por Grupo Muscular
+                      </CardTitle>
+                      <div className="flex gap-1">
+                        <Button
+                          variant={muscleMetric === 'sets' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setMuscleMetric('sets')}
+                          className="text-xs h-7"
+                        >
+                          Séries
+                        </Button>
+                        <Button
+                          variant={muscleMetric === 'exercises' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setMuscleMetric('exercises')}
+                          className="text-xs h-7"
+                        >
+                          Exercícios
+                        </Button>
+                        <Button
+                          variant={muscleMetric === 'volume' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setMuscleMetric('volume')}
+                          className="text-xs h-7"
+                        >
+                          Volume
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {muscleMetric === 'sets' ? 'Ordenado por séries realizadas' : 
+                       muscleMetric === 'exercises' ? 'Ordenado por quantidade de exercícios' : 
+                       'Ordenado por volume (kg) movimentado'}
+                    </p>
                   </CardHeader>
                   <CardContent>
                     {muscleGroupData && muscleGroupData.length > 0 ? (
@@ -1455,8 +1488,13 @@ export default function TrainingDiaryPage() {
                         {/* Gráfico de barras horizontais */}
                         <div className="space-y-3">
                           {muscleGroupData.map((group: any, index: number) => {
-                            const maxVolume = Math.max(...muscleGroupData.map((g: any) => g.volume));
-                            const percentage = maxVolume > 0 ? (group.volume / maxVolume) * 100 : 0;
+                            const metricValue = muscleMetric === 'sets' ? group.sets : 
+                                             muscleMetric === 'exercises' ? group.exercises : group.volume;
+                            const maxMetric = Math.max(...muscleGroupData.map((g: any) => 
+                              muscleMetric === 'sets' ? g.sets : 
+                              muscleMetric === 'exercises' ? g.exercises : g.volume
+                            ));
+                            const percentage = maxMetric > 0 ? (metricValue / maxMetric) * 100 : 0;
                             const colors = [
                               'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-orange-500',
                               'bg-pink-500', 'bg-cyan-500', 'bg-yellow-500', 'bg-red-500',
@@ -1468,7 +1506,13 @@ export default function TrainingDiaryPage() {
                                 <div className="flex items-center justify-between text-sm">
                                   <span className="font-medium">{group.name}</span>
                                   <span className="text-muted-foreground">
-                                    {group.volume.toLocaleString('pt-BR')}kg · {group.sets} séries · {group.exercises} exercícios
+                                    {muscleMetric === 'sets' ? (
+                                      <><strong>{group.sets} séries</strong> · {group.exercises} exercícios · {group.volume.toLocaleString('pt-BR')}kg</>
+                                    ) : muscleMetric === 'exercises' ? (
+                                      <>{group.sets} séries · <strong>{group.exercises} exercícios</strong> · {group.volume.toLocaleString('pt-BR')}kg</>
+                                    ) : (
+                                      <>{group.sets} séries · {group.exercises} exercícios · <strong>{group.volume.toLocaleString('pt-BR')}kg</strong></>
+                                    )}
                                   </span>
                                 </div>
                                 <div className="h-4 bg-muted rounded-full overflow-hidden">
