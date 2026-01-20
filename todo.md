@@ -4939,3 +4939,9 @@
 - [x] Corrigir cores da página de Evolução/Avaliações para tema Premium
 - [x] Corrigir cores do card de Próximas Sessões no Dashboard
 - [x] Corrigir cores do card de Cobranças Pendentes no Dashboard
+
+
+## Correção Diário de Treino - 20/01/2026
+- [x] Bug da data: ao salvar registro de treino, a data muda de dia 20 para dia 19 (problema de timezone) - corrigido safeDate para preservar data local
+- [x] UX das abas: reorganizar abas com nomes mais claros (Sessões, Treinos, Cardio, Evol., Dash) e ícones melhores
+- [ ] Melhorar layout dos exercícios no registro de treino

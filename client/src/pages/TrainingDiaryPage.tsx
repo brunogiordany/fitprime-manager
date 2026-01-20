@@ -122,9 +122,27 @@ const WEATHER_OPTIONS = [
 ];
 
 // Função helper para criar Date de forma segura (evita RangeError: Invalid time value)
+// IMPORTANTE: Preserva a data local sem conversão de timezone
 const safeDate = (dateValue: Date | string | null | undefined): Date => {
   if (!dateValue) return new Date();
   try {
+    // Se for string no formato ISO (YYYY-MM-DDTHH:mm:ss), extrair a data local
+    if (typeof dateValue === 'string') {
+      // Se tiver 'T' ou 'Z', pode ter problema de timezone
+      if (dateValue.includes('T') || dateValue.includes('Z')) {
+        // Extrair apenas a parte da data (YYYY-MM-DD) e criar como data local ao meio-dia
+        const datePart = dateValue.split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        // Criar data local ao meio-dia para evitar problemas de timezone
+        return new Date(year, month - 1, day, 12, 0, 0);
+      }
+      // Se for apenas YYYY-MM-DD, criar como data local
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        const [year, month, day] = dateValue.split('-').map(Number);
+        return new Date(year, month - 1, day, 12, 0, 0);
+      }
+    }
+    
     const date = new Date(dateValue);
     // Verifica se a data é válida
     if (isNaN(date.getTime())) {
@@ -1034,29 +1052,28 @@ export default function TrainingDiaryPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1 p-1">
-              <TabsTrigger value="sessoes" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Sessões</span>
-                <span className="sm:hidden">Sess.</span>
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1 p-1 bg-muted/50">
+              <TabsTrigger value="sessoes" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Sessões</span>
               </TabsTrigger>
-              <TabsTrigger value="registros" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
-                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Registros Maromba</span>
-                <span className="sm:hidden">Reg.</span>
+              <TabsTrigger value="registros" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Dumbbell className="h-4 w-4" />
+                <span className="hidden sm:inline">Registros</span>
+                <span className="sm:hidden">Treinos</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
-                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                Cardio
+              <TabsTrigger value="cardio" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Heart className="h-4 w-4" />
+                <span>Cardio</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio-stats" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
-                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Estat. Cardio</span>
-                <span className="sm:hidden">Estat.</span>
+              <TabsTrigger value="cardio-stats" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">Evolução</span>
+                <span className="sm:hidden">Evol.</span>
               </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap">
-                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Dashboard</span>
+              <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Análise</span>
                 <span className="sm:hidden">Dash</span>
               </TabsTrigger>
             </TabsList>
