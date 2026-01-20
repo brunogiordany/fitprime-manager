@@ -154,7 +154,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
   
   if (isLoading) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <Card className="border-blue-200 dark:border-blue-800/50 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800">
         <CardHeader>
           <Skeleton className="h-6 w-48" />
         </CardHeader>
@@ -206,11 +206,11 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
   };
   
   return (
-    <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <Card className="border-blue-200 dark:border-blue-800/50 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2 text-blue-700">
+            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
               <BarChart3 className="h-5 w-5" />
               Dashboard de Treinos
             </CardTitle>
@@ -224,7 +224,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
           
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-              <SelectTrigger className="w-[180px] bg-white">
+              <SelectTrigger className="w-[180px] bg-white dark:bg-slate-800 dark:border-slate-700">
                 <SelectValue placeholder="Filtrar por aluno" />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +238,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             </Select>
             
             <Select value={exportPeriod} onValueChange={setExportPeriod}>
-              <SelectTrigger className="w-[140px] bg-white">
+              <SelectTrigger className="w-[140px] bg-white dark:bg-slate-800 dark:border-slate-700">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
@@ -278,7 +278,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
           <div className="space-y-6">
             {/* Cards de Resumo - Linha 1 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 dark:bg-emerald-950/30 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
+              <div className="bg-white/80 dark:bg-emerald-950/40 premium:bg-emerald-950/50 rounded-lg p-4 border border-emerald-200 dark:border-emerald-700 premium:border-emerald-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500 rounded-lg">
                     <Dumbbell className="h-5 w-5 text-white" />
@@ -290,7 +290,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+              <div className="bg-white/80 dark:bg-blue-950/40 premium:bg-blue-950/50 rounded-lg p-4 border border-blue-200 dark:border-blue-700 premium:border-blue-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-500 rounded-lg">
                     <Activity className="h-5 w-5 text-white" />
@@ -304,7 +304,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-purple-950/30 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+              <div className="bg-white/80 dark:bg-purple-950/40 premium:bg-purple-950/50 rounded-lg p-4 border border-purple-200 dark:border-purple-700 premium:border-purple-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-500 rounded-lg">
                     <Target className="h-5 w-5 text-white" />
@@ -316,7 +316,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-orange-950/30 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+              <div className="bg-white/80 dark:bg-orange-950/40 premium:bg-orange-950/50 rounded-lg p-4 border border-orange-200 dark:border-orange-700 premium:border-orange-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-500 rounded-lg">
                     <TrendingUp className="h-5 w-5 text-white" />
@@ -331,7 +331,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
             
             {/* Cards de Resumo - Linha 2 (Novas Métricas) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/80 dark:bg-cyan-950/30 rounded-lg p-4 border border-cyan-200 dark:border-cyan-800">
+              <div className="bg-white/80 dark:bg-cyan-950/40 premium:bg-cyan-950/50 rounded-lg p-4 border border-cyan-200 dark:border-cyan-700 premium:border-cyan-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-cyan-500 rounded-lg">
                     <Calendar className="h-5 w-5 text-white" />
@@ -343,7 +343,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-indigo-950/30 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
+              <div className="bg-white/80 dark:bg-indigo-950/40 premium:bg-indigo-950/50 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 premium:border-indigo-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-indigo-500 rounded-lg">
                     <BarChart3 className="h-5 w-5 text-white" />
@@ -358,7 +358,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-gray-800/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white/80 dark:bg-gray-800/40 premium:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 premium:border-gray-500">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-500 rounded-lg">
                     <Clock className="h-5 w-5 text-white" />
@@ -370,7 +370,7 @@ export default function StudentDashboardCard({ students, isLoading }: StudentDas
                 </div>
               </div>
               
-              <div className="bg-white/80 dark:bg-amber-950/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+              <div className="bg-white/80 dark:bg-amber-950/40 premium:bg-amber-950/50 rounded-lg p-4 border border-amber-200 dark:border-amber-700 premium:border-amber-600">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500 rounded-lg">
                     <Users className="h-5 w-5 text-white" />

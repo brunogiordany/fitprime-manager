@@ -239,7 +239,7 @@ export default function Dashboard() {
         </div>
 
         {/* Indicador de Plano Atual */}
-        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 dark:border-emerald-800">
+        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 dark:border-emerald-700 premium:from-emerald-950/50 premium:to-teal-950/50 premium:border-emerald-600">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -250,7 +250,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-lg">Plano {currentPlan.name}</h3>
                     {isAnnualPlan && (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-700">
                         <Zap className="h-3 w-3 mr-1" />
                         Anual
                       </Badge>
@@ -265,7 +265,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3">
                 {/* Barra de progresso */}
                 <div className="hidden sm:block w-32">
-                  <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all ${
                         usagePercent >= 90 ? 'bg-red-500' : 
@@ -296,8 +296,8 @@ export default function Dashboard() {
             </div>
             
             {usagePercent >= 90 && (
-              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <p className="text-sm text-orange-700 flex items-center gap-2">
+              <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 rounded-lg">
+                <p className="text-sm text-orange-700 dark:text-orange-400 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
                   Você está perto do limite de alunos. Considere fazer upgrade para continuar crescendo!
                 </p>
@@ -314,7 +314,7 @@ export default function Dashboard() {
 
         {/* Alunos que Precisam de Análise */}
         {studentsNeedingAnalysis && studentsNeedingAnalysis.length > 0 && (
-          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 dark:border-purple-800">
+          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/40 dark:to-pink-950/40 dark:border-purple-700 premium:from-purple-950/50 premium:to-pink-950/50 premium:border-purple-600">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-purple-700">
                 <Brain className="h-5 w-5" />

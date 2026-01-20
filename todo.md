@@ -4891,3 +4891,6 @@
 - [ ] Diário de Treino - dark mode
 - [ ] Loading skeleton - dark mode
 - [ ] Modais e dialogs - dark mode
+
+## Revisão Paleta Premium - 20/01/2026
+- [x] Revisar paleta de cores do tema Premium para visual mais vibrante e profissional
