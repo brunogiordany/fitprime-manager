@@ -455,6 +455,12 @@ export default function TrainingDiaryPage() {
   
   const { data: workouts } = trpc.workouts.list.useQuery({ studentId: 0 });
   
+  // Query para buscar treinos do aluno selecionado no modal de novo registro
+  const { data: studentWorkouts } = trpc.workouts.list.useQuery(
+    { studentId: newLog.studentId },
+    { enabled: newLog.studentId > 0 }
+  );
+  
   // Query para buscar sessões do período (hoje e próximos 7 dias + últimos 7 dias)
   const today = new Date();
   const startDate = new Date(today);
@@ -1110,28 +1116,25 @@ export default function TrainingDiaryPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1 p-1 bg-muted/50">
-              <TabsTrigger value="sessoes" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Sessões</span>
+              <TabsTrigger value="sessoes" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Calendar className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Sessões</span>
               </TabsTrigger>
-              <TabsTrigger value="registros" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Dumbbell className="h-4 w-4" />
+              <TabsTrigger value="registros" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Dumbbell className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Registros</span>
-                <span className="sm:hidden">Treinos</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Heart className="h-4 w-4" />
-                <span>Cardio</span>
+              <TabsTrigger value="cardio" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Heart className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Cardio</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio-stats" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <TrendingUp className="h-4 w-4" />
+              <TabsTrigger value="cardio-stats" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TrendingUp className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Evolução</span>
-                <span className="sm:hidden">Evol.</span>
               </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <BarChart3 className="h-4 w-4" />
+              <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Análise</span>
-                <span className="sm:hidden">Dash</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -2275,19 +2278,39 @@ export default function TrainingDiaryPage() {
                   <Select 
                     value={newLog.workoutId.toString()} 
                     onValueChange={(v) => setNewLog({ ...newLog, workoutId: parseInt(v), workoutDayId: 0 })}
+                    disabled={!newLog.studentId}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o treino" />
+                      <SelectValue placeholder={newLog.studentId ? "Selecione o treino" : "Selecione o aluno primeiro"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0">Treino livre</SelectItem>
-                      {workouts?.map((workout: any) => (
-                        <SelectItem key={workout.id} value={workout.id.toString()}>
-                          {workout.name}
-                        </SelectItem>
-                      ))}
+                      {studentWorkouts && studentWorkouts.length > 0 ? (
+                        <>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-b">
+                            Treinos do Aluno
+                          </div>
+                          {studentWorkouts.map((workout: any) => (
+                            <SelectItem key={workout.id} value={workout.id.toString()}>
+                              <div className="flex items-center gap-2">
+                                <Dumbbell className="h-3 w-3 text-emerald-500" />
+                                {workout.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </>
+                      ) : newLog.studentId > 0 ? (
+                        <div className="px-2 py-2 text-xs text-muted-foreground text-center">
+                          Nenhum treino cadastrado para este aluno
+                        </div>
+                      ) : null}
                     </SelectContent>
                   </Select>
+                  {newLog.studentId > 0 && studentWorkouts && studentWorkouts.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {studentWorkouts.length} treino(s) disponível(is) para este aluno
+                    </p>
+                  )}
                 </div>
                 
                 {newLog.workoutId > 0 && workoutDays && workoutDays.length > 0 && (

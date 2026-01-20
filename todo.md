@@ -4965,5 +4965,5 @@
 - [x] Atualizar backend getMuscleGroupAnalysis para aceitar parâmetros de período e status
 - [x] Atualizar frontend com seletores visuais
 
-- [ ] UX quebrada: aba "Dash" com texto cortado no mobile
-- [ ] Novo Registro: adicionar opção de selecionar treino do aluno para carregar exercícios automaticamente (não apenas "Treino livre")
+- [x] UX quebrada: aba "Dash" com texto cortado no mobile - agora mostra apenas ícones no mobile
+- [x] Novo Registro: adicionar opção de selecionar treino do aluno para carregar exercícios automaticamente
