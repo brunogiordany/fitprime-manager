@@ -340,8 +340,8 @@ export default function WhatsAppMessages() {
               </div>
             </div>
 
-            {/* Lista de conversas */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Lista de conversas - com scroll garantido no mobile */}
+            <div className="flex-1 overflow-y-auto min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filteredStudents.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <WifiOff className="h-16 w-16 mx-auto mb-4 text-gray-300" />

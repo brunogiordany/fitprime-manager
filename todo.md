@@ -4844,3 +4844,9 @@
 ## Bugs Urgentes - 20/01/2026
 - [x] WhatsApp Mensagens: página travada, não consegue rolar para ver outros alunos
 - [x] Diário do Maromba: erro "An unexpected error occurred" ao acessar
+
+
+## Correções de UX - 20/01/2026
+- [x] Dashboard Diário do Maromba: melhorar layout mobile (cards menores, gráficos)
+- [x] Dashboard Diário do Maromba: otimizar seção de evolução de carga (usar select em vez de grid)
+- [x] WhatsApp Mensagens: verificar e garantir scroll da lista de alunos no mobile

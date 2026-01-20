@@ -1430,50 +1430,49 @@ export default function TrainingDiaryPage() {
           <TabsContent value="dashboard" className="space-y-4">
             {dashboard ? (
               <>
-                {/* Cards de resumo */}
-                <div className="grid grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Dumbbell className="h-4 w-4" />
-                        <span className="text-sm">Treinos</span>
+                {/* Cards de resumo - compactos no mobile */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <Card className="shadow-sm">
+                    <CardContent className="p-2 sm:p-4">
+                      <div className="flex items-center gap-1 sm:gap-2 text-muted-foreground mb-0.5 sm:mb-1">
+                        <Dumbbell className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Treinos</span>
                       </div>
-                      <p className="text-2xl font-bold">{dashboard.totalWorkouts}</p>
+                      <p className="text-lg sm:text-2xl font-bold">{dashboard.totalWorkouts}</p>
                     </CardContent>
                   </Card>
                   
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Weight className="h-4 w-4" />
-                        <span className="text-sm">Volume Total</span>
+                  <Card className="shadow-sm">
+                    <CardContent className="p-2 sm:p-4">
+                      <div className="flex items-center gap-1 sm:gap-2 text-muted-foreground mb-0.5 sm:mb-1">
+                        <Weight className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Volume</span>
                       </div>
-                      <p className="text-2xl font-bold">{dashboard.totalVolume.toLocaleString('pt-BR')}kg</p>
+                      <p className="text-lg sm:text-2xl font-bold">{(dashboard.totalVolume / 1000).toFixed(1)}t</p>
                     </CardContent>
                   </Card>
                   
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Repeat className="h-4 w-4" />
-                        <span className="text-sm">Séries</span>
+                  <Card className="shadow-sm">
+                    <CardContent className="p-2 sm:p-4">
+                      <div className="flex items-center gap-1 sm:gap-2 text-muted-foreground mb-0.5 sm:mb-1">
+                        <Repeat className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Séries</span>
                       </div>
-                      <p className="text-2xl font-bold">{dashboard.totalSets}</p>
+                      <p className="text-lg sm:text-2xl font-bold">{dashboard.totalSets}</p>
                     </CardContent>
                   </Card>
-                  
                 </div>
                 
                 {/* Gráfico de treinos por mês */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
+                <Card className="shadow-sm">
+                  <CardHeader className="pb-2 sm:pb-4">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                      <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
                       Treinos por Mês
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-end justify-between gap-2 h-40">
+                  <CardContent className="pb-3 sm:pb-6">
+                    <div className="flex items-end justify-between gap-1 sm:gap-2 h-28 sm:h-40">
                       {dashboard.workoutsByMonth?.map((item: any, index: number) => {
                         const maxCount = Math.max(...dashboard.workoutsByMonth.map((i: any) => i.count));
                         const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
@@ -1493,15 +1492,15 @@ export default function TrainingDiaryPage() {
                 </Card>
                 
                 {/* Gráfico de volume por mês */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
+                <Card className="shadow-sm">
+                  <CardHeader className="pb-2 sm:pb-4">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                      <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                       Volume por Mês (kg)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-end justify-between gap-2 h-40">
+                  <CardContent className="pb-3 sm:pb-6">
+                    <div className="flex items-end justify-between gap-1 sm:gap-2 h-28 sm:h-40">
                       {dashboard.volumeByMonth?.map((item: any, index: number) => {
                         const maxVolume = Math.max(...dashboard.volumeByMonth.map((i: any) => i.volume));
                         const height = maxVolume > 0 ? (item.volume / maxVolume) * 100 : 0;
@@ -1521,11 +1520,11 @@ export default function TrainingDiaryPage() {
                 </Card>
                 
                 {/* Análise por Grupo Muscular */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="h-5 w-5" />
+                <Card className="shadow-sm">
+                  <CardHeader className="pb-2 sm:pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                        <Target className="h-4 w-4 sm:h-5 sm:w-5" />
                         Análise por Grupo Muscular
                       </CardTitle>
                       <div className="flex gap-1">
@@ -1533,7 +1532,7 @@ export default function TrainingDiaryPage() {
                           variant={muscleMetric === 'sets' ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setMuscleMetric('sets')}
-                          className="text-xs h-7"
+                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
                         >
                           Séries
                         </Button>
@@ -1541,7 +1540,7 @@ export default function TrainingDiaryPage() {
                           variant={muscleMetric === 'exercises' ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setMuscleMetric('exercises')}
-                          className="text-xs h-7"
+                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
                         >
                           Exercícios
                         </Button>
@@ -1549,13 +1548,13 @@ export default function TrainingDiaryPage() {
                           variant={muscleMetric === 'volume' ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setMuscleMetric('volume')}
-                          className="text-xs h-7"
+                          className="text-xs h-6 sm:h-7 px-2 sm:px-3"
                         >
                           Volume
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {muscleMetric === 'sets' ? 'Ordenado por séries realizadas' : 
                        muscleMetric === 'exercises' ? 'Ordenado por quantidade de exercícios' : 
                        'Ordenado por volume (kg) movimentado'}
@@ -1564,8 +1563,8 @@ export default function TrainingDiaryPage() {
                   <CardContent>
                     {muscleGroupData && muscleGroupData.length > 0 ? (
                       <div className="space-y-4">
-                        {/* Gráfico de barras horizontais */}
-                        <div className="space-y-3">
+                        {/* Gráfico de barras horizontais - compacto no mobile */}
+                        <div className="space-y-2 sm:space-y-3">
                           {sortedMuscleGroupData.map((group: any, index: number) => {
                             const metricValue = muscleMetric === 'sets' ? group.sets : 
                                              muscleMetric === 'exercises' ? group.exercises : group.volume;
@@ -1581,20 +1580,17 @@ export default function TrainingDiaryPage() {
                             ];
                             const color = colors[index % colors.length];
                             return (
-                              <div key={group.name} className="space-y-1">
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium">{group.name}</span>
-                                  <span className="text-muted-foreground">
-                                    {muscleMetric === 'sets' ? (
-                                      <><strong>{group.sets} séries</strong> · {group.exercises} exercícios · {group.volume.toLocaleString('pt-BR')}kg</>
-                                    ) : muscleMetric === 'exercises' ? (
-                                      <>{group.sets} séries · <strong>{group.exercises} exercícios</strong> · {group.volume.toLocaleString('pt-BR')}kg</>
-                                    ) : (
-                                      <>{group.sets} séries · {group.exercises} exercícios · <strong>{group.volume.toLocaleString('pt-BR')}kg</strong></>
-                                    )}
+                              <div key={group.name} className="space-y-0.5 sm:space-y-1">
+                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                  <span className="font-medium truncate max-w-[100px] sm:max-w-none">{group.name}</span>
+                                  <span className="text-muted-foreground text-xs">
+                                    <strong>{muscleMetric === 'sets' ? `${group.sets} séries` : 
+                                            muscleMetric === 'exercises' ? `${group.exercises} exerc.` : 
+                                            `${(group.volume/1000).toFixed(1)}t`}</strong>
+                                    <span className="hidden sm:inline"> · {group.exercises} exercícios · {group.volume.toLocaleString('pt-BR')}kg</span>
                                   </span>
                                 </div>
-                                <div className="h-4 bg-muted rounded-full overflow-hidden">
+                                <div className="h-2.5 sm:h-4 bg-muted rounded-full overflow-hidden">
                                   <div 
                                     className={`h-full ${color} rounded-full transition-all duration-500`}
                                     style={{ width: `${percentage}%` }}
@@ -1605,45 +1601,45 @@ export default function TrainingDiaryPage() {
                           })}
                         </div>
                         
-                        {/* Resumo */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t">
-                          <div className="text-center p-2 bg-muted/50 rounded-lg">
-                            <p className="text-lg font-bold">{muscleGroupData.length}</p>
-                            <p className="text-xs text-muted-foreground">Grupos</p>
+                        {/* Resumo - compacto no mobile */}
+                        <div className="grid grid-cols-4 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                          <div className="text-center p-1.5 sm:p-2 bg-muted/50 rounded-lg">
+                            <p className="text-sm sm:text-lg font-bold">{muscleGroupData.length}</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Grupos</p>
                           </div>
-                          <div className="text-center p-2 bg-muted/50 rounded-lg">
-                            <p className="text-lg font-bold">
-                              {muscleGroupData.reduce((sum: number, g: any) => sum + g.volume, 0).toLocaleString('pt-BR')}kg
+                          <div className="text-center p-1.5 sm:p-2 bg-muted/50 rounded-lg">
+                            <p className="text-sm sm:text-lg font-bold">
+                              {(muscleGroupData.reduce((sum: number, g: any) => sum + g.volume, 0) / 1000).toFixed(1)}t
                             </p>
-                            <p className="text-xs text-muted-foreground">Volume Total</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Volume</p>
                           </div>
-                          <div className="text-center p-2 bg-muted/50 rounded-lg">
-                            <p className="text-lg font-bold">
+                          <div className="text-center p-1.5 sm:p-2 bg-muted/50 rounded-lg">
+                            <p className="text-sm sm:text-lg font-bold">
                               {muscleGroupData.reduce((sum: number, g: any) => sum + g.sets, 0)}
                             </p>
-                            <p className="text-xs text-muted-foreground">Séries Totais</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Séries</p>
                           </div>
-                          <div className="text-center p-2 bg-muted/50 rounded-lg">
-                            <p className="text-lg font-bold">
+                          <div className="text-center p-1.5 sm:p-2 bg-muted/50 rounded-lg">
+                            <p className="text-sm sm:text-lg font-bold">
                               {muscleGroupData.reduce((sum: number, g: any) => sum + g.exercises, 0)}
                             </p>
-                            <p className="text-xs text-muted-foreground">Exercícios</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Exerc.</p>
                           </div>
                         </div>
                         
-                        {/* Análise de Equilíbrio Muscular */}
+                        {/* Análise de Equilíbrio Muscular - compacto no mobile */}
                         {muscleBalanceAnalysis && muscleBalanceAnalysis.length > 0 && (
-                          <div className="pt-4 border-t">
-                            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                              <Scale className="h-4 w-4" />
-                              Equilíbrio Muscular (Pares Antagonistas)
+                          <div className="pt-3 sm:pt-4 border-t">
+                            <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                              <Scale className="h-3 w-3 sm:h-4 sm:w-4" />
+                              Equilíbrio Muscular
                             </h4>
-                            <div className="space-y-3">
+                            <div className="space-y-2 sm:space-y-3">
                               {muscleBalanceAnalysis.map((pair: any) => (
-                                <div key={pair.name} className="space-y-1">
-                                  <div className="flex items-center justify-between text-xs">
-                                    <span className="font-medium">{pair.name}</span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                <div key={pair.name} className="space-y-0.5 sm:space-y-1">
+                                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                                    <span className="font-medium truncate max-w-[80px] sm:max-w-none">{pair.name}</span>
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${
                                       pair.status === 'balanced' ? 'bg-green-500/20 text-green-600' :
                                       pair.status === 'warning' ? 'bg-yellow-500/20 text-yellow-600' :
                                       'bg-red-500/20 text-red-600'
@@ -1651,7 +1647,7 @@ export default function TrainingDiaryPage() {
                                       {pair.message}
                                     </span>
                                   </div>
-                                  <div className="flex h-3 rounded-full overflow-hidden bg-muted">
+                                  <div className="flex h-2 sm:h-3 rounded-full overflow-hidden bg-muted">
                                     <div 
                                       className="bg-blue-500 transition-all"
                                       style={{ width: `${pair.muscle1.percentage}%` }}
@@ -1663,7 +1659,7 @@ export default function TrainingDiaryPage() {
                                       title={`${pair.muscle2.name}: ${pair.muscle2.sets} séries`}
                                     />
                                   </div>
-                                  <div className="flex justify-between text-xs text-muted-foreground">
+                                  <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
                                     <span>{pair.muscle1.name}: {pair.muscle1.sets}s</span>
                                     <span>{pair.muscle2.name}: {pair.muscle2.sets}s</span>
                                   </div>
@@ -1847,26 +1843,15 @@ export default function TrainingDiaryPage() {
                       </div>
                     </div>
                     
-                    {/* Lista de exercícios disponíveis */}
+                    {/* Mensagem quando não há exercício selecionado */}
                     {!progressExercise && filteredExercises.length > 0 && (
-                      <div className="border rounded-lg p-4 bg-muted/20">
-                        <p className="text-sm font-medium mb-3">Exercícios disponíveis ({filteredExercises.length}):</p>
-                        <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
-                          {filteredExercises.map((name) => (
-                            <Button
-                              key={name}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs"
-                              onClick={() => {
-                                setProgressExercise(name);
-                                setExpandedHistoryItem(null);
-                              }}
-                            >
-                              {name}
-                            </Button>
-                          ))}
-                        </div>
+                      <div className="border rounded-lg p-3 sm:p-4 bg-muted/20 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          Selecione um exercício acima para ver a evolução de carga
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {filteredExercises.length} exercícios disponíveis
+                        </p>
                       </div>
                     )}
                     
