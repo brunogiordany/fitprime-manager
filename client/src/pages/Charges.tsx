@@ -47,7 +47,10 @@ import {
   Percent,
   Calendar,
   RefreshCw,
+  Trash2,
+  ListChecks,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation, useSearch } from "wouter";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -59,6 +62,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Charges() {
   const [, setLocation] = useLocation();
@@ -74,6 +87,10 @@ export default function Charges() {
   const [search, setSearch] = useState("");
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(showNewDialog || !!preselectedPlanId);
   const [expandedStudents, setExpandedStudents] = useState<Set<number>>(new Set());
+  const [selectedCharges, setSelectedCharges] = useState<Set<number>>(new Set());
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
+  const [batchAction, setBatchAction] = useState<'paid' | 'cancelled' | 'delete' | null>(null);
   const [newCharge, setNewCharge] = useState({
     studentId: preselectedStudentId,
     description: preselectedPlanName ? `Cobrança - ${decodeURIComponent(preselectedPlanName)}` : "",
@@ -127,6 +144,79 @@ export default function Charges() {
       toast.error("Erro ao atualizar: " + error.message);
     },
   });
+
+  const deleteMutation = trpc.charges.delete.useMutation({
+    onSuccess: () => {
+      utils.charges.list.invalidate();
+      utils.charges.stats.invalidate();
+    },
+    onError: (error: { message: string }) => {
+      toast.error("Erro ao excluir: " + error.message);
+    },
+  });
+
+  // Funções de seleção em lote
+  const toggleChargeSelection = (chargeId: number) => {
+    const newSelected = new Set(selectedCharges);
+    if (newSelected.has(chargeId)) {
+      newSelected.delete(chargeId);
+    } else {
+      newSelected.add(chargeId);
+    }
+    setSelectedCharges(newSelected);
+  };
+
+  const selectAllChargesForStudent = (studentCharges: { charge: { id: number; status: string } }[]) => {
+    const newSelected = new Set(selectedCharges);
+    const actionableCharges = studentCharges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled');
+    const allSelected = actionableCharges.every(c => selectedCharges.has(c.charge.id));
+    
+    if (allSelected) {
+      actionableCharges.forEach(c => newSelected.delete(c.charge.id));
+    } else {
+      actionableCharges.forEach(c => newSelected.add(c.charge.id));
+    }
+    setSelectedCharges(newSelected);
+  };
+
+  const clearSelection = () => {
+    setSelectedCharges(new Set());
+    setIsBatchMode(false);
+  };
+
+  const handleBatchAction = async () => {
+    if (!batchAction || selectedCharges.size === 0) return;
+    
+    const chargeIds = Array.from(selectedCharges);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const chargeId of chargeIds) {
+      try {
+        if (batchAction === 'delete') {
+          await deleteMutation.mutateAsync({ id: chargeId });
+        } else {
+          await updateMutation.mutateAsync({ id: chargeId, status: batchAction });
+        }
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      const actionText = batchAction === 'paid' ? 'marcadas como pagas' : 
+                         batchAction === 'cancelled' ? 'canceladas' : 'excluídas';
+      toast.success(`${successCount} cobrança(s) ${actionText}!`);
+    }
+    if (errorCount > 0) {
+      toast.error(`${errorCount} cobrança(s) não puderam ser processadas`);
+    }
+
+    setIsBatchDialogOpen(false);
+    setBatchAction(null);
+    clearSelection();
+  };
 
   useEffect(() => {
     if (showNewDialog) {
@@ -550,13 +640,81 @@ export default function Charges() {
         {/* Cobranças Agrupadas por Aluno */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Cobranças por Aluno
-            </CardTitle>
-            <CardDescription>
-              {filteredChargesByStudent.length} alunos com cobranças
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Cobranças por Aluno
+                </CardTitle>
+                <CardDescription>
+                  {filteredChargesByStudent.length} alunos com cobranças
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {isBatchMode ? (
+                  <>
+                    <span className="text-sm text-muted-foreground">
+                      {selectedCharges.size} selecionada(s)
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setBatchAction('paid');
+                        setIsBatchDialogOpen(true);
+                      }}
+                      disabled={selectedCharges.size === 0}
+                      className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Pagar</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setBatchAction('cancelled');
+                        setIsBatchDialogOpen(true);
+                      }}
+                      disabled={selectedCharges.size === 0}
+                      className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Cancelar</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setBatchAction('delete');
+                        setIsBatchDialogOpen(true);
+                      }}
+                      disabled={selectedCharges.size === 0}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Excluir</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSelection}
+                    >
+                      Cancelar
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsBatchMode(true)}
+                  >
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    Ações em Lote
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {filteredChargesByStudent.length > 0 ? (
@@ -571,6 +729,15 @@ export default function Charges() {
                       <CollapsibleTrigger asChild>
                         <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors">
                           <div className="flex items-center gap-4">
+                            {isBatchMode && (
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').every(c => selectedCharges.has(c.charge.id)) && item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').length > 0}
+                                  onCheckedChange={() => selectAllChargesForStudent(item.charges)}
+                                  className="h-5 w-5"
+                                />
+                              </div>
+                            )}
                             <Avatar className="h-10 w-10">
                               <AvatarImage src={item.student?.avatarUrl || undefined} />
                               <AvatarFallback className="bg-emerald-100 text-emerald-700">
@@ -624,9 +791,19 @@ export default function Charges() {
                               .map((chargeItem) => (
                               <div 
                                 key={chargeItem.charge.id}
-                                className="flex items-center justify-between p-4 hover:bg-accent/30"
+                                className={`flex items-center justify-between p-4 hover:bg-accent/30 ${isBatchMode && selectedCharges.has(chargeItem.charge.id) ? 'bg-primary/10' : ''}`}
                               >
                                 <div className="flex items-center gap-4">
+                                  {isBatchMode && chargeItem.charge.status !== 'paid' && chargeItem.charge.status !== 'cancelled' && (
+                                    <Checkbox
+                                      checked={selectedCharges.has(chargeItem.charge.id)}
+                                      onCheckedChange={() => toggleChargeSelection(chargeItem.charge.id)}
+                                      className="h-5 w-5"
+                                    />
+                                  )}
+                                  {isBatchMode && (chargeItem.charge.status === 'paid' || chargeItem.charge.status === 'cancelled') && (
+                                    <div className="h-5 w-5" /> // Placeholder para manter alinhamento
+                                  )}
                                   <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
                                     <Calendar className="h-4 w-4 text-muted-foreground" />
                                   </div>
@@ -815,6 +992,41 @@ export default function Charges() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* AlertDialog de Confirmação de Ações em Lote */}
+        <AlertDialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {batchAction === 'paid' && 'Marcar como Pagas'}
+                {batchAction === 'cancelled' && 'Cancelar Cobranças'}
+                {batchAction === 'delete' && 'Excluir Cobranças'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {batchAction === 'paid' && (
+                  <>Você está prestes a marcar <strong>{selectedCharges.size}</strong> cobrança(s) como paga(s). Esta ação pode ser revertida posteriormente.</>
+                )}
+                {batchAction === 'cancelled' && (
+                  <>Você está prestes a cancelar <strong>{selectedCharges.size}</strong> cobrança(s). As cobranças canceladas não serão cobradas.</>
+                )}
+                {batchAction === 'delete' && (
+                  <>Você está prestes a excluir <strong>{selectedCharges.size}</strong> cobrança(s). <span className="text-red-600 font-medium">Esta ação não pode ser desfeita!</span></>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setBatchAction(null)}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBatchAction}
+                className={batchAction === 'delete' ? 'bg-red-600 hover:bg-red-700' : batchAction === 'cancelled' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-emerald-600 hover:bg-emerald-700'}
+              >
+                {batchAction === 'paid' && 'Marcar como Pagas'}
+                {batchAction === 'cancelled' && 'Cancelar Cobranças'}
+                {batchAction === 'delete' && 'Excluir Permanentemente'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

@@ -4988,3 +4988,12 @@
 - [x] Organizar campos de forma mais clara e responsiva
 - [x] Corrigir botões sobrepostos no mobile
 - [x] Melhorar espaçamento e hierarquia visual
+
+
+## Ações em Lote na Página de Cobranças - 21/01/2026
+- [x] Adicionar botão "Ações em Lote" na página de Cobranças
+- [x] Implementar seleção múltipla de cobranças (checkboxes)
+- [x] Adicionar opção de excluir cobranças em lote
+- [x] Adicionar opção de cancelar cobranças em lote
+- [x] Adicionar opção de marcar como pago em lote
+- [x] Igualar funcionalidades com a aba Pagamentos do perfil do aluno
