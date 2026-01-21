@@ -318,13 +318,13 @@ export default function StudentHelpCenter() {
 
         {/* Jornada do Aluno */}
         <TabsContent value="journey" className="mt-4 space-y-3">
-          <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50">
+          <Card className="border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Route className="h-5 w-5 text-emerald-600" />
-                <h3 className="font-semibold text-emerald-800">Sua Jornada no FitPrime</h3>
+                <Route className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">Sua Jornada no FitPrime</h3>
               </div>
-              <p className="text-xs sm:text-sm text-emerald-700">
+              <p className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
                 Siga estes passos para aproveitar ao máximo seu acompanhamento com personal trainer!
               </p>
             </CardContent>
@@ -333,7 +333,7 @@ export default function StudentHelpCenter() {
           {/* Timeline da Jornada */}
           <div className="relative">
             {/* Linha vertical conectando os passos */}
-            <div className="absolute left-[19px] sm:left-[23px] top-8 bottom-8 w-0.5 bg-emerald-200" />
+            <div className="absolute left-[19px] sm:left-[23px] top-8 bottom-8 w-0.5 bg-emerald-200 dark:bg-emerald-800" />
             
             <div className="space-y-3">
               {studentJourney.map((item, index) => (
@@ -342,8 +342,8 @@ export default function StudentHelpCenter() {
                     <div className="flex gap-3">
                       {/* Número do passo */}
                       <div className="relative z-10 flex-shrink-0">
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center">
-                          <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 border-2 border-emerald-500 dark:border-emerald-600 flex items-center justify-center">
+                          <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <Badge 
                           className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-emerald-600"
@@ -372,8 +372,8 @@ export default function StudentHelpCenter() {
                         </ul>
                         
                         {/* Dica */}
-                        <div className="bg-amber-50 rounded-md p-2 border border-amber-200">
-                          <p className="text-[10px] sm:text-xs text-amber-800">
+                        <div className="bg-amber-50 dark:bg-amber-950/30 rounded-md p-2 border border-amber-200 dark:border-amber-800/50">
+                          <p className="text-[10px] sm:text-xs text-amber-800 dark:text-amber-200">
                             💡 {item.tip}
                           </p>
                         </div>
@@ -386,13 +386,13 @@ export default function StudentHelpCenter() {
           </div>
 
           {/* Card final */}
-          <Card className="border-emerald-300 bg-emerald-50">
+          <Card className="border-emerald-300 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/30">
             <CardContent className="p-3 sm:p-4 text-center">
-              <Star className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
-              <p className="text-sm font-medium text-emerald-800">
+              <Star className="h-8 w-8 text-emerald-500 dark:text-emerald-400 mx-auto mb-2" />
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
                 Você está no caminho certo!
               </p>
-              <p className="text-xs text-emerald-700">
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">
                 Siga a jornada e alcance seus objetivos com o FitPrime.
               </p>
             </CardContent>
@@ -419,8 +419,8 @@ export default function StudentHelpCenter() {
               >
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center">
-                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
-                      <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" />
+                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-3">
+                      <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
                       Como posso te ajudar?
@@ -506,8 +506,8 @@ export default function StudentHelpCenter() {
             <Card key={index} className="overflow-hidden">
               <CardHeader className="pb-2 px-3 sm:px-4 py-3">
                 <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                    <feature.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600" />
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                    <feature.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   {feature.title}
                 </CardTitle>
@@ -529,15 +529,15 @@ export default function StudentHelpCenter() {
           ))}
 
           {/* Dica final */}
-          <Card className="border-emerald-200 bg-emerald-50/50">
+          <Card className="border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-start gap-2">
-                <HelpCircle className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <HelpCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs sm:text-sm font-medium text-emerald-800">
+                  <p className="text-xs sm:text-sm font-medium text-emerald-800 dark:text-emerald-200">
                     Ainda tem dúvidas?
                   </p>
-                  <p className="text-xs text-emerald-700">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
                     Use a aba "Pergunte à IA" para tirar qualquer dúvida sobre o portal!
                   </p>
                 </div>

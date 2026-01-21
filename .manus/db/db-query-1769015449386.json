@@ -1,0 +1,121 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'students';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'students';",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "personalId"
+    },
+    {
+      "COLUMN_NAME": "userId"
+    },
+    {
+      "COLUMN_NAME": "name"
+    },
+    {
+      "COLUMN_NAME": "email"
+    },
+    {
+      "COLUMN_NAME": "phone"
+    },
+    {
+      "COLUMN_NAME": "birthDate"
+    },
+    {
+      "COLUMN_NAME": "gender"
+    },
+    {
+      "COLUMN_NAME": "cpf"
+    },
+    {
+      "COLUMN_NAME": "address"
+    },
+    {
+      "COLUMN_NAME": "emergencyContact"
+    },
+    {
+      "COLUMN_NAME": "emergencyPhone"
+    },
+    {
+      "COLUMN_NAME": "notes"
+    },
+    {
+      "COLUMN_NAME": "status"
+    },
+    {
+      "COLUMN_NAME": "whatsappOptIn"
+    },
+    {
+      "COLUMN_NAME": "avatarUrl"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    },
+    {
+      "COLUMN_NAME": "stripeCustomerId"
+    },
+    {
+      "COLUMN_NAME": "deletedAt"
+    },
+    {
+      "COLUMN_NAME": "hasChildren"
+    },
+    {
+      "COLUMN_NAME": "maritalStatus"
+    },
+    {
+      "COLUMN_NAME": "messagePausedUntil"
+    },
+    {
+      "COLUMN_NAME": "messagePauseReason"
+    },
+    {
+      "COLUMN_NAME": "pausedAt"
+    },
+    {
+      "COLUMN_NAME": "pausedUntil"
+    },
+    {
+      "COLUMN_NAME": "pauseReason"
+    },
+    {
+      "COLUMN_NAME": "passwordHash"
+    },
+    {
+      "COLUMN_NAME": "canEditAnamnesis"
+    },
+    {
+      "COLUMN_NAME": "canEditMeasurements"
+    },
+    {
+      "COLUMN_NAME": "canEditPhotos"
+    },
+    {
+      "COLUMN_NAME": "canViewCharges"
+    },
+    {
+      "COLUMN_NAME": "canScheduleSessions"
+    },
+    {
+      "COLUMN_NAME": "canCancelSessions"
+    },
+    {
+      "COLUMN_NAME": "canSendMessages"
+    },
+    {
+      "COLUMN_NAME": "canViewWorkouts"
+    },
+    {
+      "COLUMN_NAME": "lastAnalyzedAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\npersonalId\nuserId\nname\nemail\nphone\nbirthDate\ngender\ncpf\naddress\nemergencyContact\nemergencyPhone\nnotes\nstatus\nwhatsappOptIn\navatarUrl\ncreatedAt\nupdatedAt\nstripeCustomerId\ndeletedAt\nhasChildren\nmaritalStatus\nmessagePausedUntil\nmessagePauseReason\npausedAt\npausedUntil\npauseReason\npasswordHash\ncanEditAnamnesis\ncanEditMeasurements\ncanEditPhotos\ncanViewCharges\ncanScheduleSessions\ncanCancelSessions\ncanSendMessages\ncanViewWorkouts\nlastAnalyzedAt\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

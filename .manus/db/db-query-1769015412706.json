@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, email, name, role FROM users WHERE email LIKE '%bruno%' OR role = 'student' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, email, name, role FROM users WHERE email LIKE '%bruno%' OR role = 'student' LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "brunogiordany@gmail.com",
+      "name": "Bruno Giordany",
+      "role": "admin"
+    },
+    {
+      "id": "1290075",
+      "email": "brunogiordanyps@gmail.com",
+      "name": "Bruno Giordany PS",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\n1\tbrunogiordany@gmail.com\tBruno Giordany\tadmin\n1290075\tbrunogiordanyps@gmail.com\tBruno Giordany PS\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 101
+}

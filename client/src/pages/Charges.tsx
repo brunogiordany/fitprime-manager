@@ -734,7 +734,7 @@ export default function Charges() {
                                 <Checkbox
                                   checked={item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').every(c => selectedCharges.has(c.charge.id)) && item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').length > 0}
                                   onCheckedChange={() => selectAllChargesForStudent(item.charges)}
-                                  className="h-5 w-5"
+                                  className="h-5 w-5 border-2 border-emerald-500 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                                 />
                               </div>
                             )}
@@ -798,7 +798,7 @@ export default function Charges() {
                                     <Checkbox
                                       checked={selectedCharges.has(chargeItem.charge.id)}
                                       onCheckedChange={() => toggleChargeSelection(chargeItem.charge.id)}
-                                      className="h-5 w-5"
+                                      className="h-5 w-5 border-2 border-emerald-500 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                                     />
                                   )}
                                   {isBatchMode && (chargeItem.charge.status === 'paid' || chargeItem.charge.status === 'cancelled') && (

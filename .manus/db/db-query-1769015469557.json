@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, email FROM students WHERE name LIKE '%Bruno%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email FROM students WHERE name LIKE '%Bruno%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Bruno",
+      "email": "brunogiordany@gmail.com"
+    },
+    {
+      "id": "90001",
+      "name": "bruno ps",
+      "email": "brunogiordanyps@gmail.com"
+    },
+    {
+      "id": "270001",
+      "name": "bruno link novo",
+      "email": "visionixenterprise@gmail.com"
+    },
+    {
+      "id": "270002",
+      "name": "bruno link novom2",
+      "email": "visionixenterprise@gmail.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\n1\tBruno\tbrunogiordany@gmail.com\n90001\tbruno ps\tbrunogiordanyps@gmail.com\n270001\tbruno link novo\tvisionixenterprise@gmail.com\n270002\tbruno link novom2\tvisionixenterprise@gmail.com\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

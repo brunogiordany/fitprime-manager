@@ -111,11 +111,11 @@ export default function StudentBadges() {
               {earnedBadges.map((badge: StudentBadgeData) => (
                 <div
                   key={badge.id}
-                  className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 text-center hover:shadow-md transition-shadow"
+                  className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800/50 text-center hover:shadow-md transition-shadow"
                 >
                   <div className="text-4xl mb-2">{badge.info.icon}</div>
                   <h3 className="font-semibold text-sm">{badge.info.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{badge.info.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.info.description}</p>
                   <Badge variant="outline" className="mt-2 text-xs">
                     {format(new Date(badge.earnedAt), "dd/MM/yyyy", { locale: ptBR })}
                   </Badge>
@@ -142,11 +142,11 @@ export default function StudentBadges() {
               return (
                 <div
                   key={type}
-                  className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center opacity-60"
+                  className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 text-center opacity-60"
                 >
                   <div className="text-4xl mb-2 grayscale">{info.icon}</div>
-                  <h3 className="font-semibold text-sm text-gray-600">{info.name}</h3>
-                  <p className="text-xs text-gray-400 mt-1">{info.description}</p>
+                  <h3 className="font-semibold text-sm text-gray-600 dark:text-gray-300">{info.name}</h3>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{info.description}</p>
                   <Badge variant="outline" className="mt-2 text-xs bg-gray-100">
                     <Lock className="h-3 w-3 mr-1" />
                     Bloqueado

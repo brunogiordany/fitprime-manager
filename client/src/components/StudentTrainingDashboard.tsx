@@ -151,11 +151,11 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
             {dashboard.workoutsByMonth.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={dashboard.workoutsByMonth}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} className="text-gray-600 dark:text-gray-400" />
+                  <YAxis tick={{ fontSize: 12 }} className="text-gray-600 dark:text-gray-400" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px' }}
                     formatter={(value: number) => [`${value} treinos`, 'Treinos']}
                   />
                   <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -183,11 +183,11 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
             {dashboard.volumeByMonth.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={dashboard.volumeByMonth}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}t`} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} className="text-gray-600 dark:text-gray-400" />
+                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}t`} className="text-gray-600 dark:text-gray-400" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px' }}
                     formatter={(value: number) => [`${(value/1000).toFixed(1)} toneladas`, 'Volume']}
                   />
                   <Bar dataKey="volume" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -223,7 +223,7 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
                       <span className="font-medium">{group.name}</span>
                       <span className="text-gray-500">{group.sets} séries • {group.exercises} exercícios</span>
                     </div>
-                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-500"
                         style={{ width: `${(group.volume / maxVolume) * 100}%` }}

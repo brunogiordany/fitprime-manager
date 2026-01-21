@@ -1329,7 +1329,7 @@ export default function StudentPortalPage() {
                             {pendingSessions.map((session: any) => (
                               <div
                                 key={session.id}
-                                className="p-4 border border-amber-200 bg-amber-50 rounded-lg hover:bg-amber-100 cursor-pointer transition-colors"
+                                className="p-4 border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-950/50 cursor-pointer transition-colors"
                                 onClick={() => {
                                   if (session.workoutInfo) {
                                     setSelectedSession(session);
@@ -1353,12 +1353,12 @@ export default function StudentPortalPage() {
                                       {format(new Date(session.scheduledAt), "dd/MM - HH:mm", { locale: ptBR })}
                                     </p>
                                     {session.workoutInfo && (
-                                      <p className="text-sm text-amber-700">
+                                      <p className="text-sm text-amber-700 dark:text-amber-400">
                                         {session.workoutInfo.workoutName} - {session.workoutInfo.dayName}
                                       </p>
                                     )}
                                   </div>
-                                  <Button size="sm" variant="outline" className="border-amber-500 text-amber-700">
+                                  <Button size="sm" variant="outline" className="border-amber-500 dark:border-amber-600 text-amber-700 dark:text-amber-400">
                                     <Play className="h-4 w-4 mr-1" />
                                     Registrar
                                   </Button>
@@ -1425,11 +1425,11 @@ export default function StudentPortalPage() {
                   <div className="space-y-3">
                     {workoutLogs.slice(0, 10).map((log: any) => (
                       <details key={log.id} className="group border rounded-lg overflow-hidden">
-                        <summary className="p-4 cursor-pointer hover:bg-gray-50 list-none">
+                        <summary className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 list-none">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 bg-emerald-100 rounded-lg">
-                                <Dumbbell className="h-5 w-5 text-emerald-600" />
+                              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg">
+                                <Dumbbell className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
@@ -1462,7 +1462,7 @@ export default function StudentPortalPage() {
                             </div>
                           </div>
                         </summary>
-                        <div className="px-4 pb-4 pt-2 border-t bg-gray-50">
+                        <div className="px-4 pb-4 pt-2 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                           {log.notes && (
                             <p className="text-sm text-gray-600 mb-3 italic">"{log.notes}"</p>
                           )}
@@ -2942,11 +2942,11 @@ export default function StudentPortalPage() {
           {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-6">
             {editPermissions?.canViewCharges === false ? (
-              <Card className="border-amber-200 bg-amber-50">
+              <Card className="border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30">
                 <CardContent className="py-8 text-center">
-                  <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                  <h3 className="font-semibold text-amber-800 mb-2">Acesso Bloqueado</h3>
-                  <p className="text-amber-700">A visualização de cobranças está bloqueada pelo seu personal.</p>
+                  <AlertCircle className="h-12 w-12 text-amber-500 dark:text-amber-400 mx-auto mb-4" />
+                  <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">Acesso Bloqueado</h3>
+                  <p className="text-amber-700 dark:text-amber-400">A visualização de cobranças está bloqueada pelo seu personal.</p>
                 </CardContent>
               </Card>
             ) : (

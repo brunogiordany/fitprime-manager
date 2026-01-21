@@ -4997,3 +4997,29 @@
 - [x] Adicionar opção de cancelar cobranças em lote
 - [x] Adicionar opção de marcar como pago em lote
 - [x] Igualar funcionalidades com a aba Pagamentos do perfil do aluno
+
+
+## Harmonização de Cores Portal do Aluno e Checkboxes - 21/01/2026
+- [ ] Melhorar visibilidade dos checkboxes na página de Cobranças (cor verde esmeralda visível)
+- [ ] Harmonizar cores do Portal do Aluno - Dashboard (Início)
+- [ ] Harmonizar cores do Portal do Aluno - Evolução
+- [ ] Harmonizar cores do Portal do Aluno - Fotos
+- [ ] Harmonizar cores do Portal do Aluno - Sessões
+- [ ] Harmonizar cores do Portal do Aluno - Treinos
+- [ ] Harmonizar cores do Portal do Aluno - Diário
+- [ ] Harmonizar cores do Portal do Aluno - Anamnese
+- [ ] Harmonizar cores do Portal do Aluno - Pagamentos
+- [ ] Harmonizar cores do Portal do Aluno - Chat
+- [ ] Harmonizar cores do Portal do Aluno - Conquistas
+- [ ] Harmonizar cores do Portal do Aluno - Ajuda
+- [ ] Garantir paleta premium consistente em todas as telas
+
+
+## Harmonização de Cores Portal do Aluno - 21/01/2026
+- [x] Melhorar visibilidade dos checkboxes na página de Cobranças (borda verde esmeralda)
+- [x] Harmonizar cores do StudentEvolutionCharts (badges com dark mode)
+- [x] Harmonizar cores do StudentTrainingDashboard (gráficos com dark mode)
+- [x] Harmonizar cores do StudentSessionManager (badges de status com dark mode)
+- [x] Harmonizar cores do StudentPortalPage (diário e pagamentos com dark mode)
+- [x] Harmonizar cores do StudentBadges (conquistas com dark mode)
+- [x] Harmonizar cores do StudentHelpCenter (jornada e guia com dark mode)

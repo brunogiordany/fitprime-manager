@@ -155,31 +155,31 @@ export default function StudentSessionManager({
     switch (status) {
       case "scheduled":
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50">
             Agendada
           </Badge>
         );
       case "confirmed":
         return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+          <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50">
             Confirmada
           </Badge>
         );
       case "completed":
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50">
             Realizada
           </Badge>
         );
       case "cancelled":
         return (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+          <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50">
             Cancelada
           </Badge>
         );
       case "no_show":
         return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+          <Badge variant="outline" className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50">
             Falta
           </Badge>
         );

@@ -261,9 +261,9 @@ export default function StudentEvolutionCharts({
                 variant="outline"
                 className={
                   stats.weightChange < 0
-                    ? "bg-green-50 text-green-700 border-green-200 mt-2"
+                    ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50 mt-2"
                     : stats.weightChange > 0
-                    ? "bg-amber-50 text-amber-700 border-amber-200 mt-2"
+                    ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 mt-2"
                     : "mt-2"
                 }
               >
@@ -286,10 +286,10 @@ export default function StudentEvolutionCharts({
               variant="outline"
               className={
                 stats.attendanceRate >= 80
-                  ? "bg-green-50 text-green-700 border-green-200 mt-2"
+                  ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50 mt-2"
                   : stats.attendanceRate >= 60
-                  ? "bg-amber-50 text-amber-700 border-amber-200 mt-2"
-                  : "bg-red-50 text-red-700 border-red-200 mt-2"
+                  ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 mt-2"
+                  : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50 mt-2"
               }
             >
               {stats.attendanceRate >= 80 ? "Excelente" : stats.attendanceRate >= 60 ? "Bom" : "Precisa melhorar"}
@@ -305,7 +305,7 @@ export default function StudentEvolutionCharts({
             </div>
             <p className="text-2xl font-bold mt-2 premium:text-blue-400">{stats.completedSessions}</p>
             <p className="text-xs text-muted-foreground">Sessões Realizadas</p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mt-2 premium:bg-blue-500/20 premium:text-blue-400 premium:border-blue-500/50">
+            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50 mt-2 premium:bg-blue-500/20 premium:text-blue-400 premium:border-blue-500/50">
               de {stats.totalSessions} agendadas
             </Badge>
           </CardContent>
@@ -318,7 +318,7 @@ export default function StudentEvolutionCharts({
             </div>
             <p className="text-2xl font-bold mt-2 text-amber-600 premium:text-amber-400">{stats.noShowSessions}</p>
             <p className="text-xs text-muted-foreground">Faltas</p>
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 mt-2 premium:bg-amber-500/20 premium:text-amber-400 premium:border-amber-500/50">
+            <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50 mt-2 premium:bg-amber-500/20 premium:text-amber-400 premium:border-amber-500/50">
               {stats.noShowSessions === 0 ? "Nenhuma falta!" : "total"}
             </Badge>
           </CardContent>
@@ -334,7 +334,7 @@ export default function StudentEvolutionCharts({
             </div>
             <p className="text-2xl font-bold mt-2 premium:text-violet-400">{stats.thisMonth}</p>
             <p className="text-xs text-muted-foreground">Este Mês</p>
-            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 mt-2 premium:bg-violet-500/20 premium:text-violet-400 premium:border-violet-500/50">
+            <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/50 mt-2 premium:bg-violet-500/20 premium:text-violet-400 premium:border-violet-500/50">
               sessões realizadas
             </Badge>
           </CardContent>
@@ -347,7 +347,7 @@ export default function StudentEvolutionCharts({
             </div>
             <p className="text-2xl font-bold mt-2 premium:text-gray-300">{stats.lastMonth}</p>
             <p className="text-xs text-muted-foreground">Mês Passado</p>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 mt-2 premium:bg-gray-500/20 premium:text-gray-400 premium:border-gray-500/50">
+            <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50 mt-2 premium:bg-gray-500/20 premium:text-gray-400 premium:border-gray-500/50">
               sessões realizadas
             </Badge>
           </CardContent>
