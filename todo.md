@@ -4977,7 +4977,14 @@
 
 
 ## Melhoria Análise Muscular - Técnicas Avançadas - 20/01/2026
-- [ ] Contabilizar Rest-Pause na análise por grupo muscular (contar como séries extras)
-- [ ] Contabilizar Drop Set na análise por grupo muscular (contar reduções como séries extras)
-- [ ] Contabilizar Série Válida na análise por grupo muscular
-- [ ] Contabilizar Série até Falha na análise por grupo muscular
+- [x] Contabilizar Rest-Pause na análise por grupo muscular (contar como séries extras)
+- [x] Contabilizar Drop Set na análise por grupo muscular (contar reduções como séries extras)
+- [x] Contabilizar Série Válida na análise por grupo muscular (já contabilizada na série principal)
+- [x] Contabilizar Série até Falha na análise por grupo muscular (já contabilizada na série principal)
+
+
+## UX Registro de Cardio - 20/01/2026
+- [x] Melhorar layout do modal de registro de cardio
+- [x] Organizar campos de forma mais clara e responsiva
+- [x] Corrigir botões sobrepostos no mobile
+- [x] Melhorar espaçamento e hierarquia visual

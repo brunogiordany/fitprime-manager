@@ -3789,27 +3789,27 @@ export default function TrainingDiaryPage() {
         
         {/* Modal: Novo Cardio */}
         <Dialog open={showCardioModal} onOpenChange={setShowCardioModal}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="flex items-center gap-2 text-lg">
                 <Heart className="h-5 w-5 text-red-500" />
                 Novo Registro de Cardio
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-sm">
                 Registre uma atividade cardiovascular do aluno
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-6">
-              {/* Aluno e Data */}
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              {/* Aluno e Data - Responsivo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label>Aluno *</Label>
+                  <Label className="text-sm">Aluno *</Label>
                   <Select 
                     value={cardioForm.studentId.toString()} 
                     onValueChange={(v) => setCardioForm({ ...cardioForm, studentId: parseInt(v) })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10">
                       <SelectValue placeholder="Selecione o aluno" />
                     </SelectTrigger>
                     <SelectContent>
@@ -3822,9 +3822,10 @@ export default function TrainingDiaryPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Data *</Label>
+                  <Label className="text-sm">Data *</Label>
                   <Input
                     type="date"
+                    className="h-10"
                     value={cardioForm.cardioDate}
                     onChange={(e) => setCardioForm({ ...cardioForm, cardioDate: e.target.value })}
                   />
@@ -3832,62 +3833,61 @@ export default function TrainingDiaryPage() {
               </div>
               
               {/* Tipo de Cardio */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Tipo de Cardio *</Label>
-                  <Select 
-                    value={cardioForm.cardioType} 
-                    onValueChange={(v) => setCardioForm({ ...cardioForm, cardioType: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CARDIO_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label className="text-sm">Tipo de Cardio *</Label>
+                <Select 
+                  value={cardioForm.cardioType} 
+                  onValueChange={(v) => setCardioForm({ ...cardioForm, cardioType: v })}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CARDIO_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {cardioForm.cardioType === 'other' && (
-                  <div>
-                    <Label>Nome do Cardio</Label>
-                    <Input
-                      placeholder="Ex: Patinação"
-                      value={cardioForm.cardioTypeName}
-                      onChange={(e) => setCardioForm({ ...cardioForm, cardioTypeName: e.target.value })}
-                    />
-                  </div>
+                  <Input
+                    className="mt-2 h-10"
+                    placeholder="Nome do cardio (ex: Patinação)"
+                    value={cardioForm.cardioTypeName}
+                    onChange={(e) => setCardioForm({ ...cardioForm, cardioTypeName: e.target.value })}
+                  />
                 )}
               </div>
               
-              {/* Métricas Principais */}
-              <div className="grid grid-cols-3 gap-4">
+              {/* Métricas Principais - Grid 3 colunas */}
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <Label>Duração (min) *</Label>
+                  <Label className="text-xs text-muted-foreground">Duração (min) *</Label>
                   <Input
                     type="number"
+                    className="h-10 text-center"
                     placeholder="30"
                     value={cardioForm.durationMinutes || ''}
                     onChange={(e) => setCardioForm({ ...cardioForm, durationMinutes: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
-                  <Label>Distância (km)</Label>
+                  <Label className="text-xs text-muted-foreground">Distância (km)</Label>
                   <Input
                     type="number"
                     step="0.1"
+                    className="h-10 text-center"
                     placeholder="5.0"
                     value={cardioForm.distanceKm}
                     onChange={(e) => setCardioForm({ ...cardioForm, distanceKm: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label>Calorias</Label>
+                  <Label className="text-xs text-muted-foreground">Calorias</Label>
                   <Input
                     type="number"
+                    className="h-10 text-center"
                     placeholder="300"
                     value={cardioForm.caloriesBurned || ''}
                     onChange={(e) => setCardioForm({ ...cardioForm, caloriesBurned: parseInt(e.target.value) || undefined })}
@@ -3895,35 +3895,38 @@ export default function TrainingDiaryPage() {
                 </div>
               </div>
               
-              {/* Frequência Cardíaca */}
-              <div>
-                <Label className="flex items-center gap-2 mb-2">
+              {/* Frequência Cardíaca - Card compacto */}
+              <div className="bg-muted/30 rounded-lg p-3">
+                <Label className="flex items-center gap-2 text-sm mb-2">
                   <Heart className="h-4 w-4 text-red-500" />
                   Frequência Cardíaca
                 </Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Média (bpm)</Label>
+                    <Label className="text-xs text-muted-foreground">Média</Label>
                     <Input
                       type="number"
+                      className="h-9 text-center text-sm"
                       placeholder="140"
                       value={cardioForm.avgHeartRate || ''}
                       onChange={(e) => setCardioForm({ ...cardioForm, avgHeartRate: parseInt(e.target.value) || undefined })}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Máxima (bpm)</Label>
+                    <Label className="text-xs text-muted-foreground">Máxima</Label>
                     <Input
                       type="number"
+                      className="h-9 text-center text-sm"
                       placeholder="170"
                       value={cardioForm.maxHeartRate || ''}
                       onChange={(e) => setCardioForm({ ...cardioForm, maxHeartRate: parseInt(e.target.value) || undefined })}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Mínima (bpm)</Label>
+                    <Label className="text-xs text-muted-foreground">Mínima</Label>
                     <Input
                       type="number"
+                      className="h-9 text-center text-sm"
                       placeholder="110"
                       value={cardioForm.minHeartRate || ''}
                       onChange={(e) => setCardioForm({ ...cardioForm, minHeartRate: parseInt(e.target.value) || undefined })}
@@ -3932,17 +3935,17 @@ export default function TrainingDiaryPage() {
                 </div>
               </div>
               
-              {/* Intensidade */}
+              {/* Intensidade - Botões compactos */}
               <div>
-                <Label>Intensidade</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <Label className="text-sm">Intensidade</Label>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {CARDIO_INTENSITIES.map((intensity) => (
                     <Button
                       key={intensity.value}
                       type="button"
                       variant={cardioForm.intensity === intensity.value ? "default" : "outline"}
                       size="sm"
-                      className={cardioForm.intensity === intensity.value ? intensity.color : ""}
+                      className={`h-8 px-3 text-xs ${cardioForm.intensity === intensity.value ? intensity.color : ""}`}
                       onClick={() => setCardioForm({ ...cardioForm, intensity: intensity.value })}
                     >
                       {intensity.label}
@@ -3951,17 +3954,18 @@ export default function TrainingDiaryPage() {
                 </div>
               </div>
               
-              {/* Sensações */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Sensações - Layout compacto lado a lado */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Como se sentiu antes?</Label>
-                  <div className="flex gap-1 mt-2">
+                  <Label className="text-xs text-muted-foreground">Antes</Label>
+                  <div className="flex gap-1 mt-1">
                     {CARDIO_FEELINGS.map((feeling) => (
                       <Button
                         key={feeling.value}
                         type="button"
                         variant={cardioForm.feelingBefore === feeling.value ? "default" : "outline"}
                         size="sm"
+                        className="h-8 w-8 p-0"
                         onClick={() => setCardioForm({ ...cardioForm, feelingBefore: feeling.value })}
                       >
                         {feeling.emoji}
@@ -3970,14 +3974,15 @@ export default function TrainingDiaryPage() {
                   </div>
                 </div>
                 <div>
-                  <Label>Como se sentiu depois?</Label>
-                  <div className="flex gap-1 mt-2">
+                  <Label className="text-xs text-muted-foreground">Depois</Label>
+                  <div className="flex gap-1 mt-1">
                     {CARDIO_FEELINGS.map((feeling) => (
                       <Button
                         key={feeling.value}
                         type="button"
                         variant={cardioForm.feelingAfter === feeling.value ? "default" : "outline"}
                         size="sm"
+                        className="h-8 w-8 p-0"
                         onClick={() => setCardioForm({ ...cardioForm, feelingAfter: feeling.value })}
                       >
                         {feeling.emoji}
@@ -3987,15 +3992,15 @@ export default function TrainingDiaryPage() {
                 </div>
               </div>
               
-              {/* Clima e Local */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Clima e Local - Compacto */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Clima/Ambiente</Label>
+                  <Label className="text-xs text-muted-foreground">Clima/Ambiente</Label>
                   <Select 
                     value={cardioForm.weather} 
                     onValueChange={(v) => setCardioForm({ ...cardioForm, weather: v })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
@@ -4008,19 +4013,21 @@ export default function TrainingDiaryPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Local</Label>
+                  <Label className="text-xs text-muted-foreground">Local</Label>
                   <Input
-                    placeholder="Ex: Academia, Parque"
+                    className="h-9"
+                    placeholder="Ex: Academia"
                     value={cardioForm.location}
                     onChange={(e) => setCardioForm({ ...cardioForm, location: e.target.value })}
                   />
                 </div>
               </div>
               
-              {/* Observações */}
+              {/* Observações - Compacto */}
               <div>
-                <Label>Observações</Label>
+                <Label className="text-xs text-muted-foreground">Observações</Label>
                 <Textarea
+                  className="min-h-[60px] text-sm"
                   placeholder="Anotações sobre o treino..."
                   value={cardioForm.notes}
                   onChange={(e) => setCardioForm({ ...cardioForm, notes: e.target.value })}

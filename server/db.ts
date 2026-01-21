@@ -3172,12 +3172,34 @@ export async function getMuscleGroupAnalysis(
     weight: workoutLogSets.weight,
     reps: workoutLogSets.reps,
     isCompleted: workoutLogSets.isCompleted,
+    setType: workoutLogSets.setType,
+    // Técnicas avançadas
+    isDropSet: workoutLogSets.isDropSet,
+    dropWeight: workoutLogSets.dropWeight,
+    dropReps: workoutLogSets.dropReps,
+    isRestPause: workoutLogSets.isRestPause,
+    restPauseWeight: workoutLogSets.restPauseWeight,
+    restPauseReps: workoutLogSets.restPauseReps,
   })
     .from(workoutLogSets)
     .where(inArray(workoutLogSets.workoutLogExerciseId, exerciseIdsForSets)) : [];
   
   // Agrupar séries por exercício e calcular totais reais
-  const setsByExercise: Record<number, { weight: number; reps: number; isCompleted: boolean }[]> = {};
+  // Incluindo técnicas avançadas: Rest-Pause, Drop Set, Série Válida, Falha
+  interface SetData {
+    weight: number;
+    reps: number;
+    isCompleted: boolean;
+    setType: string | null;
+    // Técnicas avançadas
+    isDropSet: boolean;
+    dropWeight: number;
+    dropReps: number;
+    isRestPause: boolean;
+    restPauseWeight: number;
+    restPauseReps: number;
+  }
+  const setsByExercise: Record<number, SetData[]> = {};
   for (const set of allSets) {
     if (!setsByExercise[set.workoutLogExerciseId]) {
       setsByExercise[set.workoutLogExerciseId] = [];
@@ -3186,17 +3208,49 @@ export async function getMuscleGroupAnalysis(
       weight: parseFloat(set.weight?.toString() || '0'),
       reps: set.reps || 0,
       isCompleted: set.isCompleted || false,
+      setType: set.setType,
+      // Técnicas avançadas
+      isDropSet: set.isDropSet || false,
+      dropWeight: parseFloat(set.dropWeight?.toString() || '0'),
+      dropReps: set.dropReps || 0,
+      isRestPause: set.isRestPause || false,
+      restPauseWeight: parseFloat(set.restPauseWeight?.toString() || '0'),
+      restPauseReps: set.restPauseReps || 0,
     });
   }
   
   // Recalcular totais para cada exercício
+  // Incluindo técnicas avançadas: Rest-Pause, Drop Set, Série Válida, Falha
   const exercises = exercisesRaw.map(ex => {
     const sets = setsByExercise[ex.id] || [];
+    
     // Contar séries que têm dados preenchidos (weight > 0 ou reps > 0)
     const setsWithData = sets.filter(s => s.weight > 0 || s.reps > 0);
-    const calculatedSets = setsWithData.length;
-    const calculatedVolume = setsWithData.reduce((sum, s) => sum + (s.weight * s.reps), 0);
-    const calculatedReps = setsWithData.reduce((sum, s) => sum + s.reps, 0);
+    
+    // Calcular totais base das séries principais
+    let calculatedSets = setsWithData.length;
+    let calculatedVolume = setsWithData.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+    let calculatedReps = setsWithData.reduce((sum, s) => sum + s.reps, 0);
+    
+    // Adicionar técnicas avançadas ao cálculo
+    for (const set of setsWithData) {
+      // Drop Set: conta como série extra com seu próprio volume
+      if (set.isDropSet && set.dropWeight > 0 && set.dropReps > 0) {
+        calculatedSets += 1; // Drop conta como 1 série extra
+        calculatedVolume += (set.dropWeight * set.dropReps);
+        calculatedReps += set.dropReps;
+      }
+      
+      // Rest-Pause: conta como série extra com seu próprio volume
+      if (set.isRestPause && set.restPauseWeight > 0 && set.restPauseReps > 0) {
+        calculatedSets += 1; // Rest-Pause conta como 1 série extra
+        calculatedVolume += (set.restPauseWeight * set.restPauseReps);
+        calculatedReps += set.restPauseReps;
+      }
+      
+      // Série até Falha (setType === 'failure'): já está contabilizada na série principal
+      // Série Válida (setType === 'working'): já está contabilizada na série principal
+    }
     
     // Usar os valores calculados se forem maiores que os armazenados
     const storedSets = ex.completedSets || 0;
