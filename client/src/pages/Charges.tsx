@@ -168,7 +168,7 @@ export default function Charges() {
 
   const selectAllChargesForStudent = (studentCharges: { charge: { id: number; status: string } }[]) => {
     const newSelected = new Set(selectedCharges);
-    const actionableCharges = studentCharges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled');
+    const actionableCharges = studentCharges.filter(c => c.charge.status !== 'paid');
     const allSelected = actionableCharges.every(c => selectedCharges.has(c.charge.id));
     
     if (allSelected) {
@@ -732,7 +732,7 @@ export default function Charges() {
                             {isBatchMode && (
                               <div onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
-                                  checked={item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').every(c => selectedCharges.has(c.charge.id)) && item.charges.filter(c => c.charge.status !== 'paid' && c.charge.status !== 'cancelled').length > 0}
+                                  checked={item.charges.filter(c => c.charge.status !== 'paid').every(c => selectedCharges.has(c.charge.id)) && item.charges.filter(c => c.charge.status !== 'paid').length > 0}
                                   onCheckedChange={() => selectAllChargesForStudent(item.charges)}
                                   className="h-5 w-5 border-2 border-emerald-500 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                                 />
@@ -794,14 +794,14 @@ export default function Charges() {
                                 className={`flex items-center justify-between p-4 hover:bg-accent/30 ${isBatchMode && selectedCharges.has(chargeItem.charge.id) ? 'bg-primary/10' : ''}`}
                               >
                                 <div className="flex items-center gap-4">
-                                  {isBatchMode && chargeItem.charge.status !== 'paid' && chargeItem.charge.status !== 'cancelled' && (
+                                  {isBatchMode && chargeItem.charge.status !== 'paid' && (
                                     <Checkbox
                                       checked={selectedCharges.has(chargeItem.charge.id)}
                                       onCheckedChange={() => toggleChargeSelection(chargeItem.charge.id)}
                                       className="h-5 w-5 border-2 border-emerald-500 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                                     />
                                   )}
-                                  {isBatchMode && (chargeItem.charge.status === 'paid' || chargeItem.charge.status === 'cancelled') && (
+                                  {isBatchMode && chargeItem.charge.status === 'paid' && (
                                     <div className="h-5 w-5" /> // Placeholder para manter alinhamento
                                   )}
                                   <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">

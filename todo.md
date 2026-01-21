@@ -5028,3 +5028,7 @@
 - [x] Criar endpoint charges.delete no backend para exclusão em lote
 - [x] Permitir excluir cobranças com status "cancelado"
 - [x] Testar funcionalidade de exclusão em lote
+
+## Bug Fix: Checkbox de Cobranças Canceladas - 21/01/2026
+- [x] Permitir selecionar cobranças canceladas no modo de ações em lote
+- [x] Testar seleção e exclusão de cobranças canceladas
