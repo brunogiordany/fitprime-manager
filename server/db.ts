@@ -1174,6 +1174,12 @@ export async function getChargeById(id: number): Promise<Charge | null> {
   return result[0] || null;
 }
 
+export async function deleteCharge(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(charges).where(eq(charges.id, id));
+}
+
 export async function getMonthlyRevenue(personalId: number) {
   const db = await getDb();
   if (!db) return 0;

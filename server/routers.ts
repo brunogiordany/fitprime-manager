@@ -6619,6 +6619,27 @@ Retorne APENAS o JSON, sem texto adicional.`;
         return { success: true, count, message: `${count} cobrança(s) cancelada(s) com sucesso` };
       }),
     
+    // Excluir uma cobrança específica
+    delete: personalProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const charge = await db.getChargeById(input.id);
+        if (!charge) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Cobrança não encontrada' });
+        }
+        
+        // Verificar se a cobrança pertence ao personal
+        const student = await db.getStudentById(charge.studentId, ctx.personal.id);
+        if (!student) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem permissão para excluir esta cobrança' });
+        }
+        
+        await db.deleteCharge(input.id);
+        return { success: true };
+      }),
+    
     // Excluir cobranças pendentes em lote
     deleteFuture: personalProcedure
       .input(z.object({

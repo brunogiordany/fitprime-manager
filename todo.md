@@ -5023,3 +5023,8 @@
 - [x] Harmonizar cores do StudentPortalPage (diário e pagamentos com dark mode)
 - [x] Harmonizar cores do StudentBadges (conquistas com dark mode)
 - [x] Harmonizar cores do StudentHelpCenter (jornada e guia com dark mode)
+
+## Bug Fix: Exclusão em Lote de Cobranças - 21/01/2026
+- [x] Criar endpoint charges.delete no backend para exclusão em lote
+- [x] Permitir excluir cobranças com status "cancelado"
+- [x] Testar funcionalidade de exclusão em lote
