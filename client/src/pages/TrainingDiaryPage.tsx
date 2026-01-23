@@ -2313,7 +2313,18 @@ export default function TrainingDiaryPage() {
                   )}
                 </div>
                 
-                {newLog.workoutId > 0 && workoutDays && workoutDays.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Horário de Início</Label>
+                  <Input
+                    type="time"
+                    value={newLog.startTime}
+                    onChange={(e) => setNewLog({ ...newLog, startTime: e.target.value })}
+                  />
+                </div>
+              </div>
+              
+              {newLog.workoutId > 0 && workoutDays && workoutDays.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Dia do Treino</Label>
                     <Select 
@@ -2340,26 +2351,17 @@ export default function TrainingDiaryPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label>Horário de Início</Label>
-                  <Input
-                    type="time"
-                    value={newLog.startTime}
-                    onChange={(e) => setNewLog({ ...newLog, startTime: e.target.value })}
-                  />
+                  
+                  <div className="space-y-2">
+                    <Label>Nome do Dia (opcional)</Label>
+                    <Input
+                      placeholder="Ex: Treino A - Peito e Tríceps"
+                      value={newLog.dayName}
+                      onChange={(e) => setNewLog({ ...newLog, dayName: e.target.value })}
+                    />
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label>Nome do Dia (opcional)</Label>
-                  <Input
-                    placeholder="Ex: Treino A - Peito e Tríceps"
-                    value={newLog.dayName}
-                    onChange={(e) => setNewLog({ ...newLog, dayName: e.target.value })}
-                  />
-                </div>
-              </div>
+              )}
               
               {/* Exercícios */}
               <div className="space-y-4">

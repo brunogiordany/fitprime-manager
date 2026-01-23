@@ -4846,7 +4846,12 @@
 - [x] Diário do Maromba: erro "An unexpected error occurred" ao acessar
 
 
-## Correções de UX - 20/01/2026
+## Correções de UX - 23/01/2026
+- [x] Adicionar Dobras Cutâneas na ficha de anamnese (personal e aluno)
+- [x] Corrigir encavalamento de layout no modal de registro de treino
+- [ ] Melhorar modal de registro de treino do aluno para carregar treino automaticamente
+
+## Correções de UX - 23/01/2026
 - [x] Dashboard Diário do Maromba: melhorar layout mobile (cards menores, gráficos)
 - [x] Dashboard Diário do Maromba: otimizar seção de evolução de carga (usar select em vez de grid)
 - [x] WhatsApp Mensagens: verificar e garantir scroll da lista de alunos no mobile

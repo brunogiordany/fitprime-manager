@@ -115,6 +115,17 @@ export default function Anamnesis() {
     rightCalf: "",
     leftCalf: "",
     measureNotes: "",
+    
+    // Dobras Cutâneas (novo)
+    tricepsFold: "",
+    bicepsFold: "",
+    subscapularFold: "",
+    suprailiacFold: "",
+    abdominalFold: "",
+    thighFold: "",
+    chestFold: "",
+    axillarFold: "",
+    foldNotes: "",
   });
 
   const utils = trpc.useUtils();
@@ -695,6 +706,118 @@ export default function Anamnesis() {
                       placeholder="Anotações sobre a medição..."
                       value={formData.measureNotes}
                       onChange={(e) => setFormData({ ...formData, measureNotes: e.target.value })}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card de Dobras Cutâneas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Ruler className="h-5 w-5" />
+                    Dobras Cutâneas (mm)
+                  </CardTitle>
+                  <CardDescription>
+                    Medidas de dobras cutâneas para avaliação de composição corporal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Tríceps</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 15.5"
+                        value={formData.tricepsFold}
+                        onChange={(e) => setFormData({ ...formData, tricepsFold: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bíceps</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 8.0"
+                        value={formData.bicepsFold}
+                        onChange={(e) => setFormData({ ...formData, bicepsFold: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Subescapular</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 20.0"
+                        value={formData.subscapularFold}
+                        onChange={(e) => setFormData({ ...formData, subscapularFold: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Suprailíaca</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 25.0"
+                        value={formData.suprailiacFold}
+                        onChange={(e) => setFormData({ ...formData, suprailiacFold: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Abdominal</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 30.0"
+                        value={formData.abdominalFold}
+                        onChange={(e) => setFormData({ ...formData, abdominalFold: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Coxa</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 28.0"
+                        value={formData.thighFold}
+                        onChange={(e) => setFormData({ ...formData, thighFold: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Peitoral</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 12.0"
+                        value={formData.chestFold}
+                        onChange={(e) => setFormData({ ...formData, chestFold: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Axilar</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 18.0"
+                        value={formData.axillarFold}
+                        onChange={(e) => setFormData({ ...formData, axillarFold: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Observações sobre as dobras</Label>
+                    <Textarea
+                      placeholder="Anotações sobre a medição das dobras cutâneas..."
+                      value={formData.foldNotes}
+                      onChange={(e) => setFormData({ ...formData, foldNotes: e.target.value })}
                     />
                   </div>
                 </CardContent>
