@@ -4849,7 +4849,7 @@
 ## Correções de UX - 23/01/2026
 - [x] Adicionar Dobras Cutâneas na ficha de anamnese (personal e aluno)
 - [x] Corrigir encavalamento de layout no modal de registro de treino
-- [ ] Melhorar modal de registro de treino do aluno para carregar treino automaticamente
+- [x] Melhorar modal de registro de treino do aluno para carregar treino automaticamente (já funcional)
 
 ## Correções de UX - 23/01/2026
 - [x] Dashboard Diário do Maromba: melhorar layout mobile (cards menores, gráficos)
