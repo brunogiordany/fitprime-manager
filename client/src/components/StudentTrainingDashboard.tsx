@@ -31,6 +31,7 @@ interface StudentTrainingDashboardProps {
 
 export default function StudentTrainingDashboard({ studentId }: StudentTrainingDashboardProps) {
   const [selectedExercise, setSelectedExercise] = useState<string>("");
+  const [muscleGroupMetric, setMuscleGroupMetric] = useState<'volume' | 'sets' | 'exercises'>('volume');
   
   // Buscar dados do dashboard
   const { data: dashboardData, isLoading: dashboardLoading } = trpc.studentPortal.dashboard.useQuery();
@@ -63,8 +64,15 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
   const exercises = uniqueExercises || [];
   const progress = exerciseProgress || [];
   
-  // Calcular max volume para escala do gráfico de grupos musculares
-  const maxVolume = Math.max(...muscleGroups.map(g => g.volume), 1);
+  // Calcular max value para escala do gráfico de grupos musculares baseado na métrica selecionada
+  const maxValue = Math.max(
+    ...muscleGroups.map(g => {
+      if (muscleGroupMetric === 'volume') return g.volume;
+      if (muscleGroupMetric === 'sets') return g.sets;
+      return g.exercises;
+    }),
+    1
+  );
   
   // Emojis para sentimentos
   const feelingEmojis: Record<string, { emoji: string; label: string; color: string }> = {
@@ -208,11 +216,51 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
         {/* Grupos Musculares */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Dumbbell className="h-5 w-5 text-purple-500" />
-              Grupos Musculares
-            </CardTitle>
-            <CardDescription>Distribuição de volume por grupo muscular</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Dumbbell className="h-5 w-5 text-purple-500" />
+                  Grupos Musculares
+                </CardTitle>
+                <CardDescription>
+                  {muscleGroupMetric === 'volume' && 'Distribuição de volume por grupo muscular'}
+                  {muscleGroupMetric === 'sets' && 'Distribuição de séries por grupo muscular'}
+                  {muscleGroupMetric === 'exercises' && 'Distribuição de exercícios por grupo muscular'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMuscleGroupMetric('volume')}
+                  className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                    muscleGroupMetric === 'volume'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Carga
+                </button>
+                <button
+                  onClick={() => setMuscleGroupMetric('sets')}
+                  className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                    muscleGroupMetric === 'sets'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Séries
+                </button>
+                <button
+                  onClick={() => setMuscleGroupMetric('exercises')}
+                  className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                    muscleGroupMetric === 'exercises'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Exercícios
+                </button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {muscleGroups.length > 0 ? (
@@ -226,10 +274,20 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
                     <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-500"
-                        style={{ width: `${(group.volume / maxVolume) * 100}%` }}
+                        style={{ 
+                          width: `${(
+                            (muscleGroupMetric === 'volume' ? group.volume : 
+                             muscleGroupMetric === 'sets' ? group.sets : 
+                             group.exercises) / maxValue
+                          ) * 100}%` 
+                        }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">{(group.volume / 1000).toFixed(1)}t de volume</p>
+                    <p className="text-xs text-gray-500">
+                      {muscleGroupMetric === 'volume' && `${(group.volume / 1000).toFixed(1)}t de volume`}
+                      {muscleGroupMetric === 'sets' && `${group.sets} séries`}
+                      {muscleGroupMetric === 'exercises' && `${group.exercises} exercícios`}
+                    </p>
                   </div>
                 ))}
               </div>

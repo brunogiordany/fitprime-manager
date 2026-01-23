@@ -311,7 +311,7 @@ export default function StudentNutritionRecommendations({
         <TabsContent value="overview" className="space-y-4">
           {/* Meta de peso */}
           {calculations.weightGoal.target && calculations.weightGoal.difference !== 0 && (
-            <Card>
+            <Card className="premium:bg-[#0d1520] premium:border-emerald-500/40">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Target className="h-4 w-4 text-emerald-500" />
@@ -346,13 +346,13 @@ export default function StudentNutritionRecommendations({
                     <p className="text-xl font-bold text-emerald-600">{calculations.weightGoal.target} kg</p>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-sm">
-                  <p className="text-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/20 rounded-lg p-3 text-sm">
+                  <p className="text-gray-600 dark:text-gray-300 premium:text-gray-300">
                     <Clock className="h-4 w-4 inline mr-1" />
                     Tempo estimado: <strong>{calculations.weightGoal.weeksToGoal} semanas</strong>
                     {' '}(~{Math.round(calculations.weightGoal.weeksToGoal / 4)} meses)
                   </p>
-                  <p className="text-gray-500 text-xs mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 premium:text-gray-400 text-xs mt-1">
                     Com um {calculations.weightGoal.difference > 0 ? 'déficit' : 'superávit'} de{' '}
                     {Math.abs(calculations.weightGoal.dailyDeficit)} kcal/dia de forma saudável
                   </p>
@@ -362,10 +362,10 @@ export default function StudentNutritionRecommendations({
           )}
           
           {/* Dicas baseadas no objetivo */}
-          <Card>
+          <Card className="premium:bg-[#0d1520] premium:border-emerald-500/40">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Info className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-base flex items-center gap-2 premium:text-white">
+                <Info className="h-4 w-4 text-blue-500 premium:text-[#00FF88]" />
                 Dicas para {goalLabels[goal]}
               </CardTitle>
             </CardHeader>
@@ -373,66 +373,66 @@ export default function StudentNutritionRecommendations({
               <div className="space-y-3">
                 {goal === 'weight_loss' && (
                   <>
-                    <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-emerald-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Déficit moderado:</strong> Não reduza mais de 500-750 kcal/dia para preservar massa muscular
+                    <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-emerald-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Déficit moderado:</strong> Não reduza mais de 500-750 kcal/dia para preservar massa muscular
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-emerald-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Proteína alta:</strong> Consuma {calculations.macros.proteinPerKg}g/kg para manter músculos durante a dieta
+                    <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-emerald-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Proteína alta:</strong> Consuma {calculations.macros.proteinPerKg}g/kg para manter músculos durante a dieta
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-emerald-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Cardio estratégico:</strong> Combine musculação com cardio para maximizar a queima de gordura
+                    <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-emerald-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Cardio estratégico:</strong> Combine musculação com cardio para maximizar a queima de gordura
                       </p>
                     </div>
                   </>
                 )}
                 {goal === 'muscle_gain' && (
                   <>
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-blue-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Superávit controlado:</strong> +300 kcal/dia é suficiente para ganhar massa sem acumular gordura
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-blue-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Superávit controlado:</strong> +300 kcal/dia é suficiente para ganhar massa sem acumular gordura
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-blue-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Proteína distribuída:</strong> Divida os {calculations.macros.protein}g em 4-5 refeições ao longo do dia
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-blue-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Proteína distribuída:</strong> Divida os {calculations.macros.protein}g em 4-5 refeições ao longo do dia
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-blue-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Treino progressivo:</strong> Aumente cargas gradualmente para estimular hipertrofia
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-blue-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Treino progressivo:</strong> Aumente cargas gradualmente para estimular hipertrofia
                       </p>
                     </div>
                   </>
                 )}
                 {(goal === 'conditioning' || goal === 'health') && (
                   <>
-                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-purple-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Equilíbrio:</strong> Mantenha uma alimentação balanceada sem restrições extremas
+                    <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-purple-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Equilíbrio:</strong> Mantenha uma alimentação balanceada sem restrições extremas
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-purple-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Variedade:</strong> Combine treino de força com cardio para saúde cardiovascular
+                    <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-purple-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Variedade:</strong> Combine treino de força com cardio para saúde cardiovascular
                       </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                      <ChevronRight className="h-4 w-4 text-purple-500 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <strong>Consistência:</strong> Foque em criar hábitos sustentáveis a longo prazo
+                    <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                      <ChevronRight className="h-4 w-4 text-purple-500 premium:text-[#00FF88] mt-0.5" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 premium:text-gray-300">
+                        <strong className="premium:text-[#00FF88]">Consistência:</strong> Foque em criar hábitos sustentáveis a longo prazo
                       </p>
                     </div>
                   </>

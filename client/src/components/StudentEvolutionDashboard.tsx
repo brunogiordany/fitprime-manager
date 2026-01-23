@@ -24,7 +24,8 @@ import {
   Minus,
   Target,
   History,
-  FileText
+  FileText,
+  Save
 } from "lucide-react";
 import {
   LineChart,
@@ -923,7 +924,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
       </Dialog>
 
       {/* Evolucao de Exercicios */}
-      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50">
+      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20 dark:border-emerald-800 premium:from-[#0d1520] premium:to-[#0a0f1a] premium:border-emerald-500/40 premium:shadow-[0_0_15px_rgba(0,255,136,0.15)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-emerald-600" />
@@ -953,20 +954,20 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
             <>
               {/* Estatisticas */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 bg-white rounded-lg border border-emerald-200">
-                  <p className="text-xs text-gray-500 mb-1">Carga Maxima</p>
-                  <p className="text-lg font-bold text-emerald-600">{trainingStats.maxWeight.toFixed(1)} kg</p>
+                <div className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] rounded-lg border border-emerald-200 premium:border-emerald-500/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400 mb-1">Carga Maxima</p>
+                  <p className="text-lg font-bold text-emerald-600 premium:text-[#00FF88]">{trainingStats.maxWeight.toFixed(1)} kg</p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-emerald-200">
-                  <p className="text-xs text-gray-500 mb-1">Carga Media</p>
-                  <p className="text-lg font-bold text-blue-600">{trainingStats.avgWeight.toFixed(1)} kg</p>
+                <div className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] rounded-lg border border-emerald-200 premium:border-emerald-500/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400 mb-1">Carga Media</p>
+                  <p className="text-lg font-bold text-blue-600 premium:text-blue-400">{trainingStats.avgWeight.toFixed(1)} kg</p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-emerald-200">
-                  <p className="text-xs text-gray-500 mb-1">Volume Total</p>
-                  <p className="text-lg font-bold text-purple-600">{trainingStats.totalVolume.toFixed(0)} kg</p>
+                <div className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] rounded-lg border border-emerald-200 premium:border-emerald-500/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400 mb-1">Volume Total</p>
+                  <p className="text-lg font-bold text-purple-600 premium:text-violet-400">{trainingStats.totalVolume.toFixed(0)} kg</p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-emerald-200">
-                  <p className="text-xs text-gray-500 mb-1">Tendencia</p>
+                <div className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] rounded-lg border border-emerald-200 premium:border-emerald-500/30">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 premium:text-gray-400 mb-1">Tendencia</p>
                   <p className={`text-lg font-bold ${
                     trainingStats.trend === 'up' ? 'text-emerald-600' :
                     trainingStats.trend === 'down' ? 'text-red-600' :
@@ -979,7 +980,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
 
               {/* Grafico de Evolucao */}
               {trainingChartData.length > 0 ? (
-                <div className="h-[300px] border border-emerald-200 rounded-lg p-4 bg-white">
+                <div className="h-[300px] border border-emerald-200 premium:border-emerald-500/30 rounded-lg p-4 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trainingChartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
@@ -1013,6 +1014,38 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                   <p>Nenhum registro de treino para este exercicio</p>
                 </div>
               )}
+
+              {/* Formulario de Registro Rapido */}
+              <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg">
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 premium:text-white">
+                  <Plus className="h-4 w-4" />
+                  Registrar Treino para {selectedExercise}
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs premium:text-gray-300">Peso (kg)</Label>
+                    <input
+                      type="number"
+                      placeholder="0.0"
+                      className="w-full px-3 py-2 border border-emerald-200 premium:border-emerald-500/30 rounded-lg bg-white dark:bg-gray-800 premium:bg-[#0d1520] premium:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs premium:text-gray-300">Reps</Label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-emerald-200 premium:border-emerald-500/30 rounded-lg bg-white dark:bg-gray-800 premium:bg-[#0d1520] premium:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:hover:bg-[#00CC6A] premium:text-black">
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 

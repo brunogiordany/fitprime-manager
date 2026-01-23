@@ -5067,3 +5067,22 @@
 - [ ] Varredura de cores com verde neon #00FF88 em todo portal
 - [ ] Destacar bordas e linhas com verde neon
 - [ ] Testar responsividade e contraste
+
+
+## Correções Portal do Aluno (v4.5)
+- [x] Corrigir cards brancos nas "Dicas para Ganhar massa muscular" → usar fundo escuro
+- [x] Corrigir fundo cinza claro na seção "Evolução de Carga" → usar fundo escuro (#0d1520)
+- [x] Corrigir cards brancos de estatísticas na evolução → usar fundo escuro
+- [x] Adicionar caixa de digitação na evolução de carga (igual ao personal)
+- [x] Melhorar análise por grupo muscular com opções de visualização:
+  - [x] Adicionar opção "Por Séries" (quantidade de séries)
+  - [x] Adicionar opção "Por Exercícios" (quantidade de exercícios)
+  - [x] Manter opção "Por Carga" (volume/peso movimentado)
+
+## Melhorar Modal de Registro de Treino do Aluno (v4.6)
+- [ ] Copiar UX do modal de registro do personal para o aluno
+- [ ] Manter mesma estrutura de campos e layout
+- [ ] Adicionar opção de selecionar treino + dia
+- [ ] Adicionar seção de exercícios com séries dinâmicas
+- [ ] Adicionar campo de observações gerais
+- [ ] Adicionar botões de sentimento (Excelente, Bom, Normal, Cansado)
