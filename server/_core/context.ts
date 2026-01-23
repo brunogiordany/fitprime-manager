@@ -29,7 +29,7 @@ export async function createContext(
 
   // Tentar autenticação do aluno via token JWT no header
   const studentToken = opts.req.headers['x-student-token'] as string | undefined;
-  if (studentToken && !user) {
+  if (studentToken) {
     try {
       const decoded = jwt.verify(studentToken, process.env.JWT_SECRET || 'secret') as {
         studentId: number;

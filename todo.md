@@ -4990,6 +4990,12 @@
 - [x] Melhorar espaçamento e hierarquia visual
 
 
+## Bug Fix: Logout Automático de Alunos - 23/01/2026
+- [x] Investigar problema de logout automático ao fazer login
+- [x] Verificar autenticação do aluno ed.junior0087@gmail.com
+- [x] Corrigir bug e testar
+- [x] Remover condição !user que impedia autenticação dupla (OAuth + Student Token)
+
 ## Ações em Lote na Página de Cobranças - 21/01/2026
 - [x] Adicionar botão "Ações em Lote" na página de Cobranças
 - [x] Implementar seleção múltipla de cobranças (checkboxes)

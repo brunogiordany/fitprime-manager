@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, name, email, userId, personalId FROM students WHERE email = 'ed.junior0087@gmail.com' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name, email, userId, personalId FROM students WHERE email = 'ed.junior0087@gmail.com' LIMIT 1;",
+  "rows": [
+    {
+      "id": "390002",
+      "name": "Junior Menezes",
+      "email": "ed.junior0087@gmail.com",
+      "userId": "NULL",
+      "personalId": "390004"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tuserId\tpersonalId\n390002\tJunior Menezes\ted.junior0087@gmail.com\tNULL\t390004\n",
+  "stderr": "",
+  "execution_time_ms": 350
+}
