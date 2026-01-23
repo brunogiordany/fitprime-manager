@@ -5058,3 +5058,12 @@
 - [x] Manter funcionalidade de registro manual como alternativa
 - [ ] Carregar exercícios automaticamente após seleção de treino
 - [ ] Testes para validar carregamento de exercícios
+
+
+## Melhorias do Portal do Aluno (v4.4)
+- [x] Adicionar dobras cutâneas na anamnese do aluno
+- [x] Melhorar tela de evolução de exercícios com linhas destacadas
+- [x] Varredura de cores no portal do aluno com verde neonexercícios (igual ao personal)
+- [ ] Varredura de cores com verde neon #00FF88 em todo portal
+- [ ] Destacar bordas e linhas com verde neon
+- [ ] Testar responsividade e contraste

@@ -921,6 +921,111 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Evolucao de Exercicios */}
+      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-emerald-600" />
+            Evolucao de Carga
+          </CardTitle>
+          <CardDescription>Acompanhe sua progressao em cada exercicio</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Seletor de Exercicio */}
+          <div className="space-y-2">
+            <Label>Selecione um exercicio</Label>
+            <select
+              value={selectedExercise}
+              onChange={(e) => setSelectedExercise(e.target.value)}
+              className="w-full px-3 py-2 border border-emerald-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="">-- Selecione um exercicio --</option>
+              {uniqueExercises?.map((exercise: any) => (
+                <option key={exercise} value={exercise}>
+                  {exercise}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedExercise && trainingStats && (
+            <>
+              {/* Estatisticas */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-white rounded-lg border border-emerald-200">
+                  <p className="text-xs text-gray-500 mb-1">Carga Maxima</p>
+                  <p className="text-lg font-bold text-emerald-600">{trainingStats.maxWeight.toFixed(1)} kg</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-emerald-200">
+                  <p className="text-xs text-gray-500 mb-1">Carga Media</p>
+                  <p className="text-lg font-bold text-blue-600">{trainingStats.avgWeight.toFixed(1)} kg</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-emerald-200">
+                  <p className="text-xs text-gray-500 mb-1">Volume Total</p>
+                  <p className="text-lg font-bold text-purple-600">{trainingStats.totalVolume.toFixed(0)} kg</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-emerald-200">
+                  <p className="text-xs text-gray-500 mb-1">Tendencia</p>
+                  <p className={`text-lg font-bold ${
+                    trainingStats.trend === 'up' ? 'text-emerald-600' :
+                    trainingStats.trend === 'down' ? 'text-red-600' :
+                    'text-gray-600'
+                  }`}>
+                    {trainingStats.trend === 'up' ? 'Crescendo' : trainingStats.trend === 'down' ? 'Caindo' : 'Estavel'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Grafico de Evolucao */}
+              {trainingChartData.length > 0 ? (
+                <div className="h-[300px] border border-emerald-200 rounded-lg p-4 bg-white">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trainingChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
+                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
+                      <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(value) => `${value} kg`} />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="weight"
+                        name="Carga Maxima"
+                        stroke="#00FF88"
+                        strokeWidth={3}
+                        dot={{ fill: "#00FF88", r: 4 }}
+                        connectNulls
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="reps"
+                        name="Repeticoes"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={{ fill: "#10b981", r: 3 }}
+                        connectNulls
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500 border border-emerald-200 rounded-lg">
+                  <p>Nenhum registro de treino para este exercicio</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {!selectedExercise && (
+            <div className="h-[300px] flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <Dumbbell className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Selecione um exercicio para ver sua evolucao</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

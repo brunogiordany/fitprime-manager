@@ -139,6 +139,13 @@ interface MeasurementsForm {
   leftThigh: string;
   rightCalf: string;
   leftCalf: string;
+  tricepsFold?: string;
+  bicepsFold?: string;
+  suprailiacFold?: string;
+  abdominalFold?: string;
+  thighFold?: string;
+  chestFold?: string;
+  axillarFold?: string;
 }
 
 export default function StudentPortalPage() {
@@ -2517,10 +2524,95 @@ export default function StudentPortalPage() {
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Dobras Cutaneas */}
+                        <div className="pt-4 border-t">
+                          <h4 className="text-sm font-medium mb-3 text-emerald-700 dark:text-emerald-300">Dobras Cutaneas (mm)</h4>
+                          <p className="text-xs text-muted-foreground mb-3">Medidas para calculo de gordura corporal (Jackson-Pollock 7 dobras)</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Peitoral</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.chestFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, chestFold: e.target.value })}
+                                placeholder="Ex: 8.5"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Axilar</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.axillarFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, axillarFold: e.target.value })}
+                                placeholder="Ex: 12.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Triceps</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.tricepsFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, tricepsFold: e.target.value })}
+                                placeholder="Ex: 15.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Biceps</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.bicepsFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, bicepsFold: e.target.value })}
+                                placeholder="Ex: 10.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Abdominal</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.abdominalFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, abdominalFold: e.target.value })}
+                                placeholder="Ex: 25.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Suprailiaca</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.suprailiacFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, suprailiacFold: e.target.value })}
+                                placeholder="Ex: 18.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Coxa</Label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={measurementsForm.thighFold || ''}
+                                onChange={(e) => setMeasurementsForm({ ...measurementsForm, thighFold: e.target.value })}
+                                placeholder="Ex: 22.0"
+                                className="bg-background h-9"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Restrições e Ênfases */}
+                    {/* Restricoes e Enfases */}
                     <div className="p-4 rounded-lg border bg-amber-50/30 dark:bg-amber-950/10">
                       <h3 className="font-semibold mb-4 flex items-center gap-2 text-amber-600 dark:text-amber-400">
                         <AlertCircle className="h-4 w-4" />
