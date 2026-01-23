@@ -5043,3 +5043,18 @@
 ## Bug Fix: Checkbox de Cobranças Canceladas - 21/01/2026
 - [x] Permitir selecionar cobranças canceladas no modo de ações em lote
 - [x] Testar seleção e exclusão de cobranças canceladas
+
+
+## Cálculo de Gordura Corporal - 23/01/2026
+- [x] Implementar função Jackson-Pollock com 7 dobras cutâneas
+- [x] Integrar cálculo automático na página de Anamnese
+- [x] Exibir resultado com classificação (Essencial, Atlético, Fitness, Médio, Alto)
+- [x] Criar 13 testes unitários para validação
+- [x] Prioridade: Dobras > Manual > Fórmula Marinha
+
+## Melhorias do Modal de Treino do Aluno - 23/01/2026
+- [x] Adicionar opção de selecionar treino existente
+- [x] Adicionar opção de selecionar dia do treino
+- [x] Manter funcionalidade de registro manual como alternativa
+- [ ] Carregar exercícios automaticamente após seleção de treino
+- [ ] Testes para validar carregamento de exercícios

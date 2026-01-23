@@ -3618,6 +3618,52 @@ export default function StudentPortalPage() {
           
           <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           <div className="space-y-6">
+            {/* Selecionar Treino e Dia */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-medium text-blue-900 mb-3">Selecione um treino existente:</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Treino</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um treino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(serverWorkouts || []).map((workout: any) => (
+                        <SelectItem key={workout.id} value={workout.id.toString()}>
+                          {workout.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Dia do Treino</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o dia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monday">Segunda</SelectItem>
+                      <SelectItem value="tuesday">Terca</SelectItem>
+                      <SelectItem value="wednesday">Quarta</SelectItem>
+                      <SelectItem value="thursday">Quinta</SelectItem>
+                      <SelectItem value="friday">Sexta</SelectItem>
+                      <SelectItem value="saturday">Sabado</SelectItem>
+                      <SelectItem value="sunday">Domingo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Divisor */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t"></div>
+              <span className="text-xs text-gray-500 font-medium">OU PREENCHER MANUALMENTE</span>
+              <div className="flex-1 border-t"></div>
+            </div>
+            
             {/* Data e Duração */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
