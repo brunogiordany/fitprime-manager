@@ -346,7 +346,7 @@ export default function StudentNutritionRecommendations({
                     <p className="text-xl font-bold text-emerald-600">{calculations.weightGoal.target} kg</p>
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/20 rounded-lg p-3 text-sm">
+                <div className="bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/30 rounded-lg p-3 text-sm">
                   <p className="text-gray-600 dark:text-gray-300 premium:text-gray-300">
                     <Clock className="h-4 w-4 inline mr-1" />
                     Tempo estimado: <strong>{calculations.weightGoal.weeksToGoal} semanas</strong>
@@ -471,7 +471,7 @@ export default function StudentNutritionRecommendations({
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/20 rounded-lg p-4">
                     <h4 className="font-medium mb-2">Sugestões de atividades:</h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center gap-2">
@@ -502,8 +502,8 @@ export default function StudentNutritionRecommendations({
                   </div>
                   
                   {goal === 'weight_loss' && (
-                    <div className="bg-emerald-50 rounded-lg p-4 text-sm">
-                      <p className="text-emerald-800">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] premium:border premium:border-emerald-500/30 rounded-lg p-4 text-sm">
+                      <p className="text-emerald-800 dark:text-emerald-300 premium:text-emerald-400">
                         <strong>💡 Dica:</strong> Para maximizar a queima de gordura, faça cardio em jejum 
                         ou após o treino de musculação. Mantenha a intensidade moderada (conseguir conversar).
                       </p>
@@ -532,19 +532,19 @@ export default function StudentNutritionRecommendations({
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/20 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Taxa Metabólica Basal (TMB)</p>
                     <p className="text-xl font-bold">{calculations.tmb} kcal</p>
                     <p className="text-xs text-gray-400">Calorias em repouso</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/20 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Gasto Energético Total (TDEE)</p>
                     <p className="text-xl font-bold">{calculations.tdee} kcal</p>
                     <p className="text-xs text-gray-400">TMB × {calculations.activityFactor.toFixed(2)}</p>
                   </div>
                 </div>
                 
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] premium:border premium:border-emerald-500/20 rounded-lg">
                   <p className="text-xs text-gray-500 mb-1">Ajuste para objetivo ({goalLabels[goal]})</p>
                   <p className="text-xl font-bold">
                     {calculations.goalAdjustment > 0 ? '+' : ''}{calculations.goalAdjustment} kcal

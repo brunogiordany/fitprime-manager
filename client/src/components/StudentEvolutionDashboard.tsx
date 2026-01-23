@@ -526,16 +526,16 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
             <>
               {/* Header com estatísticas */}
               {photoStats && (
-                <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
+                <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 premium:from-[#0d1520] premium:to-[#0d1520] border-emerald-200 dark:border-emerald-700 premium:border-emerald-500/30">
                   <CardContent className="py-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-white rounded-xl shadow-sm">
+                        <div className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0a0f1a] rounded-xl shadow-sm premium:border premium:border-emerald-500/20">
                           <TrendingUp className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">Sua Evolução</h3>
-                          <p className="text-sm text-gray-600">
+                          <h3 className="font-semibold text-gray-900 dark:text-white premium:text-white">Sua Evolução</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 premium:text-gray-300">
                             {photoStats.totalPhotos} fotos • {photoStats.daysBetween} dias de acompanhamento
                           </p>
                         </div>
@@ -581,8 +581,8 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                     </div>
                     
                     {compareMode && (
-                      <div className="mt-4 p-3 bg-white/80 rounded-lg border border-emerald-200">
-                        <p className="text-sm text-emerald-700">
+                      <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 premium:bg-[#0a0f1a] rounded-lg border border-emerald-200 premium:border-emerald-500/30">
+                        <p className="text-sm text-emerald-700 dark:text-emerald-400 premium:text-emerald-400">
                           {!comparePhotos.before 
                             ? "📸 Selecione a primeira foto (antes)" 
                             : !comparePhotos.after 
@@ -595,19 +595,19 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                     
                     {/* Mini stats */}
                     <div className="grid grid-cols-4 gap-3 mt-4">
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-center p-2 bg-white/60 dark:bg-gray-800/60 premium:bg-[#0a0f1a] rounded-lg premium:border premium:border-emerald-500/20">
                         <p className="text-xl font-bold text-emerald-600">{photoStats.totalPhotos}</p>
                         <p className="text-xs text-gray-500">Fotos</p>
                       </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-center p-2 bg-white/60 dark:bg-gray-800/60 premium:bg-[#0a0f1a] rounded-lg premium:border premium:border-emerald-500/20">
                         <p className="text-xl font-bold text-blue-600">{photoStats.posesCount}</p>
                         <p className="text-xs text-gray-500">Poses</p>
                       </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-center p-2 bg-white/60 dark:bg-gray-800/60 premium:bg-[#0a0f1a] rounded-lg premium:border premium:border-emerald-500/20">
                         <p className="text-xl font-bold text-purple-600">{photoStats.daysBetween}</p>
                         <p className="text-xs text-gray-500">Dias</p>
                       </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-center p-2 bg-white/60 dark:bg-gray-800/60 premium:bg-[#0a0f1a] rounded-lg premium:border premium:border-emerald-500/20">
                         <p className="text-xl font-bold text-orange-600">{measurements.length}</p>
                         <p className="text-xs text-gray-500">Medições</p>
                       </div>
@@ -1025,7 +1025,7 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
             <select
               value={selectedExercise}
               onChange={(e) => setSelectedExercise(e.target.value)}
-              className="w-full px-3 py-2 border border-emerald-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-emerald-200 premium:border-emerald-500/30 rounded-lg bg-white dark:bg-gray-800 premium:bg-[#0d1520] premium:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="">-- Selecione um exercicio --</option>
               {uniqueExercises?.map((exercise: any) => (

@@ -5092,3 +5092,23 @@
 - [x] Adicionar gráfico de evolução de dobras cutâneas
   - [x] Visualização comparativa das 7 dobras
   - [x] Tendência de aumento/diminuição de gordura corporal
+
+
+## Correções Urgentes Portal do Aluno (v4.7)
+- [ ] Corrigir cores dos cards brancos em "Detalhes dos Cálculos" → fundo escuro (#0d1520)
+- [ ] Corrigir card "Sua Evolução" com fundo cinza claro → fundo escuro
+- [ ] Corrigir modal de registro: fundo cinza claro no card de seleção → fundo escuro
+- [ ] Copiar EXATAMENTE o modal do personal para o aluno (estrutura e cores)
+- [ ] Adicionar campos de digitação (peso/reps) na evolução de carga (não apenas dropdown)
+
+## Correções de UX Portal do Aluno (v4.7)
+- [x] Corrigir cores inconsistentes no portal do aluno (bg-white, bg-gray-50)
+- [x] Harmonizar paleta premium (fundo escuro #0d1520, verde neon #00FF88)
+- [x] Corrigir modal de seleção de treino (cores escuras)
+- [x] Corrigir cards de estatísticas de fotos (cores escuras)
+- [x] Corrigir cards de estatísticas nutricionais (cores escuras)
+- [x] Corrigir cards de histórico de treinos (cores escuras)
+- [x] Corrigir cards de sets no modal de registro (cores escuras)
+- [x] Corrigir cards de drops e rest-pauses (cores escuras)
+- [x] Corrigir cards de detalhes de cardio (cores escuras)
+- [x] Verificar campos de digitação na evolução de carga (já implementados)

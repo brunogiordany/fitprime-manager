@@ -1471,7 +1471,7 @@ export default function StudentPortalPage() {
                             </div>
                           </div>
                         </summary>
-                        <div className="px-4 pb-4 pt-2 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                        <div className="px-4 pb-4 pt-2 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 premium:bg-[#0a0f1a]/50">
                           {log.notes && (
                             <p className="text-sm text-gray-600 mb-3 italic">"{log.notes}"</p>
                           )}
@@ -1479,7 +1479,7 @@ export default function StudentPortalPage() {
                             <div className="space-y-2">
                               <p className="text-sm font-medium text-gray-700">Exercícios realizados:</p>
                               {log.exerciseLogs.map((ex: any, idx: number) => (
-                                <div key={ex.id || idx} className="bg-white p-3 rounded border">
+                                <div key={ex.id || idx} className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] p-3 rounded border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
                                   <p className="font-medium text-sm">{ex.exerciseName}</p>
                                   {ex.sets && ex.sets.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-2">
@@ -2893,13 +2893,13 @@ export default function StudentPortalPage() {
                             <CardContent className="pt-0">
                               <div className="grid md:grid-cols-3 gap-4">
                                 {anamnesis?.mealsPerDay && (
-                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
                                     <p className="text-2xl font-bold text-orange-600">{anamnesis.mealsPerDay}</p>
                                     <p className="text-xs text-gray-500">Refeições/dia</p>
                                   </div>
                                 )}
                                 {anamnesis?.waterIntake && (
-                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
                                     <p className="text-2xl font-bold text-blue-600">
                                       {anamnesis.waterIntake === 'less_1l' ? '<1L' :
                                        anamnesis.waterIntake === '1_2l' ? '1-2L' :
@@ -2910,7 +2910,7 @@ export default function StudentPortalPage() {
                                   </div>
                                 )}
                                 {anamnesis?.dailyCalories && (
-                                  <div className="text-center p-3 bg-white rounded-lg border">
+                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
                                     <p className="text-2xl font-bold text-green-600">{anamnesis.dailyCalories}</p>
                                     <p className="text-xs text-gray-500">Calorias/dia</p>
                                   </div>
@@ -3015,7 +3015,7 @@ export default function StudentPortalPage() {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                      <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
                         <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-gray-700 mb-2">Anamnese não preenchida</h3>
                         <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -3181,10 +3181,10 @@ export default function StudentPortalPage() {
                   </div>
                   
                   {exercise.isExpanded && (
-                    <div className="border-t p-4 bg-gray-50/50">
+                    <div className="border-t p-4 bg-gray-50/50 dark:bg-gray-800/50 premium:bg-[#0a0f1a]/50">
                       <div className="space-y-3">
                         {exercise.sets.map((set: any, setIndex: number) => (
-                          <div key={setIndex} className="p-3 bg-white rounded-lg border space-y-2">
+                          <div key={setIndex} className="p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30 space-y-2">
                             {/* Linha 1: Número + Tipo de série */}
                             <div className="flex items-center gap-2">
                               <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold flex-shrink-0 ${
@@ -3327,7 +3327,7 @@ export default function StudentPortalPage() {
                                 </div>
                                 <div className="space-y-2">
                                   {(set.drops || [{ weight: '', reps: '', restTime: '' }]).map((drop: any, dropIndex: number) => (
-                                    <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                    <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 premium:bg-[#0a0f1a] p-2 rounded premium:border premium:border-emerald-500/20">
                                       <span className="text-xs font-medium text-purple-600 dark:text-purple-400 w-12">Drop {dropIndex + 1}</span>
                                       <div className="flex items-center gap-1">
                                         <Input
@@ -3431,7 +3431,7 @@ export default function StudentPortalPage() {
                                 </div>
                                 <div className="space-y-2">
                                   {(set.restPauses || [{ pauseTime: '', reps: '' }]).map((rp: any, rpIndex: number) => (
-                                    <div key={rpIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
+                                    <div key={rpIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 premium:bg-[#0a0f1a] p-2 rounded premium:border premium:border-emerald-500/20">
                                       <span className="text-xs font-medium text-orange-600 dark:text-orange-400 w-12">Pausa {rpIndex + 1}</span>
                                       <div className="flex items-center gap-1">
                                         <Input
@@ -3713,8 +3713,8 @@ export default function StudentPortalPage() {
           <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
           <div className="space-y-6">
             {/* Selecionar Treino e Dia */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm font-medium text-blue-900 mb-3">Selecione um treino existente:</p>
+            <div className="p-4 bg-blue-50 dark:bg-gray-800 premium:bg-[#0d1520] border border-blue-200 dark:border-emerald-700 premium:border-emerald-500/30 rounded-lg">
+              <p className="text-sm font-medium text-blue-900 dark:text-emerald-400 premium:text-emerald-400 mb-3">Selecione um treino existente:</p>
                    <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Treino</Label>
@@ -3880,7 +3880,7 @@ export default function StudentPortalPage() {
                       </div>
                       
                       {exercise.sets.map((set: any, setIndex: number) => (
-                        <div key={setIndex} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                        <div key={setIndex} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] p-2 rounded premium:border premium:border-emerald-500/20">
                           <span className="text-sm font-medium w-8">#{setIndex + 1}</span>
                           <Input
                             type="text"
@@ -4399,7 +4399,7 @@ export default function StudentPortalPage() {
           {cardioDetail && (
             <div className="space-y-4">
               {/* Tipo e Data */}
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
                 <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
                   <Heart className="h-6 w-6 text-red-500" />
                 </div>
@@ -4439,21 +4439,21 @@ export default function StudentPortalPage() {
                   <p className="text-xs text-gray-500">Duração</p>
                 </div>
                 {cardioDetail.distanceKm && (
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
                     <Activity className="h-5 w-5 mx-auto text-green-500 mb-1" />
                     <p className="text-lg font-bold">{parseFloat(cardioDetail.distanceKm).toFixed(1)}km</p>
                     <p className="text-xs text-gray-500">Distância</p>
                   </div>
                 )}
                 {cardioDetail.caloriesBurned && (
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
                     <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
                     <p className="text-lg font-bold">{cardioDetail.caloriesBurned}</p>
                     <p className="text-xs text-gray-500">Calorias</p>
                   </div>
                 )}
                 {cardioDetail.avgHeartRate && (
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
                     <Heart className="h-5 w-5 mx-auto text-red-500 mb-1" />
                     <p className="text-lg font-bold">{cardioDetail.avgHeartRate}bpm</p>
                     <p className="text-xs text-gray-500">FC Média</p>
@@ -4465,7 +4465,7 @@ export default function StudentPortalPage() {
               {cardioDetail.notes && (
                 <div>
                   <Label className="text-gray-500">Observações</Label>
-                  <p className="mt-1 p-3 bg-gray-50 rounded-lg">{cardioDetail.notes}</p>
+                  <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">{cardioDetail.notes}</p>
                 </div>
               )}
             </div>
