@@ -176,6 +176,8 @@ export default function StudentPortalPage() {
   const [showAnamnesisModal, setShowAnamnesisModal] = useState(false);
   const [showManualDiaryModal, setShowManualDiaryModal] = useState(false);
   const [manualDiaryDate, setManualDiaryDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [manualDiarySelectedWorkout, setManualDiarySelectedWorkout] = useState<string>('');
+  const [manualDiarySelectedDay, setManualDiarySelectedDay] = useState<string>('');
   const [manualDiaryExercises, setManualDiaryExercises] = useState<any[]>([{
     exerciseName: '',
     sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
@@ -3713,10 +3715,13 @@ export default function StudentPortalPage() {
             {/* Selecionar Treino e Dia */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm font-medium text-blue-900 mb-3">Selecione um treino existente:</p>
-              <div className="grid grid-cols-2 gap-4">
+                   <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Treino</Label>
-                  <Select>
+                  <Select value={manualDiarySelectedWorkout} onValueChange={(value) => {
+                    setManualDiarySelectedWorkout(value);
+                    setManualDiarySelectedDay(''); // Reset day when workout changes
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um treino" />
                     </SelectTrigger>
@@ -3731,17 +3736,19 @@ export default function StudentPortalPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Dia do Treino</Label>
-                  <Select>
+                  <Select value={manualDiarySelectedDay} onValueChange={(value) => {
+                    setManualDiarySelectedDay(value);
+                  }} disabled={!manualDiarySelectedWorkout}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o dia" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monday">Segunda</SelectItem>
-                      <SelectItem value="tuesday">Terca</SelectItem>
+                      <SelectItem value="tuesday">Terça</SelectItem>
                       <SelectItem value="wednesday">Quarta</SelectItem>
                       <SelectItem value="thursday">Quinta</SelectItem>
                       <SelectItem value="friday">Sexta</SelectItem>
-                      <SelectItem value="saturday">Sabado</SelectItem>
+                      <SelectItem value="saturday">Sábado</SelectItem>
                       <SelectItem value="sunday">Domingo</SelectItem>
                     </SelectContent>
                   </Select>

@@ -120,12 +120,54 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
   // Estado para exercício selecionado
   const [selectedExercise, setSelectedExercise] = useState<string>("");
   
+  // Estados para registro rápido
+  const [quickWeight, setQuickWeight] = useState<string>("");
+  const [quickReps, setQuickReps] = useState<string>("");
+  
   // Buscar progresso do exercício
   const { data: exerciseProgress } = trpc.studentPortal.exerciseProgress.useQuery(
     { exerciseName: selectedExercise, limit: 50 },
     { enabled: !!selectedExercise }
   );
 
+  // Mutation para salvar registro rápido
+  const quickSaveMutation = trpc.studentPortal.createManualWorkoutLog.useMutation({
+    onSuccess: () => {
+      toast.success('Treino registrado com sucesso!');
+      setQuickWeight('');
+      setQuickReps('');
+      // Refetch exercise progress
+      trpc.useContext().studentPortal.exerciseProgress.invalidate();
+    },
+    onError: (error) => {
+      toast.error('Erro ao registrar treino: ' + error.message);
+    }
+  });
+  
+  // Função para salvar registro rápido
+  const handleQuickSave = () => {
+    if (!quickWeight || !quickReps || !selectedExercise) {
+      toast.error('Preencha peso e reps');
+      return;
+    }
+    
+    quickSaveMutation.mutate({
+      trainingDate: format(new Date(), 'yyyy-MM-dd'),
+      duration: 60,
+      feeling: 'good',
+      exercises: [{
+        exerciseName: selectedExercise,
+        notes: '',
+        sets: [{
+          weight: quickWeight,
+          reps: parseInt(quickReps),
+          setType: 'working',
+          restTime: 60
+        }]
+      }]
+    });
+  };
+  
   // Mutation para análise de fotos
   const analyzeMutation = trpc.studentPortal.analyzeFullEvolution.useMutation({
     onSuccess: (data) => {
@@ -216,6 +258,14 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
       cintura: m.waist ? parseFloat(m.waist) : null,
       braco: m.rightArm ? parseFloat(m.rightArm) : null,
       coxa: m.rightThigh ? parseFloat(m.rightThigh) : null,
+      // Dobras cutâneas
+      triceps: m.tricepsFold ? parseFloat(m.tricepsFold) : null,
+      subscapular: m.subscapularFold ? parseFloat(m.subscapularFold) : null,
+      peitoral: m.chestFold ? parseFloat(m.chestFold) : null,
+      axilar: m.axillarFold ? parseFloat(m.axillarFold) : null,
+      suprailiaca: m.suprailiacFold ? parseFloat(m.suprailiacFold) : null,
+      abdominal: m.abdominalFold ? parseFloat(m.abdominalFold) : null,
+      coxa_dobra: m.thighFold ? parseFloat(m.thighFold) : null,
     }));
   }, [measurements]);
 
@@ -413,6 +463,42 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                     Comparar outras fotos
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Gráfico de Dobras Cutâneas */}
+          {measurementsChartData.length >= 2 && measurementsChartData.some(m => m.triceps || m.subscapular || m.peitoral) && (
+            <Card className="premium:bg-[#0d1520] premium:border-emerald-500/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2 premium:text-white">
+                  <Ruler className="h-4 w-4 text-emerald-600" />
+                  Evolução das Dobras Cutâneas
+                </CardTitle>
+                <CardDescription className="premium:text-gray-400">
+                  Acompanhe a evolução das 7 dobras (Jackson-Pollock)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={measurementsChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="date" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" label={{ value: 'mm', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                      labelStyle={{ color: '#f3f4f6' }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="triceps" stroke="#10b981" name="Tríceps" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="subscapular" stroke="#3b82f6" name="Subscapular" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="peitoral" stroke="#8b5cf6" name="Peitoral" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="axilar" stroke="#f59e0b" name="Axilar" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="suprailiaca" stroke="#ef4444" name="Suprailiaca" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="abdominal" stroke="#ec4899" name="Abdominal" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="coxa_dobra" stroke="#06b6d4" name="Coxa" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           )}
@@ -1027,6 +1113,8 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                     <input
                       type="number"
                       placeholder="0.0"
+                      value={quickWeight}
+                      onChange={(e) => setQuickWeight(e.target.value)}
                       className="w-full px-3 py-2 border border-emerald-200 premium:border-emerald-500/30 rounded-lg bg-white dark:bg-gray-800 premium:bg-[#0d1520] premium:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -1035,13 +1123,23 @@ export function StudentEvolutionDashboard({ studentId, measurements = [] }: Stud
                     <input
                       type="number"
                       placeholder="0"
+                      value={quickReps}
+                      onChange={(e) => setQuickReps(e.target.value)}
                       className="w-full px-3 py-2 border border-emerald-200 premium:border-emerald-500/30 rounded-lg bg-white dark:bg-gray-800 premium:bg-[#0d1520] premium:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <div className="flex items-end">
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:hover:bg-[#00CC6A] premium:text-black">
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar
+                    <Button 
+                      onClick={handleQuickSave}
+                      disabled={quickSaveMutation.isPending}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 premium:bg-[#00FF88] premium:hover:bg-[#00CC6A] premium:text-black"
+                    >
+                      {quickSaveMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
+                      {quickSaveMutation.isPending ? 'Salvando...' : 'Salvar'}
                     </Button>
                   </div>
                 </div>

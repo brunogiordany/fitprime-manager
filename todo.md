@@ -5080,9 +5080,15 @@
   - [x] Manter opção "Por Carga" (volume/peso movimentado)
 
 ## Melhorar Modal de Registro de Treino do Aluno (v4.6)
-- [ ] Copiar UX do modal de registro do personal para o aluno
-- [ ] Manter mesma estrutura de campos e layout
-- [ ] Adicionar opção de selecionar treino + dia
-- [ ] Adicionar seção de exercícios com séries dinâmicas
-- [ ] Adicionar campo de observações gerais
-- [ ] Adicionar botões de sentimento (Excelente, Bom, Normal, Cansado)
+- [x] Copiar UX completa do modal do personal
+  - [x] Seleção de treino/dia
+  - [x] Campos de exercícios dinâmicos
+  - [x] Botões de sentimento
+  - [x] Data e duração
+  - [x] Observações gerais
+- [x] Implementar funcionalidade de salvar no formulário de registro rápido
+  - [x] Conectar com backend
+  - [x] Atualizar gráfico automaticamente
+- [x] Adicionar gráfico de evolução de dobras cutâneas
+  - [x] Visualização comparativa das 7 dobras
+  - [x] Tendência de aumento/diminuição de gordura corporal
