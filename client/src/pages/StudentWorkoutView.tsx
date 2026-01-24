@@ -193,7 +193,7 @@ export default function StudentWorkoutView() {
 
   if (!studentData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0d1520] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
       </div>
     );
@@ -201,8 +201,8 @@ export default function StudentWorkoutView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b sticky top-0 z-10">
+      <div className="min-h-screen bg-[#0d1520]">
+        <header className="bg-[#0d1520] border-b border-emerald-500/30 sticky top-0 z-10">
           <div className="container mx-auto px-4 py-4">
             <Skeleton className="h-8 w-48" />
           </div>
@@ -216,7 +216,7 @@ export default function StudentWorkoutView() {
 
   if (!workout) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0d1520] flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Dumbbell className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -243,9 +243,9 @@ export default function StudentWorkoutView() {
   const workoutDays = workout.days || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0d1520]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-[#0d1520] border-b border-emerald-500/30 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -257,8 +257,8 @@ export default function StudentWorkoutView() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="font-bold text-lg">{workout.name}</h1>
-                <p className="text-sm text-gray-500">Detalhes do treino</p>
+                <h1 className="font-bold text-lg text-white">{workout.name}</h1>
+                <p className="text-sm text-gray-400">Detalhes do treino</p>
               </div>
             </div>
             {/* Indicador offline */}
@@ -298,7 +298,7 @@ export default function StudentWorkoutView() {
                   </Badge>
                 </div>
                 {workout.description && (
-                  <p className="text-gray-600 text-sm">{workout.description}</p>
+                  <p className="text-gray-300 text-sm">{workout.description}</p>
                 )}
               </div>
             </div>
@@ -307,8 +307,8 @@ export default function StudentWorkoutView() {
 
         {/* Dias do Treino */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald-600" />
+          <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-400">
+            <Calendar className="h-5 w-5 text-emerald-400" />
             Dias do Treino
           </h3>
 
@@ -320,7 +320,7 @@ export default function StudentWorkoutView() {
               return (
                 <Card key={day.id}>
                   <CardHeader 
-                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="cursor-pointer hover:bg-[#1a2332] transition-colors"
                     onClick={() => toggleDay(day.id)}
                   >
                     <div className="flex items-center justify-between">
@@ -357,7 +357,7 @@ export default function StudentWorkoutView() {
                           {exercises.map((exercise: any, exIndex: number) => (
                             <div 
                               key={exercise.id}
-                              className="p-4 bg-gray-50 rounded-lg"
+                              className="p-4 bg-[#1a2332] border border-emerald-500/20 rounded-lg"
                             >
                               <div className="flex items-start gap-3">
                                 <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-medium">
@@ -386,7 +386,7 @@ export default function StudentWorkoutView() {
                                       Sugerir
                                     </Button>
                                   </div>
-                                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 flex-wrap">
+                                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-300 flex-wrap">
                                     {exercise.sets && (
                                       <span className="flex items-center gap-1">
                                         <Target className="h-3 w-3" />
@@ -407,7 +407,7 @@ export default function StudentWorkoutView() {
                                     )}
                                   </div>
                                   {exercise.notes && (
-                                    <p className="text-sm text-gray-500 mt-2 italic">
+                                    <p className="text-sm text-gray-400 mt-2 italic">
                                       {exercise.notes}
                                     </p>
                                   )}
@@ -417,7 +417,7 @@ export default function StudentWorkoutView() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500 text-center py-4">
+                        <p className="text-gray-400 text-center py-4">
                           Nenhum exercício cadastrado neste dia
                         </p>
                       )}
@@ -430,7 +430,7 @@ export default function StudentWorkoutView() {
             <Card>
               <CardContent className="py-8 text-center">
                 <Info className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">Nenhum dia de treino cadastrado ainda</p>
+                <p className="text-gray-400">Nenhum dia de treino cadastrado ainda</p>
               </CardContent>
             </Card>
           )}

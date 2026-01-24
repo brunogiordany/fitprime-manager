@@ -5150,3 +5150,11 @@
 - [x] Reorganizar layout para campos ficarem em linhas separadas (vertical stack)
 - [x] Melhorar espaçamento geral do modal
 - [x] Garantir que NENHUM campo fique sobreposto
+
+## BUG CRÍTICO - UX Ridícula da Página de Detalhes do Treino (v5.2) - PEDIDO 5X
+- [x] Fundo da página está BRANCO/CINZA CLARO (deveria ser #0d1520)
+- [x] Cards dos exercícios com fundo BRANCO
+- [x] Texto dos exercícios CINZA CLARO (baixo contraste)
+- [x] Badge "Ativo" com cores inconsistentes
+- [x] Layout geral não segue tema premium do resto do portal
+- [x] CORRIGIR TODAS AS CORES para tema premium escuro
