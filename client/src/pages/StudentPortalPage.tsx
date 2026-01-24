@@ -1003,11 +1003,10 @@ export default function StudentPortalPage() {
             />
           </TabsContent>
 
-          {/* Photos Tab - Evolução Unificada */}
+          {/* Photos Tab - Galeria de Fotos de Progresso */}
           <TabsContent value="photos" className="space-y-6">
-            <StudentEvolutionDashboard
+            <GuidedPhotos
               studentId={studentData?.id || 0}
-              measurements={measurements || []}
             />
           </TabsContent>
 

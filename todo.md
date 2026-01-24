@@ -5183,3 +5183,13 @@
 - [x] Garantir sincronização correta entre aluno e personal
 - [x] VERIFICAÇÃO: Dados já estão sendo enviados corretamente via createManualWorkoutLogMutation
 - [x] CONCLUSÃO: Sincronização já funcionava corretamente, problema era apenas no modal de edição
+
+## BUG CRÍTICO - Evolução de Carga na Página de Fotos (v5.5)
+- [x] Seção "Evolução de Carga" está aparecendo na página de Fotos
+- [x] Conteúdo está COMPLETAMENTE fora do lugar
+- [x] Página de Fotos deveria ter apenas: galeria de fotos, comparação antes/depois, upload
+- [x] Remover seção "Evolução de Carga" da página de Fotos
+- [x] Verificar se há outros conteúdos fora do lugar no portal do aluno
+- [x] CAUSA RAIZ: Componente StudentEvolutionDashboard estava sendo renderizado na aba "photos"
+- [x] SOLUÇÃO: Removido StudentEvolutionDashboard e adicionado GuidedPhotos (componente correto de fotos)
+- [x] VERIFICAÇÃO: "Evolução de Carga" já está no lugar correto (Diário → Dashboard)
