@@ -216,7 +216,7 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
         {/* Grupos Musculares */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Dumbbell className="h-5 w-5 text-purple-500" />
@@ -228,7 +228,7 @@ export default function StudentTrainingDashboard({ studentId }: StudentTrainingD
                   {muscleGroupMetric === 'exercises' && 'Distribuição de exercícios por grupo muscular'}
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => setMuscleGroupMetric('volume')}
                   className={`px-3 py-1 text-xs rounded-lg transition-colors ${

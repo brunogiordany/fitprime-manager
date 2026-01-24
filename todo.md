@@ -5193,3 +5193,11 @@
 - [x] CAUSA RAIZ: Componente StudentEvolutionDashboard estava sendo renderizado na aba "photos"
 - [x] SOLUÇÃO: Removido StudentEvolutionDashboard e adicionado GuidedPhotos (componente correto de fotos)
 - [x] VERIFICAÇÃO: "Evolução de Carga" já está no lugar correto (Diário → Dashboard)
+
+## BUG CRÍTICO - Botões de Alternância Faltando em Grupos Musculares (v5.6)
+- [x] Seção "Grupos Musculares" não mostra botões de alternância (Carga/Séries/Exercícios)
+- [x] Deveria ter 3 botões como no dashboard do personal
+- [x] Verificar se botões existem mas estão ocultos ou se foram removidos
+- [x] Adicionar/corrigir botões de alternância
+- [x] CAUSA RAIZ: Layout flex-row estava escondendo botões em telas pequenas
+- [x] SOLUÇÃO: Alterado para flex-col sm:flex-row com gap-3 e flex-shrink-0 nos botões
