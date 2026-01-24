@@ -5167,3 +5167,19 @@
 - [x] GARANTIR que os dias apareçam no dropdown após selecionar treino
 - [x] CAUSA RAIZ: Query estava usando endpoint do personal (trpc.workouts.get) ao invés do endpoint do aluno (trpc.studentPortal.workout)
 - [x] SOLUÇÃO: Alterada linha 353 para usar endpoint correto do aluno
+
+## BUG CRÍTICO - Modal de Edição de Registro Vazio (v5.4)
+- [x] Ao clicar em um registro no histórico, o modal "Editar Registro de Treino" abre VAZIO
+- [x] Nome do exercício, peso, reps não são carregados
+- [x] Identificar query ou lógica que busca os dados do registro
+- [x] Corrigir carregamento de dados no modal de edição
+- [x] CAUSA RAIZ: Componente EditWorkoutLogForm estava acessando log.exercises ao invés de log.exerciseLogs
+- [x] SOLUÇÃO: Alterada linha 4522 para usar log.exerciseLogs
+
+## BUG CRÍTICO - Dados do Aluno Não Batem com Personal (v5.4)
+- [x] Quando aluno registra treino, dados não aparecem corretamente no lado do personal
+- [x] Verificar estrutura de dados enviada na mutation
+- [x] Comparar com estrutura esperada pelo backend
+- [x] Garantir sincronização correta entre aluno e personal
+- [x] VERIFICAÇÃO: Dados já estão sendo enviados corretamente via createManualWorkoutLogMutation
+- [x] CONCLUSÃO: Sincronização já funcionava corretamente, problema era apenas no modal de edição

@@ -4519,8 +4519,8 @@ function EditWorkoutLogForm({ log, onClose }: { log: any; onClose: () => void })
   const [editFeeling, setEditFeeling] = useState(log.feeling || '');
   const [editStatus, setEditStatus] = useState(log.status || 'completed');
   const [editExercises, setEditExercises] = useState<any[]>(() => {
-    if (log.exercises && log.exercises.length > 0) {
-      return log.exercises.map((ex: any) => ({
+    if (log.exerciseLogs && log.exerciseLogs.length > 0) {
+      return log.exerciseLogs.map((ex: any) => ({
         exerciseName: ex.exerciseName || '',
         sets: ex.sets && ex.sets.length > 0 ? ex.sets.map((s: any) => ({
           weight: s.weight || '',
