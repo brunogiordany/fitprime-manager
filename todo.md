@@ -5142,3 +5142,11 @@
 - [x] Ao selecionar treino, deve carregar os dias desse treino no dropdown "Dia do Treino"
 - [x] Ao selecionar um dia, deve carregar automaticamente os exercícios daquele dia na seção "Exercícios"
 - [x] Funcionalidade deve ser IDÊENTICA ao modal do personal
+
+## BUG CRÍTICO - Campos Encavalados no Modal de Registro (v5.1)
+- [x] Campos "Treino" e "Dia do Treino" estão sobrepostos (encavalados)
+- [x] Texto longo do treino está transbordando e invadindo o campo "Dia do Treino"
+- [ ] Dropdown "Dia do Treino" não abre quando clicado (AGUARDANDO TESTE DO USUÁRIO)
+- [x] Reorganizar layout para campos ficarem em linhas separadas (vertical stack)
+- [x] Melhorar espaçamento geral do modal
+- [x] Garantir que NENHUM campo fique sobreposto

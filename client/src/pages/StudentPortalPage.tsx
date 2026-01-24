@@ -3721,7 +3721,7 @@ export default function StudentPortalPage() {
             {/* Selecionar Treino e Dia */}
             <div className="p-4 bg-blue-50 dark:bg-gray-800 premium:bg-[#0d1520] border border-blue-200 dark:border-emerald-700 premium:border-emerald-500/30 rounded-lg">
               <p className="text-sm font-medium text-blue-900 dark:text-emerald-400 premium:text-emerald-400 mb-3">Selecione um treino existente:</p>
-                   <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Treino</Label>
                   <Select value={manualDiarySelectedWorkout} onValueChange={(value) => {
