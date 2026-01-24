@@ -350,7 +350,7 @@ export default function StudentPortalPage() {
   }, [serverWorkouts, isOffline, cacheWorkouts]);
 
   // Buscar detalhes do treino selecionado no modal de registro manual
-  const { data: selectedWorkoutDetails } = trpc.workouts.get.useQuery(
+  const { data: selectedWorkoutDetails } = trpc.studentPortal.workout.useQuery(
     { id: parseInt(manualDiarySelectedWorkout) },
     { enabled: !!manualDiarySelectedWorkout && manualDiarySelectedWorkout !== "" }
   );

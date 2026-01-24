@@ -5158,3 +5158,12 @@
 - [x] Badge "Ativo" com cores inconsistentes
 - [x] Layout geral não segue tema premium do resto do portal
 - [x] CORRIGIR TODAS AS CORES para tema premium escuro
+
+## BUG CRÍTICO - Dropdown "Dia do Treino" Vazio (v5.3) - JÁ REPORTADO ANTES
+- [x] Dropdown "Dia do Treino" não mostra nenhuma opção
+- [x] Query para buscar detalhes do treino com dias não está funcionando
+- [x] Verificar se selectedWorkoutDetails está sendo populado corretamente
+- [x] Testar se a query studentPortal.workout está retornando os dias
+- [x] GARANTIR que os dias apareçam no dropdown após selecionar treino
+- [x] CAUSA RAIZ: Query estava usando endpoint do personal (trpc.workouts.get) ao invés do endpoint do aluno (trpc.studentPortal.workout)
+- [x] SOLUÇÃO: Alterada linha 353 para usar endpoint correto do aluno
