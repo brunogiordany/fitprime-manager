@@ -2893,13 +2893,13 @@ export default function StudentPortalPage() {
                             <CardContent className="pt-0">
                               <div className="grid md:grid-cols-3 gap-4">
                                 {anamnesis?.mealsPerDay && (
-                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
+                                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                                     <p className="text-2xl font-bold text-orange-600">{anamnesis.mealsPerDay}</p>
                                     <p className="text-xs text-gray-500">Refeições/dia</p>
                                   </div>
                                 )}
                                 {anamnesis?.waterIntake && (
-                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
+                                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                                     <p className="text-2xl font-bold text-blue-600">
                                       {anamnesis.waterIntake === 'less_1l' ? '<1L' :
                                        anamnesis.waterIntake === '1_2l' ? '1-2L' :
@@ -2910,7 +2910,7 @@ export default function StudentPortalPage() {
                                   </div>
                                 )}
                                 {anamnesis?.dailyCalories && (
-                                  <div className="text-center p-3 bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg border border-gray-200 dark:border-gray-700 premium:border-emerald-500/30">
+                                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                                     <p className="text-2xl font-bold text-green-600">{anamnesis.dailyCalories}</p>
                                     <p className="text-xs text-gray-500">Calorias/dia</p>
                                   </div>
@@ -3880,7 +3880,7 @@ export default function StudentPortalPage() {
                       </div>
                       
                       {exercise.sets.map((set: any, setIndex: number) => (
-                        <div key={setIndex} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 premium:bg-[#0a0f1a] p-2 rounded premium:border premium:border-emerald-500/20">
+                        <div key={setIndex} className="flex items-center gap-2 bg-[#0a0f1a] p-2 rounded border border-emerald-500/20">
                           <span className="text-sm font-medium w-8">#{setIndex + 1}</span>
                           <Input
                             type="text"
@@ -4433,27 +4433,27 @@ export default function StudentPortalPage() {
               
               {/* Métricas */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                   <Clock className="h-5 w-5 mx-auto text-blue-500 mb-1" />
                   <p className="text-lg font-bold">{cardioDetail.durationMinutes}min</p>
                   <p className="text-xs text-gray-500">Duração</p>
                 </div>
                 {cardioDetail.distanceKm && (
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
+                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                     <Activity className="h-5 w-5 mx-auto text-green-500 mb-1" />
                     <p className="text-lg font-bold">{parseFloat(cardioDetail.distanceKm).toFixed(1)}km</p>
                     <p className="text-xs text-gray-500">Distância</p>
                   </div>
                 )}
                 {cardioDetail.caloriesBurned && (
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
+                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                     <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
                     <p className="text-lg font-bold">{cardioDetail.caloriesBurned}</p>
                     <p className="text-xs text-gray-500">Calorias</p>
                   </div>
                 )}
                 {cardioDetail.avgHeartRate && (
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">
+                  <div className="text-center p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">
                     <Heart className="h-5 w-5 mx-auto text-red-500 mb-1" />
                     <p className="text-lg font-bold">{cardioDetail.avgHeartRate}bpm</p>
                     <p className="text-xs text-gray-500">FC Média</p>
@@ -4465,7 +4465,7 @@ export default function StudentPortalPage() {
               {cardioDetail.notes && (
                 <div>
                   <Label className="text-gray-500">Observações</Label>
-                  <p className="mt-1 p-3 bg-gray-50 dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg premium:border premium:border-emerald-500/30">{cardioDetail.notes}</p>
+                  <p className="mt-1 p-3 bg-[#0d1520] rounded-lg border border-emerald-500/30">{cardioDetail.notes}</p>
                 </div>
               )}
             </div>

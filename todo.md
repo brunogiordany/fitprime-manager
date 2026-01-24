@@ -5112,3 +5112,28 @@
 - [x] Corrigir cards de drops e rest-pauses (cores escuras)
 - [x] Corrigir cards de detalhes de cardio (cores escuras)
 - [x] Verificar campos de digitação na evolução de carga (já implementados)
+
+## ANÁLISE CRÍTICA - Solicitação do Usuário (v4.8)
+- [ ] **URGENTE**: Usuário pediu 4x para copiar modal do personal para o aluno
+- [ ] **PROBLEMA**: Arquivo "PersonalWorkoutModal.tsx" mencionado no contexto NÃO EXISTE
+- [ ] **REALIDADE**: WorkoutLog.tsx é uma PÁGINA, não um modal
+- [ ] **AÇÃO NECESSÁRIA**: Clarificar com usuário qual modal exatamente deve ser copiado
+- [ ] Verificar se modal está inline em alguma página do personal
+- [ ] Verificar se modal está em componente separado
+- [ ] Comparar UX do aluno vs personal para identificar diferenças
+
+## URGENTE - Copiar Modal do Personal para Aluno (v4.8)
+- [x] Comparar modal do personal (IMG_3631.PNG) com modal do aluno
+- [x] Identificar TODAS as diferenças de UX
+- [x] Copiar EXATAMENTE a estrutura do modal do personal
+- [x] Garantir mesmos campos, layout e cores
+- [x] Testar funcionalidade completa
+
+## Verificação Final - Modal Aluno vs Personal (v4.9)
+- [x] Comparar linha por linha o modal do aluno com o do personal
+- [x] Garantir cores EXATAS (verde neon #00FF88)
+- [x] Verificar espaçamentos e padding
+- [x] Verificar tamanhos de fonte
+- [x] Verificar comportamento dos dropdowns
+- [x] Verificar se todos os 5 botões de sentimento estão visíveis
+- [x] Testar funcionalidade completa do modal
