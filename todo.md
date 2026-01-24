@@ -5137,3 +5137,8 @@
 - [x] Verificar comportamento dos dropdowns
 - [x] Verificar se todos os 5 botões de sentimento estão visíveis
 - [x] Testar funcionalidade completa do modal
+## BUG CRÍTICO - Modal de Registro do Aluno (v5.0)
+- [x] Dropdown "Dia do Treino" está mostrando dias da semana (Segunda, Terça) ao invés dos dias do treino (Dia 1: Superior A, Dia 2: Inferior B, etc)
+- [x] Ao selecionar treino, deve carregar os dias desse treino no dropdown "Dia do Treino"
+- [x] Ao selecionar um dia, deve carregar automaticamente os exercícios daquele dia na seção "Exercícios"
+- [x] Funcionalidade deve ser IDÊENTICA ao modal do personal

@@ -349,6 +349,12 @@ export default function StudentPortalPage() {
     }
   }, [serverWorkouts, isOffline, cacheWorkouts]);
 
+  // Buscar detalhes do treino selecionado no modal de registro manual
+  const { data: selectedWorkoutDetails } = trpc.workouts.get.useQuery(
+    { id: parseInt(manualDiarySelectedWorkout) },
+    { enabled: !!manualDiarySelectedWorkout && manualDiarySelectedWorkout !== "" }
+  );
+
   // Buscar cobranças do aluno (usando endpoint do portal que valida o aluno logado)
   const { data: charges } = trpc.studentPortal.charges.useQuery(
     undefined,
@@ -3738,18 +3744,30 @@ export default function StudentPortalPage() {
                   <Label>Dia do Treino</Label>
                   <Select value={manualDiarySelectedDay} onValueChange={(value) => {
                     setManualDiarySelectedDay(value);
+                    // Carregar exercícios do dia selecionado
+                    const selectedDay = selectedWorkoutDetails?.days?.find((d: any) => d.id.toString() === value);
+                    if (selectedDay && selectedDay.exercises) {
+                      setManualDiaryExercises(selectedDay.exercises.map((ex: any) => ({
+                        exerciseName: ex.name,
+                        sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
+                          setNumber: i + 1,
+                          weight: '',
+                          reps: '',
+                          completed: false
+                        })),
+                        notes: ''
+                      })));
+                    }
                   }} disabled={!manualDiarySelectedWorkout}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o dia" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="monday">Segunda</SelectItem>
-                      <SelectItem value="tuesday">Terça</SelectItem>
-                      <SelectItem value="wednesday">Quarta</SelectItem>
-                      <SelectItem value="thursday">Quinta</SelectItem>
-                      <SelectItem value="friday">Sexta</SelectItem>
-                      <SelectItem value="saturday">Sábado</SelectItem>
-                      <SelectItem value="sunday">Domingo</SelectItem>
+                      {(selectedWorkoutDetails?.days || []).map((day: any) => (
+                        <SelectItem key={day.id} value={day.id.toString()}>
+                          {day.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
