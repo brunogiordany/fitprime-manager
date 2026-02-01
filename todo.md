@@ -5246,3 +5246,11 @@
 - [x] Corrigir para enviar NULL explicitamente quando for treino manual
 - [x] SOLUÇÃO: Modificado db.createWorkoutLog para omitir workoutId e workoutDayId do INSERT quando forem null
 - [x] SOLUÇÃO: Usado drizzle insert().values() ao invés de SQL raw para garantir tratamento correto de null
+
+
+## BUG CRÍTICO - Erro ao Iniciar Treino (v5.9 - SEGUNDA TENTATIVA)
+- [x] Erro continua: "Failed query: INSERT INTO workout_logs..." com valores "?" vazios
+- [x] SOLUÇÃO APLICADA: Modificado createWorkoutLog para verificar também string vazia ('')
+- [x] SOLUÇÃO APLICADA: Adicionado log detalhado antes do INSERT para debug
+- [x] SOLUÇÃO APLICADA: Campos opcionais agora só são adicionados se tiverem valores válidos
+- [x] Correção aplicada, aguardando validação em produção

@@ -1475,26 +1475,52 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
   console.log('createWorkoutLog - data:', JSON.stringify(data, null, 2));
   
   try {
-    // Construir objeto de dados, omitindo workoutId e workoutDayId se forem null
+    // Construir objeto de dados, omitindo completamente workoutId e workoutDayId se forem null/undefined
     const insertData: any = {
       studentId: data.studentId,
       personalId: data.personalId,
       trainingDate: dateStr,
-      dayName: data.dayName || null,
-      startTime: data.startTime || null,
       status: data.status || 'in_progress',
-      sessionDate: dateStr,
-      sessionId: data.sessionId || null,
     };
     
-    // Adicionar workoutId e workoutDayId apenas se não forem null
-    if (data.workoutId !== null && data.workoutId !== undefined) {
+    // Adicionar campos opcionais apenas se tiverem valores válidos
+    if (data.workoutId !== null && data.workoutId !== undefined && data.workoutId !== '') {
       insertData.workoutId = data.workoutId;
     }
     
-    if (data.workoutDayId !== null && data.workoutDayId !== undefined) {
+    if (data.workoutDayId !== null && data.workoutDayId !== undefined && data.workoutDayId !== '') {
       insertData.workoutDayId = data.workoutDayId;
     }
+    
+    if (data.dayName) {
+      insertData.dayName = data.dayName;
+    }
+    
+    if (data.startTime) {
+      insertData.startTime = data.startTime;
+    }
+    
+    if (data.sessionId !== null && data.sessionId !== undefined) {
+      insertData.sessionId = data.sessionId;
+    }
+    
+    if (data.totalDuration !== undefined) {
+      insertData.totalDuration = data.totalDuration;
+    }
+    
+    if (data.notes) {
+      insertData.notes = data.notes;
+    }
+    
+    if (data.feeling) {
+      insertData.feeling = data.feeling;
+    }
+    
+    if (data.completedAt) {
+      insertData.completedAt = data.completedAt;
+    }
+    
+    console.log('createWorkoutLog - insertData (antes do insert):', JSON.stringify(insertData, null, 2));
     
     const result = await db.insert(workoutLogs).values(insertData);
     
