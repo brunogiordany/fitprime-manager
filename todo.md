@@ -5254,3 +5254,12 @@
 - [x] SOLUÇÃO APLICADA: Adicionado log detalhado antes do INSERT para debug
 - [x] SOLUÇÃO APLICADA: Campos opcionais agora só são adicionados se tiverem valores válidos
 - [x] Correção aplicada, aguardando validação em produção
+
+
+## BUG CRÍTICO - Erro ao Iniciar Treino (v5.10 - TERCEIRA TENTATIVA)
+- [x] Erro CONTINUA: "Failed query: INSERT INTO workout_logs..." com workoutId e workoutDayId na query
+- [x] Params mostram: 1,1,2026-02-01,60,completed - campos ainda estão sendo incluídos
+- [x] Problema: Backend estava passando workoutId: null explicitamente, o que fazia Drizzle incluir na query
+- [x] SOLUÇÃO: Removido workoutId e workoutDayId da chamada createManualWorkoutLog no backend
+- [x] SOLUÇÃO: Alterado createWorkoutLog para usar 'in data' antes de verificar valores
+- [x] Correção aplicada, aguardando validação em produção

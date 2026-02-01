@@ -1475,7 +1475,7 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
   console.log('createWorkoutLog - data:', JSON.stringify(data, null, 2));
   
   try {
-    // Construir objeto de dados, omitindo completamente workoutId e workoutDayId se forem null/undefined
+    // Construir objeto de dados base (campos obrigatórios)
     const insertData: any = {
       studentId: data.studentId,
       personalId: data.personalId,
@@ -1483,13 +1483,18 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
       status: data.status || 'in_progress',
     };
     
-    // Adicionar campos opcionais apenas se tiverem valores válidos
-    if (data.workoutId !== null && data.workoutId !== undefined && data.workoutId !== '') {
+    // Adicionar campos opcionais APENAS se existirem no objeto data E tiverem valores válidos
+    // NÃO adicionar workoutId/workoutDayId se não foram passados (undefined) ou se forem null
+    if ('workoutId' in data && data.workoutId !== null && data.workoutId !== undefined) {
       insertData.workoutId = data.workoutId;
     }
     
-    if (data.workoutDayId !== null && data.workoutDayId !== undefined && data.workoutDayId !== '') {
+    if ('workoutDayId' in data && data.workoutDayId !== null && data.workoutDayId !== undefined) {
       insertData.workoutDayId = data.workoutDayId;
+    }
+    
+    if ('sessionId' in data && data.sessionId !== null && data.sessionId !== undefined) {
+      insertData.sessionId = data.sessionId;
     }
     
     if (data.dayName) {
@@ -1498,10 +1503,6 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
     
     if (data.startTime) {
       insertData.startTime = data.startTime;
-    }
-    
-    if (data.sessionId !== null && data.sessionId !== undefined) {
-      insertData.sessionId = data.sessionId;
     }
     
     if (data.totalDuration !== undefined) {
@@ -1520,7 +1521,8 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
       insertData.completedAt = data.completedAt;
     }
     
-    console.log('createWorkoutLog - insertData (antes do insert):', JSON.stringify(insertData, null, 2));
+    console.log('createWorkoutLog - insertData FINAL:', JSON.stringify(insertData, null, 2));
+    console.log('createWorkoutLog - campos no insertData:', Object.keys(insertData));
     
     const result = await db.insert(workoutLogs).values(insertData);
     

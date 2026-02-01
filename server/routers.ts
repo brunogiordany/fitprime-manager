@@ -7683,12 +7683,11 @@ Retorne APENAS o JSON, sem texto adicional.`;
       .mutation(async ({ ctx, input }) => {
         const student = ctx.student;
         
-        // Criar o log de treino manual (sem workoutId/workoutDayId)
+        // Criar o log de treino manual (sem workoutId/workoutDayId - não passar esses campos)
         const logId = await db.createWorkoutLog({
           personalId: student.personalId,
           studentId: student.id,
-          workoutId: null, // null indica treino manual
-          workoutDayId: null, // null indica treino manual
+          // NÃO passar workoutId e workoutDayId - deixar o banco usar NULL por padrão
           trainingDate: new Date(input.trainingDate),
           totalDuration: input.duration || 60,
           notes: input.notes,
