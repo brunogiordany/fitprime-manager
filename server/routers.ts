@@ -7687,8 +7687,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
         const logId = await db.createWorkoutLog({
           personalId: student.personalId,
           studentId: student.id,
-          workoutId: 0, // 0 indica treino manual
-          workoutDayId: 0, // 0 indica treino manual
+          workoutId: null, // null indica treino manual
+          workoutDayId: null, // null indica treino manual
           trainingDate: new Date(input.trainingDate),
           totalDuration: input.duration || 60,
           notes: input.notes,

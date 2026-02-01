@@ -1481,7 +1481,7 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
         studentId, personalId, workoutId, workoutDayId, trainingDate,
         dayName, startTime, status, sessionDate, sessionId
       ) VALUES (
-        ${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr},
+        ${data.studentId}, ${data.personalId}, ${data.workoutId || null}, ${data.workoutDayId || null}, ${dateStr},
         ${data.dayName || null}, ${data.startTime || null}, ${data.status || 'in_progress'}, ${dateStr}, ${data.sessionId || null}
       )
     `);

@@ -5201,3 +5201,40 @@
 - [x] Adicionar/corrigir botões de alternância
 - [x] CAUSA RAIZ: Layout flex-row estava escondendo botões em telas pequenas
 - [x] SOLUÇÃO: Alterado para flex-col sm:flex-row com gap-3 e flex-shrink-0 nos botões
+
+## BUG CRÍTICO - Modal de Registro Manual com Paleta Quebrada (v5.7)
+- [ ] Fundo do modal está BRANCO/CINZA CLARO (deveria ser escuro premium #0d1520)
+- [ ] Cards de séries estão com fundo PRETO dentro de fundo BRANCO (mistura horrível)
+- [ ] Botões de sentimento com fundo BRANCO
+- [ ] Inputs e selects com fundo BRANCO
+- [ ] CORRIGIR TODA A PALETA para tema premium escuro
+
+## BUG CRÍTICO - Erro de Banco de Dados ao Salvar Treino (v5.7)
+- [ ] Erro: "Failed query: INSERT INTO workout_logs..."
+- [ ] workoutId e workoutDayId estão como 0 (inválidos)
+- [ ] Parâmetros: 180001,1,0,0,2026-02-02,,completed,2026-02-02
+- [ ] Verificar lógica de envio de dados na mutation createManualWorkoutLog
+- [ ] Garantir que IDs válidos sejam enviados
+
+## MELHORIA - Simplificar Fluxo de Registro de Treino (v5.7)
+- [ ] Ao selecionar treino + dia, carregar exercícios em "Registros em Andamento"
+- [ ] Não ficar perguntando informações extras (data, duração, sentimento) no modal
+- [ ] Preencher direto na seção de registros em andamento
+- [ ] Fluxo mais rápido e intuitivo para o aluno
+
+## BUG - UX da Tela de Visualização de Treino do Aluno (v5.7)
+- [ ] Paleta de cores estranha na tela de visualização de treino
+- [ ] Corrigir cores para tema premium escuro
+
+
+## Correções v5.7 - Modal de Registro Manual do Aluno
+- [x] Paleta de cores QUEBRADA - fundo branco/cinza claro ao invés de escuro premium
+- [x] Cards de séries com fundo PRETO dentro de fundo BRANCO (mistura horrível)
+- [x] Botões de sentimento com fundo BRANCO
+- [x] ERRO DE BANCO: "Failed query: INSERT INTO workout_logs..." com workoutId=0, workoutDayId=0
+- [x] Simplificar fluxo: ao selecionar treino + dia, criar registro em andamento automaticamente
+- [x] Não perguntar data/duração/sentimento no modal - preencher direto em Registros em Andamento
+- [x] Corrigir UX da tela de visualização de treino do aluno (paleta estranha)
+- [x] SOLUÇÃO: Modal simplificado - apenas selecionar Treino + Dia e clicar "Iniciar Treino"
+- [x] SOLUÇÃO: Backend corrigido para usar NULL ao invés de 0 em workoutId/workoutDayId
+- [x] SOLUÇÃO: Cores corrigidas para tema premium escuro (#0d1520)

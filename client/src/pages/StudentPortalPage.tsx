@@ -3702,381 +3702,161 @@ export default function StudentPortalPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Registro Manual de Treino */}
+      {/* Modal de Registro Manual de Treino - SIMPLIFICADO */}
       <Dialog open={showManualDiaryModal} onOpenChange={setShowManualDiaryModal}>
-        <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="max-w-md bg-[#0d1520] border-emerald-500/30" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-white">
               <Plus className="h-5 w-5 text-emerald-500" />
-              Criar Registro Manual de Treino
+              Iniciar Treino
             </DialogTitle>
-            <DialogDescription>
-              Registre um treino que você fez por conta própria
+            <DialogDescription className="text-gray-400">
+              Selecione o treino e o dia para começar a registrar
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
-          <div className="space-y-6">
-            {/* Selecionar Treino e Dia */}
-            <div className="p-4 bg-blue-50 dark:bg-gray-800 premium:bg-[#0d1520] border border-blue-200 dark:border-emerald-700 premium:border-emerald-500/30 rounded-lg">
-              <p className="text-sm font-medium text-blue-900 dark:text-emerald-400 premium:text-emerald-400 mb-3">Selecione um treino existente:</p>
-                   <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Treino</Label>
-                  <Select value={manualDiarySelectedWorkout} onValueChange={(value) => {
-                    setManualDiarySelectedWorkout(value);
-                    setManualDiarySelectedDay(''); // Reset day when workout changes
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um treino" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(serverWorkouts || []).map((workout: any) => (
-                        <SelectItem key={workout.id} value={workout.id.toString()}>
-                          {workout.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Dia do Treino</Label>
-                  <Select value={manualDiarySelectedDay} onValueChange={(value) => {
-                    setManualDiarySelectedDay(value);
-                    // Carregar exercícios do dia selecionado
-                    const selectedDay = selectedWorkoutDetails?.days?.find((d: any) => d.id.toString() === value);
-                    if (selectedDay && selectedDay.exercises) {
-                      setManualDiaryExercises(selectedDay.exercises.map((ex: any) => ({
-                        exerciseName: ex.name,
-                        sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
-                          setNumber: i + 1,
-                          weight: '',
-                          reps: '',
-                          completed: false
-                        })),
-                        notes: ''
-                      })));
-                    }
-                  }} disabled={!manualDiarySelectedWorkout}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o dia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(selectedWorkoutDetails?.days || []).map((day: any) => (
-                        <SelectItem key={day.id} value={day.id.toString()}>
-                          {day.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Divisor */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 border-t"></div>
-              <span className="text-xs text-gray-500 font-medium">OU PREENCHER MANUALMENTE</span>
-              <div className="flex-1 border-t"></div>
-            </div>
-            
-            {/* Data e Duração */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Data do Treino</Label>
-                <Input
-                  type="date"
-                  value={manualDiaryDate}
-                  onChange={(e) => setManualDiaryDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Duração (minutos)</Label>
-                <Input
-                  type="number"
-                  value={manualDiaryDuration}
-                  onChange={(e) => setManualDiaryDuration(parseInt(e.target.value) || 60)}
-                  min={1}
-                />
-              </div>
-            </div>
-            
-            {/* Sentimento */}
+          <div className="space-y-4 py-4">
+            {/* Selecionar Treino */}
             <div className="space-y-2">
-              <Label>Como você se sentiu?</Label>
-              <div className="flex gap-2">
-                {[
-                  { value: 'great', label: 'Excelente', emoji: '🔥' },
-                  { value: 'good', label: 'Bom', emoji: '💪' },
-                  { value: 'normal', label: 'Normal', emoji: '😐' },
-                  { value: 'tired', label: 'Cansado', emoji: '😓' },
-                  { value: 'exhausted', label: 'Exausto', emoji: '😵' },
-                ].map((f) => (
-                  <Button
-                    key={f.value}
-                    type="button"
-                    variant={manualDiaryFeeling === f.value ? 'default' : 'outline'}
-                    className={manualDiaryFeeling === f.value ? 'bg-emerald-600' : ''}
-                    onClick={() => setManualDiaryFeeling(f.value)}
-                  >
-                    {f.emoji} {f.label}
-                  </Button>
-                ))}
-              </div>
+              <Label className="text-white">Treino</Label>
+              <Select value={manualDiarySelectedWorkout} onValueChange={(value) => {
+                setManualDiarySelectedWorkout(value);
+                setManualDiarySelectedDay('');
+              }}>
+                <SelectTrigger className="bg-[#0a0f1a] border-emerald-500/30 text-white">
+                  <SelectValue placeholder="Selecione um treino" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0a0f1a] border-emerald-500/30">
+                  {(serverWorkouts || []).map((workout: any) => (
+                    <SelectItem key={workout.id} value={workout.id.toString()} className="text-white hover:bg-emerald-500/20">
+                      {workout.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
-            {/* Exercícios */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Label className="text-lg font-semibold">Exercícios</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setManualDiaryExercises([...manualDiaryExercises, {
-                      exerciseName: '',
-                      sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
-                      notes: '',
-                      isExpanded: true
-                    }]);
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Adicionar Exercício
-                </Button>
-              </div>
-              
-              {manualDiaryExercises.map((exercise, exIndex) => (
-                <Card key={exIndex} className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Nome do exercício (ex: Supino Reto)"
-                        value={exercise.exerciseName}
-                        onChange={(e) => {
-                          const updated = [...manualDiaryExercises];
-                          updated[exIndex].exerciseName = e.target.value;
-                          setManualDiaryExercises(updated);
-                        }}
-                        className="flex-1"
-                      />
-                      {manualDiaryExercises.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => {
-                            const updated = manualDiaryExercises.filter((_, i) => i !== exIndex);
-                            setManualDiaryExercises(updated);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+            {/* Selecionar Dia do Treino */}
+            <div className="space-y-2">
+              <Label className="text-white">Dia do Treino</Label>
+              <Select 
+                value={manualDiarySelectedDay} 
+                onValueChange={setManualDiarySelectedDay}
+                disabled={!manualDiarySelectedWorkout || !selectedWorkoutDetails?.days?.length}
+              >
+                <SelectTrigger className="bg-[#0a0f1a] border-emerald-500/30 text-white">
+                  <SelectValue placeholder={!manualDiarySelectedWorkout ? "Selecione um treino primeiro" : "Selecione o dia"} />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0a0f1a] border-emerald-500/30">
+                  {(selectedWorkoutDetails?.days || []).map((day: any) => (
+                    <SelectItem key={day.id} value={day.id.toString()} className="text-white hover:bg-emerald-500/20">
+                      {day.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {manualDiarySelectedWorkout && !selectedWorkoutDetails?.days?.length && (
+                <p className="text-xs text-yellow-500">Carregando dias do treino...</p>
+              )}
+            </div>
+            
+            {/* Preview dos exercícios */}
+            {manualDiarySelectedDay && selectedWorkoutDetails?.days && (() => {
+              const selectedDay = selectedWorkoutDetails.days.find((d: any) => d.id.toString() === manualDiarySelectedDay);
+              if (selectedDay?.exercises?.length) {
+                return (
+                  <div className="p-3 bg-[#0a0f1a] border border-emerald-500/30 rounded-lg">
+                    <p className="text-xs text-emerald-400 mb-2">Exercícios deste dia:</p>
+                    <div className="space-y-1">
+                      {selectedDay.exercises.slice(0, 5).map((ex: any, idx: number) => (
+                        <p key={idx} className="text-sm text-gray-300">• {ex.name}</p>
+                      ))}
+                      {selectedDay.exercises.length > 5 && (
+                        <p className="text-xs text-gray-500">+{selectedDay.exercises.length - 5} mais...</p>
                       )}
                     </div>
-                    
-                    {/* Séries */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm">Séries</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const updated = [...manualDiaryExercises];
-                            updated[exIndex].sets.push({ weight: '', reps: '', setType: 'working', restTime: 60 });
-                            setManualDiaryExercises(updated);
-                          }}
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Série
-                        </Button>
-                      </div>
-                      
-                      {exercise.sets.map((set: any, setIndex: number) => (
-                        <div key={setIndex} className="flex items-center gap-2 bg-[#0a0f1a] p-2 rounded border border-emerald-500/20">
-                          <span className="text-sm font-medium w-8">#{setIndex + 1}</span>
-                          <Input
-                            type="text"
-                            placeholder="Peso (kg)"
-                            value={set.weight}
-                            onChange={(e) => {
-                              const updated = [...manualDiaryExercises];
-                              updated[exIndex].sets[setIndex].weight = e.target.value;
-                              setManualDiaryExercises(updated);
-                            }}
-                            className="w-24"
-                          />
-                          <Input
-                            type="number"
-                            placeholder="Reps"
-                            value={set.reps}
-                            onChange={(e) => {
-                              const updated = [...manualDiaryExercises];
-                              updated[exIndex].sets[setIndex].reps = e.target.value;
-                              setManualDiaryExercises(updated);
-                            }}
-                            className="w-20"
-                          />
-                          <Select
-                            value={set.setType || 'working'}
-                            onValueChange={(v) => {
-                              const updated = [...manualDiaryExercises];
-                              updated[exIndex].sets[setIndex].setType = v;
-                              setManualDiaryExercises(updated);
-                            }}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="warmup">Aquecimento</SelectItem>
-                              <SelectItem value="feeler">Reconhecimento</SelectItem>
-                              <SelectItem value="working">Série Válida</SelectItem>
-                              <SelectItem value="drop">Drop Set</SelectItem>
-                              <SelectItem value="rest_pause">Rest-Pause</SelectItem>
-                              <SelectItem value="failure">Falha</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {exercise.sets.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-500 hover:text-red-700 p-1"
-                              onClick={() => {
-                                const updated = [...manualDiaryExercises];
-                                updated[exIndex].sets = updated[exIndex].sets.filter((_: any, i: number) => i !== setIndex);
-                                setManualDiaryExercises(updated);
-                              }}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Notas do exercício */}
-                    <Input
-                      placeholder="Observações do exercício (opcional)"
-                      value={exercise.notes || ''}
-                      onChange={(e) => {
-                        const updated = [...manualDiaryExercises];
-                        updated[exIndex].notes = e.target.value;
-                        setManualDiaryExercises(updated);
-                      }}
-                    />
                   </div>
-                </Card>
-              ))}
-            </div>
-            
-            {/* Notas gerais */}
-            <div className="space-y-2">
-              <Label>Observações gerais (opcional)</Label>
-              <Textarea
-                value={manualDiaryNotes}
-                onChange={(e) => setManualDiaryNotes(e.target.value)}
-                placeholder="Como foi o treino? Alguma observação importante?"
-                rows={3}
-              />
-            </div>
-          </div>
+                );
+              }
+              return null;
+            })()}
           </div>
           
-          <div className="flex justify-end gap-2 flex-shrink-0 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setShowManualDiaryModal(false)}>
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowManualDiaryModal(false)}
+              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+            >
               Cancelar
             </Button>
             <Button
-              onClick={async () => {
-                // Validar que tem pelo menos um exercício com nome
-                const validExercises = manualDiaryExercises.filter(ex => ex.exerciseName.trim());
-                if (validExercises.length === 0) {
-                  toast.error('Adicione pelo menos um exercício');
+              onClick={() => {
+                if (!manualDiarySelectedWorkout || !manualDiarySelectedDay) {
+                  toast.error('Selecione o treino e o dia');
                   return;
                 }
                 
-                // Se estiver offline, salvar localmente
-                if (!offlineTraining.isOnline && studentData?.id) {
-                  try {
-                    // Converter exercícios para formato offline
-                    const offlineSets = validExercises.flatMap(ex => 
-                      ex.sets.filter((s: any) => s.weight || s.reps).map((s: any, idx: number) => ({
-                        exerciseName: ex.exerciseName,
-                        setNumber: idx + 1,
-                        weight: s.weight ? parseFloat(s.weight) : undefined,
-                        reps: s.reps ? parseInt(s.reps) : undefined,
-                        setType: s.setType || 'working',
-                        notes: ex.notes,
-                        completed: true,
-                      }))
-                    );
-                    
-                    await offlineTraining.startOfflineTraining({
-                      studentId: studentData.id,
-                      date: manualDiaryDate,
-                    });
-                    
-                    for (const set of offlineSets) {
-                      await offlineTraining.addOfflineSet(set);
-                    }
-                    
-                    await offlineTraining.completeOfflineTraining(manualDiaryFeeling, manualDiaryNotes);
-                    
-                    setShowManualDiaryModal(false);
-                    setManualDiaryExercises([{
-                      exerciseName: '',
-                      sets: [{ weight: '', reps: '', setType: 'working', restTime: 60 }],
-                      notes: '',
-                      isExpanded: true
-                    }]);
-                    setManualDiaryNotes('');
-                    setManualDiaryFeeling('');
-                    return;
-                  } catch (error) {
-                    console.error('Erro ao salvar offline:', error);
-                    toast.error('Erro ao salvar treino offline');
-                    return;
-                  }
+                const selectedDay = selectedWorkoutDetails?.days?.find((d: any) => d.id.toString() === manualDiarySelectedDay);
+                if (!selectedDay) {
+                  toast.error('Dia não encontrado');
+                  return;
                 }
                 
+                // Criar registro em andamento com os exercícios do dia
+                const exercises = (selectedDay.exercises || []).map((ex: any) => ({
+                  exerciseName: ex.name,
+                  sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
+                    setNumber: i + 1,
+                    weight: '',
+                    reps: '',
+                    setType: 'working',
+                    restTime: 60
+                  })),
+                  notes: ''
+                }));
+                
+                // Criar o registro no banco
                 createManualWorkoutLogMutation.mutate({
-                  trainingDate: manualDiaryDate,
-                  duration: manualDiaryDuration,
-                  notes: manualDiaryNotes,
-                  feeling: manualDiaryFeeling,
-                  exercises: validExercises.map(ex => ({
+                  trainingDate: new Date().toISOString().split('T')[0],
+                  duration: 60,
+                  notes: '',
+                  feeling: '',
+                  exercises: exercises.map((ex: any) => ({
                     exerciseName: ex.exerciseName,
                     sets: ex.sets.map((s: any) => ({
-                      weight: s.weight || undefined,
-                      reps: s.reps ? parseInt(s.reps) : undefined,
+                      weight: undefined,
+                      reps: undefined,
                       setType: s.setType || 'working',
                       restTime: s.restTime || 60,
                     })),
-                    notes: ex.notes || undefined,
+                    notes: undefined,
                   })),
+                }, {
+                  onSuccess: () => {
+                    toast.success('Treino iniciado! Preencha os dados na seção de registros.');
+                    setShowManualDiaryModal(false);
+                    setManualDiarySelectedWorkout('');
+                    setManualDiarySelectedDay('');
+                    // Mudar para aba de registros
+                    setDiarySubTab('records');
+                  }
                 });
               }}
-              disabled={createManualWorkoutLogMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!manualDiarySelectedWorkout || !manualDiarySelectedDay || createManualWorkoutLogMutation.isPending}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {createManualWorkoutLogMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : !offlineTraining.isOnline ? (
-                <CloudOff className="h-4 w-4 mr-2" />
               ) : (
-                <Save className="h-4 w-4 mr-2" />
+                <Play className="h-4 w-4 mr-2" />
               )}
-              {!offlineTraining.isOnline ? 'Salvar Offline' : 'Salvar Treino'}
+              Iniciar Treino
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
 
       {/* Modal de Edição de Registro de Treino */}
       <Dialog open={showWorkoutLogModal} onOpenChange={(open) => {
