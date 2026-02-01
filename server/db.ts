@@ -1459,82 +1459,63 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
   // Converter trainingDate para string YYYY-MM-DD (usando data local, não UTC)
   let dateStr: string;
   if (typeof data.trainingDate === 'string') {
-    // Se já é string, pegar apenas a parte da data
     dateStr = data.trainingDate.split('T')[0];
   } else if (data.trainingDate instanceof Date) {
-    // Usar data local ao invés de UTC para evitar problema de timezone
     const d = data.trainingDate;
     dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   } else {
-    // Converter para Date e usar data local
     const d = new Date(String(data.trainingDate));
     dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
   
-  console.log('createWorkoutLog - dateStr:', dateStr);
-  console.log('createWorkoutLog - data:', JSON.stringify(data, null, 2));
+  console.log('createWorkoutLog - usando SQL RAW - v5.11');
+  console.log('createWorkoutLog - data recebida:', JSON.stringify(data, null, 2));
   
   try {
-    // Construir objeto de dados base (campos obrigatórios)
-    const insertData: any = {
-      studentId: data.studentId,
-      personalId: data.personalId,
-      trainingDate: dateStr,
-      status: data.status || 'in_progress',
-    };
+    // Verificar se tem workoutId válido
+    const hasWorkoutId = data.workoutId !== null && data.workoutId !== undefined && data.workoutId !== 0;
+    const hasWorkoutDayId = data.workoutDayId !== null && data.workoutDayId !== undefined && data.workoutDayId !== 0;
+    const hasSessionId = data.sessionId !== null && data.sessionId !== undefined;
+    const hasDayName = !!data.dayName;
+    const hasStartTime = !!data.startTime;
+    const hasTotalDuration = data.totalDuration !== undefined && data.totalDuration !== null;
+    const hasNotes = !!data.notes;
+    const hasFeeling = !!data.feeling;
     
-    // Adicionar campos opcionais APENAS se existirem no objeto data E tiverem valores válidos
-    // NÃO adicionar workoutId/workoutDayId se não foram passados (undefined) ou se forem null
-    if ('workoutId' in data && data.workoutId !== null && data.workoutId !== undefined) {
-      insertData.workoutId = data.workoutId;
+    console.log('createWorkoutLog - hasWorkoutId:', hasWorkoutId, 'valor:', data.workoutId);
+    console.log('createWorkoutLog - hasWorkoutDayId:', hasWorkoutDayId, 'valor:', data.workoutDayId);
+    
+    // Usar SQL template literal do Drizzle para INSERT dinâmico
+    // Query base SEM workoutId e workoutDayId
+    if (!hasWorkoutId && !hasWorkoutDayId) {
+      // Treino manual - não incluir workoutId nem workoutDayId
+      console.log('createWorkoutLog - TREINO MANUAL (sem workoutId/workoutDayId)');
+      
+      const result = await db.execute(sql`
+        INSERT INTO workout_logs (studentId, personalId, trainingDate, status, totalDuration, notes)
+        VALUES (${data.studentId}, ${data.personalId}, ${dateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
+      `);
+      
+      const [lastIdResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
+      const insertId = (lastIdResult as any)[0]?.id;
+      console.log('createWorkoutLog - ID inserido (manual):', insertId);
+      return insertId;
+    } else {
+      // Treino vinculado - incluir workoutId e workoutDayId
+      console.log('createWorkoutLog - TREINO VINCULADO (com workoutId/workoutDayId)');
+      
+      const result = await db.execute(sql`
+        INSERT INTO workout_logs (studentId, personalId, workoutId, workoutDayId, trainingDate, status, totalDuration, notes)
+        VALUES (${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
+      `);
+      
+      const [lastIdResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
+      const insertId = (lastIdResult as any)[0]?.id;
+      console.log('createWorkoutLog - ID inserido (vinculado):', insertId);
+      return insertId;
     }
-    
-    if ('workoutDayId' in data && data.workoutDayId !== null && data.workoutDayId !== undefined) {
-      insertData.workoutDayId = data.workoutDayId;
-    }
-    
-    if ('sessionId' in data && data.sessionId !== null && data.sessionId !== undefined) {
-      insertData.sessionId = data.sessionId;
-    }
-    
-    if (data.dayName) {
-      insertData.dayName = data.dayName;
-    }
-    
-    if (data.startTime) {
-      insertData.startTime = data.startTime;
-    }
-    
-    if (data.totalDuration !== undefined) {
-      insertData.totalDuration = data.totalDuration;
-    }
-    
-    if (data.notes) {
-      insertData.notes = data.notes;
-    }
-    
-    if (data.feeling) {
-      insertData.feeling = data.feeling;
-    }
-    
-    if (data.completedAt) {
-      insertData.completedAt = data.completedAt;
-    }
-    
-    console.log('createWorkoutLog - insertData FINAL:', JSON.stringify(insertData, null, 2));
-    console.log('createWorkoutLog - campos no insertData:', Object.keys(insertData));
-    
-    const result = await db.insert(workoutLogs).values(insertData);
-    
-    console.log('createWorkoutLog - result:', JSON.stringify(result, null, 2));
-    
-    // Obter o último ID inserido
-    const [lastId] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    console.log('createWorkoutLog - lastId:', JSON.stringify(lastId, null, 2));
-    
-    return (lastId as any)[0]?.id || (result[0] as any)?.insertId;
   } catch (error) {
-    console.error('createWorkoutLog - error:', error);
+    console.error('createWorkoutLog - ERRO:', error);
     throw error;
   }
 }

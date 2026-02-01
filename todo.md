@@ -5263,3 +5263,11 @@
 - [x] SOLUÇÃO: Removido workoutId e workoutDayId da chamada createManualWorkoutLog no backend
 - [x] SOLUÇÃO: Alterado createWorkoutLog para usar 'in data' antes de verificar valores
 - [x] Correção aplicada, aguardando validação em produção
+
+## BUG CRÍTICO - Erro ao Iniciar Treino (v5.11 - QUARTA TENTATIVA - SQL RAW)
+- [x] Problema persistia: Drizzle ORM insere TODOS os campos do schema na query independente do que passamos
+- [x] SOLUÇÃO DEFINITIVA: Reescrita completa usando SQL template literal do Drizzle
+- [x] Duas queries separadas: uma para treino manual (sem workoutId/workoutDayId) e outra para treino vinculado
+- [x] Query manual: INSERT INTO workout_logs (studentId, personalId, trainingDate, status, totalDuration, notes)
+- [x] Logs detalhados para debug
+- [x] Correção aplicada, aguardando validação em produção
