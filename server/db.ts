@@ -1475,16 +1475,28 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
   console.log('createWorkoutLog - data:', JSON.stringify(data, null, 2));
   
   try {
-    // Usar SQL raw para inserir com a data no formato correto
-    const result = await db.execute(sql`
-      INSERT INTO workout_logs (
-        studentId, personalId, workoutId, workoutDayId, trainingDate,
-        dayName, startTime, status, sessionDate, sessionId
-      ) VALUES (
-        ${data.studentId}, ${data.personalId}, ${data.workoutId || null}, ${data.workoutDayId || null}, ${dateStr},
-        ${data.dayName || null}, ${data.startTime || null}, ${data.status || 'in_progress'}, ${dateStr}, ${data.sessionId || null}
-      )
-    `);
+    // Construir objeto de dados, omitindo workoutId e workoutDayId se forem null
+    const insertData: any = {
+      studentId: data.studentId,
+      personalId: data.personalId,
+      trainingDate: dateStr,
+      dayName: data.dayName || null,
+      startTime: data.startTime || null,
+      status: data.status || 'in_progress',
+      sessionDate: dateStr,
+      sessionId: data.sessionId || null,
+    };
+    
+    // Adicionar workoutId e workoutDayId apenas se não forem null
+    if (data.workoutId !== null && data.workoutId !== undefined) {
+      insertData.workoutId = data.workoutId;
+    }
+    
+    if (data.workoutDayId !== null && data.workoutDayId !== undefined) {
+      insertData.workoutDayId = data.workoutDayId;
+    }
+    
+    const result = await db.insert(workoutLogs).values(insertData);
     
     console.log('createWorkoutLog - result:', JSON.stringify(result, null, 2));
     

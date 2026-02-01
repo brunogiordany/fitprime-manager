@@ -5238,3 +5238,11 @@
 - [x] SOLUÇÃO: Modal simplificado - apenas selecionar Treino + Dia e clicar "Iniciar Treino"
 - [x] SOLUÇÃO: Backend corrigido para usar NULL ao invés de 0 em workoutId/workoutDayId
 - [x] SOLUÇÃO: Cores corrigidas para tema premium escuro (#0d1520)
+
+
+## BUG CRÍTICO - Erro ao Iniciar Treino (v5.8)
+- [x] Erro de banco: "Failed query: INSERT INTO workout_logs..." com workoutId e workoutDayId como string vazia
+- [x] Backend está enviando "" ao invés de NULL
+- [x] Corrigir para enviar NULL explicitamente quando for treino manual
+- [x] SOLUÇÃO: Modificado db.createWorkoutLog para omitir workoutId e workoutDayId do INSERT quando forem null
+- [x] SOLUÇÃO: Usado drizzle insert().values() ao invés de SQL raw para garantir tratamento correto de null
