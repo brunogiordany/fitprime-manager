@@ -10431,6 +10431,18 @@ Seja motivador mas realista e profissional.`;
         return { success: true, stats };
       }),
     
+    // Excluir registro de treino
+    delete: personalProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db');
+        // Deletar exercícios e séries associados primeiro
+        await db.deleteExerciseLogsByWorkoutLogId(input.id);
+        // Deletar o log de treino
+        await db.deleteWorkoutLog(input.id);
+        return { success: true };
+      }),
+    
     // Dashboard de evolução
     dashboard: personalProcedure
       .input(z.object({

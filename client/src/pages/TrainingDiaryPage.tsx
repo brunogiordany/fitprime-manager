@@ -45,7 +45,8 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
-  Scale
+  Scale,
+  Loader2
 } from "lucide-react";
 import { useOfflineTraining } from "@/hooks/useOfflineTraining";
 import { toast } from "sonner";
@@ -577,6 +578,20 @@ export default function TrainingDiaryPage() {
       refetchLogDetail();
     },
   });
+  
+  const deleteLog = trpc.trainingDiary.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Registro excluído com sucesso!");
+      setShowLogDetailModal(false);
+      setSelectedLogId(null);
+      refetchLogs();
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir registro", { description: error.message });
+    },
+  });
+  
+  const [showDeleteLogConfirm, setShowDeleteLogConfirm] = useState(false);
   
   // Mutations de Cardio
   const createCardio = trpc.cardio.create.useMutation({
@@ -3062,9 +3077,18 @@ export default function TrainingDiaryPage() {
             )}
             </div>
             
-            <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
+            <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4 flex justify-between">
               {logDetail?.status === 'in_progress' && (
                 <>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => setShowDeleteLogConfirm(true)}
+                    disabled={deleteLog.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir
+                  </Button>
+                  <div className="flex gap-2">
                   <Button variant="outline" onClick={() => setShowLogDetailModal(false)}>
                     Fechar
                   </Button>
@@ -3103,6 +3127,7 @@ export default function TrainingDiaryPage() {
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
                   </Button>
+                  </div>
                 </>
               )}
               {logDetail?.status === 'completed' && (
@@ -3111,6 +3136,40 @@ export default function TrainingDiaryPage() {
                 </Button>
               )}
             </DialogFooter>
+            
+            {/* Modal de Confirmação de Exclusão */}
+            {showDeleteLogConfirm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+                  <h3 className="text-lg font-semibold mb-2">Confirmar Exclusão</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    Tem certeza que deseja excluir este registro de treino? Esta ação não pode ser desfeita.
+                  </p>
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => setShowDeleteLogConfirm(false)}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        if (selectedLogId) {
+                          deleteLog.mutate({ id: selectedLogId });
+                        }
+                        setShowDeleteLogConfirm(false);
+                      }}
+                      disabled={deleteLog.isPending}
+                    >
+                      {deleteLog.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-2" />
+                      )}
+                      Excluir
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
         

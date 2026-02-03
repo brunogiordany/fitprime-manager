@@ -5286,3 +5286,11 @@
 - [x] Adicionar confirmação antes de excluir (modal de confirmação)
 - [x] Excluir também os exercise_logs associados (deleteExerciseLogsByWorkoutLogId)
 
+
+## BUG - Botão Excluir no Modal Errado (v5.14)
+- [x] O botão excluir foi adicionado no modal de EDIÇÃO, mas usuário precisa no modal de REGISTRO EM ANDAMENTO
+- [x] Identificar o modal correto (TrainingDiaryPage.tsx - showLogDetailModal)
+- [x] Adicionar mutation trainingDiary.delete no backend
+- [x] Adicionar botão "Excluir" no DialogFooter do modal de detalhe
+- [x] Adicionar modal de confirmação antes de excluir
+
