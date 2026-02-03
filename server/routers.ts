@@ -7876,6 +7876,30 @@ Retorne APENAS o JSON, sem texto adicional.`;
         return { success: true };
       }),
     
+    // Excluir registro de treino
+    deleteWorkoutLog: studentProcedure
+      .input(z.object({
+        logId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verificar se o log pertence ao aluno
+        const existingLog = await db.getWorkoutLogById(input.logId);
+        if (!existingLog) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Registro não encontrado' });
+        }
+        if (existingLog.studentId !== ctx.student.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem permissão para excluir este registro' });
+        }
+        
+        // Deletar exercícios e séries associados primeiro
+        await db.deleteExerciseLogsByWorkoutLogId(input.logId);
+        
+        // Deletar o log de treino
+        await db.deleteWorkoutLog(input.logId);
+        
+        return { success: true };
+      }),
+    
     // Solicitar alteração de dados (cria pending change)
     requestChange: studentProcedure
       .input(z.object({

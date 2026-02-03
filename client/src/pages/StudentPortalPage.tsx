@@ -4315,6 +4315,8 @@ function EditWorkoutLogForm({ log, onClose }: { log: any; onClose: () => void })
   });
 
   const utils = trpc.useUtils();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
   const updateMutation = trpc.studentPortal.updateWorkoutLog.useMutation({
     onSuccess: () => {
       toast.success('Registro atualizado com sucesso!');
@@ -4323,6 +4325,17 @@ function EditWorkoutLogForm({ log, onClose }: { log: any; onClose: () => void })
     },
     onError: (error) => {
       toast.error(error.message || 'Erro ao atualizar registro');
+    },
+  });
+  
+  const deleteMutation = trpc.studentPortal.deleteWorkoutLog.useMutation({
+    onSuccess: () => {
+      toast.success('Registro excluído com sucesso!');
+      utils.studentPortal.workoutLogs.invalidate();
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erro ao excluir registro');
     },
   });
 
@@ -4560,23 +4573,65 @@ function EditWorkoutLogForm({ log, onClose }: { log: any; onClose: () => void })
       </div>
 
       {/* Botões */}
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
+      <div className="flex justify-between gap-2">
         <Button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          variant="destructive"
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleteMutation.isPending}
         >
-          {updateMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Salvar Alterações
+          <Trash2 className="h-4 w-4 mr-2" />
+          Excluir Registro
         </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {updateMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Salvar Alterações
+          </Button>
+        </div>
       </div>
+      
+      {/* Modal de Confirmação de Exclusão */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 premium:bg-[#0d1520] rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Confirmar Exclusão</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Tem certeza que deseja excluir este registro de treino? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteMutation.mutate({ logId: log.id });
+                  setShowDeleteConfirm(false);
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
+                Excluir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

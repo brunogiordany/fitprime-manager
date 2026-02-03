@@ -5279,3 +5279,10 @@
 - [x] SOLUÇÃO: Adicionado sessionDate (usando mesma data do treino) em ambas as queries INSERT
 - [x] Testado com INSERT direto no banco - funcionou corretamente
 
+
+## FEATURE - Botão Excluir Registro em Andamento (v5.13)
+- [x] Adicionar botão "Excluir Registro" no modal de registro de treino em andamento
+- [x] Criar mutation deleteWorkoutLog no backend (studentPortal.deleteWorkoutLog)
+- [x] Adicionar confirmação antes de excluir (modal de confirmação)
+- [x] Excluir também os exercise_logs associados (deleteExerciseLogsByWorkoutLogId)
+
