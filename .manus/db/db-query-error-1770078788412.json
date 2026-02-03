@@ -1,0 +1,10 @@
+{
+  "query": "SELECT id, name FROM workouts WHERE id = 630001; SELECT id, dayName FROM workout_days WHERE id = 630002;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3TwTEpp3aQwpk4j.26ab54900c35 --database SFH8sqABSCK5KntMvXXcPM --execute SELECT id, name FROM workouts WHERE id = 630001; SELECT id, dayName FROM workout_days WHERE id = 630002;",
+  "returncode": 1,
+  "logs": [
+    "id\tname",
+    "630001\tPlano de Hipertrofia ABCD - Foco em Peito, Quadríceps e Ombros",
+    "ERROR 1054 (42S22) at line 1: Unknown column 'dayname' in 'field list'"
+  ]
+}

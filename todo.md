@@ -5271,3 +5271,11 @@
 - [x] Query manual: INSERT INTO workout_logs (studentId, personalId, trainingDate, status, totalDuration, notes)
 - [x] Logs detalhados para debug
 - [x] Correção aplicada, aguardando validação em produção
+
+
+## BUG CRÍTICO - Erro ao Criar Registro de Treino (v5.12)
+- [x] Erro: INSERT INTO workout_logs falhava com "Field 'sessionDate' doesn't have a default value"
+- [x] Causa: A coluna sessionDate é obrigatória no banco mas não estava sendo incluída no INSERT
+- [x] SOLUÇÃO: Adicionado sessionDate (usando mesma data do treino) em ambas as queries INSERT
+- [x] Testado com INSERT direto no banco - funcionou corretamente
+

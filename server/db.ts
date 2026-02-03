@@ -1486,14 +1486,17 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
     console.log('createWorkoutLog - hasWorkoutDayId:', hasWorkoutDayId, 'valor:', data.workoutDayId);
     
     // Usar SQL template literal do Drizzle para INSERT dinâmico
+    // sessionDate é obrigatório no banco - usar mesma data do treino
+    const sessionDateStr = dateStr;
+    
     // Query base SEM workoutId e workoutDayId
     if (!hasWorkoutId && !hasWorkoutDayId) {
       // Treino manual - não incluir workoutId nem workoutDayId
       console.log('createWorkoutLog - TREINO MANUAL (sem workoutId/workoutDayId)');
       
       const result = await db.execute(sql`
-        INSERT INTO workout_logs (studentId, personalId, trainingDate, status, totalDuration, notes)
-        VALUES (${data.studentId}, ${data.personalId}, ${dateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
+        INSERT INTO workout_logs (studentId, personalId, trainingDate, sessionDate, status, totalDuration, notes)
+        VALUES (${data.studentId}, ${data.personalId}, ${dateStr}, ${sessionDateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
       `);
       
       const [lastIdResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
@@ -1505,8 +1508,8 @@ export async function createWorkoutLog(data: Omit<InsertWorkoutLog, 'trainingDat
       console.log('createWorkoutLog - TREINO VINCULADO (com workoutId/workoutDayId)');
       
       const result = await db.execute(sql`
-        INSERT INTO workout_logs (studentId, personalId, workoutId, workoutDayId, trainingDate, status, totalDuration, notes)
-        VALUES (${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
+        INSERT INTO workout_logs (studentId, personalId, workoutId, workoutDayId, trainingDate, sessionDate, status, totalDuration, notes)
+        VALUES (${data.studentId}, ${data.personalId}, ${data.workoutId}, ${data.workoutDayId}, ${dateStr}, ${sessionDateStr}, ${data.status || 'in_progress'}, ${data.totalDuration || 60}, ${data.notes || null})
       `);
       
       const [lastIdResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
