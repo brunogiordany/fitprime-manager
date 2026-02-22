@@ -5319,3 +5319,12 @@
 - [x] Tratar SUBSCRIPTION_CANCELLATION → desativar assinatura
 - [x] Enviar credenciais por email ao novo personal
 - [ ] Criar teste vitest para validar webhook
+
+## LP FRANKENSTEIN /lp4902 (v5.21)
+- [x] Definir ordem ideal das seções combinando 11 modelos
+- [x] Criar LP completa em /lp4902
+- [x] Mobile-first com CTA acima da dobra
+- [x] Bloqueio de inspeção
+- [x] White label (sem branding Manus)
+- [x] Links Hotmart (trial e pagamento direto)
+- [x] Botões de scroll entre blocos com textos de antecipação

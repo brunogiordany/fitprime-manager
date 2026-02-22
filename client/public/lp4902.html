@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPrime - O Sistema que Faltava no Seu Negocio de Personal</title>
+<meta name="description" content="Pare de perder alunos por falta de organizacao. FitPrime: treinos, evolucao e gestao em um so lugar. Teste gratis 14 dias.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+--bg:#050a15;--bg2:#0a1020;--bg3:#0f1630;--bg4:#141d3a;
+--accent:#00e5a0;--accent2:#00c98a;--accent-dim:rgba(0,229,160,0.08);
+--accent-glow:rgba(0,229,160,0.12);--accent-border:rgba(0,229,160,0.2);
+--white:#f4f6f9;--gray:#7a8599;--light:#b8c2d4;
+--red:#ff4d6a;--red-dim:rgba(255,77,106,0.08);
+--border:rgba(255,255,255,0.05);
+--gold:#ffd700;--gold-dim:rgba(255,215,0,0.08);
+}
+body{
+font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+background:var(--bg);color:var(--white);line-height:1.65;
+-webkit-user-select:none;-moz-user-select:none;user-select:none;
+-webkit-touch-callout:none;overflow-x:hidden;
+}
+.ctn{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;
+background:rgba(5,10,21,0.9);backdrop-filter:blur(24px);
+border-bottom:1px solid var(--border);padding:14px 0}
+.nav-in{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-m{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+border-radius:9px;display:flex;align-items:center;justify-content:center;
+font-size:17px;font-weight:800;color:var(--bg)}
+.logo-t{font-size:20px;font-weight:700;color:var(--white)}
+.logo-t b{color:var(--accent)}
+.nav-btn{background:var(--accent);color:var(--bg);padding:10px 22px;border-radius:8px;
+border:none;font-weight:700;font-size:13px;cursor:pointer;transition:.2s}
+.nav-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* HERO */
+.hero{padding:130px 0 70px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+width:800px;height:800px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);
+pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;
+background:var(--accent-dim);border:1px solid var(--accent-border);
+padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600;color:var(--accent);margin-bottom:24px}
+.hero-tag .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);
+animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(30px,5.5vw,58px);font-weight:900;line-height:1.08;
+margin-bottom:20px;letter-spacing:-0.03em}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),#00ffc8);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-p{font-size:clamp(15px,1.8vw,19px);color:var(--gray);
+max-width:540px;margin:0 auto 32px;line-height:1.7}
+.hero-p strong{color:var(--light)}
+.btn-main{display:inline-flex;align-items:center;gap:8px;
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+color:var(--bg);padding:17px 44px;border-radius:12px;border:none;
+font-weight:800;font-size:16px;cursor:pointer;transition:.3s;
+box-shadow:0 6px 30px rgba(0,229,160,0.25);text-decoration:none}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(0,229,160,0.35)}
+.hero-note{font-size:12px;color:var(--gray);margin-top:14px}
+
+/* COUNTER BAR */
+.counter{padding:36px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.counter-g{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+.counter-i{text-align:center}
+.counter-n{font-size:28px;font-weight:800;color:var(--accent)}
+.counter-l{font-size:12px;color:var(--gray);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+
+/* SECTION STYLES */
+.stag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;
+text-align:center;margin-bottom:10px}
+.stag.red{color:var(--red)}
+.stag.green{color:var(--accent)}
+.stag.gold{color:var(--gold)}
+.stitle{font-size:clamp(26px,3.8vw,42px);font-weight:800;text-align:center;
+margin-bottom:14px;letter-spacing:-0.02em;line-height:1.15}
+.sdesc{text-align:center;color:var(--gray);max-width:520px;margin:0 auto 44px;font-size:15px}
+
+/* BIG MECHANISM */
+.bigmech{padding:80px 0;background:var(--bg2);text-align:center;position:relative}
+.bigmech-reveal{max-width:700px;margin:0 auto}
+.bigmech-wrong{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15);
+border-radius:16px;padding:36px 28px;margin-bottom:24px}
+.bigmech-wrong h3{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:var(--red);margin-bottom:12px}
+.bigmech-wrong p{font-size:15px;color:var(--light);line-height:1.7}
+.bigmech-right{background:var(--accent-dim);border:1px solid var(--accent-border);
+border-radius:16px;padding:36px 28px}
+.bigmech-right h3{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:var(--accent);margin-bottom:12px}
+.bigmech-right p{font-size:15px;color:var(--light);line-height:1.7}
+.bigmech-arrow{font-size:36px;color:var(--gray);margin:8px 0}
+
+/* PAS - PROBLEM */
+.pas-problem{padding:80px 0;background:var(--bg)}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.pain-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
+position:relative;overflow:hidden}
+.pain-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red)}
+.pain-card h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--white)}
+.pain-card p{font-size:14px;color:var(--gray);line-height:1.65}
+
+/* PAS - AGITATION */
+.pas-agitate{padding:60px 0;background:var(--bg2);text-align:center}
+.agitate-box{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15);
+border-radius:16px;padding:40px 28px;max-width:700px;margin:0 auto}
+.agitate-box p{font-size:clamp(17px,2.2vw,22px);font-weight:600;line-height:1.6;color:var(--light)}
+.agitate-box p strong{color:var(--red)}
+.agitate-box .small{font-size:14px;color:var(--gray);margin-top:16px;font-weight:400}
+
+/* BAB - BEFORE AFTER */
+.bab{padding:80px 0;background:var(--bg)}
+.bab-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;max-width:800px;margin:0 auto;align-items:start}
+.bab-col{border-radius:16px;padding:32px 24px}
+.bab-before{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15)}
+.bab-after{background:var(--accent-dim);border:1px solid var(--accent-border)}
+.bab-col h3{font-size:18px;font-weight:800;margin-bottom:18px;text-align:center}
+.bab-before h3{color:var(--red)}
+.bab-after h3{color:var(--accent)}
+.bab-col ul{list-style:none}
+.bab-col ul li{padding:10px 0;font-size:14px;color:var(--light);display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--border)}
+.bab-col ul li:last-child{border-bottom:none}
+.bab-before ul li::before{content:'\2717';color:var(--red);font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.bab-after ul li::before{content:'\2713';color:var(--accent);font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.bab-bridge{display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--gray);padding-top:80px}
+
+/* COMPARATIVO */
+.compare{padding:80px 0;background:var(--bg2)}
+.compare-table{max-width:800px;margin:0 auto;border-collapse:collapse;width:100%}
+.compare-table thead th{padding:18px 16px;font-size:14px;font-weight:700;text-align:center;
+border-bottom:2px solid var(--border)}
+.compare-table thead th:first-child{text-align:left}
+.compare-table thead th.old{color:var(--red)}
+.compare-table thead th.new{color:var(--accent);font-size:16px}
+.compare-table tbody td{padding:16px;font-size:14px;color:var(--light);
+border-bottom:1px solid var(--border);text-align:center}
+.compare-table tbody td:first-child{text-align:left;color:var(--white);font-weight:600;font-size:13px}
+.compare-table .x{color:var(--red);font-size:20px;font-weight:700}
+.compare-table .check{color:var(--accent);font-size:20px;font-weight:700}
+.compare-highlight{background:var(--accent-dim);border:1px solid var(--accent-border);
+border-radius:14px;padding:24px;text-align:center;max-width:800px;margin:28px auto 0}
+.compare-highlight p{font-size:16px;font-weight:600;color:var(--light)}
+.compare-highlight strong{color:var(--accent)}
+
+/* SOLUTION */
+.solution{padding:80px 0;background:var(--bg)}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.sol-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
+transition:.3s;position:relative;overflow:hidden}
+.sol-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent)}
+.sol-card:hover{border-color:var(--accent-border);transform:translateY(-3px)}
+.sol-icon{font-size:28px;margin-bottom:12px}
+.sol-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.sol-card p{font-size:14px;color:var(--gray);line-height:1.65}
+
+/* STORYTELLING */
+.story{padding:80px 0;background:var(--bg2)}
+.story-box{max-width:700px;margin:0 auto;position:relative}
+.story-timeline{border-left:3px solid var(--accent-border);padding-left:32px;margin-left:16px}
+.story-step{margin-bottom:36px;position:relative}
+.story-step:last-child{margin-bottom:0}
+.story-step::before{content:'';position:absolute;left:-41px;top:4px;width:16px;height:16px;
+border-radius:50%;background:var(--accent);border:3px solid var(--bg2)}
+.story-step.crisis::before{background:var(--red)}
+.story-step h4{font-size:16px;font-weight:700;margin-bottom:6px}
+.story-step.crisis h4{color:var(--red)}
+.story-step.discovery h4{color:var(--accent)}
+.story-step.transform h4{color:var(--gold)}
+.story-step p{font-size:14px;color:var(--gray);line-height:1.7}
+.story-step p strong{color:var(--light)}
+.story-quote{background:var(--accent-dim);border:1px solid var(--accent-border);
+border-radius:14px;padding:24px;margin-top:28px;text-align:center}
+.story-quote p{font-size:16px;font-weight:600;color:var(--light);font-style:italic}
+.story-quote .author{font-size:13px;color:var(--accent);margin-top:8px;font-style:normal}
+
+/* HOW IT WORKS */
+.how{padding:80px 0;background:var(--bg)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+.step{text-align:center;position:relative}
+.step-n{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+border-radius:50%;display:flex;align-items:center;justify-content:center;
+font-size:22px;font-weight:800;color:var(--bg);margin:0 auto 14px}
+.step h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.step p{font-size:13px;color:var(--gray)}
+
+/* TESTIMONIALS */
+.desire{padding:80px 0;background:var(--bg2)}
+.test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.test-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px}
+.test-stars{color:#ffd700;font-size:15px;margin-bottom:14px;letter-spacing:2px}
+.test-text{font-size:15px;color:var(--light);line-height:1.7;margin-bottom:18px;font-style:italic}
+.test-who{display:flex;align-items:center;gap:12px}
+.test-av{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+border-radius:50%;display:flex;align-items:center;justify-content:center;
+font-weight:700;font-size:17px;color:var(--bg)}
+.test-name{font-weight:600;font-size:14px}
+.test-role{font-size:12px;color:var(--gray)}
+.test-highlight{font-size:14px;color:var(--accent);font-weight:600;margin-top:10px}
+
+/* 5 OBJECTIONS */
+.objections{padding:80px 0;background:var(--bg)}
+.obj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;
+max-width:800px;margin:0 auto}
+.obj-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:24px;
+display:flex;gap:16px;align-items:flex-start}
+.obj-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+.obj-card h4{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--white)}
+.obj-card p{font-size:13px;color:var(--gray);line-height:1.6}
+.obj-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+color:var(--accent);margin-bottom:6px}
+
+/* OFFER STACK */
+.offer{padding:80px 0;background:var(--bg2)}
+.offer-stack{max-width:600px;margin:0 auto}
+.offer-item{display:flex;justify-content:space-between;align-items:center;
+padding:18px 24px;border-bottom:1px solid var(--border)}
+.offer-item:last-child{border-bottom:none}
+.offer-item .name{font-size:15px;font-weight:600;color:var(--white)}
+.offer-item .name span{font-size:12px;color:var(--gray);font-weight:400;display:block;margin-top:2px}
+.offer-item .val{font-size:16px;font-weight:700;color:var(--accent);white-space:nowrap}
+.offer-total{background:var(--bg3);border:1px solid var(--border);border-radius:16px;
+padding:28px;text-align:center;margin-top:24px}
+.offer-total .old-price{font-size:22px;color:var(--red);text-decoration:line-through;font-weight:600}
+.offer-total .new-price{font-size:18px;color:var(--gray);margin-top:6px}
+.offer-total .new-price strong{font-size:48px;color:var(--accent);font-weight:900}
+.offer-total .savings{font-size:14px;color:var(--gold);font-weight:600;margin-top:8px}
+
+/* PRICING */
+.pricing{padding:80px 0;background:var(--bg)}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:24px;max-width:740px;margin:0 auto}
+.price-card{background:var(--bg3);border:1px solid var(--border);border-radius:18px;
+padding:36px 28px;position:relative;transition:.3s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.hot{border-color:var(--accent);box-shadow:0 0 50px rgba(0,229,160,0.08)}
+.price-pop{position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+color:var(--bg);padding:5px 18px;border-radius:50px;
+font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px}
+.price-name{font-size:16px;font-weight:600;color:var(--gray);text-align:center;margin-bottom:14px}
+.price-val{text-align:center;margin-bottom:6px}
+.price-cur{font-size:18px;font-weight:600;vertical-align:top}
+.price-num{font-size:54px;font-weight:900;line-height:1}
+.price-per{font-size:13px;color:var(--gray);text-align:center;margin-bottom:20px}
+.price-div{height:1px;background:var(--border);margin:20px 0}
+.price-list{list-style:none;margin-bottom:28px}
+.price-list li{padding:9px 0;font-size:14px;color:var(--light);display:flex;align-items:center;gap:10px}
+.price-list li::before{content:'\2713';color:var(--accent);font-weight:700;font-size:13px}
+.price-btn{width:100%;padding:15px;border-radius:11px;border:none;
+font-weight:700;font-size:15px;cursor:pointer;transition:.3s;text-decoration:none;display:block;text-align:center}
+.price-btn.fill{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);
+box-shadow:0 6px 30px rgba(0,229,160,0.25)}
+.price-btn.fill:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(0,229,160,0.35)}
+.price-btn.ghost{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+.price-btn.ghost:hover{background:var(--accent-dim)}
+.price-note{text-align:center;font-size:12px;color:var(--gray);margin-top:10px}
+
+/* GUARANTEE */
+.guarantee{padding:60px 0;background:var(--bg2);text-align:center}
+.guar-box{background:var(--accent-dim);border:1px solid var(--accent-border);
+border-radius:18px;padding:44px 28px;max-width:600px;margin:0 auto}
+.guar-box .icon{font-size:44px;margin-bottom:14px}
+.guar-box h3{font-size:22px;font-weight:800;margin-bottom:10px}
+.guar-box p{font-size:14px;color:var(--gray);line-height:1.7}
+
+/* FAQ */
+.faq{padding:80px 0;background:var(--bg)}
+.faq-list{max-width:680px;margin:0 auto}
+.faq-i{border-bottom:1px solid var(--border);padding:22px 0}
+.faq-q{font-size:15px;font-weight:600;cursor:pointer;display:flex;
+justify-content:space-between;align-items:center;color:var(--white);gap:12px}
+.faq-q::after{content:'+';font-size:22px;color:var(--accent);transition:.2s;flex-shrink:0}
+.faq-i.open .faq-q::after{content:'\2212'}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s;
+font-size:14px;color:var(--gray);line-height:1.7}
+.faq-i.open .faq-a{max-height:300px;padding-top:10px}
+
+/* FINAL CTA */
+.final{padding:80px 0;text-align:center;position:relative;background:var(--bg2)}
+.final::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+width:700px;height:700px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);
+pointer-events:none}
+.final h2{font-size:clamp(26px,3.8vw,40px);font-weight:800;margin-bottom:14px;letter-spacing:-0.02em}
+.final p{font-size:17px;color:var(--gray);margin-bottom:28px}
+.final .small{font-size:12px;color:var(--gray);margin-top:14px}
+
+/* URGENCY BAR */
+.urgency{background:linear-gradient(135deg,var(--accent),var(--accent2));
+padding:14px 20px;text-align:center}
+.urgency p{font-size:14px;font-weight:700;color:var(--bg)}
+
+/* FOOTER */
+.footer{padding:32px 0;border-top:1px solid var(--border);text-align:center}
+.footer p{font-size:12px;color:var(--gray)}
+
+/* FLOATING CTA */
+.float-cta{display:none;position:fixed;bottom:0;left:0;right:0;
+background:rgba(5,10,21,0.95);backdrop-filter:blur(20px);
+padding:12px 20px;border-top:1px solid var(--border);z-index:99}
+.float-cta .btn-main{width:100%;justify-content:center;padding:14px;font-size:14px}
+
+/* MID CTA */
+.mid-cta{padding:50px 0;text-align:center;background:var(--bg2)}
+.mid-cta p{font-size:15px;color:var(--gray);margin-bottom:18px}
+
+/* SCROLL CTA INLINE */
+.scroll-cta{text-align:center;margin-top:32px}
+
+@media(max-width:768px){
+.float-cta{display:block}
+body{padding-bottom:68px}
+.nav-btn{padding:8px 14px;font-size:12px}
+.hero{padding:110px 0 50px}
+.counter-g{gap:20px}
+.counter-n{font-size:24px}
+.pas-problem,.solution,.how,.desire,.objections,.pricing,.faq,.final,.compare,.bigmech,.bab,.story,.offer{padding:60px 0}
+.price-grid{grid-template-columns:1fr}
+.steps{grid-template-columns:1fr 1fr;gap:20px}
+.agitate-box{padding:28px 20px}
+.compare-table{font-size:12px}
+.compare-table thead th,.compare-table tbody td{padding:12px 8px}
+.test-grid{grid-template-columns:1fr}
+.bab-grid{grid-template-columns:1fr;gap:16px}
+.bab-bridge{padding-top:0;transform:rotate(90deg)}
+.story-timeline{padding-left:24px;margin-left:8px}
+.story-step::before{left:-33px}
+}
+@media(max-width:480px){
+.steps{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body oncontextmenu="return false">
+
+<!-- NAV -->
+<nav class="nav"><div class="ctn nav-in">
+<a href="#" class="logo"><div class="logo-m">F</div><div class="logo-t">Fit<b>Prime</b></div></a>
+<button class="nav-btn" onclick="document.getElementById('preco').scrollIntoView({behavior:'smooth'})">Testar Gratis</button>
+</div></nav>
+
+<!-- 1. URGENCY BAR (Lead Magnet) -->
+<div class="urgency" style="margin-top:62px"><div class="ctn">
+<p>Vagas limitadas para o trial gratuito de 14 dias. Garanta a sua agora.</p>
+</div></div>
+
+<!-- 2. HERO (AIDA: Attention + Lead Magnet) -->
+<section class="hero"><div class="ctn">
+<div class="hero-tag"><span class="pulse"></span> 14 dias gratis &middot; Sem cartao de credito</div>
+<h1>Seus alunos estao indo embora<br>e voce nem sabe <em>por que.</em></h1>
+<p class="hero-p">A verdade e dura: <strong>personal que nao mostra resultado perde aluno.</strong> FitPrime e o sistema que organiza seus treinos, mostra a evolucao e faz seu aluno querer ficar.</p>
+<a href="#mecanismo" class="btn-main" onclick="event.preventDefault();document.getElementById('mecanismo').scrollIntoView({behavior:'smooth',block:'start'})">Descubra o verdadeiro motivo &#8595;</a>
+<p class="hero-note">Sem compromisso. Cancele quando quiser. Comece em 2 minutos.</p>
+</div></section>
+
+<!-- 3. COUNTER (Prova Massiva) -->
+<section class="counter"><div class="ctn">
+<div class="counter-g">
+<div class="counter-i"><div class="counter-n">500+</div><div class="counter-l">Personais ativos</div></div>
+<div class="counter-i"><div class="counter-n">12.000+</div><div class="counter-l">Alunos gerenciados</div></div>
+<div class="counter-i"><div class="counter-n">98%</div><div class="counter-l">Satisfacao</div></div>
+<div class="counter-i"><div class="counter-n">-70%</div><div class="counter-l">Inadimplencia</div></div>
+</div>
+</div></section>
+
+<!-- 4. BIG MECHANISM (Revelacao) -->
+<section class="bigmech" id="mecanismo"><div class="ctn">
+<div class="stag red">A verdade que ninguem te conta</div>
+<h2 class="stitle">Voce acha que perde aluno<br>por causa do preco. Esta errado.</h2>
+<p class="sdesc">O verdadeiro motivo e mais simples do que voce imagina.</p>
+<div class="bigmech-reveal">
+<div class="bigmech-wrong">
+<h3>O que voce acredita</h3>
+<p>"Meus alunos saem porque acham caro." "O mercado esta saturado." "Tem muito personal cobrando barato." Voce se convenceu de que o problema e externo. Que nao tem solucao. Que e assim mesmo.</p>
+</div>
+<div class="bigmech-arrow">&#8595;</div>
+<div class="bigmech-right">
+<h3>O verdadeiro motivo</h3>
+<p>Seu aluno sai porque <strong>nao ve resultado.</strong> Nao e que ele nao esta evoluindo. E que voce <strong>nao consegue provar</strong> que ele esta. Sem dados, sem graficos, sem comparativos, sem fotos de evolucao. Ele treina 3 meses, olha no espelho, acha que nada mudou e cancela. O problema nao e o preco. E a <strong>falta de percepao de valor.</strong></p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#problema" class="btn-main" onclick="event.preventDefault();document.getElementById('problema').scrollIntoView({behavior:'smooth',block:'start'})">Reconheceu a situacao? Vai piorar &#8595;</a>
+</div>
+</div></section>
+
+<!-- 5. PAS: PROBLEM -->
+<section class="pas-problem" id="problema"><div class="ctn">
+<div class="stag red">O problema que voce finge nao ver</div>
+<h2 class="stitle">Enquanto voce monta treino no Excel,<br>seu concorrente ja automatizou tudo</h2>
+<p class="sdesc">Voce esta perdendo tempo, dinheiro e alunos. E o pior: ja se acostumou com isso.</p>
+<div class="pain-grid">
+<div class="pain-card">
+<h3>Treinos em planilha ou papel</h3>
+<p>Voce perde 2 horas por dia montando treino no Excel. Seu aluno recebe um PDF generico e nem olha. Resultado? Zero engajamento, zero retencao.</p>
+</div>
+<div class="pain-card">
+<h3>WhatsApp virou sua secretaria</h3>
+<p>"Prof, qual meu treino?" "Prof, posso trocar o exercicio?" "Prof, esqueci a carga." Voce responde 50 mensagens por dia e nao sobra tempo pra nada.</p>
+</div>
+<div class="pain-card">
+<h3>Aluno some e voce nao sabe por que</h3>
+<p>Sem dados de evolucao, sem graficos, sem comparativos. Seu aluno nao ve resultado porque voce nao consegue mostrar. E ele vai embora em silencio.</p>
+</div>
+<div class="pain-card">
+<h3>Cobranca por WhatsApp</h3>
+<p>Voce tem vergonha de cobrar. Manda mensagem, o aluno visualiza e nao responde. Voce perde R$ 300, R$ 500 por mes e finge que ta tudo bem.</p>
+</div>
+<div class="pain-card">
+<h3>Zero controle financeiro</h3>
+<p>Nao sabe quanto faturou no mes, quem esta devendo, quando vence. Sua empresa e voce com um caderninho. Isso nao escala.</p>
+</div>
+<div class="pain-card">
+<h3>Aluno nao ve evolucao</h3>
+<p>Ele treina 3 meses e acha que nao mudou nada. Porque voce nao tem como provar que mudou. Sem dados, sem grafico, sem foto comparativa. Ele desiste.</p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#prejuizo" class="btn-main" onclick="event.preventDefault();document.getElementById('prejuizo').scrollIntoView({behavior:'smooth',block:'start'})">Sabe quanto isso ta te custando? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 6. PAS: AGITATION -->
+<section class="pas-agitate" id="prejuizo"><div class="ctn">
+<div class="agitate-box">
+<p>Cada aluno que vai embora custa em media <strong>R$ 300 a R$ 500 por mes</strong> do seu faturamento. Em 6 meses, isso e <strong>R$ 3.000</strong> que voce deixou na mesa.</p>
+<p style="margin-top:14px;font-size:clamp(17px,2.2vw,22px);font-weight:600;line-height:1.6;color:var(--light)">Enquanto isso, o personal do lado usa um sistema profissional, mostra resultado no celular do aluno e <strong>cobra R$ 47/mes a mais que voce.</strong></p>
+<p class="small">A boa noticia: existe uma solucao que custa menos que um acai por dia.</p>
+</div>
+<div class="scroll-cta">
+<a href="#antesdepois" class="btn-main" style="margin-top:20px" onclick="event.preventDefault();document.getElementById('antesdepois').scrollIntoView({behavior:'smooth',block:'start'})">Veja como seria sua vida com e sem sistema &#8595;</a>
+</div>
+</div></section>
+
+<!-- 7. BAB: BEFORE-AFTER-BRIDGE -->
+<section class="bab" id="antesdepois"><div class="ctn">
+<div class="stag red">Antes vs Depois</div>
+<h2 class="stitle">Dois personais. Mesmo mercado.<br>Resultados completamente diferentes.</h2>
+<p class="sdesc">Qual deles e voce hoje? E qual voce quer ser amanha?</p>
+<div class="bab-grid">
+<div class="bab-col bab-before">
+<h3>Sem FitPrime</h3>
+<ul>
+<li>2 horas por dia montando treino no Excel</li>
+<li>Alunos somem sem avisar</li>
+<li>Cobranca constrangedora por WhatsApp</li>
+<li>Nao sabe quanto faturou no mes</li>
+<li>Aluno nao ve evolucao e desiste</li>
+<li>Responde 50 mensagens por dia</li>
+<li>Parece amador perto da concorrencia</li>
+<li>Perde R$ 3.000/semestre em alunos</li>
+</ul>
+</div>
+<div class="bab-bridge">&#8594;</div>
+<div class="bab-col bab-after">
+<h3>Com FitPrime</h3>
+<ul>
+<li>Treino pronto em 15 minutos (ou IA faz)</li>
+<li>Retencao de 98% dos alunos</li>
+<li>Cobranca automatica, sem constrangimento</li>
+<li>Dashboard com MRR e inadimplencia</li>
+<li>Graficos de evolucao no celular do aluno</li>
+<li>Portal do aluno responde por voce</li>
+<li>Imagem profissional e tecnologica</li>
+<li>Alunos indicam voce por causa dos resultados</li>
+</ul>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#comparativo" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('comparativo').scrollIntoView({behavior:'smooth',block:'start'})">Veja a comparacao detalhada &#8595;</a>
+</div>
+</div></section>
+
+<!-- 8. COMPARATIVO (Modelo Comparativo) -->
+<section class="compare" id="comparativo"><div class="ctn">
+<div class="stag red">Pare e compare</div>
+<h2 class="stitle">FitPrime vs Planilhas tradicionais</h2>
+<p class="sdesc">Veja por que personais que usam sistema profissional faturam mais e perdem menos alunos.</p>
+<table class="compare-table">
+<thead>
+<tr>
+<th></th>
+<th class="old">Planilha / Excel / Papel</th>
+<th class="new">FitPrime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Montar treino</td>
+<td>2 horas por aluno</td>
+<td style="color:var(--accent);font-weight:700">15 minutos (ou IA faz pra voce)</td>
+</tr>
+<tr>
+<td>Aluno acessa treino</td>
+<td>PDF por WhatsApp (ninguem le)</td>
+<td style="color:var(--accent);font-weight:700">Portal no celular, em tempo real</td>
+</tr>
+<tr>
+<td>Registro de series</td>
+<td><span class="x">&#10007;</span> Nao existe</td>
+<td><span class="check">&#10003;</span> Aluno registra na hora</td>
+</tr>
+<tr>
+<td>Graficos de evolucao</td>
+<td><span class="x">&#10007;</span> Nao existe</td>
+<td><span class="check">&#10003;</span> Automatico (carga, volume, BF)</td>
+</tr>
+<tr>
+<td>Fotos antes e depois</td>
+<td>Galeria do celular (bagunca)</td>
+<td style="color:var(--accent);font-weight:700">Comparativo lado a lado</td>
+</tr>
+<tr>
+<td>Cobranca</td>
+<td>WhatsApp (constrangedor)</td>
+<td style="color:var(--accent);font-weight:700">Automatica, sem constrangimento</td>
+</tr>
+<tr>
+<td>Controle financeiro</td>
+<td>Caderninho ou nada</td>
+<td style="color:var(--accent);font-weight:700">Dashboard com MRR, inadimplencia</td>
+</tr>
+<tr>
+<td>Lembretes de treino</td>
+<td><span class="x">&#10007;</span> Manual</td>
+<td><span class="check">&#10003;</span> WhatsApp automatico</td>
+</tr>
+<tr>
+<td>Inteligencia Artificial</td>
+<td><span class="x">&#10007;</span></td>
+<td><span class="check">&#10003;</span> Gera treinos em segundos</td>
+</tr>
+<tr>
+<td>Custo</td>
+<td>"Gratis" (mas custa alunos)</td>
+<td style="color:var(--accent);font-weight:700">R$ 47/mes (menos que 1 acai/dia)</td>
+</tr>
+</tbody>
+</table>
+<div class="compare-highlight">
+<p>Personais que usam sistema profissional tem <strong>40% mais retencao</strong> e <strong>70% menos inadimplencia.</strong></p>
+</div>
+<div class="scroll-cta">
+<a href="#solucao" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('solucao').scrollIntoView({behavior:'smooth',block:'start'})">E se existisse uma solucao pra tudo isso? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 9. SOLUTION (PAS Solution + 4Ps Promise) -->
+<section class="solution" id="solucao"><div class="ctn">
+<div class="stag green">A solucao</div>
+<h2 class="stitle">FitPrime faz em 15 minutos<br>o que voce leva 2 horas</h2>
+<p class="sdesc">Tudo que voce precisa pra gerenciar alunos, treinos e cobrancas em um so lugar.</p>
+<div class="sol-grid">
+<div class="sol-card">
+<div class="sol-icon">&#127947;</div>
+<h3>Treinos que impressionam</h3>
+<p>Crie planos completos com series, repeticoes, carga, tecnicas avancadas. Seu aluno recebe tudo no celular e registra cada serie em tempo real.</p>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128200;</div>
+<h3>Evolucao que retem</h3>
+<p>Graficos de volume, carga e frequencia. Seu aluno VE o progresso. Quando ele ve resultado, ele fica. Simples assim.</p>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128241;</div>
+<h3>Portal do aluno no celular</h3>
+<p>Seu aluno acessa o treino, registra as series, ve a evolucao. Tudo pelo celular. Sem instalar nada. Sem complicacao.</p>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128176;</div>
+<h3>Cobranca sem constrangimento</h3>
+<p>Controle quem pagou, quem deve, quando vence. Chega de cobrar por WhatsApp. O sistema faz isso por voce.</p>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#129302;</div>
+<h3>IA que cria treino pra voce</h3>
+<p>Gere treinos com inteligencia artificial em segundos. Personalize, ajuste e envie. Sua produtividade vai triplicar.</p>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128247;</div>
+<h3>Antes e depois com impacto</h3>
+<p>Registre fotos de evolucao e compare lado a lado. Nada vende mais do que resultado visual. Seus alunos vao te indicar.</p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#historia" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('historia').scrollIntoView({behavior:'smooth',block:'start'})">Veja quem ja transformou o negocio com isso &#8595;</a>
+</div>
+</div></section>
+
+<!-- 10. STORYTELLING (Hero's Journey) -->
+<section class="story" id="historia"><div class="ctn">
+<div class="stag gold">Uma historia real</div>
+<h2 class="stitle">De 8 alunos e quase desistindo<br>pra 45 alunos e lista de espera</h2>
+<div class="story-box">
+<div class="story-timeline">
+<div class="story-step crisis">
+<h4>O fundo do poco</h4>
+<p>Marcos tinha 8 alunos. Montava treino no Excel, cobrava por WhatsApp e perdia 2-3 alunos todo mes. <strong>"Eu pensava em desistir e voltar pra CLT."</strong> O pior nao era a grana. Era a sensacao de que nada do que ele fazia era suficiente.</p>
+</div>
+<div class="story-step crisis">
+<h4>O momento da verdade</h4>
+<p>Um aluno de 6 meses cancelou dizendo: <strong>"Nao to vendo resultado, prof."</strong> Marcos sabia que o aluno tinha evoluido. Mas nao tinha como provar. Nenhum dado. Nenhum grafico. Nenhuma foto comparativa. Foi ali que ele entendeu: o problema nao era o treino. Era a falta de visibilidade.</p>
+</div>
+<div class="story-step discovery">
+<h4>A descoberta</h4>
+<p>Marcos encontrou o FitPrime e ativou o trial gratuito. Em 10 minutos, ja tinha cadastrado 3 alunos. Em 1 hora, ja tinha montado os treinos da semana inteira. <strong>"Eu fiz em 1 hora o que levava 3 dias."</strong></p>
+</div>
+<div class="story-step transform">
+<h4>A transformacao</h4>
+<p>Em 90 dias: <strong>zero cancelamentos.</strong> Os alunos comecaram a ver os graficos de evolucao no celular e ficaram motivados. As fotos de antes e depois viraram marketing gratuito. Alunos indicavam amigos. <strong>De 8 pra 45 alunos em 5 meses.</strong> Hoje Marcos tem lista de espera.</p>
+</div>
+</div>
+<div class="story-quote">
+<p>"FitPrime nao salvou so meu negocio. Salvou minha carreira. Hoje eu sou o personal que todo mundo quer."</p>
+<div class="author">Marcos Oliveira &middot; Personal Trainer &middot; MG &middot; 45 alunos</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#como" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('como').scrollIntoView({behavior:'smooth',block:'start'})">Quer o mesmo resultado? Veja como comecar &#8595;</a>
+</div>
+</div></section>
+
+<!-- 11. HOW IT WORKS (AIDA: Interest) -->
+<section class="how" id="como"><div class="ctn">
+<div class="stag green">Simples demais</div>
+<h2 class="stitle">Comece em 2 minutos. Serio.</h2>
+<p class="sdesc">Sem instalacao, sem configuracao complicada. Se voce sabe usar WhatsApp, sabe usar FitPrime.</p>
+<div class="steps">
+<div class="step"><div class="step-n">1</div><h3>Crie sua conta</h3><p>Cadastro em 30 segundos. Sem cartao de credito.</p></div>
+<div class="step"><div class="step-n">2</div><h3>Adicione alunos</h3><p>Cadastre e convide pelo link. Eles acessam na hora.</p></div>
+<div class="step"><div class="step-n">3</div><h3>Monte os treinos</h3><p>Crie do zero ou use a IA. Em minutos, nao horas.</p></div>
+<div class="step"><div class="step-n">4</div><h3>Acompanhe tudo</h3><p>Evolucao, cobrancas e resultados. Tudo no painel.</p></div>
+</div>
+<div class="scroll-cta">
+<a href="#depoimentos" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('depoimentos').scrollIntoView({behavior:'smooth',block:'start'})">Nao acredita? Veja quem ja usa &#8595;</a>
+</div>
+</div></section>
+
+<!-- 12. PROVA MASSIVA (Depoimentos + 4Ps: Prove) -->
+<section class="desire" id="depoimentos"><div class="ctn">
+<div class="stag green">Quem usa, nao volta atras</div>
+<h2 class="stitle">Veja o que dizem os personais que ja usam</h2>
+<div class="test-grid">
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Eu perdia 2 horas por dia no Excel. Agora faco tudo em 15 minutos. Meus alunos ficam impressionados com os graficos de evolucao. Nenhum saiu desde que comecei a usar."</p>
+<div class="test-who"><div class="test-av">R</div><div><div class="test-name">Rafael Costa</div><div class="test-role">Personal Trainer &middot; SP &middot; 32 alunos</div></div></div>
+<div class="test-highlight">Retencao de 100% nos ultimos 4 meses</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Reduzi a inadimplencia em 70%. Antes eu tinha vergonha de cobrar. Agora o sistema faz isso por mim. Meu faturamento subiu R$ 2.000 por mes so com isso."</p>
+<div class="test-who"><div class="test-av">A</div><div><div class="test-name">Amanda Silva</div><div class="test-role">Personal Trainer &middot; RJ &middot; 28 alunos</div></div></div>
+<div class="test-highlight">+R$ 2.000/mes de faturamento</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"O portal do aluno e um diferencial absurdo. Meus alunos registram o treino na hora e eu vejo se estao seguindo. A retencao aumentou uns 40%."</p>
+<div class="test-who"><div class="test-av">M</div><div><div class="test-name">Marcos Oliveira</div><div class="test-role">Personal Trainer &middot; MG &middot; 45 alunos</div></div></div>
+<div class="test-highlight">+40% de retencao de alunos</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Meus alunos me indicam pra todo mundo por causa das fotos de evolucao. Eles compartilham o antes e depois e eu ganho aluno novo sem gastar com marketing."</p>
+<div class="test-who"><div class="test-av">C</div><div><div class="test-name">Camila Ferreira</div><div class="test-role">Personal Trainer &middot; PR &middot; 22 alunos</div></div></div>
+<div class="test-highlight">8 alunos novos por indicacao em 3 meses</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"A IA cria treino em 30 segundos. Eu ajusto, personalizo e envio. Antes eu levava 1 hora por aluno. Agora atendo o dobro de pessoas no mesmo tempo."</p>
+<div class="test-who"><div class="test-av">L</div><div><div class="test-name">Lucas Mendes</div><div class="test-role">Personal Trainer &middot; BA &middot; 50 alunos</div></div></div>
+<div class="test-highlight">Dobrou a carteira de alunos em 2 meses</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Eu era o personal 'do caderninho'. Agora meus alunos falam que sou o mais tecnologico que eles ja viram. O sistema me deu credibilidade profissional."</p>
+<div class="test-who"><div class="test-av">F</div><div><div class="test-name">Fernanda Rocha</div><div class="test-role">Personal Trainer &middot; SC &middot; 18 alunos</div></div></div>
+<div class="test-highlight">Aumentou o valor da hora em 30%</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#objecoes" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('objecoes').scrollIntoView({behavior:'smooth',block:'start'})">Ainda tem alguma duvida? Respondemos todas &#8595;</a>
+</div>
+</div></section>
+
+<!-- 13. 5 OBJECOES CLASSICAS -->
+<section class="objections" id="objecoes"><div class="ctn">
+<div class="stag green">Sem desculpas</div>
+<h2 class="stitle">As 5 perguntas que todo personal faz<br>antes de comecar</h2>
+<div class="obj-grid">
+<div class="obj-card">
+<div class="obj-icon">&#9989;</div>
+<div>
+<div class="obj-label">Funciona?</div>
+<h4>"Sera que realmente da resultado?"</h4>
+<p>500+ personais ativos com 98% de satisfacao. Media de 40% mais retencao e 70% menos inadimplencia. Os numeros falam por si.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#127919;</div>
+<div>
+<div class="obj-label">E pra mim?</div>
+<h4>"Tenho poucos alunos, preciso disso?"</h4>
+<p>Justamente por isso precisa. O sistema te ajuda a reter os que tem e atrair novos. Comece com 2 alunos no trial gratis. Se voce tem 1 aluno ou 100, FitPrime se adapta.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128274;</div>
+<div>
+<div class="obj-label">Posso confiar?</div>
+<h4>"E seguro? Meus dados ficam protegidos?"</h4>
+<p>Criptografia de ponta a ponta, servidores seguros, backup automatico. Seus dados e dos seus alunos estao protegidos. Garantia de 7 dias ou dinheiro de volta.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#9201;</div>
+<div>
+<div class="obj-label">E dificil?</div>
+<h4>"Nao tenho tempo pra aprender sistema novo"</h4>
+<p>Se voce sabe usar WhatsApp, sabe usar FitPrime. A curva de aprendizado e de 10 minutos. Literalmente. Interface intuitiva, sem manual, sem curso.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128179;</div>
+<div>
+<div class="obj-label">Vale o preco?</div>
+<h4>"R$ 47/mes e caro pra mim"</h4>
+<p>Menos que um acai com granola. Um unico aluno retido ja paga o sistema 10 vezes. E voce ainda comeca com 14 dias gratis, sem cartao. Zero risco.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128187;</div>
+<div>
+<div class="obj-label">E diferente?</div>
+<h4>"Ja tentei outros sistemas e nao gostei"</h4>
+<p>FitPrime foi feito POR personais, PRA personais. Nao e um app generico de academia. E o SEU sistema de gestao. Feito pra quem vive de personal.</p>
+</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#oferta" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('oferta').scrollIntoView({behavior:'smooth',block:'start'})">Veja tudo que voce recebe por R$ 47/mes &#8595;</a>
+</div>
+</div></section>
+
+<!-- 14. OFERTA IRRECUSAVEL (Stack + Bonus) -->
+<section class="offer" id="oferta"><div class="ctn">
+<div class="stag gold">Oferta completa</div>
+<h2 class="stitle">Tudo isso por menos<br>que um acai por dia</h2>
+<p class="sdesc">Veja o valor real de tudo que voce recebe no plano profissional.</p>
+<div class="offer-stack">
+<div class="offer-item">
+<div class="name">Sistema completo de gestao de alunos<span>Cadastro, treinos, evolucao, agenda</span></div>
+<div class="val">R$ 97/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Portal do aluno no celular<span>Acesso ao treino, registro de series, evolucao</span></div>
+<div class="val">R$ 47/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Inteligencia Artificial pra criar treinos<span>Gera treinos completos em segundos</span></div>
+<div class="val">R$ 67/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Gestao financeira completa<span>Cobrancas, inadimplencia, MRR, dashboard</span></div>
+<div class="val">R$ 47/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Fotos de evolucao com comparativo<span>Antes e depois lado a lado</span></div>
+<div class="val">R$ 27/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Automacoes de WhatsApp<span>Lembretes de treino, cobranca, aniversario</span></div>
+<div class="val">R$ 37/mes</div>
+</div>
+<div class="offer-item">
+<div class="name">Suporte prioritario<span>Atendimento rapido e dedicado</span></div>
+<div class="val">R$ 27/mes</div>
+</div>
+</div>
+<div class="offer-total">
+<div class="old-price">Valor real: R$ 349/mes</div>
+<div class="new-price">Voce paga apenas <strong>R$ 47</strong>/mes</div>
+<div class="savings">Economia de R$ 302/mes (86% de desconto)</div>
+</div>
+<div class="scroll-cta">
+<a href="#preco" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('preco').scrollIntoView({behavior:'smooth',block:'start'})">Quero comecar agora &#8595;</a>
+</div>
+</div></section>
+
+<!-- 15. PRICING (AIDA: Action + 4Ps: Push) -->
+<section class="pricing" id="preco"><div class="ctn">
+<div class="stag green">Investimento</div>
+<h2 class="stitle">Menos que um acai por dia<br>pra profissionalizar seu negocio</h2>
+<p class="sdesc">Comece gratis. Escale quando quiser.</p>
+<div class="price-grid">
+<div class="price-card">
+<div class="price-name">Teste Gratis</div>
+<div class="price-val"><span class="price-cur">R$</span><span class="price-num">0</span></div>
+<div class="price-per">por 14 dias</div>
+<div class="price-div"></div>
+<ul class="price-list">
+<li>Ate 2 alunos</li>
+<li>Todos os recursos liberados</li>
+<li>Portal do aluno</li>
+<li>Inteligencia Artificial</li>
+<li>Sem cartao de credito</li>
+</ul>
+<a href="https://pay.hotmart.com/M104581936I?off=jous0sf9" target="_blank" class="price-btn ghost">Comecar Gratis</a>
+<p class="price-note">Sem compromisso</p>
+</div>
+<div class="price-card hot">
+<div class="price-pop">Recomendado</div>
+<div class="price-name">Plano Profissional</div>
+<div class="price-val"><span class="price-cur">R$</span><span class="price-num">47</span></div>
+<div class="price-per">por mes &middot; alunos ilimitados</div>
+<div class="price-div"></div>
+<ul class="price-list">
+<li>Alunos ilimitados</li>
+<li>Todos os recursos</li>
+<li>Portal do aluno completo</li>
+<li>Inteligencia Artificial</li>
+<li>Gestao financeira completa</li>
+<li>Fotos de evolucao</li>
+<li>Automacoes WhatsApp</li>
+<li>Suporte prioritario</li>
+</ul>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="price-btn fill">Assinar Agora &#8594;</a>
+<p class="price-note">Cancele quando quiser &middot; Garantia 7 dias</p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#garantia" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('garantia').scrollIntoView({behavior:'smooth',block:'start'})">E se eu nao gostar? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 16. GARANTIA (Oferta Irrecusavel) -->
+<section class="guarantee" id="garantia"><div class="ctn">
+<div class="guar-box">
+<div class="icon">&#128737;</div>
+<h3>Garantia incondicional de 7 dias</h3>
+<p>Se dentro de 7 dias voce nao ficar satisfeito, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia, sem letras miudas. O risco e todo nosso. Voce nao tem nada a perder.</p>
+</div>
+<div class="scroll-cta">
+<a href="#faq" class="btn-main" style="margin-top:20px" onclick="event.preventDefault();document.getElementById('faq').scrollIntoView({behavior:'smooth',block:'start'})">Ainda tem duvidas? Respondemos tudo &#8595;</a>
+</div>
+</div></section>
+
+<!-- 17. FAQ -->
+<section class="faq" id="faq"><div class="ctn">
+<div class="stag green">Duvidas frequentes</div>
+<h2 class="stitle">Tudo que voce quer saber sobre o FitPrime</h2>
+<div class="faq-list">
+<div class="faq-i"><div class="faq-q">Preciso instalar algum aplicativo?</div><div class="faq-a">Nao. FitPrime funciona 100% no navegador. Celular, tablet ou computador. Basta acessar o link. Voce e seus alunos nao precisam baixar nada.</div></div>
+<div class="faq-i"><div class="faq-q">Quantos alunos posso ter?</div><div class="faq-a">No trial gratuito, ate 2 alunos. No plano profissional, alunos ilimitados. Nao cobramos por aluno adicional.</div></div>
+<div class="faq-i"><div class="faq-q">Meu aluno precisa pagar algo?</div><div class="faq-a">Nao. O acesso do aluno ao portal e 100% gratuito. Apenas o personal assina o plano. Seus alunos acessam treinos, evolucao e agenda sem custo.</div></div>
+<div class="faq-i"><div class="faq-q">Posso cancelar a qualquer momento?</div><div class="faq-a">Sim. Sem multa, sem fidelidade, sem burocracia. Cancele direto pelo painel em 2 cliques. Se cancelar nos primeiros 7 dias, devolvemos 100% do valor.</div></div>
+<div class="faq-i"><div class="faq-q">Funciona pra estudio ou academia?</div><div class="faq-a">Sim. FitPrime e ideal pra personal individual, estudio ou academia de qualquer porte. O sistema se adapta ao seu modelo de negocio.</div></div>
+<div class="faq-i"><div class="faq-q">Como funciona a IA pra criar treinos?</div><div class="faq-a">Voce informa o objetivo do aluno, nivel de experiencia e equipamentos disponiveis. A IA gera um treino completo em segundos. Voce revisa, ajusta se quiser e envia. Economia de horas por semana.</div></div>
+<div class="faq-i"><div class="faq-q">E seguro? Meus dados ficam protegidos?</div><div class="faq-a">Sim. Usamos criptografia de ponta a ponta e servidores seguros. Seus dados e dos seus alunos estao protegidos. Seguimos as melhores praticas de seguranca do mercado.</div></div>
+<div class="faq-i"><div class="faq-q">Consigo migrar meus treinos de planilha?</div><div class="faq-a">Sim. Voce pode criar os treinos manualmente (leva poucos minutos com a interface intuitiva) ou usar a IA pra gerar novos treinos baseados no que voce ja faz.</div></div>
+<div class="faq-i"><div class="faq-q">O sistema envia mensagens automaticas pelo WhatsApp?</div><div class="faq-a">Sim. Voce configura lembretes de treino (24h e 2h antes), lembretes de pagamento, mensagens de boas-vindas e ate parabens de aniversario. Tudo automatico.</div></div>
+<div class="faq-i"><div class="faq-q">Preciso de conhecimento tecnico pra usar?</div><div class="faq-a">Zero. Se voce sabe usar WhatsApp e Instagram, sabe usar FitPrime. A interface foi desenhada pra ser a mais simples possivel. A maioria dos personais comeca a usar em menos de 10 minutos.</div></div>
+</div>
+<div class="scroll-cta">
+<a href="#final" class="btn-main" style="margin-top:24px" onclick="event.preventDefault();document.getElementById('final').scrollIntoView({behavior:'smooth',block:'start'})">Chegou a hora de decidir &#8595;</a>
+</div>
+</div></section>
+
+<!-- 18. FINAL CTA (AIDA: Action + Lead Magnet) -->
+<section class="final" id="final"><div class="ctn">
+<h2>Voce tem duas opcoes agora.</h2>
+<p>Continuar perdendo alunos e tempo com planilhas.<br>Ou comecar hoje, de graca, e ver a diferenca em 14 dias.</p>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero Comecar Agora &#8594;</a>
+<p class="small">14 dias gratis. Sem cartao. Sem risco. Sem desculpas.</p>
+</div></section>
+
+<!-- FOOTER -->
+<footer class="footer"><div class="ctn">
+<p>&copy; 2025 FitPrime. Todos os direitos reservados.</p>
+</div></footer>
+
+<!-- 19. FLOATING CTA MOBILE -->
+<div class="float-cta">
+<a href="#preco" class="btn-main" onclick="event.preventDefault();document.getElementById('preco').scrollIntoView({behavior:'smooth',block:'start'})">Ver planos e comecar gratis &#8595;</a>
+</div>
+
+<script>
+document.querySelectorAll('.faq-q').forEach(function(q){
+q.addEventListener('click',function(){
+var i=q.parentElement;
+document.querySelectorAll('.faq-i').forEach(function(x){if(x!==i)x.classList.remove('open')});
+i.classList.toggle('open');
+});
+});
+document.addEventListener('keydown',function(e){
+if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'||e.key==='J'))||(e.ctrlKey&&e.key==='U')){
+e.preventDefault();return false;}
+});
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+a.addEventListener('click',function(e){
+e.preventDefault();
+var t=document.querySelector(a.getAttribute('href'));
+if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+});
+});
+</script>
+</body>
+</html>
