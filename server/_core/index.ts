@@ -13,6 +13,7 @@ import { nanoid } from "nanoid";
 import { handleStripeWebhook } from "../stripe/webhook";
 import { handleCaktoWebhook } from "../cakto/webhook";
 import { handlePaytWebhook } from "../payt/webhook";
+import { handleHotmartWebhook } from "../hotmart/webhook";
 import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 import { startAutomationWorker } from "../automationWorker";
@@ -50,6 +51,9 @@ async function startServer() {
   
   // Payt webhook - receives payment events from Payt platform (afiliados e influenciadores)
   app.post('/api/payt/webhook', express.json(), handlePaytWebhook);
+  
+  // Hotmart webhook - receives payment events from Hotmart platform
+  app.post('/api/hotmart/webhook', express.json(), handleHotmartWebhook);
   
   // Stevo webhook - receives WhatsApp messages
   // SEGURANÇA: Validação de token, rate limiting e validação de payload

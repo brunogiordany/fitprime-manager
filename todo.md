@@ -5306,3 +5306,16 @@
 - [x] Trocar link de checkout na LP50
 - [ ] Trocar links no restante do sistema (integração Cakto existente - manter por enquanto)
 - [ ] Preparar integração webhook Hotmart para ativação automática
+
+## INTEGRAÇÃO HOTMART WEBHOOK (v5.20)
+- [x] Criar endpoint /api/hotmart/webhook
+- [x] Validar Hottok no header X-HOTMART-HOTTOK
+- [x] Tratar PURCHASE_APPROVED → criar conta + ativar assinatura
+- [x] Tratar PURCHASE_CANCELLED → desativar assinatura
+- [x] Tratar PURCHASE_REFUNDED → desativar assinatura
+- [x] Tratar PURCHASE_CHARGEBACK → desativar assinatura
+- [x] Tratar PURCHASE_EXPIRED → desativar assinatura
+- [x] Tratar PURCHASE_OVERDUE → marcar inadimplente
+- [x] Tratar SUBSCRIPTION_CANCELLATION → desativar assinatura
+- [x] Enviar credenciais por email ao novo personal
+- [ ] Criar teste vitest para validar webhook
