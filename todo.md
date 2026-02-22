@@ -5345,3 +5345,7 @@
 ## Bug: LP4903 retorna 404 em produção (v5.24)
 - [x] Diagnosticar por que /lp4903 retorna 404 em fitprimemanager.com
 - [x] Corrigir rota para funcionar em produção (múltiplos paths: dev + prod)
+
+## Bug: UX quebrada na LP4903 (v5.25)
+- [x] Diagnosticar problemas de layout mobile/desktop
+- [x] Corrigir todos os problemas de UX identificados (minmax safe, footer padding, grid responsive)

@@ -112,7 +112,7 @@ border-radius:16px;padding:36px 28px}
 
 /* PAS - PROBLEM */
 .pas-problem{padding:80px 0;background:var(--bg)}
-.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
 .pain-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
 position:relative;overflow:hidden}
 .pain-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red)}
@@ -126,7 +126,7 @@ border-radius:16px;padding:40px 28px;max-width:700px;margin:0 auto}
 .agitate-box p{font-size:clamp(17px,2.2vw,22px);font-weight:600;line-height:1.6;color:var(--light)}
 .agitate-box p strong{color:var(--red)}
 .agitate-box .small{font-size:14px;color:var(--gray);margin-top:16px;font-weight:400}
-.agitate-calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px}
+.agitate-calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:16px;margin-top:24px}
 .agitate-calc-item{background:rgba(255,77,106,0.06);border:1px solid rgba(255,77,106,0.12);border-radius:12px;padding:20px;text-align:center}
 .agitate-calc-item .num{font-size:28px;font-weight:800;color:var(--red)}
 .agitate-calc-item .label{font-size:12px;color:var(--gray);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
@@ -167,7 +167,7 @@ border-radius:14px;padding:24px;text-align:center;max-width:800px;margin:28px au
 
 /* SOLUTION */
 .solution{padding:80px 0;background:var(--bg)}
-.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
 .sol-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
 transition:.3s;position:relative;overflow:hidden}
 .sol-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent)}
@@ -198,7 +198,7 @@ border-radius:14px;padding:24px;margin-top:28px;text-align:center}
 
 /* HOW IT WORKS */
 .how{padding:80px 0;background:var(--bg)}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:28px}
 .step{text-align:center;position:relative}
 .step-n{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent2));
 border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -208,7 +208,7 @@ font-size:22px;font-weight:800;color:var(--bg);margin:0 auto 14px}
 
 /* TESTIMONIALS */
 .desire{padding:80px 0;background:var(--bg2)}
-.test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
 .test-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px}
 .test-stars{color:var(--gold);font-size:18px;margin-bottom:12px}
 .test-text{font-size:14px;color:var(--light);line-height:1.7;margin-bottom:16px;font-style:italic}
@@ -224,7 +224,7 @@ font-weight:600;color:var(--accent)}
 
 /* OBJECTIONS */
 .objections{padding:80px 0;background:var(--bg)}
-.obj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.obj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
 .obj-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:24px;
 display:flex;gap:16px;align-items:flex-start}
 .obj-icon{font-size:32px;flex-shrink:0}
@@ -305,7 +305,7 @@ justify-content:space-between;align-items:center}
 .final .legal{font-size:11px;color:var(--gray);margin-top:8px;opacity:0.7}
 
 /* FOOTER */
-.footer{padding:28px 0;text-align:center;border-top:1px solid var(--border)}
+.footer{padding:28px 0 80px;text-align:center;border-top:1px solid var(--border)}
 .footer p{font-size:12px;color:var(--gray)}
 
 /* FLOATING CTA */
@@ -314,20 +314,121 @@ background:rgba(5,10,21,0.95);backdrop-filter:blur(16px);
 padding:12px 16px;border-top:1px solid var(--accent-border)}
 .float-cta .btn-main{width:100%;justify-content:center;padding:15px;font-size:15px}
 
+/* === TABLET === */
 @media(max-width:768px){
 .float-cta{display:block}
 .bab-grid{grid-template-columns:1fr;gap:16px}
 .bab-bridge{display:none}
-.counter-g{gap:20px}
+.counter-g{gap:16px}
 .counter-n{font-size:22px}
-.hero{padding:130px 0 50px}
-.compare-table{font-size:12px}
-.compare-table thead th,.compare-table tbody td{padding:10px 8px}
+.hero{padding:120px 0 50px}
+.pain-grid{grid-template-columns:1fr}
+.sol-grid{grid-template-columns:1fr}
+.test-grid{grid-template-columns:1fr}
+.obj-grid{grid-template-columns:1fr}
+.steps{grid-template-columns:repeat(2,1fr);gap:20px}
+.agitate-calc{grid-template-columns:repeat(3,1fr);gap:10px}
+.compare-table{font-size:12px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.compare-table thead th,.compare-table tbody td{padding:10px 8px;white-space:nowrap}
 .price-card{padding:32px 24px}
+.offer-item{flex-direction:column;gap:6px;align-items:flex-start}
+.offer-item .val{font-size:14px}
+.guar-box{padding:32px 20px}
+.story-timeline{padding-left:24px;margin-left:8px}
+.story-step::before{left:-33px;width:14px;height:14px}
 }
+
+/* === MOBILE === */
 @media(max-width:480px){
-.hero h1{font-size:26px}
-.stitle{font-size:24px}
+.ctn{padding:0 16px}
+.hero{padding:110px 0 40px}
+.hero h1{font-size:24px}
+.hero-p{font-size:14px;margin-bottom:24px}
+.btn-main{padding:15px 28px;font-size:15px}
+.stitle{font-size:22px}
+.sdesc{font-size:13px}
+.stag{font-size:11px;letter-spacing:2px}
+.counter-g{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.counter-i{padding:8px 0}
+.counter-n{font-size:20px}
+.counter-l{font-size:10px}
+.nav-btn{padding:8px 14px;font-size:12px}
+.logo-t{font-size:17px}
+.logo-m{width:28px;height:28px;font-size:14px}
+.urgency{font-size:11px;padding:8px 12px;top:48px}
+.nav{padding:10px 0}
+.pain-card{padding:22px}
+.pain-card h3{font-size:15px}
+.pain-card p{font-size:13px}
+.sol-card{padding:22px}
+.sol-card h3{font-size:15px}
+.sol-card p{font-size:13px}
+.sol-icon{font-size:24px;margin-bottom:8px}
+.test-card{padding:22px}
+.test-text{font-size:13px}
+.obj-card{padding:20px;flex-direction:column;gap:10px}
+.obj-icon{font-size:26px}
+.obj-card h4{font-size:15px}
+.obj-card p{font-size:12px}
+.steps{grid-template-columns:repeat(2,1fr);gap:16px}
+.step-n{width:42px;height:42px;font-size:18px}
+.step h3{font-size:14px}
+.step p{font-size:12px}
+.agitate-calc{grid-template-columns:1fr 1fr 1fr;gap:8px}
+.agitate-calc-item{padding:14px 8px}
+.agitate-calc-item .num{font-size:22px}
+.agitate-calc-item .label{font-size:10px}
+.agitate-box{padding:28px 20px}
+.agitate-box p{font-size:16px}
+.bigmech-wrong,.bigmech-right{padding:24px 18px}
+.bigmech-wrong h3,.bigmech-right h3{font-size:18px}
+.bigmech-wrong p,.bigmech-right p{font-size:14px}
+.compare-table thead th{font-size:11px;padding:8px 6px}
+.compare-table tbody td{font-size:11px;padding:8px 6px}
+.compare-table tbody td:first-child{font-size:11px}
+.compare-highlight{padding:18px 14px}
+.compare-highlight p{font-size:14px}
+.offer-item .name{font-size:14px}
+.offer-item .val{font-size:14px}
+.offer-total{padding:24px 18px}
+.offer-total .old-price{font-size:16px}
+.offer-total .new-price{font-size:28px}
+.price-card{padding:28px 20px}
+.price-num{font-size:52px}
+.price-name{font-size:20px}
+.price-list li{font-size:13px;padding:8px 0}
+.price-btn{padding:16px;font-size:15px}
+.guar-box{padding:28px 16px}
+.guar-box h3{font-size:22px}
+.guar-box p{font-size:14px}
+.guar-box .legal{font-size:11px;padding:12px}
+.faq-q{font-size:14px;padding:16px 0}
+.faq-a{font-size:13px}
+.final h2{font-size:24px}
+.final p{font-size:14px}
+.float-cta{padding:10px 14px}
+.float-cta .btn-main{padding:14px;font-size:14px}
+.story-step h4{font-size:15px}
+.story-step p{font-size:13px}
+.story-quote p{font-size:14px}
+.scroll-cta .btn-main{font-size:13px;padding:12px 24px}
+.bab-col{padding:24px 18px}
+.bab-col h3{font-size:16px}
+.bab-col ul li{font-size:13px;padding:8px 0}
+}
+
+/* === SMALL MOBILE (320px) === */
+@media(max-width:360px){
+.ctn{padding:0 12px}
+.hero h1{font-size:22px}
+.stitle{font-size:20px}
+.counter-g{gap:8px}
+.counter-n{font-size:18px}
+.agitate-calc{grid-template-columns:1fr}
+.steps{grid-template-columns:1fr}
+.nav-btn{padding:7px 12px;font-size:11px}
+.logo-t{font-size:15px}
+.price-num{font-size:44px}
 }
 </style>
 </head>
