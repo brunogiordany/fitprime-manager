@@ -582,7 +582,7 @@ Formato de resposta:
   );
 
   // Landing pages com slugs limpas (sem .html) para campanhas Meta Ads
-  const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902'];
+  const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902', 'lp4903'];
   for (const slug of lpSlugs) {
     app.get(`/${slug}`, (req: any, res: any) => {
       const htmlFile = path.resolve(
