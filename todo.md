@@ -5341,3 +5341,7 @@
 - [x] Remover plano "Teste Grátis" do pricing
 - [x] Manter apenas CTA de pagamento (Assinar Agora)
 - [x] Criar LP4903 como versão sofisticada (slug limpa /lp4903)
+
+## Bug: LP4903 retorna 404 em produção (v5.24)
+- [x] Diagnosticar por que /lp4903 retorna 404 em fitprimemanager.com
+- [x] Corrigir rota para funcionar em produção (múltiplos paths: dev + prod)

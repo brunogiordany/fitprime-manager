@@ -582,15 +582,21 @@ Formato de resposta:
   );
 
   // Landing pages com slugs limpas (sem .html) para campanhas Meta Ads
+  // Em dev: client/public/lpXX.html | Em prod: dist/public/lpXX.html (ou __dirname/public/lpXX.html)
   const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902', 'lp4903'];
   for (const slug of lpSlugs) {
     app.get(`/${slug}`, (req: any, res: any) => {
-      const htmlFile = path.resolve(
-        import.meta.dirname, '../..', 'client', 'public', `${slug}.html`
-      );
-      if (fs.existsSync(htmlFile)) {
+      // Tentar múltiplos caminhos para funcionar em dev e prod
+      const possiblePaths = [
+        path.resolve(import.meta.dirname, '../..', 'client', 'public', `${slug}.html`),  // dev
+        path.resolve(import.meta.dirname, 'public', `${slug}.html`),  // prod (built)
+        path.resolve(import.meta.dirname, '../..', 'dist', 'public', `${slug}.html`),  // prod alt
+      ];
+      const htmlFile = possiblePaths.find(p => fs.existsSync(p));
+      if (htmlFile) {
         res.sendFile(htmlFile);
       } else {
+        console.error(`[LP] ${slug}.html not found in any path:`, possiblePaths);
         res.status(404).send('Pagina nao encontrada');
       }
     });
