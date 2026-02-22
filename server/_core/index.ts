@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import path from "path";
+import fs from "fs";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -578,6 +580,22 @@ Formato de resposta:
       createContext,
     })
   );
+
+  // Landing pages com slugs limpas (sem .html) para campanhas Meta Ads
+  const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902'];
+  for (const slug of lpSlugs) {
+    app.get(`/${slug}`, (req: any, res: any) => {
+      const htmlFile = path.resolve(
+        import.meta.dirname, '../..', 'client', 'public', `${slug}.html`
+      );
+      if (fs.existsSync(htmlFile)) {
+        res.sendFile(htmlFile);
+      } else {
+        res.status(404).send('Pagina nao encontrada');
+      }
+    });
+  }
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

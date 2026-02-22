@@ -5328,3 +5328,7 @@
 - [x] White label (sem branding Manus)
 - [x] Links Hotmart (trial e pagamento direto)
 - [x] Botões de scroll entre blocos com textos de antecipação
+
+## Slugs limpas para LPs (v5.22)
+- [x] Configurar rota /lp4902 sem .html (slug limpa para Meta Ads)
+- [x] Configurar rotas /lp49, /lp50, /lp51, /lp52 sem .html
