@@ -88,21 +88,22 @@ export async function checkStudentLimit(personalId: number): Promise<StudentLimi
 
   // Se não tem subscription, está em trial ou precisa criar
   if (!subscription) {
-    // Usar plano Starter como padrão para trial
+    // Trial: limite de 2 alunos
+    const TRIAL_STUDENT_LIMIT = 2;
     const starterPlan = PLANS_BR[0];
     
     return {
       personalId,
-      currentPlan: starterPlan,
-      studentLimit: starterPlan.studentLimit,
+      currentPlan: { ...starterPlan, name: 'Trial', studentLimit: TRIAL_STUDENT_LIMIT },
+      studentLimit: TRIAL_STUDENT_LIMIT,
       currentStudents: activeStudents,
       activeStudents,
-      exceededBy: Math.max(0, activeStudents - starterPlan.studentLimit),
-      status: activeStudents > starterPlan.studentLimit ? 'exceeded' : 
-              activeStudents === starterPlan.studentLimit ? 'at_limit' : 'ok',
-      extraCost: Math.max(0, activeStudents - starterPlan.studentLimit) * EXTRA_STUDENT_BR.pricePerStudent,
+      exceededBy: Math.max(0, activeStudents - TRIAL_STUDENT_LIMIT),
+      status: activeStudents > TRIAL_STUDENT_LIMIT ? 'exceeded' : 
+              activeStudents === TRIAL_STUDENT_LIMIT ? 'at_limit' : 'ok',
+      extraCost: 0,
       currency: 'BRL',
-      suggestedUpgrade: activeStudents > starterPlan.studentLimit 
+      suggestedUpgrade: activeStudents >= TRIAL_STUDENT_LIMIT 
         ? suggestUpgrade(starterPlan, activeStudents, 'BR')
         : null
     };

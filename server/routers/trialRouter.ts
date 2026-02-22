@@ -25,7 +25,7 @@ async function sendTrialWelcomeWhatsApp(phone: string, name: string) {
 
 Seja bem-vindo(a) ao FitPrime Manager!
 
-Sua conta trial foi criada com sucesso. Você tem *24 horas* de acesso gratuito para explorar todas as funcionalidades.
+Sua conta trial foi criada com sucesso. Você tem *14 dias* de acesso gratuito para explorar todas as funcionalidades.
 
 ✅ Acesse agora: https://fitprimemanager.com/login-personal
 
@@ -130,7 +130,7 @@ const createTrialSchema = z.object({
 });
 
 export const trialRouter = router({
-  // Criar conta trial de 1 dia
+  // Criar conta trial de 14 dias
   createTrial: publicProcedure
     .input(createTrialSchema)
     .mutation(async ({ input }) => {
@@ -161,9 +161,9 @@ export const trialRouter = router({
         });
       }
 
-      // Criar usuário com trial de 1 dia
+      // Criar usuário com trial de 14 dias
       const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 1); // 1 dia de trial
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
       
       // Gerar openId único para usuários de trial (baseado no CPF + timestamp)
       const openId = `trial_${input.cpf.replace(/\D/g, '')}_${Date.now()}`;
@@ -212,7 +212,7 @@ export const trialRouter = router({
         success: true,
         userId,
         trialEndsAt: trialEndsAt.toISOString(),
-        message: "Conta trial criada com sucesso! Você tem 1 dia de acesso gratuito.",
+        message: "Conta trial criada com sucesso! Você tem 14 dias de acesso gratuito.",
       };
     }),
 

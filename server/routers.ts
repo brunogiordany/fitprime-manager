@@ -77,7 +77,7 @@ async function getOrCreatePersonal(userId: number) {
 }
 
 // Helper to check if subscription is valid (with 1 day grace period)
-// Considera: trial de 1 dia, acesso de teste (30 dias), e assinatura paga
+// Considera: trial de 14 dias, acesso de teste (30 dias), e assinatura paga
 function isSubscriptionValid(personal: { 
   subscriptionStatus: string; 
   subscriptionExpiresAt: Date | null;
@@ -95,7 +95,7 @@ function isSubscriptionValid(personal: {
     }
   }
   
-  // 2. Verificar trial de 1 dia (novos usuários)
+  // 2. Verificar trial de 14 dias (novos usuários)
   if (personal.subscriptionStatus === 'trial') {
     // Verificar se tem data de término do trial
     if (personal.trialEndsAt) {
@@ -108,11 +108,11 @@ function isSubscriptionValid(personal: {
         return { valid: false, daysOverdue };
       }
     }
-    // Trial sem data definida (legado) - considerar válido por 1 dia a partir do cadastro
+    // Trial sem data definida (legado) - considerar válido por 14 dias a partir do cadastro
     if (personal.createdAt) {
       const createdAt = new Date(personal.createdAt);
       const trialEnd = new Date(createdAt);
-      trialEnd.setDate(trialEnd.getDate() + 1); // 1 dia de trial
+      trialEnd.setDate(trialEnd.getDate() + 14); // 14 dias de trial
       
       if (now <= trialEnd) {
         return { valid: true, daysOverdue: 0 };
