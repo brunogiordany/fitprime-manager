@@ -5294,3 +5294,9 @@
 - [x] Adicionar botão "Excluir" no DialogFooter do modal de detalhe
 - [x] Adicionar modal de confirmação antes de excluir
 
+
+## MELHORIA LP49 - Sugestões de Acompanhamento (v5.15)
+- [x] Melhorar FAQ com dúvidas mais comuns dos personais sobre o aplicativo (10 perguntas)
+- [x] Adicionar mais depoimentos para aumentar prova social e confiança (6 depoimentos com métricas)
+- [x] Criar seção comparativa FitPrime vs Planilhas de treino tradicionais (tabela 10 itens)
+- [x] Publicar como /lp50 (versionamento)
