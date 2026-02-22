@@ -16,6 +16,7 @@ import { handleStripeWebhook } from "../stripe/webhook";
 import { handleCaktoWebhook } from "../cakto/webhook";
 import { handlePaytWebhook } from "../payt/webhook";
 import { handleHotmartWebhook } from "../hotmart/webhook";
+import { handleMetaCAPIEvent } from "../meta/capi";
 import { getHealthStatus } from "./healthCheck";
 import { securityHeaders, blockSearchEngineAccess, noCacheHeaders } from "../security-headers";
 import { startAutomationWorker } from "../automationWorker";
@@ -56,6 +57,9 @@ async function startServer() {
   
   // Hotmart webhook - receives payment events from Hotmart platform
   app.post('/api/hotmart/webhook', express.json(), handleHotmartWebhook);
+  
+  // Meta Conversions API - server-side events for LP tracking (deduplicação com Pixel)
+  app.post('/api/meta/event', express.json(), handleMetaCAPIEvent);
   
   // Stevo webhook - receives WhatsApp messages
   // SEGURANÇA: Validação de token, rate limiting e validação de payload

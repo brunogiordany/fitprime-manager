@@ -378,6 +378,18 @@ padding:12px 16px;border-top:1px solid var(--accent-border)}
 .price-num{font-size:44px}
 }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','898343203142628',{external_id:null});
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=898343203142628&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 
@@ -395,7 +407,7 @@ padding:12px 16px;border-top:1px solid var(--accent-border)}
 <div class="hero-tag"><span class="pulse"></span> Resultado comprovado por 472 personais</div>
 <h1>Como personais estao faturando mais<br><em>sem trabalhar 10h por dia</em><br>com 1 ferramenta de gestao</h1>
 <p class="hero-p">Voce atende 10h por dia, ve seu celular explodir de mensagens&hellip; mas no final do mes ainda sente que <strong>poderia estar ganhando mais?</strong> Isso acontece porque voce gasta tempo em trabalho operacional que nao gera receita.</p>
-<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero ganhar mais agora &#8594;</a>
+<a href="#mecanismo" class="btn-main" onclick="event.preventDefault();document.getElementById('mecanismo').scrollIntoView({behavior:'smooth',block:'start'})">Quero ganhar mais agora &#8595;</a>
 <p class="hero-note">R$ 1,56/dia &middot; ROI medio de 745% &middot; Garantia legal de 7 dias</p>
 <p class="hero-legal">Direito de arrependimento garantido pelo Art. 49 do CDC (Lei 8.078/90)</p>
 <div class="scroll-cta" style="margin-top:28px"><a href="#mecanismo" class="btn-main" style="background:transparent;border:1px solid var(--gold);color:var(--gold);box-shadow:none;font-size:14px;padding:14px 32px" onclick="event.preventDefault();document.getElementById('mecanismo').scrollIntoView({behavior:'smooth',block:'start'})">Veja quanto voce esta deixando na mesa &#8595;</a></div>
@@ -948,5 +960,135 @@ e.preventDefault();return false;}
 });
 document.addEventListener('contextmenu',function(e){e.preventDefault()});
 </script>
+
+<!-- ===== META PIXEL + CONVERSIONS API TRACKING ===== -->
+<script>
+(function(){
+  var PIXEL_ID='898343203142628';
+  var LP_SLUG='lp4904';
+  var CAPI_ENDPOINT='/api/meta/event';
+
+  // Gerar event_id unico para deduplicacao
+  function genEventId(){return 'eid_'+Date.now()+'_'+Math.random().toString(36).substr(2,9)}
+
+  // Ler cookie _fbp e _fbc
+  function getCookie(n){var m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null}
+
+  // Capturar fbclid da URL e salvar como _fbc
+  function captureFbclid(){
+    var u=new URLSearchParams(window.location.search);
+    var fbclid=u.get('fbclid');
+    if(fbclid){
+      var fbc='fb.1.'+Date.now()+'.'+fbclid;
+      document.cookie='_fbc='+fbc+';max-age=7776000;path=/;SameSite=Lax';
+      return fbc;
+    }
+    return getCookie('_fbc');
+  }
+
+  // Capturar UTMs e salvar
+  function captureUtms(){
+    var u=new URLSearchParams(window.location.search);
+    var utms={};
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
+      var v=u.get(k);if(v)utms[k]=v;
+    });
+    if(Object.keys(utms).length>0){
+      sessionStorage.setItem('fp_utms',JSON.stringify(utms));
+    }
+    return utms;
+  }
+
+  // Enviar evento para CAPI server-side
+  function sendCAPI(eventName,eventId,customData){
+    var fbp=getCookie('_fbp');
+    var fbc=getCookie('_fbc');
+    var utms={};
+    try{utms=JSON.parse(sessionStorage.getItem('fp_utms')||'{}');}catch(e){}
+    var payload={
+      event_name:eventName,
+      event_id:eventId,
+      event_source_url:window.location.href,
+      fbp:fbp||null,
+      fbc:fbc||null,
+      user_agent:navigator.userAgent,
+      lp_slug:LP_SLUG,
+      utms:utms,
+      custom_data:customData||{}
+    };
+    navigator.sendBeacon?navigator.sendBeacon(CAPI_ENDPOINT,JSON.stringify(payload)):
+    fetch(CAPI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true});
+  }
+
+  // Init
+  var fbc=captureFbclid();
+  var utms=captureUtms();
+
+  // 1. PageView (ja disparado pelo fbq init acima)
+  var pvId=genEventId();
+  sendCAPI('PageView',pvId,{});
+
+  // 2. ViewContent - dispara apos 10s na pagina (engajamento)
+  setTimeout(function(){
+    var vcId=genEventId();
+    fbq('track','ViewContent',{content_name:'LP4904 Renda Extra',content_category:'landing_page',value:47.00,currency:'BRL'},{eventID:vcId});
+    sendCAPI('ViewContent',vcId,{content_name:'LP4904 Renda Extra',content_category:'landing_page',value:47.00,currency:'BRL'});
+  },10000);
+
+  // 3. Lead - scroll ate 50% da pagina (interesse real)
+  var leadFired=false;
+  window.addEventListener('scroll',function(){
+    if(leadFired)return;
+    var scrollPct=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;
+    if(scrollPct>=50){
+      leadFired=true;
+      var leadId=genEventId();
+      fbq('track','Lead',{content_name:'LP4904 Scroll 50%',content_category:'engagement',value:47.00,currency:'BRL'},{eventID:leadId});
+      sendCAPI('Lead',leadId,{content_name:'LP4904 Scroll 50%',content_category:'engagement',value:47.00,currency:'BRL'});
+    }
+  });
+
+  // 4. InitiateCheckout - clique em qualquer link Hotmart
+  document.addEventListener('click',function(e){
+    var link=e.target.closest('a[href*="hotmart.com"]');
+    if(link){
+      var icId=genEventId();
+      fbq('track','InitiateCheckout',{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],num_items:1},{eventID:icId});
+      sendCAPI('InitiateCheckout',icId,{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],num_items:1});
+    }
+  });
+
+  // 5. AddToCart - clique no pricing CTA especifico
+  var pricingBtn=document.querySelector('.price-btn');
+  if(pricingBtn){
+    pricingBtn.addEventListener('click',function(){
+      var atcId=genEventId();
+      fbq('track','AddToCart',{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],content_type:'product'},{eventID:atcId});
+      sendCAPI('AddToCart',atcId,{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],content_type:'product'});
+    });
+  }
+
+  // 6. Scroll depth tracking (25%, 75%, 100%)
+  var scrollMilestones={25:false,75:false,100:false};
+  window.addEventListener('scroll',function(){
+    var scrollPct=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;
+    [25,75,100].forEach(function(m){
+      if(!scrollMilestones[m]&&scrollPct>=m){
+        scrollMilestones[m]=true;
+        fbq('trackCustom','ScrollDepth',{depth:m,lp:LP_SLUG});
+      }
+    });
+  });
+
+  // 7. Time on page tracking (30s, 60s, 120s, 300s)
+  [30,60,120,300].forEach(function(sec){
+    setTimeout(function(){
+      fbq('trackCustom','TimeOnPage',{seconds:sec,lp:LP_SLUG});
+    },sec*1000);
+  });
+
+})();
+</script>
+<!-- ===== END TRACKING ===== -->
 </body>
 </html>

@@ -5379,3 +5379,11 @@
 - [x] CTAs: trocar "Quero aumentar meu faturamento" para "Quero ganhar mais agora"
 - [x] CTA flutuante: trocar texto
 - [x] Garantia: reescrever com gancho de renda extra
+
+## LP4904 - Botão Scroll + Meta Pixel + CAPI (v5.29)
+- [x] Corrigir primeiro botão do hero para scroll suave (não link externo)
+- [x] Implementar Meta Pixel (ID: 898343203142628) client-side
+- [x] Implementar Conversions API server-side para deduplicação
+- [x] Eventos: PageView, ViewContent, Lead (scroll 50%), InitiateCheckout (clique Hotmart), AddToCart, ScrollDepth, TimeOnPage
+- [x] Parâmetros avançados: fbp, fbc, event_id, user_agent, client_ip para nota máxima
+- [x] Aplicar em LP4903 também (Pixel + CAPI + botão scroll)
