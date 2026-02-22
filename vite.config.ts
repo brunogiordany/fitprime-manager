@@ -47,7 +47,7 @@ const plugins = [
     workbox: {
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
       globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
-      globIgnores: ['**/testimonials/**', '**/icons/icon-512x512.png', '**/fitprime-logo.png'],
+      globIgnores: ['**/testimonials/**', '**https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/lvUXCEzaSCEsuSLG.png', '**https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png'],
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/api\./i,

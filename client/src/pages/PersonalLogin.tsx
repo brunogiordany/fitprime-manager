@@ -326,7 +326,7 @@ export default function PersonalLogin() {
         {/* Logo FitPrime */}
         <div className="text-center mb-8">
           <img 
-            src="/fitprime-logo.png" 
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png" 
             alt="FitPrime Manager" 
             className="h-20 mx-auto mb-2"
           />

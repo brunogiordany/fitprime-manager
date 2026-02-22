@@ -304,7 +304,7 @@ export default function LandingPagePro() {
         <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img 
-              src="/fitprime-logo.png" 
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png" 
               alt="FitPrime Manager" 
               className="h-10 w-auto object-contain"
             />
@@ -1256,7 +1256,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person1.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/wsQLrhuGpRaUExKA.png" 
                   alt="Rafael Silva" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />
@@ -1280,7 +1280,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person2.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/jOKSVVZzDkUMUVhI.png" 
                   alt="Camila Rodrigues" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />
@@ -1304,7 +1304,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person3.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/HxKKxcDwwAZikJVq.png" 
                   alt="Márcio Oliveira" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />
@@ -1328,7 +1328,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person4.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/kTtcZKnjWgcXynFG.png" 
                   alt="Juliana Costa" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />
@@ -1352,7 +1352,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person5.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/iySsXbVjHzLMonZI.png" 
                   alt="Anderson Lima" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />
@@ -1376,7 +1376,7 @@ export default function LandingPagePro() {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
               <div className="flex items-start gap-4 mb-4">
                 <img 
-                  src="/testimonials/person6.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/HtqYpuOyHITMZuSy.png" 
                   alt="Fernanda Santos" 
                   className="w-14 h-14 rounded-full object-cover border-2 border-emerald-200"
                 />

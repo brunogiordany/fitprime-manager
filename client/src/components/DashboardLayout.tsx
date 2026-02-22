@@ -122,7 +122,7 @@ export default function DashboardLayout({
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-3">
               <img 
-                src="/fitprime-logo.png" 
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png" 
                 alt="FitPrime Manager" 
                 className="h-16 w-auto object-contain"
               />
@@ -270,7 +270,7 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <img 
-                    src="/fitprime-logo.png" 
+                    src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png" 
                     alt="FitPrime" 
                     className="h-8 w-auto object-contain"
                   />

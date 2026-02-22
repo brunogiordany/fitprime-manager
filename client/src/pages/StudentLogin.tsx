@@ -205,7 +205,7 @@ export default function StudentLogin() {
       <Card className="w-full max-w-md shadow-xl border-emerald-100">
         <CardHeader className="text-center">
           <img 
-            src="/fitprime-logo.png" 
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663029814269/JkJfvTVxPfsIhRNt.png" 
             alt="FitPrime Manager" 
             className="h-16 mx-auto mb-4"
           />

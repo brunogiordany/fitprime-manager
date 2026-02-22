@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitPrime - Sistema Completo para Personal Trainers</title>
+    <meta name="description" content="Gerencie seus alunos, crie treinos personalizados e acompanhe a evolução em tempo real. Teste grátis por 14 dias.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-dark-2: #0f1424;
+            --bg-dark-3: #141a2e;
+            --accent: #00d4aa;
+            --accent-2: #00b894;
+            --accent-glow: rgba(0, 212, 170, 0.15);
+            --text-white: #f0f2f5;
+            --text-gray: #8b95a5;
+            --text-light: #c5cdd8;
+            --border: rgba(255,255,255,0.06);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark); color: var(--text-white);
+            line-height: 1.6;
+            -webkit-user-select: none; -moz-user-select: none; user-select: none;
+            -webkit-touch-callout: none; overflow-x: hidden;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* HEADER */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 16px 0;
+        }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-mark {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: var(--bg-dark);
+        }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--text-white); }
+        .logo-text span { color: var(--accent); }
+        .header-cta {
+            background: var(--accent); color: var(--bg-dark);
+            padding: 10px 24px; border-radius: 8px; border: none;
+            font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+        }
+        .header-cta:hover { background: var(--accent-2); transform: translateY(-1px); }
+
+        /* HERO */
+        .hero {
+            padding: 140px 0 80px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(0, 212, 170, 0.1); border: 1px solid rgba(0, 212, 170, 0.25);
+            padding: 8px 20px; border-radius: 50px;
+            font-size: 14px; font-weight: 500; color: var(--accent); margin-bottom: 28px;
+        }
+        .hero-badge .dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 56px); font-weight: 800; line-height: 1.1;
+            margin-bottom: 20px; letter-spacing: -0.02em;
+        }
+        .hero h1 em {
+            font-style: normal;
+            background: linear-gradient(135deg, var(--accent), #00e6b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-sub {
+            font-size: clamp(16px, 2vw, 20px); color: var(--text-gray);
+            max-width: 580px; margin: 0 auto 36px; line-height: 1.6;
+        }
+        .hero-cta-group { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: var(--bg-dark); padding: 16px 40px; border-radius: 12px; border: none;
+            font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 4px 24px rgba(0, 212, 170, 0.25); text-decoration: none;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 212, 170, 0.35); }
+        .hero-note { font-size: 13px; color: var(--text-gray); }
+
+        /* SOCIAL PROOF */
+        .social-proof { padding: 40px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .proof-grid { display: flex; justify-content: center; align-items: center; gap: 48px; flex-wrap: wrap; }
+        .proof-item { text-align: center; }
+        .proof-number { font-size: 32px; font-weight: 800; color: var(--accent); line-height: 1; }
+        .proof-label { font-size: 13px; color: var(--text-gray); margin-top: 4px; }
+
+        /* SECTIONS */
+        .section-label {
+            font-size: 13px; font-weight: 600; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 40px); font-weight: 800; text-align: center;
+            margin-bottom: 16px; letter-spacing: -0.02em;
+        }
+        .section-desc {
+            text-align: center; color: var(--text-gray); max-width: 560px;
+            margin: 0 auto 48px; font-size: 16px;
+        }
+
+        /* PROBLEMS */
+        .problems { padding: 80px 0; background: var(--bg-dark-2); }
+        .problems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .problem-card {
+            background: var(--bg-dark-3); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px;
+        }
+        .problem-icon {
+            width: 48px; height: 48px; background: rgba(255, 107, 107, 0.1);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 16px;
+        }
+        .problem-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .problem-card p { font-size: 14px; color: var(--text-gray); line-height: 1.6; }
+
+        /* BENEFITS */
+        .benefits { padding: 80px 0; }
+        .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .benefit-card {
+            background: var(--bg-dark-2); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px; transition: all 0.3s;
+        }
+        .benefit-card:hover { border-color: rgba(0, 212, 170, 0.3); transform: translateY(-4px); }
+        .benefit-icon {
+            width: 48px; height: 48px; background: var(--accent-glow);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 16px;
+        }
+        .benefit-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .benefit-card p { font-size: 14px; color: var(--text-gray); line-height: 1.6; }
+
+        /* HOW IT WORKS */
+        .how-it-works { padding: 80px 0; background: var(--bg-dark-2); }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
+        .step { text-align: center; }
+        .step-number {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 800; color: var(--bg-dark); margin: 0 auto 16px;
+        }
+        .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .step p { font-size: 14px; color: var(--text-gray); }
+
+        /* TESTIMONIALS */
+        .testimonials { padding: 80px 0; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .testimonial-card {
+            background: var(--bg-dark-2); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px;
+        }
+        .testimonial-stars { color: #ffd700; font-size: 16px; margin-bottom: 16px; }
+        .testimonial-text { font-size: 15px; color: var(--text-light); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+        .testimonial-author { display: flex; align-items: center; gap: 12px; }
+        .testimonial-avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 18px; color: var(--bg-dark);
+        }
+        .testimonial-name { font-weight: 600; font-size: 15px; }
+        .testimonial-role { font-size: 13px; color: var(--text-gray); }
+
+        /* PRICING */
+        .pricing { padding: 80px 0; background: var(--bg-dark-2); }
+        .pricing-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px; max-width: 960px; margin: 0 auto;
+        }
+        .pricing-card {
+            background: var(--bg-dark-3); border: 1px solid var(--border);
+            border-radius: 20px; padding: 40px 32px; position: relative; transition: all 0.3s;
+        }
+        .pricing-card:hover { transform: translateY(-4px); }
+        .pricing-card.featured { border-color: var(--accent); box-shadow: 0 0 40px rgba(0, 212, 170, 0.1); }
+        .pricing-popular {
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: var(--bg-dark); padding: 6px 20px; border-radius: 50px;
+            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .pricing-name { font-size: 18px; font-weight: 600; color: var(--text-gray); margin-bottom: 16px; text-align: center; }
+        .pricing-price { text-align: center; margin-bottom: 8px; }
+        .pricing-currency { font-size: 20px; font-weight: 600; vertical-align: top; }
+        .pricing-value { font-size: 56px; font-weight: 800; line-height: 1; }
+        .pricing-period { font-size: 14px; color: var(--text-gray); text-align: center; margin-bottom: 8px; }
+        .pricing-savings { text-align: center; margin-bottom: 24px; font-size: 13px; color: var(--accent); font-weight: 600; min-height: 18px; }
+        .pricing-divider { height: 1px; background: var(--border); margin: 24px 0; }
+        .pricing-features { list-style: none; margin-bottom: 32px; }
+        .pricing-features li {
+            padding: 10px 0; font-size: 14px; color: var(--text-light);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .pricing-features li::before {
+            content: '\2713'; color: var(--accent); font-weight: 700;
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .pricing-btn {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.3s;
+            text-decoration: none; display: block; text-align: center;
+        }
+        .pricing-btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: var(--bg-dark); box-shadow: 0 4px 20px rgba(0, 212, 170, 0.2);
+        }
+        .pricing-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0, 212, 170, 0.3); }
+        .pricing-btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text-white); }
+        .pricing-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .pricing-note { text-align: center; font-size: 12px; color: var(--text-gray); margin-top: 10px; }
+
+        /* GUARANTEE */
+        .guarantee { padding: 60px 0; text-align: center; }
+        .guarantee-box {
+            background: var(--bg-dark-2); border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 20px; padding: 48px 32px; max-width: 640px; margin: 0 auto;
+        }
+        .guarantee-icon { font-size: 48px; margin-bottom: 16px; }
+        .guarantee-box h3 { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+        .guarantee-box p { font-size: 15px; color: var(--text-gray); line-height: 1.7; }
+
+        /* FAQ */
+        .faq { padding: 80px 0; background: var(--bg-dark-2); }
+        .faq-list { max-width: 700px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); padding: 24px 0; }
+        .faq-question {
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; color: var(--text-white);
+        }
+        .faq-question::after { content: '+'; font-size: 24px; color: var(--accent); transition: transform 0.3s; }
+        .faq-item.open .faq-question::after { content: '\2212'; }
+        .faq-answer {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+            font-size: 14px; color: var(--text-gray); line-height: 1.7;
+        }
+        .faq-item.open .faq-answer { max-height: 200px; padding-top: 12px; }
+
+        /* FINAL CTA */
+        .final-cta {
+            padding: 80px 0; text-align: center; position: relative; overflow: hidden;
+        }
+        .final-cta::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .final-cta h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; letter-spacing: -0.02em; }
+        .final-cta p { font-size: 18px; color: var(--text-gray); margin-bottom: 32px; }
+
+        /* FOOTER */
+        .footer { padding: 40px 0; border-top: 1px solid var(--border); text-align: center; }
+        .footer p { font-size: 13px; color: var(--text-gray); }
+
+        /* FLOATING CTA MOBILE */
+        .floating-cta {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(10, 14, 26, 0.95); backdrop-filter: blur(20px);
+            padding: 12px 20px; border-top: 1px solid var(--border); z-index: 99;
+        }
+        .floating-cta .btn-primary { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+        @media (max-width: 768px) {
+            .floating-cta { display: block; }
+            body { padding-bottom: 70px; }
+            .header-cta { padding: 8px 16px; font-size: 13px; }
+            .hero { padding: 110px 0 60px; }
+            .proof-grid { gap: 24px; }
+            .proof-number { font-size: 28px; }
+            .problems, .benefits, .how-it-works, .testimonials, .pricing, .faq, .final-cta { padding: 60px 0; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .steps-grid { grid-template-columns: 1fr; gap: 24px; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false">
+
+    <header class="header">
+        <div class="container header-inner">
+            <a href="#" class="logo">
+                <div class="logo-mark">F</div>
+                <div class="logo-text">Fit<span>Prime</span></div>
+            </a>
+            <button class="header-cta" onclick="document.getElementById('precos').scrollIntoView({behavior:'smooth'})">Teste Gratis 14 Dias</button>
+        </div>
+    </header>
+
+    <!-- HERO - ATENCAO -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Teste gratis por 14 dias com 5 alunos
+            </div>
+            <h1>Chega de planilha e papel.<br><em>Gerencie seus alunos como profissional.</em></h1>
+            <p class="hero-sub">O sistema completo que organiza treinos, acompanha evolucao e automatiza a gestao do seu negocio de personal training.</p>
+            <div class="hero-cta-group">
+                <a href="#precos" class="btn-primary">Comecar Teste Gratuito &#8594;</a>
+                <span class="hero-note">Sem cartao de credito. Cancele quando quiser.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="social-proof">
+        <div class="container">
+            <div class="proof-grid">
+                <div class="proof-item">
+                    <div class="proof-number">500+</div>
+                    <div class="proof-label">Personal Trainers</div>
+                </div>
+                <div class="proof-item">
+                    <div class="proof-number">12.000+</div>
+                    <div class="proof-label">Alunos Gerenciados</div>
+                </div>
+                <div class="proof-item">
+                    <div class="proof-number">98%</div>
+                    <div class="proof-label">Taxa de Satisfacao</div>
+                </div>
+                <div class="proof-item">
+                    <div class="proof-number">4.9/5</div>
+                    <div class="proof-label">Avaliacao Media</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROBLEMAS -->
+    <section class="problems">
+        <div class="container">
+            <div class="section-label">Voce se identifica?</div>
+            <h2 class="section-title">O dia a dia do personal trainer e corrido</h2>
+            <p class="section-desc">Voce nao deveria perder tempo com tarefas manuais que uma ferramenta pode resolver em segundos.</p>
+            <div class="problems-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">&#128203;</div>
+                    <h3>Treinos em planilhas e papel</h3>
+                    <p>Perder horas montando treinos no Excel, Word ou caderno. Sem padronizacao, sem historico organizado.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">&#128241;</div>
+                    <h3>WhatsApp lotado de mensagens</h3>
+                    <p>Alunos perguntando treino, cobranca atrasada, agenda confusa. Tudo misturado no mesmo lugar.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">&#128200;</div>
+                    <h3>Sem dados de evolucao</h3>
+                    <p>Impossivel mostrar resultados concretos para o aluno. Sem graficos, sem comparativos, sem retencao.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BENEFICIOS - INTERESSE -->
+    <section class="benefits" id="beneficios">
+        <div class="container">
+            <div class="section-label">A solucao</div>
+            <h2 class="section-title">Tudo que voce precisa em um so lugar</h2>
+            <p class="section-desc">FitPrime reune gestao de alunos, treinos, evolucao e cobrancas em uma plataforma simples e poderosa.</p>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#127947;</div>
+                    <h3>Treinos Personalizados</h3>
+                    <p>Crie planos de treino completos com series, repeticoes, carga e tecnicas avancadas como drop set e rest-pause.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#128200;</div>
+                    <h3>Evolucao em Tempo Real</h3>
+                    <p>Acompanhe volume, carga e frequencia de cada aluno com graficos detalhados e comparativos automaticos.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#128241;</div>
+                    <h3>Portal do Aluno</h3>
+                    <p>Seu aluno acessa o treino pelo celular, registra as series e voce acompanha tudo em tempo real.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#128176;</div>
+                    <h3>Gestao Financeira</h3>
+                    <p>Controle cobrancas, planos e pagamentos. Saiba exatamente quanto cada aluno deve e quando vence.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#128247;</div>
+                    <h3>Fotos de Evolucao</h3>
+                    <p>Registre e compare fotos do antes e depois. Mostre resultados reais que retem e motivam seus alunos.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">&#129302;</div>
+                    <h3>Inteligencia Artificial</h3>
+                    <p>Gere treinos com IA, receba sugestoes de progressao e automatize tarefas repetitivas do seu dia a dia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-label">Simples assim</div>
+            <h2 class="section-title">Comece em 3 minutos</h2>
+            <p class="section-desc">Sem instalacao, sem complicacao. Funciona no celular, tablet e computador.</p>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Crie sua conta</h3>
+                    <p>Cadastro rapido e gratuito. Sem cartao de credito para comecar.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Adicione seus alunos</h3>
+                    <p>Cadastre seus alunos e convide-os para acessar o portal.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Monte os treinos</h3>
+                    <p>Crie planos personalizados ou use a IA para gerar automaticamente.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Acompanhe tudo</h3>
+                    <p>Monitore evolucao, cobrancas e resultados em tempo real.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEPOIMENTOS - DESEJO -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-label">Quem usa, recomenda</div>
+            <h2 class="section-title">Personal trainers que transformaram sua rotina</h2>
+            <p class="section-desc">Veja o que dizem os profissionais que ja usam FitPrime no dia a dia.</p>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"Antes eu perdia 2 horas por dia organizando treinos no Excel. Com o FitPrime, faco tudo em 15 minutos e meus alunos adoram acompanhar a evolucao pelo celular."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">R</div>
+                        <div>
+                            <div class="testimonial-name">Rafael Costa</div>
+                            <div class="testimonial-role">Personal Trainer - SP</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"A gestao financeira mudou meu negocio. Agora sei exatamente quanto cada aluno me deve e quando cobrar. Reduzi a inadimplencia em 70%."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">A</div>
+                        <div>
+                            <div class="testimonial-name">Amanda Silva</div>
+                            <div class="testimonial-role">Personal Trainer - RJ</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"O portal do aluno e sensacional. Meus alunos registram o treino na hora e eu consigo ver se estao seguindo o plano. A retencao aumentou demais."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">M</div>
+                        <div>
+                            <div class="testimonial-name">Marcos Oliveira</div>
+                            <div class="testimonial-role">Personal Trainer - MG</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRECOS - DESEJO -->
+    <section class="pricing" id="precos">
+        <div class="container">
+            <div class="section-label">Investimento</div>
+            <h2 class="section-title">Planos que cabem no seu bolso</h2>
+            <p class="section-desc">Comece gratis e escale quando quiser. Sem surpresas, sem taxas escondidas.</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-name">Teste Gratis</div>
+                    <div class="pricing-price">
+                        <span class="pricing-currency">R$</span>
+                        <span class="pricing-value">0</span>
+                    </div>
+                    <div class="pricing-period">por 14 dias</div>
+                    <div class="pricing-savings">&nbsp;</div>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Ate 5 alunos</li>
+                        <li>Todos os recursos liberados</li>
+                        <li>Portal do aluno</li>
+                        <li>Sem cartao de credito</li>
+                        <li>Suporte por email</li>
+                    </ul>
+                    <a href="#" class="pricing-btn pricing-btn-secondary">Comecar Gratis</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-popular">MAIS POPULAR</div>
+                    <div class="pricing-name">Plano Mensal</div>
+                    <div class="pricing-price">
+                        <span class="pricing-currency">R$</span>
+                        <span class="pricing-value">47</span>
+                    </div>
+                    <div class="pricing-period">por mes</div>
+                    <div class="pricing-savings">&nbsp;</div>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Alunos ilimitados</li>
+                        <li>Todos os recursos</li>
+                        <li>Portal do aluno</li>
+                        <li>Inteligencia Artificial</li>
+                        <li>Gestao financeira</li>
+                        <li>Suporte prioritario</li>
+                    </ul>
+                    <a href="#" class="pricing-btn pricing-btn-primary">Assinar Agora</a>
+                    <p class="pricing-note">Cancele quando quiser</p>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-name">Plano Anual</div>
+                    <div class="pricing-price">
+                        <span class="pricing-currency">R$</span>
+                        <span class="pricing-value">469</span>
+                    </div>
+                    <div class="pricing-period">por ano ou 12x de R$ 39,08</div>
+                    <div class="pricing-savings">Sai por apenas R$ 39/mes &#8212; Economize R$ 95 por ano</div>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Alunos ilimitados</li>
+                        <li>Todos os recursos</li>
+                        <li>Portal do aluno</li>
+                        <li>Inteligencia Artificial</li>
+                        <li>Gestao financeira</li>
+                        <li>Suporte prioritario</li>
+                    </ul>
+                    <a href="#" class="pricing-btn pricing-btn-secondary">Assinar Anual</a>
+                    <p class="pricing-note">Melhor custo-beneficio</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GARANTIA -->
+    <section class="guarantee">
+        <div class="container">
+            <div class="guarantee-box">
+                <div class="guarantee-icon">&#128737;</div>
+                <h3>Garantia de 7 dias</h3>
+                <p>Se dentro de 7 dias apos a assinatura voce nao ficar satisfeito, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. O risco e todo nosso.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq">
+        <div class="container">
+            <div class="section-label">Duvidas frequentes</div>
+            <h2 class="section-title">Perguntas e Respostas</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">Preciso instalar algum aplicativo?</div>
+                    <div class="faq-answer">Nao. O FitPrime funciona 100% no navegador do celular, tablet ou computador. Basta acessar o link e pronto.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Quantos alunos posso cadastrar?</div>
+                    <div class="faq-answer">No plano gratuito, ate 5 alunos. Nos planos pagos (mensal e anual), alunos ilimitados sem custo adicional.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Meu aluno precisa pagar algo?</div>
+                    <div class="faq-answer">Nao. O acesso do aluno ao portal e totalmente gratuito. Apenas o personal trainer assina o plano.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Posso cancelar a qualquer momento?</div>
+                    <div class="faq-answer">Sim. Sem multa, sem fidelidade. Cancele quando quiser diretamente pelo painel.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Funciona para estudios e academias?</div>
+                    <div class="faq-answer">Sim! O FitPrime e ideal para personal trainers individuais, estudios e academias de qualquer porte.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Qual a diferenca entre o plano mensal e anual?</div>
+                    <div class="faq-answer">Os recursos sao exatamente os mesmos. No plano anual, voce economiza R$ 95 por ano, pagando o equivalente a R$ 39/mes.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL - ACAO -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Comece agora. E gratis por 14 dias.</h2>
+            <p>Junte-se a centenas de personal trainers que ja transformaram sua rotina com FitPrime.</p>
+            <a href="#" class="btn-primary">Criar Minha Conta Gratuita &#8594;</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 FitPrime. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <div class="floating-cta">
+        <a href="#precos" class="btn-primary">Teste Gratis 14 Dias &#8594;</a>
+    </div>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(q){
+            q.addEventListener('click',function(){
+                var item=q.parentElement;
+                document.querySelectorAll('.faq-item').forEach(function(i){
+                    if(i!==item)i.classList.remove('open');
+                });
+                item.classList.toggle('open');
+            });
+        });
+        document.addEventListener('keydown',function(e){
+            if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'||e.key==='J'))||(e.ctrlKey&&e.key==='U')){
+                e.preventDefault();return false;
+            }
+        });
+        document.querySelectorAll('a[href^="#"]').forEach(function(a){
+            a.addEventListener('click',function(e){
+                e.preventDefault();
+                var target=document.querySelector(a.getAttribute('href'));
+                if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+            });
+        });
+    </script>
+</body>
+</html>
