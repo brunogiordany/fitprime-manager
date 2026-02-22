@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+*,*::before,*::afte*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
 :root{
 --bg:#050a15;--bg2:#0a1020;--bg3:#0f1630;--bg4:#141d3a;
 --accent:#00e5a0;--accent2:#00c98a;--accent-dim:rgba(0,229,160,0.08);
@@ -280,7 +281,7 @@ body{padding-bottom:68px}
 <div class="hero-tag"><span class="pulse"></span> 14 dias gratis &middot; Sem cartao de credito</div>
 <h1>Seus alunos estao indo embora<br>e voce nem sabe <em>por que.</em></h1>
 <p class="hero-p">A verdade e dura: <strong>personal que nao mostra resultado perde aluno.</strong> FitPrime e o sistema que organiza seus treinos, mostra a evolucao e faz seu aluno querer ficar.</p>
-<a href="https://pay.hotmart.com/M104581936I?off=jous0sf9" target="_blank" class="btn-main">Comecar Meu Teste Gratuito &#8594;</a>
+<a href="#problema" class="btn-main" onclick="event.preventDefault();document.getElementById('problema').scrollIntoView({behavior:'smooth',block:'start'})">Descubra o que esta te fazendo perder alunos &#8595;</a>
 <p class="hero-note">Sem compromisso. Cancele quando quiser. Comece em 2 minutos.</p>
 </div></section>
 
@@ -295,7 +296,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- PAS: PROBLEM -->
-<section class="pas-problem"><div class="ctn">
+<section class="pas-problem" id="problema"><div class="ctn">
 <div class="stag red">O problema que voce finge nao ver</div>
 <h2 class="stitle">Enquanto voce monta treino no Excel,<br>seu concorrente ja automatizou tudo</h2>
 <p class="sdesc">Voce esta perdendo tempo, dinheiro e alunos. E o pior: ja se acostumou com isso.</p>
@@ -328,7 +329,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- PAS: AGITATION -->
-<section class="pas-agitate"><div class="ctn">
+<section class="pas-agitate" id="prejuizo"><div class="ctn">
 <div class="agitate-box">
 <p>Cada aluno que vai embora custa em media <strong>R$ 300 a R$ 500 por mes</strong> do seu faturamento. Em 6 meses, isso e <strong>R$ 3.000</strong> que voce deixou na mesa.</p>
 <p style="margin-top:14px;font-size:clamp(17px,2.2vw,22px);font-weight:600;line-height:1.6;color:var(--light)">Enquanto isso, o personal do lado usa um sistema profissional, mostra resultado no celular do aluno e <strong>cobra R$ 47/mes a mais que voce.</strong></p>
@@ -337,7 +338,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- COMPARATIVO: FitPrime vs Planilhas -->
-<section class="compare"><div class="ctn">
+<section class="compare" id="comparativo"><div class="ctn">
 <div class="stag red">Pare e compare</div>
 <h2 class="stitle">FitPrime vs Planilhas tradicionais</h2>
 <p class="sdesc">Veja por que personais que usam sistema profissional faturam mais e perdem menos alunos.</p>
@@ -408,7 +409,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- SOLUTION (INTEREST) -->
-<section class="solution"><div class="ctn">
+<section class="solution" id="solucao"><div class="ctn">
 <div class="stag green">A solucao</div>
 <h2 class="stitle">FitPrime faz em 15 minutos<br>o que voce leva 2 horas</h2>
 <p class="sdesc">Tudo que voce precisa pra gerenciar alunos, treinos e cobrancas em um so lugar.</p>
@@ -449,11 +450,11 @@ body{padding-bottom:68px}
 <!-- MID CTA -->
 <section class="mid-cta"><div class="ctn">
 <p>Ja imaginou como seria ter tudo isso funcionando pra voce?</p>
-<a href="#preco" class="btn-main">Quero Testar 14 Dias Gratis &#8594;</a>
+<a href="#como" class="btn-main" onclick="event.preventDefault();document.getElementById('como').scrollIntoView({behavior:'smooth',block:'start'})">Veja como funciona na pratica &#8595;</a>
 </div></section>
 
 <!-- HOW IT WORKS -->
-<section class="how"><div class="ctn">
+<section class="how" id="como"><div class="ctn">
 <div class="stag green">Simples demais</div>
 <h2 class="stitle">Comece em 2 minutos. Serio.</h2>
 <p class="sdesc">Sem instalacao, sem configuracao complicada. Se voce sabe usar WhatsApp, sabe usar FitPrime.</p>
@@ -466,7 +467,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- TESTIMONIALS (DESIRE) -->
-<section class="desire"><div class="ctn">
+<section class="desire" id="depoimentos"><div class="ctn">
 <div class="stag green">Quem usa, nao volta atras</div>
 <h2 class="stitle">Veja o que dizem os personais que ja usam</h2>
 <div class="test-grid">
@@ -510,7 +511,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- OBJECTION BREAKERS -->
-<section class="objections"><div class="ctn">
+<section class="objections" id="objecoes"><div class="ctn">
 <div class="stag green">Sem desculpas</div>
 <h2 class="stitle">Tudo que voce precisa saber antes de comecar</h2>
 <div class="obj-grid">
@@ -585,7 +586,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- GUARANTEE -->
-<section class="guarantee"><div class="ctn">
+<section class="guarantee" id="garantia"><div class="ctn">
 <div class="guar-box">
 <div class="icon">&#128737;</div>
 <h3>Garantia incondicional de 7 dias</h3>
@@ -594,7 +595,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- FAQ -->
-<section class="faq"><div class="ctn">
+<section class="faq" id="faq"><div class="ctn">
 <div class="stag green">Duvidas frequentes</div>
 <h2 class="stitle">Tudo que voce quer saber sobre o FitPrime</h2>
 <div class="faq-list">
@@ -612,7 +613,7 @@ body{padding-bottom:68px}
 </div></section>
 
 <!-- FINAL CTA -->
-<section class="final"><div class="ctn">
+<section class="final" id="final"><div class="ctn">
 <h2>Voce tem duas opcoes agora.</h2>
 <p>Continuar perdendo alunos e tempo com planilhas.<br>Ou comecar hoje, de graca, e ver a diferenca em 14 dias.</p>
 <a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero Comecar Agora &#8594;</a>
@@ -626,7 +627,7 @@ body{padding-bottom:68px}
 
 <!-- FLOATING CTA MOBILE -->
 <div class="float-cta">
-<a href="https://pay.hotmart.com/M104581936I?off=jous0sf9" target="_blank" class="btn-main">Testar Gratis 14 Dias &#8594;</a>
+<a href="#preco" class="btn-main" onclick="event.preventDefault();document.getElementById('preco').scrollIntoView({behavior:'smooth',block:'start'})">Ver planos e comecar gratis &#8595;</a>
 </div>
 
 <script>
