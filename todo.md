@@ -5349,3 +5349,14 @@
 ## Bug: UX quebrada na LP4903 (v5.25)
 - [x] Diagnosticar problemas de layout mobile/desktop
 - [x] Corrigir todos os problemas de UX identificados (minmax safe, footer padding, grid responsive)
+
+## Bug: Scroll horizontal LP4903 mobile (v5.26)
+- [x] Corrigir overflow-x que causa scroll lateral em mobile
+- [x] Testar em viewport real mobile
+
+## LP4904 - Ângulo Renda Extra (v5.26)
+- [x] Criar LP4904 com copy focada em ganhar mais dinheiro
+- [x] Adaptar todas as seções para ângulo financeiro/renda extra
+- [x] Mostrar cálculos de quanto o personal ganha a mais com FitPrime
+- [x] Mostrar quanto tempo o personal economiza (e pode monetizar)
+- [x] Configurar rota /lp4904 sem .html

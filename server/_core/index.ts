@@ -583,7 +583,7 @@ Formato de resposta:
 
   // Landing pages com slugs limpas (sem .html) para campanhas Meta Ads
   // Em dev: client/public/lpXX.html | Em prod: dist/public/lpXX.html (ou __dirname/public/lpXX.html)
-  const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902', 'lp4903'];
+  const lpSlugs = ['lp49', 'lp50', 'lp51', 'lp52', 'lp4902', 'lp4903', 'lp4904'];
   for (const slug of lpSlugs) {
     app.get(`/${slug}`, (req: any, res: any) => {
       // Tentar múltiplos caminhos para funcionar em dev e prod

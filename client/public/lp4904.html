@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FitPrime - Como Personais Estao Faturando R$ 5.000 a Mais Por Mes (Com 1 Ferramenta de R$ 47)</title>
+<meta name="description" content="Descubra como 472 personais aumentaram o faturamento em ate 462% usando um sistema de R$ 47/mes. Economize 52h/mes e ganhe mais com cada aluno.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+:root{
+--bg:#050a15;--bg2:#0a1020;--bg3:#0f1630;--bg4:#141d3a;
+--accent:#00e5a0;--accent2:#00c98a;--accent-dim:rgba(0,229,160,0.08);
+--accent-glow:rgba(0,229,160,0.12);--accent-border:rgba(0,229,160,0.2);
+--white:#f4f6f9;--gray:#7a8599;--light:#b8c2d4;
+--red:#ff4d6a;--red-dim:rgba(255,77,106,0.08);
+--border:rgba(255,255,255,0.05);
+--gold:#ffd700;--gold-dim:rgba(255,215,0,0.08);
+}
+body{
+font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+background:var(--bg);color:var(--white);line-height:1.65;
+-webkit-user-select:none;-moz-user-select:none;user-select:none;
+-webkit-touch-callout:none;overflow-x:hidden;max-width:100vw;
+}
+.ctn{max-width:1080px;margin:0 auto;padding:0 20px}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;
+background:rgba(5,10,21,0.9);backdrop-filter:blur(24px);
+border-bottom:1px solid var(--border);padding:14px 0}
+.nav-in{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-m{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+border-radius:9px;display:flex;align-items:center;justify-content:center;
+font-size:17px;font-weight:800;color:var(--bg)}
+.logo-t{font-size:20px;font-weight:700;color:var(--white)}
+.logo-t b{color:var(--accent)}
+.nav-btn{background:var(--accent);color:var(--bg);padding:10px 22px;border-radius:8px;
+border:none;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;text-decoration:none}
+.nav-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.urgency{background:linear-gradient(90deg,#ffd700,#ff8c00);color:var(--bg);
+text-align:center;padding:10px 16px;font-size:13px;font-weight:700;
+position:fixed;top:52px;left:0;right:0;z-index:99;letter-spacing:0.3px;overflow:hidden}
+.urgency span{text-decoration:underline}
+.hero{padding:140px 0 70px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+width:800px;height:800px;background:radial-gradient(circle,rgba(255,215,0,0.08) 0%,transparent 70%);
+pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;
+background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);
+padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600;color:var(--gold);margin-bottom:24px}
+.hero-tag .pulse{width:8px;height:8px;border-radius:50%;background:var(--gold);
+animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(28px,5.5vw,54px);font-weight:900;line-height:1.08;
+margin-bottom:20px;letter-spacing:-0.03em}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--gold),#ff8c00);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-p{font-size:clamp(15px,1.8vw,18px);color:var(--gray);
+max-width:560px;margin:0 auto 32px;line-height:1.7}
+.hero-p strong{color:var(--light)}
+.btn-main{display:inline-flex;align-items:center;gap:8px;
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+color:var(--bg);padding:17px 44px;border-radius:12px;border:none;
+font-weight:800;font-size:16px;cursor:pointer;transition:.3s;
+box-shadow:0 6px 30px rgba(0,229,160,0.25);text-decoration:none}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(0,229,160,0.35)}
+.hero-note{font-size:12px;color:var(--gray);margin-top:14px}
+.hero-legal{font-size:11px;color:var(--gray);margin-top:8px;opacity:0.7}
+.counter{padding:36px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden}
+.counter-g{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+.counter-i{text-align:center}
+.counter-n{font-size:28px;font-weight:800;color:var(--gold)}
+.counter-l{font-size:12px;color:var(--gray);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.stag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;
+text-align:center;margin-bottom:10px}
+.stag.red{color:var(--red)}
+.stag.green{color:var(--accent)}
+.stag.gold{color:var(--gold)}
+.stitle{font-size:clamp(26px,3.8vw,42px);font-weight:800;text-align:center;
+margin-bottom:14px;letter-spacing:-0.02em;line-height:1.15}
+.sdesc{text-align:center;color:var(--gray);max-width:520px;margin:0 auto 44px;font-size:15px}
+.scroll-cta{text-align:center;margin-top:32px}
+.scroll-cta .btn-main{font-size:14px;padding:14px 32px}
+.bigmech{padding:80px 0;background:var(--bg2);text-align:center;position:relative;overflow:hidden}
+.bigmech-reveal{max-width:700px;margin:0 auto}
+.bigmech-wrong{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15);
+border-radius:16px;padding:36px 28px;margin-bottom:24px}
+.bigmech-wrong h3{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:var(--red);margin-bottom:12px}
+.bigmech-wrong p{font-size:15px;color:var(--light);line-height:1.7}
+.bigmech-right{background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);
+border-radius:16px;padding:36px 28px}
+.bigmech-right h3{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:var(--gold);margin-bottom:12px}
+.bigmech-right p{font-size:15px;color:var(--light);line-height:1.7}
+.bigmech-arrow{font-size:36px;color:var(--gray);margin:8px 0}
+.pas-problem{padding:80px 0;background:var(--bg);overflow:hidden}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
+.pain-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
+position:relative;overflow:hidden}
+.pain-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red)}
+.pain-card .money{font-size:22px;font-weight:800;color:var(--red);margin-top:8px}
+.pain-card h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--white)}
+.pain-card p{font-size:14px;color:var(--gray);line-height:1.65}
+.pas-agitate{padding:60px 0;background:var(--bg2);text-align:center;overflow:hidden}
+.agitate-box{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15);
+border-radius:16px;padding:40px 28px;max-width:700px;margin:0 auto}
+.agitate-box p{font-size:clamp(17px,2.2vw,22px);font-weight:600;line-height:1.6;color:var(--light)}
+.agitate-box p strong{color:var(--red)}
+.agitate-box .small{font-size:14px;color:var(--gray);margin-top:16px;font-weight:400}
+.agitate-calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:16px;margin-top:24px}
+.agitate-calc-item{background:rgba(255,77,106,0.06);border:1px solid rgba(255,77,106,0.12);border-radius:12px;padding:20px;text-align:center}
+.agitate-calc-item .num{font-size:28px;font-weight:800;color:var(--red)}
+.agitate-calc-item .label{font-size:12px;color:var(--gray);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+.agitate-calc-item.green{background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.12)}
+.agitate-calc-item.green .num{color:var(--accent)}
+.roi-section{padding:80px 0;background:var(--bg);overflow:hidden}
+.roi-box{max-width:700px;margin:0 auto;background:var(--bg3);border:2px solid var(--gold);border-radius:20px;padding:40px 32px;text-align:center}
+.roi-box h3{font-size:clamp(22px,3vw,30px);font-weight:800;margin-bottom:20px;color:var(--gold)}
+.roi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:16px;margin-bottom:24px}
+.roi-item{padding:20px;border-radius:12px;text-align:center}
+.roi-item.loss{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15)}
+.roi-item.gain{background:var(--accent-dim);border:1px solid var(--accent-border)}
+.roi-item .val{font-size:28px;font-weight:800;margin-bottom:4px}
+.roi-item.loss .val{color:var(--red)}
+.roi-item.gain .val{color:var(--accent)}
+.roi-item .lbl{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}
+.roi-result{font-size:20px;font-weight:800;color:var(--gold);margin-top:16px}
+.roi-result span{font-size:32px}
+.bab{padding:80px 0;background:var(--bg2);overflow:hidden}
+.bab-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;max-width:800px;margin:0 auto;align-items:start}
+.bab-col{border-radius:16px;padding:32px 24px}
+.bab-before{background:var(--red-dim);border:1px solid rgba(255,77,106,0.15)}
+.bab-after{background:var(--accent-dim);border:1px solid var(--accent-border)}
+.bab-col h3{font-size:18px;font-weight:800;margin-bottom:18px;text-align:center}
+.bab-before h3{color:var(--red)}
+.bab-after h3{color:var(--accent)}
+.bab-col ul{list-style:none}
+.bab-col ul li{padding:10px 0;font-size:14px;color:var(--light);display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--border)}
+.bab-col ul li:last-child{border-bottom:none}
+.bab-before ul li::before{content:'\2717';color:var(--red);font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.bab-after ul li::before{content:'\2713';color:var(--accent);font-weight:700;font-size:14px;flex-shrink:0;margin-top:1px}
+.bab-bridge{display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--gray);padding-top:80px}
+.time-section{padding:80px 0;background:var(--bg);overflow:hidden}
+.time-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:20px;max-width:800px;margin:0 auto}
+.time-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center}
+.time-card .icon{font-size:32px;margin-bottom:12px}
+.time-card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.time-card .time{font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px}
+.time-card p{font-size:13px;color:var(--gray);line-height:1.6}
+.time-total{text-align:center;margin-top:32px;padding:28px;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:16px;max-width:800px;margin:32px auto 0}
+.time-total .big{font-size:clamp(28px,4vw,42px);font-weight:900;color:var(--accent)}
+.time-total p{font-size:15px;color:var(--light);margin-top:8px}
+.solution{padding:80px 0;background:var(--bg2);overflow:hidden}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
+.sol-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px;
+transition:.3s;position:relative;overflow:hidden}
+.sol-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent)}
+.sol-card:hover{border-color:var(--accent-border);transform:translateY(-3px)}
+.sol-icon{font-size:28px;margin-bottom:12px}
+.sol-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.sol-card p{font-size:14px;color:var(--gray);line-height:1.65}
+.sol-card .revenue{font-size:15px;font-weight:700;color:var(--accent);margin-top:10px}
+.story{padding:80px 0;background:var(--bg);overflow:hidden}
+.story-box{max-width:700px;margin:0 auto;position:relative}
+.story-timeline{border-left:3px solid var(--gold);padding-left:32px;margin-left:16px}
+.story-step{margin-bottom:36px;position:relative}
+.story-step:last-child{margin-bottom:0}
+.story-step::before{content:'';position:absolute;left:-41px;top:4px;width:16px;height:16px;
+border-radius:50%;background:var(--gold);border:3px solid var(--bg)}
+.story-step.crisis::before{background:var(--red)}
+.story-step h4{font-size:16px;font-weight:700;margin-bottom:6px}
+.story-step.crisis h4{color:var(--red)}
+.story-step.discovery h4{color:var(--gold)}
+.story-step.transform h4{color:var(--accent)}
+.story-step p{font-size:14px;color:var(--gray);line-height:1.7}
+.story-step p strong{color:var(--light)}
+.story-quote{background:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);
+border-radius:14px;padding:24px;margin-top:28px;text-align:center}
+.story-quote p{font-size:16px;font-weight:600;color:var(--light);font-style:italic}
+.story-quote .author{font-size:13px;color:var(--gold);margin-top:8px;font-style:normal}
+.desire{padding:80px 0;background:var(--bg2);overflow:hidden}
+.test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
+.test-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px}
+.test-stars{color:var(--gold);font-size:18px;margin-bottom:12px}
+.test-text{font-size:14px;color:var(--light);line-height:1.7;margin-bottom:16px;font-style:italic}
+.test-who{display:flex;align-items:center;gap:12px}
+.test-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+font-weight:700;font-size:16px;flex-shrink:0}
+.test-name{font-size:14px;font-weight:700}
+.test-role{font-size:12px;color:var(--gray)}
+.test-highlight{margin-top:12px;padding:8px 14px;background:var(--gold-dim);
+border:1px solid rgba(255,215,0,0.2);border-radius:8px;font-size:13px;
+font-weight:600;color:var(--gold)}
+.objections{padding:80px 0;background:var(--bg);overflow:hidden}
+.obj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px}
+.obj-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:24px;
+display:flex;gap:16px;align-items:flex-start}
+.obj-icon{font-size:32px;flex-shrink:0}
+.obj-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+.obj-card h4{font-size:16px;font-weight:700;margin-bottom:6px}
+.obj-card p{font-size:13px;color:var(--gray);line-height:1.6}
+.offer{padding:80px 0;background:var(--bg2);overflow:hidden}
+.offer-stack{max-width:700px;margin:0 auto}
+.offer-item{display:flex;justify-content:space-between;align-items:center;
+padding:20px 0;border-bottom:1px solid var(--border)}
+.offer-item .name{font-size:15px;font-weight:600}
+.offer-item .name span{display:block;font-size:12px;color:var(--gray);font-weight:400;margin-top:2px}
+.offer-item .val{font-size:16px;font-weight:700;color:var(--gold);white-space:nowrap}
+.offer-total{text-align:center;margin-top:32px;background:var(--bg3);border:1px solid var(--border);
+border-radius:16px;padding:32px}
+.offer-total .old-price{font-size:18px;color:var(--red);text-decoration:line-through;font-weight:600}
+.offer-total .new-price{font-size:clamp(28px,4vw,42px);font-weight:900;margin:8px 0}
+.offer-total .new-price strong{color:var(--accent)}
+.offer-total .savings{font-size:14px;color:var(--gold);font-weight:600}
+.pricing{padding:80px 0;background:var(--bg);overflow:hidden}
+.price-single{max-width:480px;margin:0 auto}
+.price-card{background:var(--bg3);border:2px solid var(--gold);border-radius:20px;
+padding:40px 32px;text-align:center;position:relative;overflow:hidden}
+.price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+background:linear-gradient(90deg,var(--gold),#ff8c00)}
+.price-pop{position:absolute;top:16px;right:-32px;background:var(--gold);color:var(--bg);
+font-size:11px;font-weight:800;padding:4px 40px;transform:rotate(45deg);text-transform:uppercase}
+.price-name{font-size:22px;font-weight:800;margin-bottom:8px}
+.price-val{margin:16px 0 4px}
+.price-cur{font-size:20px;font-weight:700;vertical-align:super}
+.price-num{font-size:64px;font-weight:900;color:var(--gold)}
+.price-per{font-size:14px;color:var(--gray);margin-bottom:20px}
+.price-div{height:1px;background:var(--border);margin:16px 0}
+.price-list{list-style:none;text-align:left;margin-bottom:28px}
+.price-list li{padding:10px 0;font-size:14px;color:var(--light);display:flex;align-items:center;gap:10px;
+border-bottom:1px solid var(--border)}
+.price-list li:last-child{border-bottom:none}
+.price-list li::before{content:'\2713';color:var(--accent);font-weight:700}
+.price-btn{display:block;padding:18px;border-radius:12px;font-weight:800;font-size:16px;
+text-align:center;text-decoration:none;transition:.3s;cursor:pointer;border:none;width:100%}
+.price-btn.fill{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);
+box-shadow:0 6px 30px rgba(0,229,160,0.25)}
+.price-btn.fill:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(0,229,160,0.35)}
+.price-note{font-size:12px;color:var(--gray);margin-top:12px}
+.price-legal{font-size:11px;color:var(--gray);margin-top:8px;opacity:0.7;line-height:1.5}
+.guarantee{padding:60px 0;background:var(--bg2);overflow:hidden}
+.guar-box{max-width:700px;margin:0 auto;text-align:center;
+background:var(--accent-dim);border:1px solid var(--accent-border);
+border-radius:20px;padding:48px 32px}
+.guar-box .icon{font-size:48px;margin-bottom:16px}
+.guar-box h3{font-size:clamp(22px,3vw,30px);font-weight:800;margin-bottom:14px}
+.guar-box p{font-size:15px;color:var(--light);line-height:1.7;margin-bottom:8px}
+.guar-box .legal{font-size:12px;color:var(--gray);margin-top:16px;line-height:1.6;font-style:italic;
+background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.1);border-radius:10px;padding:16px}
+.faq{padding:80px 0;background:var(--bg);overflow:hidden}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-i{border-bottom:1px solid var(--border)}
+.faq-q{padding:20px 0;font-size:15px;font-weight:600;cursor:pointer;display:flex;
+justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';font-size:22px;color:var(--accent);transition:.3s}
+.faq-i.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:.4s;font-size:14px;color:var(--gray);line-height:1.7}
+.faq-i.open .faq-a{max-height:300px;padding-bottom:20px}
+.final{padding:80px 0;background:var(--bg2);text-align:center;overflow:hidden}
+.final h2{font-size:clamp(26px,4vw,40px);font-weight:900;margin-bottom:16px;line-height:1.15}
+.final p{font-size:16px;color:var(--gray);margin-bottom:28px;line-height:1.7}
+.final .small{font-size:12px;color:var(--gray);margin-top:14px}
+.final .legal{font-size:11px;color:var(--gray);margin-top:8px;opacity:0.7}
+.footer{padding:28px 0 80px;text-align:center;border-top:1px solid var(--border)}
+.footer p{font-size:12px;color:var(--gray)}
+.float-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;
+background:rgba(5,10,21,0.95);backdrop-filter:blur(16px);
+padding:12px 16px;border-top:1px solid var(--accent-border)}
+.float-cta .btn-main{width:100%;justify-content:center;padding:15px;font-size:15px}
+
+@media(max-width:768px){
+.float-cta{display:block}
+.bab-grid{grid-template-columns:1fr;gap:16px}
+.bab-bridge{display:none}
+.counter-g{gap:16px}
+.counter-n{font-size:22px}
+.hero{padding:120px 0 50px}
+.pain-grid,.sol-grid,.test-grid,.obj-grid{grid-template-columns:1fr}
+.time-grid{grid-template-columns:repeat(2,1fr)}
+.roi-grid{grid-template-columns:1fr 1fr}
+.offer-item{flex-direction:column;gap:6px;align-items:flex-start}
+.offer-item .val{font-size:14px}
+.guar-box{padding:32px 20px}
+.story-timeline{padding-left:24px;margin-left:8px}
+.story-step::before{left:-33px;width:14px;height:14px}
+}
+@media(max-width:480px){
+.ctn{padding:0 16px}
+.hero{padding:110px 0 40px}
+.hero h1{font-size:24px}
+.hero-p{font-size:14px;margin-bottom:24px}
+.btn-main{padding:15px 28px;font-size:15px}
+.stitle{font-size:22px}
+.sdesc{font-size:13px}
+.stag{font-size:11px;letter-spacing:2px}
+.counter-g{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.counter-i{padding:8px 0}
+.counter-n{font-size:20px}
+.counter-l{font-size:10px}
+.nav-btn{padding:8px 14px;font-size:12px}
+.logo-t{font-size:17px}
+.logo-m{width:28px;height:28px;font-size:14px}
+.urgency{font-size:11px;padding:8px 12px;top:48px}
+.nav{padding:10px 0}
+.pain-card{padding:22px}
+.pain-card h3{font-size:15px}
+.pain-card p{font-size:13px}
+.pain-card .money{font-size:18px}
+.sol-card{padding:22px}
+.sol-card h3{font-size:15px}
+.sol-card p{font-size:13px}
+.sol-icon{font-size:24px;margin-bottom:8px}
+.test-card{padding:22px}
+.test-text{font-size:13px}
+.obj-card{padding:20px;flex-direction:column;gap:10px}
+.obj-icon{font-size:26px}
+.obj-card h4{font-size:15px}
+.obj-card p{font-size:12px}
+.time-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+.time-card{padding:20px}
+.time-card .time{font-size:20px}
+.time-card h3{font-size:14px}
+.time-card p{font-size:12px}
+.time-total .big{font-size:28px}
+.roi-box{padding:28px 20px}
+.roi-item .val{font-size:22px}
+.roi-result span{font-size:26px}
+.agitate-calc{grid-template-columns:1fr 1fr 1fr;gap:8px}
+.agitate-calc-item{padding:14px 8px}
+.agitate-calc-item .num{font-size:22px}
+.agitate-calc-item .label{font-size:10px}
+.agitate-box{padding:28px 20px}
+.agitate-box p{font-size:16px}
+.bigmech-wrong,.bigmech-right{padding:24px 18px}
+.bigmech-wrong h3,.bigmech-right h3{font-size:18px}
+.bigmech-wrong p,.bigmech-right p{font-size:14px}
+.offer-item .name{font-size:14px}
+.offer-item .val{font-size:14px}
+.offer-total{padding:24px 18px}
+.offer-total .old-price{font-size:16px}
+.offer-total .new-price{font-size:28px}
+.price-card{padding:28px 20px}
+.price-num{font-size:52px}
+.price-name{font-size:20px}
+.price-list li{font-size:13px;padding:8px 0}
+.price-btn{padding:16px;font-size:15px}
+.guar-box{padding:28px 16px}
+.guar-box h3{font-size:22px}
+.guar-box p{font-size:14px}
+.guar-box .legal{font-size:11px;padding:12px}
+.faq-q{font-size:14px;padding:16px 0}
+.faq-a{font-size:13px}
+.final h2{font-size:24px}
+.final p{font-size:14px}
+.float-cta{padding:10px 14px}
+.float-cta .btn-main{padding:14px;font-size:14px}
+.story-step h4{font-size:15px}
+.story-step p{font-size:13px}
+.story-quote p{font-size:14px}
+.scroll-cta .btn-main{font-size:13px;padding:12px 24px}
+.bab-col{padding:24px 18px}
+.bab-col h3{font-size:16px}
+.bab-col ul li{font-size:13px;padding:8px 0}
+}
+@media(max-width:360px){
+.ctn{padding:0 12px}
+.hero h1{font-size:22px}
+.stitle{font-size:20px}
+.counter-g{gap:8px}
+.counter-n{font-size:18px}
+.agitate-calc{grid-template-columns:1fr}
+.time-grid{grid-template-columns:1fr}
+.roi-grid{grid-template-columns:1fr}
+.nav-btn{padding:7px 12px;font-size:11px}
+.logo-t{font-size:15px}
+.price-num{font-size:44px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav"><div class="ctn nav-in">
+<a href="#" class="logo"><div class="logo-m">F</div><div class="logo-t">Fit<b>Prime</b></div></a>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="nav-btn">Quero faturar mais</a>
+</div></nav>
+
+<!-- URGENCY BAR -->
+<div class="urgency">472 personais ja aumentaram o faturamento &mdash; <span>vagas limitadas nesse preco</span></div>
+
+<!-- 1. HERO - RENDA EXTRA -->
+<section class="hero" id="topo"><div class="ctn">
+<div class="hero-tag"><span class="pulse"></span> Resultado comprovado por 472 personais</div>
+<h1>Como personais estao faturando<br><em>R$ 5.000 a mais por mes</em><br>com 1 ferramenta de R$ 47</h1>
+<p class="hero-p">Voce trabalha 10h por dia, ganha menos do que merece e ainda perde alunos. O problema nao e voce. E que <strong>voce esta trocando tempo por dinheiro sem alavanca.</strong></p>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero aumentar meu faturamento &#8594;</a>
+<p class="hero-note">R$ 1,56/dia &middot; ROI medio de 745% &middot; Garantia legal de 7 dias</p>
+<p class="hero-legal">Direito de arrependimento garantido pelo Art. 49 do CDC (Lei 8.078/90)</p>
+</div></section>
+
+<!-- 2. COUNTER BAR - FINANCEIRO -->
+<section class="counter"><div class="ctn">
+<div class="counter-g">
+<div class="counter-i"><div class="counter-n">+R$ 5.100</div><div class="counter-l">Aumento medio mensal</div></div>
+<div class="counter-i"><div class="counter-n">52h</div><div class="counter-l">Economizadas por mes</div></div>
+<div class="counter-i"><div class="counter-n">745%</div><div class="counter-l">ROI medio</div></div>
+<div class="counter-i"><div class="counter-n">462%</div><div class="counter-l">Crescimento em 6 meses</div></div>
+</div>
+</div></section>
+
+<!-- 3. BIG MECHANISM - RENDA -->
+<section class="bigmech" id="mecanismo"><div class="ctn">
+<div class="stag gold">A conta que nenhum personal faz</div>
+<h2 class="stitle">Voce nao ganha pouco porque cobra pouco.<br>Voce ganha pouco porque perde dinheiro sem perceber.</h2>
+<p class="sdesc">Tem personal ganhando R$ 15.000/mes com 20 alunos. E tem personal ganhando R$ 3.000 com 15. A diferenca nao e talento. E sistema.</p>
+<div class="bigmech-reveal">
+<div class="bigmech-wrong">
+<h3>O que voce acredita</h3>
+<p>"Pra ganhar mais, preciso de mais alunos." "O mercado ta saturado." "Personal nao ganha dinheiro de verdade." Voce se convenceu de que o teto e baixo. Que pra crescer precisa trabalhar mais horas. <strong>Voce esta errado.</strong></p>
+</div>
+<div class="bigmech-arrow">&#8595;</div>
+<div class="bigmech-right">
+<h3>A matematica real</h3>
+<p>Voce nao precisa de mais alunos. Precisa <strong>parar de perder os que tem</strong>, <strong>cobrar o que vale</strong> e <strong>recuperar as horas que joga fora</strong> com planilha, WhatsApp e cobranca manual. Um personal com sistema fatura 2x a 4x mais com a <strong>mesma quantidade de alunos.</strong></p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#perdas" class="btn-main" onclick="event.preventDefault();document.getElementById('perdas').scrollIntoView({behavior:'smooth',block:'start'})">Veja quanto voce esta perdendo &#8595;</a>
+</div>
+</div></section>
+
+<!-- 4. PAS - PROBLEM (PERDAS FINANCEIRAS) -->
+<section class="pas-problem" id="perdas"><div class="ctn">
+<div class="stag red">Dinheiro que voce perde todo mes</div>
+<h2 class="stitle">6 ralos abertos no seu negocio<br>que drenam seu faturamento</h2>
+<p class="sdesc">Cada um desses problemas custa dinheiro real. Vamos fazer a conta.</p>
+<div class="pain-grid">
+<div class="pain-card">
+<h3>Alunos que cancelam (e voce nao sabe por que)</h3>
+<p>A media do mercado e perder 5 alunos por ano. Cada aluno vale R$ 350/mes. Voce esta perdendo dinheiro que ja era seu.</p>
+<div class="money">-R$ 1.750/mes</div>
+</div>
+<div class="pain-card">
+<h3>Inadimplencia que voce finge nao ver</h3>
+<p>Media de 23% de inadimplencia entre personais sem sistema. Se voce fatura R$ 5.000, sao R$ 1.150 que voce trabalhou e nao recebeu.</p>
+<div class="money">-R$ 1.150/mes</div>
+</div>
+<div class="pain-card">
+<h3>2 horas por dia no Excel (que nao geram receita)</h3>
+<p>52 horas por mes montando treino em planilha. Se sua hora vale R$ 50, voce esta queimando R$ 2.600/mes em trabalho operacional que um sistema faz em minutos.</p>
+<div class="money">-R$ 2.600/mes</div>
+</div>
+<div class="pain-card">
+<h3>Voce cobra menos do que vale</h3>
+<p>Personal com planilha cobra R$ 150/hora. Personal com sistema profissional cobra R$ 200-250/hora. A diferenca? Percepcao de valor. Graficos, portal, tecnologia = justificativa pra cobrar mais.</p>
+<div class="money">-R$ 50/hora</div>
+</div>
+<div class="pain-card">
+<h3>Indicacoes que voce nao recebe</h3>
+<p>Aluno satisfeito indica 2-3 amigos por ano. Mas sem graficos de evolucao pra compartilhar, sem fotos antes/depois, seu aluno nao tem o que mostrar pros amigos.</p>
+<div class="money">-R$ 700/mes em indicacoes</div>
+</div>
+<div class="pain-card">
+<h3>Tempo no WhatsApp que voce nao cobra</h3>
+<p>"Prof, qual meu treino?" "Prof, posso trocar?" 47 mensagens por dia. 1h30 respondendo de graca. Esse tempo poderia ser 1 sessao a mais por dia.</p>
+<div class="money">-R$ 150/dia</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#conta" class="btn-main" onclick="event.preventDefault();document.getElementById('conta').scrollIntoView({behavior:'smooth',block:'start'})">Veja a conta total &#8595;</a>
+</div>
+</div></section>
+
+<!-- 5. PAS - AGITATION (CONTA TOTAL) -->
+<section class="pas-agitate" id="conta"><div class="ctn">
+<div class="agitate-box">
+<p>Somando tudo, voce esta <strong>deixando na mesa</strong> todo mes:</p>
+<div class="agitate-calc">
+<div class="agitate-calc-item">
+<div class="num">R$ 1.750</div>
+<div class="label">Alunos perdidos</div>
+</div>
+<div class="agitate-calc-item">
+<div class="num">R$ 1.150</div>
+<div class="label">Inadimplencia</div>
+</div>
+<div class="agitate-calc-item">
+<div class="num">R$ 2.600</div>
+<div class="label">Tempo desperdicado</div>
+</div>
+</div>
+<p class="small" style="margin-top:20px;font-size:18px;font-weight:700;color:var(--red)">Total: R$ 5.500/mes que voce perde sem perceber</p>
+<p class="small">Isso e <strong>R$ 66.000 por ano.</strong> Com esse dinheiro voce compraria um carro. Ou pagaria 116 anos de FitPrime.</p>
+</div>
+<p style="margin-top:24px;font-size:15px;color:var(--gray)">A boa noticia? <strong style="color:var(--gold)">Voce pode recuperar boa parte desse dinheiro com uma unica decisao de R$ 47/mes.</strong></p>
+<div class="scroll-cta">
+<a href="#roi" class="btn-main" onclick="event.preventDefault();document.getElementById('roi').scrollIntoView({behavior:'smooth',block:'start'})">Veja o retorno do investimento &#8595;</a>
+</div>
+</div></section>
+
+<!-- 6. ROI - RETORNO DO INVESTIMENTO -->
+<section class="roi-section" id="roi"><div class="ctn">
+<div class="stag gold">A conta que importa</div>
+<h2 class="stitle">Investe R$ 47. Recupera R$ 5.100.<br>No primeiro mes.</h2>
+<div class="roi-box">
+<h3>Seu ROI com FitPrime</h3>
+<div class="roi-grid">
+<div class="roi-item loss">
+<div class="val">R$ 47</div>
+<div class="lbl">Voce investe por mes</div>
+</div>
+<div class="roi-item gain">
+<div class="val">+R$ 1.750</div>
+<div class="lbl">Alunos retidos</div>
+</div>
+<div class="roi-item gain">
+<div class="val">+R$ 1.150</div>
+<div class="lbl">Inadimplencia recuperada</div>
+</div>
+<div class="roi-item gain">
+<div class="val">+R$ 2.200</div>
+<div class="lbl">Tempo monetizado</div>
+</div>
+</div>
+<div class="roi-result">Retorno liquido: <span>+R$ 5.053/mes</span></div>
+<p style="font-size:14px;color:var(--gray);margin-top:12px">ROI de 10.651% &mdash; Para cada R$ 1 investido, voce recupera R$ 108,51</p>
+</div>
+<div class="scroll-cta">
+<a href="#tempo" class="btn-main" onclick="event.preventDefault();document.getElementById('tempo').scrollIntoView({behavior:'smooth',block:'start'})">Veja quanto tempo voce ganha &#8595;</a>
+</div>
+</div></section>
+
+<!-- 7. ECONOMIA DE TEMPO -->
+<section class="time-section" id="tempo"><div class="ctn">
+<div class="stag green">Tempo e dinheiro. Literalmente.</div>
+<h2 class="stitle">52 horas por mes de volta.<br>O que voce faz com isso?</h2>
+<p class="sdesc">Cada hora economizada e uma hora que voce pode usar pra ganhar mais.</p>
+<div class="time-grid">
+<div class="time-card">
+<div class="icon">&#128221;</div>
+<div class="time">1h45/dia</div>
+<h3>Montagem de treinos</h3>
+<p>De 2h no Excel pra 15min com IA. Economia de 1h45 por dia.</p>
+</div>
+<div class="time-card">
+<div class="icon">&#128172;</div>
+<div class="time">1h30/dia</div>
+<h3>Respostas no WhatsApp</h3>
+<p>Portal do aluno responde por voce. De 47 msgs pra 5 por dia.</p>
+</div>
+<div class="time-card">
+<div class="icon">&#128176;</div>
+<div class="time">30min/dia</div>
+<h3>Cobrancas e controle</h3>
+<p>Automatico. Sem planilha, sem constrangimento, sem esquecimento.</p>
+</div>
+<div class="time-card">
+<div class="icon">&#128200;</div>
+<div class="time">15min/dia</div>
+<h3>Relatorios e evolucao</h3>
+<p>Dashboard pronto. Graficos automaticos. Zero trabalho manual.</p>
+</div>
+</div>
+<div class="time-total">
+<div class="big">52h/mes livres</div>
+<p>Se voce usar metade dessas horas pra atender mais alunos (a R$ 100/sessao), sao <strong style="color:var(--accent)">+R$ 2.600/mes</strong> no seu bolso. Se usar pra descansar, e a sua saude mental de volta.</p>
+</div>
+<div class="scroll-cta">
+<a href="#antesdepois" class="btn-main" onclick="event.preventDefault();document.getElementById('antesdepois').scrollIntoView({behavior:'smooth',block:'start'})">Veja o antes e depois financeiro &#8595;</a>
+</div>
+</div></section>
+
+<!-- 8. BAB - ANTES E DEPOIS FINANCEIRO -->
+<section class="bab" id="antesdepois"><div class="ctn">
+<div class="stag gold">Dois personais. Mesma cidade. Mesma experiencia.</div>
+<h2 class="stitle">Um fatura R$ 3.500/mes.<br>O outro fatura R$ 13.500/mes.</h2>
+<p class="sdesc">A unica diferenca: um tem sistema. O outro tem planilha.</p>
+<div class="bab-grid">
+<div class="bab-col bab-before">
+<h3>Sem sistema: R$ 3.500/mes</h3>
+<ul>
+<li>15 alunos (perde 3-5 por ano)</li>
+<li>Cobra R$ 150/hora (parece amador)</li>
+<li>23% de inadimplencia</li>
+<li>10h/dia trabalhando (4h operacional)</li>
+<li>Zero indicacoes organicas</li>
+<li>Pensa em voltar pra CLT</li>
+<li>Estressado, sem tempo, sem ferias</li>
+<li>Faturamento estagnado ha 2 anos</li>
+</ul>
+</div>
+<div class="bab-bridge">&#8594;</div>
+<div class="bab-col bab-after">
+<h3>Com FitPrime: R$ 13.500/mes</h3>
+<ul>
+<li>45 alunos (retencao de 97%)</li>
+<li>Cobra R$ 200-250/hora (profissional)</li>
+<li>7% de inadimplencia (cobranca automatica)</li>
+<li>6h/dia (zero trabalho operacional)</li>
+<li>8+ alunos novos por indicacao/trimestre</li>
+<li>Lista de espera</li>
+<li>Ferias, tempo livre, qualidade de vida</li>
+<li>Crescimento de 285% em 6 meses</li>
+</ul>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#solucao" class="btn-main" onclick="event.preventDefault();document.getElementById('solucao').scrollIntoView({behavior:'smooth',block:'start'})">Como o FitPrime faz isso? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 9. SOLUTION - COMO GANHA MAIS -->
+<section class="solution" id="solucao"><div class="ctn">
+<div class="stag green">6 fontes de receita extra</div>
+<h2 class="stitle">Cada funcionalidade coloca<br>dinheiro no seu bolso</h2>
+<p class="sdesc">Nao e sobre tecnologia. E sobre quanto voce ganha a mais com cada recurso.</p>
+<div class="sol-grid">
+<div class="sol-card">
+<div class="sol-icon">&#128200;</div>
+<h3>Graficos de evolucao = aluno que fica</h3>
+<p>Quando o aluno VE que esta evoluindo, ele nao cancela. Retencao sobe 40%. Cada aluno retido e R$ 350/mes que voce nao perde.</p>
+<div class="revenue">+R$ 1.750/mes (5 alunos retidos)</div>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128176;</div>
+<h3>Cobranca automatica = dinheiro que entra</h3>
+<p>Inadimplencia cai de 23% pra 7%. Se voce fatura R$ 5.000, sao R$ 800 a mais todo mes que antes voce perdia.</p>
+<div class="revenue">+R$ 800/mes (inadimplencia recuperada)</div>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#129302;</div>
+<h3>IA que monta treino = tempo pra atender mais</h3>
+<p>De 2h pra 15min por treino. Voce ganha 1h45/dia. Usa pra atender 1-2 alunos a mais. Ou pra viver.</p>
+<div class="revenue">+R$ 2.200/mes (tempo monetizado)</div>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128241;</div>
+<h3>Portal profissional = justificativa pra cobrar mais</h3>
+<p>Aluno acessa treino, evolucao e agenda no celular. Voce parece uma empresa, nao um freelancer. Justifica cobrar R$ 200+/hora.</p>
+<div class="revenue">+R$ 50/hora por aluno</div>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128247;</div>
+<h3>Fotos antes/depois = marketing gratuito</h3>
+<p>Aluno compartilha evolucao no Instagram. Amigos veem. Pedem indicacao. Voce ganha aluno novo sem gastar com anuncio.</p>
+<div class="revenue">+2 a 3 alunos/mes por indicacao</div>
+</div>
+<div class="sol-card">
+<div class="sol-icon">&#128202;</div>
+<h3>Dashboard financeiro = decisoes que geram lucro</h3>
+<p>MRR, inadimplencia, retencao. Voce finalmente sabe onde esta perdendo e onde pode ganhar mais. Dados = decisoes melhores = mais dinheiro.</p>
+<div class="revenue">Visibilidade total do seu negocio</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#historia" class="btn-main" onclick="event.preventDefault();document.getElementById('historia').scrollIntoView({behavior:'smooth',block:'start'})">Veja quem ja fez isso funcionar &#8595;</a>
+</div>
+</div></section>
+
+<!-- 10. STORYTELLING - JORNADA FINANCEIRA -->
+<section class="story" id="historia"><div class="ctn">
+<div class="stag gold">De R$ 2.400 pra R$ 13.500 em 5 meses</div>
+<h2 class="stitle">A historia do Marcos:<br>de quase voltar pra CLT a lista de espera</h2>
+<div class="story-box">
+<div class="story-timeline">
+<div class="story-step crisis">
+<h4>Janeiro: faturamento de R$ 2.400/mes</h4>
+<p>Marcos, 29 anos, personal em BH. 8 alunos. Montava treino no Excel, cobrava por WhatsApp. Perdia 2-3 alunos todo mes. Aluguel do estudio: R$ 1.800. <strong>Sobrava R$ 600. Pensava em voltar pra CLT todo dia.</strong></p>
+</div>
+<div class="story-step crisis">
+<h4>O dia que ele fez a conta</h4>
+<p>Sentou e calculou: <strong>perdia R$ 1.050/mes em alunos que cancelavam</strong>, R$ 575/mes em inadimplencia e R$ 2.600/mes em tempo no Excel. Total: R$ 4.225/mes jogados fora. <strong>"Eu trabalhava 10h por dia pra ganhar R$ 600 de lucro."</strong></p>
+</div>
+<div class="story-step discovery">
+<h4>A decisao de R$ 47 que mudou tudo</h4>
+<p>Assinou o FitPrime. Em 10 minutos, cadastrou 3 alunos. Em 1 hora, montou os treinos da semana inteira. <strong>"Fiz em 1 hora o que levava 3 dias."</strong> Na primeira semana, 2 alunos mandaram mensagem impressionados com os graficos de evolucao.</p>
+</div>
+<div class="story-step transform">
+<h4>Mes 1: zero cancelamentos + R$ 800 recuperados</h4>
+<p>Nenhum aluno cancelou (antes perdia 2-3/mes). Cobranca automatica recuperou R$ 800 de inadimplencia. <strong>Faturamento: R$ 3.200 (ja +33%).</strong></p>
+</div>
+<div class="story-step transform">
+<h4>Mes 5: R$ 13.500/mes e lista de espera</h4>
+<p>Alunos indicavam amigos por causa dos graficos. Aumentou o valor da hora de R$ 150 pra R$ 200. <strong>De 8 pra 45 alunos. Faturamento: R$ 13.500/mes. Crescimento de 462%.</strong> Hoje recusa aluno.</p>
+</div>
+</div>
+<div class="story-quote">
+<p>"Eu investia R$ 47/mes e ganhava R$ 11.100 a mais. O ROI e absurdo. A decisao mais barata e mais lucrativa que ja tomei na vida."</p>
+<div class="author">Marcos Oliveira &middot; Personal Trainer &middot; BH/MG &middot; 45 alunos &middot; R$ 13.500/mes</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#depoimentos" class="btn-main" onclick="event.preventDefault();document.getElementById('depoimentos').scrollIntoView({behavior:'smooth',block:'start'})">Veja mais historias de sucesso &#8595;</a>
+</div>
+</div></section>
+
+<!-- 11. PROVA MASSIVA - FOCO EM DINHEIRO -->
+<section class="desire" id="depoimentos"><div class="ctn">
+<div class="stag gold">Resultados financeiros reais</div>
+<h2 class="stitle">Quanto eles ganhavam antes.<br>Quanto ganham agora.</h2>
+<div class="test-grid">
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Minha inadimplencia era de 23%. Caiu pra 7% no primeiro mes. So com a cobranca automatica eu recuperei R$ 2.100 que eu estava perdendo todo mes."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,#ff6b9d,#c44dff);color:white">A</div><div><div class="test-name">Amanda Silva</div><div class="test-role">RJ &middot; 28 alunos</div></div></div>
+<div class="test-highlight">+R$ 2.100/mes recuperados</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"A IA cria treino em 30 segundos. Eu levava 1 hora por aluno. Agora atendo 50 alunos e ainda sobra tempo. Antes eu mal dava conta de 25. Dobrei o faturamento."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,#4dabf7,#3b5bdb);color:white">L</div><div><div class="test-name">Lucas Mendes</div><div class="test-role">BA &middot; 50 alunos</div></div></div>
+<div class="test-highlight">De 25 pra 50 alunos = faturamento 2x</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Aumentei meu valor de R$ 150 pra R$ 200 a hora. Ninguem reclamou. O portal profissional justifica. Meus alunos acham que sou uma empresa, nao um freelancer."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,#f06595,#e64980);color:white">F</div><div><div class="test-name">Fernanda Rocha</div><div class="test-role">SC &middot; 18 alunos</div></div></div>
+<div class="test-highlight">+33% no valor da hora</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Ganhei 8 alunos novos por indicacao em 3 meses. Meus alunos compartilham os graficos no Instagram. Marketing gratuito. Zero gasto com anuncio."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:var(--bg)">C</div><div><div class="test-name">Camila Ferreira</div><div class="test-role">PR &middot; 22 alunos</div></div></div>
+<div class="test-highlight">8 alunos novos = +R$ 2.800/mes</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Eu faturava R$ 4.500 e trabalhava 12h por dia. Hoje faturo R$ 9.200 e trabalho 7h. O FitPrime nao so aumentou meu faturamento, me devolveu minha vida."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg)">R</div><div><div class="test-name">Rafael Costa</div><div class="test-role">SP &middot; 32 alunos</div></div></div>
+<div class="test-highlight">De R$ 4.500 pra R$ 9.200/mes (+104%)</div>
+</div>
+<div class="test-card">
+<div class="test-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+<p class="test-text">"Meu aluno de 8 meses ia cancelar. Mostrei o grafico de evolucao: +12kg no supino, -4% de BF. Ele ficou, indicou 2 amigos e aumentou o plano. R$ 1.050 salvos numa conversa."</p>
+<div class="test-who"><div class="test-av" style="background:linear-gradient(135deg,var(--gold),#ff8c00);color:var(--bg)">M</div><div><div class="test-name">Marcos Oliveira</div><div class="test-role">MG &middot; 45 alunos</div></div></div>
+<div class="test-highlight">R$ 1.050 salvos em 1 conversa</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#objecoes" class="btn-main" onclick="event.preventDefault();document.getElementById('objecoes').scrollIntoView({behavior:'smooth',block:'start'})">Ainda tem duvida? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 12. 5 OBJECOES - FOCO FINANCEIRO -->
+<section class="objections" id="objecoes"><div class="ctn">
+<div class="stag green">Sem desculpas</div>
+<h2 class="stitle">As 6 desculpas que te impedem<br>de ganhar mais</h2>
+<div class="obj-grid">
+<div class="obj-card">
+<div class="obj-icon">&#128176;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"R$ 47 e caro"</div>
+<h4>Caro e perder R$ 5.500/mes sem perceber</h4>
+<p>R$ 1,56 por dia. Menos que um cafe. Um unico aluno retido paga o sistema por 7 meses. Se o ROI nao for positivo em 30 dias, peca o dinheiro de volta.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#9201;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"Nao tenho tempo"</div>
+<h4>Voce nao tem tempo PORQUE nao tem sistema</h4>
+<p>Voce gasta 4h/dia em trabalho operacional. FitPrime elimina isso. Voce GANHA 52h/mes. O tempo que voce diz nao ter e exatamente o que o sistema te devolve.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128100;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"Tenho poucos alunos"</div>
+<h4>Justamente por isso voce precisa</h4>
+<p>Se voce tem 5 alunos e perde 1, perdeu 20% do faturamento. O sistema te ajuda a reter os que tem, atrair novos por indicacao e cobrar o que vale.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128187;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"Nao entendo de tecnologia"</div>
+<h4>Se sabe usar WhatsApp, sabe usar FitPrime</h4>
+<p>Curva de aprendizado: 10 minutos. Interface mais simples que Instagram. Sem manual, sem curso. Se nao conseguir, devolvemos seu dinheiro em 7 dias.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#128269;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"Ja tentei outros e nao gostei"</div>
+<h4>FitPrime foi feito POR personais</h4>
+<p>Nao e app generico de academia. E o sistema que resolve os 6 ralos financeiros que voce leu acima. 472 personais usam. 97,3% de satisfacao.</p>
+</div>
+</div>
+<div class="obj-card">
+<div class="obj-icon">&#129300;</div>
+<div>
+<div class="obj-label" style="color:var(--gold)">"Vou pensar"</div>
+<h4>Cada dia que voce pensa, perde R$ 183</h4>
+<p>R$ 5.500/mes dividido por 30 dias = R$ 183/dia que voce esta perdendo. Em 7 dias "pensando", sao R$ 1.281 jogados fora. E voce tem 7 dias de garantia legal pra testar sem risco.</p>
+</div>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#oferta" class="btn-main" onclick="event.preventDefault();document.getElementById('oferta').scrollIntoView({behavior:'smooth',block:'start'})">Veja tudo que voce recebe &#8595;</a>
+</div>
+</div></section>
+
+<!-- 13. OFERTA IRRECUSAVEL -->
+<section class="offer" id="oferta"><div class="ctn">
+<div class="stag gold">O investimento mais lucrativo da sua carreira</div>
+<h2 class="stitle">Tudo isso por R$ 1,56 por dia.</h2>
+<p class="sdesc">Veja o valor real de cada funcionalidade.</p>
+<div class="offer-stack">
+<div class="offer-item"><div class="name">Sistema de retencao com graficos de evolucao<span>Retencao de 40% a mais = R$ 1.750/mes salvos</span></div><div class="val">R$ 97/mes</div></div>
+<div class="offer-item"><div class="name">Cobranca automatica com reducao de inadimplencia<span>De 23% pra 7% = R$ 800+/mes recuperados</span></div><div class="val">R$ 47/mes</div></div>
+<div class="offer-item"><div class="name">IA que cria treinos em 30 segundos<span>Economia de 52h/mes = R$ 2.600 em tempo</span></div><div class="val">R$ 67/mes</div></div>
+<div class="offer-item"><div class="name">Portal profissional do aluno<span>Justifica cobrar R$ 50+/hora a mais</span></div><div class="val">R$ 47/mes</div></div>
+<div class="offer-item"><div class="name">Fotos de evolucao + marketing organico<span>2-3 alunos novos/mes por indicacao</span></div><div class="val">R$ 27/mes</div></div>
+<div class="offer-item"><div class="name">Dashboard financeiro + automacoes WhatsApp<span>Controle total + lembretes automaticos</span></div><div class="val">R$ 64/mes</div></div>
+</div>
+<div class="offer-total">
+<div class="old-price">Valor real: R$ 349/mes</div>
+<div class="new-price">Voce investe <strong>R$ 47</strong>/mes</div>
+<div class="savings">E recupera em media R$ 5.100/mes (ROI de 10.651%)</div>
+</div>
+<div class="scroll-cta">
+<a href="#preco" class="btn-main" onclick="event.preventDefault();document.getElementById('preco').scrollIntoView({behavior:'smooth',block:'start'})">Quero comecar a ganhar mais &#8595;</a>
+</div>
+</div></section>
+
+<!-- 14. PRICING -->
+<section class="pricing" id="preco"><div class="ctn">
+<div class="stag gold">Investimento</div>
+<h2 class="stitle">O investimento mais barato<br>com o maior retorno da sua carreira</h2>
+<div class="price-single">
+<div class="price-card">
+<div class="price-pop">ROI de 10.651%</div>
+<div class="price-name">Plano Profissional</div>
+<div class="price-val"><span class="price-cur">R$</span><span class="price-num">47</span></div>
+<div class="price-per">por mes &middot; alunos ilimitados</div>
+<div class="price-div"></div>
+<ul class="price-list">
+<li>Alunos ilimitados (sem custo extra)</li>
+<li>Graficos de evolucao (retencao +40%)</li>
+<li>Cobranca automatica (inadimplencia -68%)</li>
+<li>IA pra criar treinos (economia de 52h/mes)</li>
+<li>Portal profissional do aluno</li>
+<li>Fotos antes/depois compartilhaveis</li>
+<li>Dashboard financeiro completo</li>
+<li>Automacoes WhatsApp</li>
+<li>Garantia legal de 7 dias (CDC Art. 49)</li>
+</ul>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="price-btn fill">Quero Aumentar Meu Faturamento &#8594;</a>
+<p class="price-note">Cancele quando quiser &middot; Sem fidelidade &middot; Sem multa</p>
+<p class="price-legal">Garantia de reembolso integral em ate 7 dias conforme Art. 49 do CDC (Lei 8.078/90). Pagamento seguro via Hotmart.</p>
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#garantia" class="btn-main" onclick="event.preventDefault();document.getElementById('garantia').scrollIntoView({behavior:'smooth',block:'start'})">E se nao funcionar? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 15. GARANTIA CDC -->
+<section class="guarantee" id="garantia"><div class="ctn">
+<div class="guar-box">
+<div class="icon">&#9878;</div>
+<h3>7 dias pra testar. Se o ROI nao for positivo,<br>voce recebe 100% de volta. E lei.</h3>
+<p>Use o FitPrime por 7 dias. Cadastre seus alunos. Monte os treinos. Ative a cobranca automatica. Se voce nao perceber que esta ganhando mais, peca o reembolso. Voce recebe 100% de volta. Sem perguntas.</p>
+<p>Isso nao e uma "politica da empresa". E um <strong>direito seu garantido por lei.</strong></p>
+<div class="legal">
+<strong>Art. 49 do Codigo de Defesa do Consumidor (Lei 8.078/90):</strong><br>
+"O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou servico, sempre que a contratacao de fornecimento de produtos e servicos ocorrer fora do estabelecimento comercial."<br><br>
+<strong>Paragrafo unico:</strong> "Se o consumidor exercitar o direito de arrependimento previsto neste artigo, os valores eventualmente pagos, a qualquer titulo, durante o prazo de reflexao, serao devolvidos, de imediato, monetariamente atualizados."
+</div>
+</div>
+<div class="scroll-cta">
+<a href="#faq" class="btn-main" style="margin-top:20px" onclick="event.preventDefault();document.getElementById('faq').scrollIntoView({behavior:'smooth',block:'start'})">Ainda tem duvidas? &#8595;</a>
+</div>
+</div></section>
+
+<!-- 16. FAQ -->
+<section class="faq" id="faq"><div class="ctn">
+<div class="stag green">Duvidas frequentes</div>
+<h2 class="stitle">Tudo que voce quer saber antes de investir</h2>
+<div class="faq-list">
+<div class="faq-i"><div class="faq-q">Quanto tempo leva pra ver retorno financeiro?</div><div class="faq-a">A maioria dos personais ve retorno no primeiro mes. A cobranca automatica sozinha ja recupera dinheiro de inadimplencia na primeira semana. A retencao de alunos melhora em 30 dias.</div></div>
+<div class="faq-i"><div class="faq-q">Funciona pra quem tem poucos alunos?</div><div class="faq-a">Sim. Se voce tem 5 alunos, perder 1 e perder 20% do faturamento. O sistema te ajuda a reter todos e atrair novos por indicacao. Funciona de 1 a 200 alunos.</div></div>
+<div class="faq-i"><div class="faq-q">Quantos alunos posso ter?</div><div class="faq-a">Ilimitados. Nao cobramos por aluno adicional. Pode ter 5 ou 200, o preco e o mesmo: R$ 47/mes. Quanto mais alunos, maior o ROI.</div></div>
+<div class="faq-i"><div class="faq-q">Meu aluno precisa pagar algo?</div><div class="faq-a">Nao. O acesso do aluno ao portal e 100% gratuito. Apenas o personal assina. Seus alunos acessam treinos, evolucao e agenda sem custo.</div></div>
+<div class="faq-i"><div class="faq-q">Posso cancelar a qualquer momento?</div><div class="faq-a">Sim. Sem multa, sem fidelidade. Nos primeiros 7 dias, reembolso integral garantido por lei (CDC Art. 49).</div></div>
+<div class="faq-i"><div class="faq-q">Preciso instalar algum aplicativo?</div><div class="faq-a">Nao. FitPrime funciona 100% no navegador. Celular, tablet ou computador. Sem download, sem instalacao.</div></div>
+<div class="faq-i"><div class="faq-q">Como funciona a IA pra criar treinos?</div><div class="faq-a">Informe objetivo, nivel e equipamentos. A IA gera um treino completo em 30 segundos. Voce revisa, ajusta e envia. Economia de horas por semana.</div></div>
+<div class="faq-i"><div class="faq-q">O sistema envia mensagens automaticas pelo WhatsApp?</div><div class="faq-a">Sim. Lembretes de treino, lembretes de pagamento, boas-vindas e aniversario. Tudo automatico. Menos mensagens pra voce responder.</div></div>
+<div class="faq-i"><div class="faq-q">E se eu nao gostar?</div><div class="faq-a">7 dias de garantia legal (CDC Art. 49). Peca o reembolso e receba 100% de volta. Sem perguntas. E lei.</div></div>
+<div class="faq-i"><div class="faq-q">Qual a diferenca pro Excel/planilha?</div><div class="faq-a">Excel te custa R$ 5.500/mes em tempo perdido, alunos que cancelam e inadimplencia. FitPrime custa R$ 47/mes e te devolve esse dinheiro. A "economia" do Excel e a coisa mais cara que voce faz.</div></div>
+</div>
+<div class="scroll-cta">
+<a href="#final" class="btn-main" onclick="event.preventDefault();document.getElementById('final').scrollIntoView({behavior:'smooth',block:'start'})">Chegou a hora de decidir &#8595;</a>
+</div>
+</div></section>
+
+<!-- 17. FINAL CTA -->
+<section class="final" id="final"><div class="ctn">
+<h2>Voce pode continuar ganhando R$ 3.500/mes.<br>Ou pode decidir ganhar R$ 13.500.</h2>
+<p>A diferenca entre os dois e uma decisao de R$ 47/mes.<br>Nao e sobre tecnologia. E sobre quanto voce quer ganhar.</p>
+<p style="color:var(--light);font-size:15px;margin-bottom:28px">Se o retorno nao for positivo em 7 dias, voce pede o dinheiro de volta. E lei.<br>Se for positivo (e vai ser), voce vai se perguntar por que nao assinou antes.</p>
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero Aumentar Meu Faturamento &#8594;</a>
+<p class="small">R$ 1,56/dia &middot; ROI medio de 745% &middot; Alunos ilimitados &middot; Cancele quando quiser</p>
+<p class="legal">Garantia de reembolso em 7 dias &mdash; Art. 49 do CDC (Lei 8.078/90)</p>
+</div></section>
+
+<!-- FOOTER -->
+<footer class="footer"><div class="ctn">
+<p>&copy; 2025 FitPrime. Todos os direitos reservados.</p>
+<p style="font-size:11px;color:var(--gray);margin-top:8px;opacity:0.6">Este site nao faz parte do website do Facebook ou do Facebook Inc. Este site nao e endossado pelo Facebook de nenhuma forma.
+ FACEBOOK e uma marca registrada da FACEBOOK, Inc.</p>
+</div></footer>
+
+<!-- 18. FLOATING CTA MOBILE -->
+<div class="float-cta">
+<a href="https://pay.hotmart.com/M104581936I?off=krpg79bk" target="_blank" class="btn-main">Quero faturar mais &#8594;</a>
+</div>
+
+<script>
+document.querySelectorAll('.faq-q').forEach(function(q){
+q.addEventListener('click',function(){
+var i=q.parentElement;
+document.querySelectorAll('.faq-i').forEach(function(x){if(x!==i)x.classList.remove('open')});
+i.classList.toggle('open');
+});
+});
+document.addEventListener('keydown',function(e){
+if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='C'||e.key==='J'))||(e.ctrlKey&&e.key==='U')){
+e.preventDefault();return false;}
+});
+document.addEventListener('contextmenu',function(e){e.preventDefault()});
+</script>
+</body>
+</html>
