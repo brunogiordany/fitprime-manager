@@ -5360,3 +5360,22 @@
 - [x] Mostrar cálculos de quanto o personal ganha a mais com FitPrime
 - [x] Mostrar quanto tempo o personal economiza (e pode monetizar)
 - [x] Configurar rota /lp4904 sem .html
+
+## LP4904 - Correções de Copy e Botão (v5.27)
+- [x] Trocar botão do hero para scroll suave (não link externo)
+- [x] Reescrever seção "A matemática real" com copy nova (estrutura > quantidade)
+- [x] Reescrever seção "Você cobra menos do que vale" com ângulo de percepção de valor
+
+## LP4904 - Ajustes Estratégicos de Copy (v5.28)
+- [ ] Urgency bar: reescrever com foco em renda extra
+- [ ] Hero headline: reposicionar para "faturando mais sem trabalhar 10h"
+- [ ] Hero subheadline: reescrever com foco em tempo + mensagens + ganhar mais
+- [ ] Big Mechanism headline: remover "cobra pouco", focar em "deixando dinheiro na mesa"
+- [ ] Big Mechanism subdesc: trocar números fixos por "duplicando faturamento"
+- [ ] Seção "A matemática real": reescrever com foco em renda extra sem dobrar carga
+- [ ] Pain card "Voce cobra menos": já corrigido para percepção de valor
+- [ ] Depoimentos: adicionar foco em renda extra (Amanda, tempo → planos online)
+- [ ] Objeções: adicionar "não sei vender online" e "não tenho dinheiro pra investir"
+- [ ] CTAs: trocar "Quero aumentar meu faturamento" para "Quero ganhar mais agora"
+- [ ] CTA flutuante: trocar texto
+- [ ] Garantia: reescrever com gancho de renda extra
