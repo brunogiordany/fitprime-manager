@@ -5367,15 +5367,15 @@
 - [x] Reescrever seção "Você cobra menos do que vale" com ângulo de percepção de valor
 
 ## LP4904 - Ajustes Estratégicos de Copy (v5.28)
-- [ ] Urgency bar: reescrever com foco em renda extra
-- [ ] Hero headline: reposicionar para "faturando mais sem trabalhar 10h"
-- [ ] Hero subheadline: reescrever com foco em tempo + mensagens + ganhar mais
-- [ ] Big Mechanism headline: remover "cobra pouco", focar em "deixando dinheiro na mesa"
-- [ ] Big Mechanism subdesc: trocar números fixos por "duplicando faturamento"
-- [ ] Seção "A matemática real": reescrever com foco em renda extra sem dobrar carga
-- [ ] Pain card "Voce cobra menos": já corrigido para percepção de valor
-- [ ] Depoimentos: adicionar foco em renda extra (Amanda, tempo → planos online)
-- [ ] Objeções: adicionar "não sei vender online" e "não tenho dinheiro pra investir"
-- [ ] CTAs: trocar "Quero aumentar meu faturamento" para "Quero ganhar mais agora"
-- [ ] CTA flutuante: trocar texto
-- [ ] Garantia: reescrever com gancho de renda extra
+- [x] Urgency bar: reescrever com foco em renda extra
+- [x] Hero headline: reposicionar para "faturando mais sem trabalhar 10h"
+- [x] Hero subheadline: reescrever com foco em tempo + mensagens + ganhar mais
+- [x] Big Mechanism headline: remover "cobra pouco", focar em "deixando dinheiro na mesa"
+- [x] Big Mechanism subdesc: trocar números fixos por "duplicando faturamento"
+- [x] Seção "A matemática real": reescrever com foco em renda extra sem dobrar carga
+- [x] Pain card "Voce cobra menos": já corrigido para percepção de valor
+- [x] Depoimentos: adicionar foco em renda extra (Amanda, tempo → planos online)
+- [x] Objeções: adicionar "não sei vender online" e "não tenho dinheiro pra investir"
+- [x] CTAs: trocar "Quero aumentar meu faturamento" para "Quero ganhar mais agora"
+- [x] CTA flutuante: trocar texto
+- [x] Garantia: reescrever com gancho de renda extra
