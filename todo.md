@@ -5300,3 +5300,9 @@
 - [x] Adicionar mais depoimentos para aumentar prova social e confiança (6 depoimentos com métricas)
 - [x] Criar seção comparativa FitPrime vs Planilhas de treino tradicionais (tabela 10 itens)
 - [x] Publicar como /lp50 (versionamento)
+
+## HOTMART - Troca de Links e Integração (v5.17)
+- [x] Trocar link de checkout Cakto para Hotmart na LP49 (trial e pagamento direto)
+- [x] Trocar link de checkout na LP50
+- [ ] Trocar links no restante do sistema (integração Cakto existente - manter por enquanto)
+- [ ] Preparar integração webhook Hotmart para ativação automática
