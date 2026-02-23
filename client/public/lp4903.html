@@ -998,30 +998,34 @@ document.addEventListener('contextmenu',function(e){e.preventDefault()});
     fbq('track','ViewContent',{content_name:'LP4903 Gestao',content_category:'landing_page',value:47.00,currency:'BRL'},{eventID:vcId});
     sendCAPI('ViewContent',vcId,{content_name:'LP4903 Gestao',content_category:'landing_page',value:47.00,currency:'BRL'});
   },10000);
-  var leadFired=false;
-  window.addEventListener('scroll',function(){
-    if(leadFired)return;
-    var scrollPct=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;
-    if(scrollPct>=50){
-      leadFired=true;var leadId=genEventId();
-      fbq('track','Lead',{content_name:'LP4903 Scroll 50%',content_category:'engagement',value:47.00,currency:'BRL'},{eventID:leadId});
-      sendCAPI('Lead',leadId,{content_name:'LP4903 Scroll 50%',content_category:'engagement',value:47.00,currency:'BRL'});
-    }
-  });
+  // ClickCheckout - mapeia TODOS os cliques em botoes que levam ao checkout Hotmart
+  var checkoutClicks=0;
   document.addEventListener('click',function(e){
     var link=e.target.closest('a[href*="hotmart.com"]');
     if(link){
-      var icId=genEventId();
-      fbq('track','InitiateCheckout',{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],num_items:1},{eventID:icId});
-      sendCAPI('InitiateCheckout',icId,{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],num_items:1});
+      checkoutClicks++;
+      var clickId=genEventId();
+      fbq('trackCustom','ClickCheckout',{
+        content_name:'FitPrime Profissional',
+        value:47.00,
+        currency:'BRL',
+        content_ids:['fitprime_pro'],
+        content_category:'checkout_click',
+        click_number:checkoutClicks,
+        button_text:e.target.textContent.trim().substring(0,50),
+        page_scroll_percent:Math.round((window.scrollY+window.innerHeight)/(document.documentElement.scrollHeight)*100)
+      },{eventID:clickId});
+      sendCAPI('ClickCheckout',clickId,{
+        content_name:'FitPrime Profissional',
+        value:47.00,
+        currency:'BRL',
+        content_ids:['fitprime_pro'],
+        content_category:'checkout_click',
+        click_number:checkoutClicks,
+        button_text:e.target.textContent.trim().substring(0,50)
+      });
     }
   });
-  var pricingBtn=document.querySelector('.price-btn');
-  if(pricingBtn){pricingBtn.addEventListener('click',function(){
-    var atcId=genEventId();
-    fbq('track','AddToCart',{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],content_type:'product'},{eventID:atcId});
-    sendCAPI('AddToCart',atcId,{content_name:'FitPrime Profissional',value:47.00,currency:'BRL',content_ids:['fitprime_pro'],content_type:'product'});
-  });}
   var scrollMilestones={25:false,75:false,100:false};
   window.addEventListener('scroll',function(){
     var scrollPct=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100;

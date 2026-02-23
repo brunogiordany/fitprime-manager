@@ -5399,3 +5399,9 @@
 - [x] Reescrever depoimentos com tom de superação/ego
 - [x] Reescrever objeções com tom provocativo
 - [x] Ajustar garantia e CTA final com provocação
+
+## Pixel Ajustes - Remover Lead/IC (v5.31)
+- [x] Remover evento Lead da LP4904 e LP4903
+- [x] Remover evento InitiateCheckout da LP4904 e LP4903
+- [x] Mapear cliques no botão de checkout com evento customizado ClickCheckout (trackCustom)
+- [x] Manter: PageView, ViewContent, ScrollDepth, TimeOnPage, ClickCheckout
