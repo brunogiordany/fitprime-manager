@@ -5387,3 +5387,15 @@
 - [x] Eventos: PageView, ViewContent, Lead (scroll 50%), InitiateCheckout (clique Hotmart), AddToCart, ScrollDepth, TimeOnPage
 - [x] Parâmetros avançados: fbp, fbc, event_id, user_agent, client_ip para nota máxima
 - [x] Aplicar em LP4903 também (Pixel + CAPI + botão scroll)
+
+## LP4904 - Black Copy Rewrite (v5.30)
+- [x] Remover botão "Quero ganhar mais" da nav (topo)
+- [x] Reescrever headline hero: provocativa, ego, status
+- [x] Reescrever urgency bar: tom provocativo
+- [x] Reescrever Big Mechanism: "todo personal perde dinheiro"
+- [x] Reescrever seção de dores: provocação + conflito interno
+- [x] Reescrever seção renda extra: "dinheiro que você não está enxergando"
+- [x] Trocar todos os CTAs para versão black: "Quero sair do modo amador"
+- [x] Reescrever depoimentos com tom de superação/ego
+- [x] Reescrever objeções com tom provocativo
+- [x] Ajustar garantia e CTA final com provocação
