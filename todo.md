@@ -5405,3 +5405,9 @@
 - [x] Remover evento InitiateCheckout da LP4904 e LP4903
 - [x] Mapear cliques no botão de checkout com evento customizado ClickCheckout (trackCustom)
 - [x] Manter: PageView, ViewContent, ScrollDepth, TimeOnPage, ClickCheckout
+
+## LP4904 - Legibilidade (v5.32)
+- [x] Aumentar tamanho de fontes em toda a LP (body 16px, parágrafos 16-17px, cards 15-16px)
+- [x] Melhorar contraste de cores (--gray #7a8599→#9aa8c0, --light #b8c2d4→#d4dce8)
+- [x] Corrigir cores confusas - textos secundários agora usam --light em vez de --gray
+- [x] Garantir alto contraste em todas as seções + media queries mobile atualizados
