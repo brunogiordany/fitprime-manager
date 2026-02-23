@@ -5411,3 +5411,15 @@
 - [x] Melhorar contraste de cores (--gray #7a8599→#9aa8c0, --light #b8c2d4→#d4dce8)
 - [x] Corrigir cores confusas - textos secundários agora usam --light em vez de --gray
 - [x] Garantir alto contraste em todas as seções + media queries mobile atualizados
+
+## LP4904 - Reescrita Black Copy Profunda (v5.33)
+- [x] Headline: confrontacional, ativar inveja/medo/ego ("bico estruturado")
+- [x] Abertura: expor problema sem suavizar ("você não tem negócio, tem bico")
+- [x] Matemática: emocional, não racional ("todo aluno que sai é dinheiro que você nunca mais vê")
+- [x] Foco: trocar "cobrar mais" por retenção/recorrência/plano premium/acompanhamento online
+- [x] Promessa central: "Ganhe mais com os alunos que já tem sem trabalhar mais horas"
+- [x] Ângulo: "Você não precisa virar influencer. Precisa virar empresário."
+- [x] CTAs: "Quero parar de deixar dinheiro na mesa" / "Quero estruturar meu negócio"
+- [x] Depoimentos: "Eles pararam de pensar e começaram a estruturar"
+- [x] Identidade: arsenal de quem ganha mais / ferramenta de estruturação
+- [x] Tom geral: confrontar, não convencer - aplicado em todas as seções + 15 CTAs de scroll
