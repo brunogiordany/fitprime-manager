@@ -1,0 +1,422 @@
+name: One-shot Manus Lite sync test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/test-manus-lite-sync.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fitprime-manus-lite-sync-test
+  cancel-in-progress: false
+
+jobs:
+  sync-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
+      TARGET_SITE: fitprimehub-sfh8sqab.manus.space
+      CREDIT_CAP: "1500"
+
+    steps:
+      - name: Validate API key
+        shell: bash
+        run: |
+          if [ -z "$MANUS_API_KEY" ]; then
+            echo "::error::MANUS_API_KEY is missing"
+            exit 1
+          fi
+
+      - name: Capture baseline
+        id: baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, urllib.parse, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          target = os.environ["TARGET_SITE"]
+          headers = {"x-manus-api-key": key}
+
+          cursor = None
+          found = None
+          for _ in range(20):
+              qs = {"type": "website", "limit": "100"}
+              if cursor:
+                  qs["cursor"] = cursor
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/artifact.list?" + urllib.parse.urlencode(qs),
+                  headers=headers
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  data = json.load(r)
+              if not data.get("ok"):
+                  raise SystemExit(f"artifact.list failed: {data}")
+              for item in data.get("data", []):
+                  if target in (item.get("url") or ""):
+                      found = item
+                      break
+              if found or not data.get("has_more"):
+                  break
+              cursor = data.get("next_cursor")
+              if not cursor:
+                  break
+
+          if not found:
+              raise SystemExit(f"Could not locate website artifact for {target}")
+
+          task_id = found["task_id"]
+
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id}),
+              headers=headers
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              detail = json.load(r)
+          task = detail.get("task") or {}
+
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/website.listCheckpoints?" + urllib.parse.urlencode({"task_id": task_id}),
+              headers=headers
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              checkpoints = json.load(r)
+          cps = checkpoints.get("data", [])
+          latest = cps[0] if cps else {}
+
+          print("task_id=" + task_id)
+          print("before_credit=" + str(task.get("credit_usage") or 0))
+          print("before_updated=" + str(task.get("updated_at") or 0))
+          print("before_version=" + str(latest.get("version_id") or ""))
+          print("before_status=" + str(task.get("status") or ""))
+          PY
+
+      - name: Ask Manus Lite to sync GitHub only
+        id: send
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          sha = os.environ["GITHUB_SHA"]
+
+          message = f"""
+          DEPLOY SYNC ONLY. This is a controlled low-cost deployment test.
+
+          Do not write, edit, generate, refactor, format, or otherwise change any application source code.
+          Do not diagnose bugs. Do not redesign anything. Do not make improvements.
+          GitHub is the authoritative source.
+
+          Synchronize the existing FitPrime project workspace with the latest main branch of:
+          https://github.com/brunogiordany/fitprime-manager
+
+          The main commit that triggered this request is {sha}.
+          Pull/import that main branch exactly as it exists, preserving the repository contents.
+          Then create/save a NEW Manus website checkpoint from that synchronized code and STOP.
+
+          Do NOT publish the website yourself. A GitHub workflow will publish the checkpoint through the Manus API after you stop.
+          If you cannot synchronize the existing workspace from GitHub without changing source code, stop and report the blocker instead of editing anything.
+          Keep this task minimal and use as few tools/tokens as possible.
+          """.strip()
+
+          body = {
+              "task_id": task_id,
+              "agent_profile": "lite",
+              "message": {"content": message},
+          }
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/task.sendMessage",
+              data=json.dumps(body).encode(),
+              method="POST",
+              headers={
+                  "x-manus-api-key": key,
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          if not data.get("ok"):
+              raise SystemExit(f"task.sendMessage failed: {data}")
+          print("Manus Lite sync request accepted:", data.get("task_id"))
+          PY
+
+      - name: Wait for Manus and enforce credit cap
+        id: wait
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+          BEFORE_CREDIT: ${{ steps.baseline.outputs.before_credit }}
+          BEFORE_UPDATED: ${{ steps.baseline.outputs.before_updated }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, time, urllib.parse, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          before_credit = int(os.environ.get("BEFORE_CREDIT") or 0)
+          before_updated = str(os.environ.get("BEFORE_UPDATED") or "0")
+          cap = int(os.environ.get("CREDIT_CAP") or 1500)
+          headers = {"x-manus-api-key": key}
+
+          def detail():
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id}),
+                  headers=headers
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r).get("task") or {}
+
+          def stop_task():
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/task.stop",
+                  data=json.dumps({"task_id": task_id}).encode(),
+                  method="POST",
+                  headers={**headers, "Content-Type": "application/json"},
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          time.sleep(3)
+          final = None
+          result = "timeout"
+
+          for attempt in range(90):
+              t = detail()
+              final = t
+              credit = int(t.get("credit_usage") or 0)
+              delta = max(0, credit - before_credit)
+              status = str(t.get("status") or "")
+              updated = str(t.get("updated_at") or "")
+              bg = t.get("has_running_background_jobs")
+
+              print(f"attempt={attempt+1} status={status} credit={credit} delta={delta} background={bg}")
+
+              if delta > cap:
+                  print(f"Credit cap exceeded ({delta} > {cap}). Stopping task.")
+                  try:
+                      print("stop:", stop_task())
+                  finally:
+                      result = "credit_cap"
+                  break
+
+              if status == "error":
+                  result = "error"
+                  break
+
+              if status == "waiting":
+                  result = "waiting"
+                  break
+
+              if status == "stopped" and updated != before_updated and bg is False:
+                  result = "completed"
+                  break
+
+              time.sleep(4)
+          else:
+              try:
+                  print("Timeout reached, stopping task:", stop_task())
+              except Exception as e:
+                  print("Stop after timeout failed:", e)
+
+          if final is None:
+              final = detail()
+
+          after_credit = int(final.get("credit_usage") or 0)
+          delta = max(0, after_credit - before_credit)
+
+          print("result=" + result)
+          print("after_credit=" + str(after_credit))
+          print("credit_delta=" + str(delta))
+          print("final_status=" + str(final.get("status") or ""))
+          PY
+
+      - name: Show recent Manus messages on incomplete run
+        if: steps.wait.outputs.result != 'completed'
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/task.listMessages?" + urllib.parse.urlencode({
+                  "task_id": task_id,
+                  "order": "desc",
+                  "limit": "10",
+              }),
+              headers={"x-manus-api-key": key},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          print(json.dumps(data, ensure_ascii=False, indent=2)[:30000])
+          PY
+
+      - name: Require successful low-cost sync
+        if: steps.wait.outputs.result != 'completed'
+        shell: bash
+        run: |
+          echo "::error::Manus sync did not complete safely. Result: ${{ steps.wait.outputs.result }}. Credit delta: ${{ steps.wait.outputs.credit_delta }}"
+          exit 1
+
+      - name: Confirm a new checkpoint exists
+        id: checkpoint
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+          BEFORE_VERSION: ${{ steps.baseline.outputs.before_version }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, urllib.parse, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          before = os.environ.get("BEFORE_VERSION") or ""
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/website.listCheckpoints?" + urllib.parse.urlencode({"task_id": task_id}),
+              headers={"x-manus-api-key": key},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          cps = data.get("data", [])
+          latest = cps[0] if cps else {}
+          current = str(latest.get("version_id") or "")
+          print("Previous checkpoint:", before)
+          print("Latest checkpoint:", current)
+          print("Latest checkpoint message:", latest.get("message"))
+          if not current:
+              raise SystemExit("No checkpoint returned after sync")
+          if current == before:
+              raise SystemExit("Manus stopped but did not create a new checkpoint; refusing to publish the old version")
+          print("version_id=" + current)
+          PY
+
+      - name: Publish the new checkpoint
+        id: publish
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/website.publish",
+              data=json.dumps({"task_id": task_id, "visibility": "public"}).encode(),
+              method="POST",
+              headers={
+                  "x-manus-api-key": key,
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          if not data.get("ok"):
+              raise SystemExit(f"website.publish failed: {data}")
+          print("website_id=" + str(data.get("website_id") or ""))
+          print("published_version=" + str(data.get("version_id") or ""))
+          PY
+
+      - name: Wait for production
+        id: production
+        shell: bash
+        env:
+          WEBSITE_ID: ${{ steps.publish.outputs.website_id }}
+          EXPECTED_VERSION: ${{ steps.checkpoint.outputs.version_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, time, urllib.parse, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          website_id = os.environ["WEBSITE_ID"]
+          expected = os.environ["EXPECTED_VERSION"]
+          headers = {"x-manus-api-key": key}
+
+          final = {}
+          for attempt in range(60):
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/website.status?" + urllib.parse.urlencode({"website_id": website_id}),
+                  headers=headers,
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  final = json.load(r)
+              print(f"attempt={attempt+1} status={final.get('publish_status')} version={final.get('version_id')}")
+              if final.get("publish_status") == "failed":
+                  raise SystemExit(f"Deployment failed: {final}")
+              if final.get("publish_status") == "published":
+                  break
+              time.sleep(4)
+          else:
+              raise SystemExit("Timed out waiting for website publication")
+
+          version = str(final.get("version_id") or "")
+          if version != expected:
+              raise SystemExit(f"Published version {version} does not match new checkpoint {expected}")
+
+          print("live_version=" + version)
+          print("site_urls=" + ",".join(final.get("site_urls") or []))
+          PY
+
+      - name: Final credit measurement and summary
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.baseline.outputs.task_id }}
+          BEFORE_CREDIT: ${{ steps.baseline.outputs.before_credit }}
+          BEFORE_VERSION: ${{ steps.baseline.outputs.before_version }}
+          NEW_VERSION: ${{ steps.checkpoint.outputs.version_id }}
+          LIVE_VERSION: ${{ steps.production.outputs.live_version }}
+          WAIT_DELTA: ${{ steps.wait.outputs.credit_delta }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          before = int(os.environ.get("BEFORE_CREDIT") or 0)
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id}),
+              headers={"x-manus-api-key": key},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              task = (json.load(r).get("task") or {})
+          after = int(task.get("credit_usage") or 0)
+          delta = max(0, after - before)
+
+          print("==============================================")
+          print("FITPRIME MANUS LITE SYNC TEST")
+          print("Credits before:", before)
+          print("Credits after: ", after)
+          print("CREDIT DELTA:  ", delta)
+          print("Old checkpoint:", os.environ.get("BEFORE_VERSION"))
+          print("New checkpoint:", os.environ.get("NEW_VERSION"))
+          print("Live version:  ", os.environ.get("LIVE_VERSION"))
+          print("Agent profile: ", task.get("agent_profile"))
+          print("==============================================")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a") as f:
+                  f.write("## FitPrime Manus Lite sync test\n\n")
+                  f.write(f"- Credits before: **{before}**\n")
+                  f.write(f"- Credits after: **{after}**\n")
+                  f.write(f"- Sync cost: **{delta} credits**\n")
+                  f.write(f"- Previous checkpoint: \`{os.environ.get('BEFORE_VERSION')}\`\n")
+                  f.write(f"- New checkpoint: \`{os.environ.get('NEW_VERSION')}\`\n")
+                  f.write(f"- Live version: \`{os.environ.get('LIVE_VERSION')}\`\n")
+                  f.write(f"- Agent profile: \`{task.get('agent_profile')}\`\n")
+          PY
