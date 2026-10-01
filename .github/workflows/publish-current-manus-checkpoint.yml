@@ -1,0 +1,123 @@
+name: Publish current FitPrime Manus checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-current-manus-checkpoint.yml"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
+      TASK_ID: mWZnZ1zyTEHgSRCXWXU4Dw
+      EXPECTED_VERSION: 9a1281b4
+      PUBLIC_URL: https://fitprimehub-sfh8sqab.manus.space/
+    steps:
+      - name: Verify latest checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          expected = os.environ["EXPECTED_VERSION"]
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/website.listCheckpoints?" + urllib.parse.urlencode({"task_id": task_id}),
+              headers={"x-manus-api-key": key},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          latest = (data.get("data") or [{}])[0]
+          current = str(latest.get("version_id") or "")
+          print("Latest checkpoint:", current)
+          print("Checkpoint message:", latest.get("message"))
+          if current != expected:
+              raise SystemExit(f"Expected latest checkpoint {expected}, got {current}")
+          PY
+
+      - name: Publish latest checkpoint
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          req = urllib.request.Request(
+              "https://api.manus.ai/v2/website.publish",
+              data=json.dumps({"task_id": task_id, "visibility": "public"}).encode(),
+              method="POST",
+              headers={
+                  "x-manus-api-key": key,
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              data = json.load(r)
+          if not data.get("ok"):
+              raise SystemExit(f"website.publish failed: {data}")
+          print("website_id=" + str(data.get("website_id") or ""))
+          print("version_id=" + str(data.get("version_id") or ""))
+          PY
+
+      - name: Wait for published version
+        shell: bash
+        env:
+          WEBSITE_ID: ${{ steps.publish.outputs.website_id }}
+          PUBLISH_VERSION: ${{ steps.publish.outputs.version_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time, urllib.parse, urllib.request
+          key = os.environ["MANUS_API_KEY"]
+          website_id = os.environ["WEBSITE_ID"]
+          expected = os.environ["EXPECTED_VERSION"]
+          headers = {"x-manus-api-key": key}
+          final = {}
+          for attempt in range(45):
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/website.status?" + urllib.parse.urlencode({"website_id": website_id}),
+                  headers=headers,
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  final = json.load(r)
+              print(f"attempt={attempt+1} status={final.get('publish_status')} version={final.get('version_id')} urls={final.get('site_urls')}")
+              if final.get("publish_status") == "failed":
+                  raise SystemExit(f"Publish failed: {final}")
+              if final.get("publish_status") == "published" and str(final.get("version_id") or "") == expected:
+                  break
+              time.sleep(3)
+          else:
+              raise SystemExit(f"Did not observe expected published version {expected}: {final}")
+          PY
+
+      - name: Verify public marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, time, urllib.request
+          url = os.environ["PUBLIC_URL"]
+          expected = os.environ["EXPECTED_VERSION"]
+          seen = []
+          for attempt in range(10):
+              req = urllib.request.Request(
+                  url + f"?deploy_check={int(time.time())}",
+                  headers={"Cache-Control": "no-cache", "User-Agent": "FitPrimeDeployCheck/1.0"},
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  html = r.read().decode("utf-8", "replace")
+              seen = re.findall(r'checkpoint-screenshot\.png\?v=([0-9a-f]+)', html, re.I)
+              print(f"attempt={attempt+1} public markers={seen}")
+              if expected in seen:
+                  print("PUBLIC_VERSION_CONFIRMED=", expected)
+                  break
+              time.sleep(4)
+          else:
+              raise SystemExit(f"Public HTML did not expose expected marker {expected}; last markers={seen}")
+          PY
