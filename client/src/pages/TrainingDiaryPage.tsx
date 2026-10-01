@@ -2685,7 +2685,7 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-4xl sm:max-w-4xl max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent className="w-auto max-w-none h-auto max-h-none sm:w-full sm:max-w-4xl sm:max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader className="flex-shrink-0 pr-6">
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -2719,7 +2719,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain -mx-4 px-4 sm:-mx-6 sm:px-6 pb-2 [scrollbar-gutter:stable]">
+            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain -mx-4 px-4 sm:-mx-6 sm:px-6 pb-2 [scrollbar-gutter:stable]">
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -3085,68 +3085,63 @@ export default function TrainingDiaryPage() {
             
                         <DialogFooter className="flex-shrink-0 border-t mt-2 pt-3 sm:pt-4 bg-background pb-[calc(0.25rem+env(safe-area-inset-bottom))]">
               {logDetail?.status === 'in_progress' && (
-                <div className="w-full flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-                    <Button
-                      variant="outline"
-                      className="w-full sm:w-auto h-11 sm:h-10"
-                      onClick={() => setShowLogDetailModal(false)}
-                    >
-                      Fechar
-                    </Button>
-                    <Button 
-                      variant="secondary"
-                      className="w-full sm:w-auto h-11 sm:h-10"
-                      onClick={() => {
-                        // Salvar todas as séries atuais
-                        currentExercises.forEach((ex) => {
-                          ex.sets.forEach((set) => {
-                            if (set.id) {
-                              updateSet.mutate({
-                                id: set.id,
-                                weight: set.weight,
-                                reps: set.reps,
-                                restTime: set.restTime,
-                                setType: set.setType,
-                                isDropSet: set.isDropSet,
-                                dropWeight: set.dropWeight,
-                                dropReps: set.dropReps,
-                                isRestPause: set.isRestPause,
-                                restPauseWeight: set.restPauseWeight,
-                                restPauseReps: set.restPauseReps,
-                                restPausePause: set.restPausePause,
-                              });
-                            }
-                          });
+                <div className="w-full grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
+                    onClick={() => setShowLogDetailModal(false)}
+                  >
+                    Fechar
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
+                    onClick={() => {
+                      // Salvar todas as séries atuais
+                      currentExercises.forEach((ex) => {
+                        ex.sets.forEach((set) => {
+                          if (set.id) {
+                            updateSet.mutate({
+                              id: set.id,
+                              weight: set.weight,
+                              reps: set.reps,
+                              restTime: set.restTime,
+                              setType: set.setType,
+                              isDropSet: set.isDropSet,
+                              dropWeight: set.dropWeight,
+                              dropReps: set.dropReps,
+                              isRestPause: set.isRestPause,
+                              restPauseWeight: set.restPauseWeight,
+                              restPauseReps: set.restPauseReps,
+                              restPausePause: set.restPausePause,
+                            });
+                          }
                         });
-                        toast.success("Alterações salvas!");
-                      }} 
-                      disabled={updateSet.isPending}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      {updateSet.isPending ? "Salvando..." : "Salvar"}
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
-                    <Button
-                      className="w-full sm:w-auto h-11 sm:h-10 sm:min-w-[170px]"
-                      onClick={handleCompleteLog}
-                      disabled={completeLog.isPending}
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      className="w-full sm:w-auto h-11 sm:h-10"
-                      onClick={() => setShowDeleteLogConfirm(true)}
-                      disabled={deleteLog.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Excluir
-                    </Button>
-                  </div>
+                      });
+                      toast.success("Alterações salvas!");
+                    }} 
+                    disabled={updateSet.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateSet.isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                  <Button
+                    className="w-full sm:w-auto h-11 sm:h-10 px-2 text-sm sm:min-w-[170px]"
+                    onClick={handleCompleteLog}
+                    disabled={completeLog.isPending}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
+                    onClick={() => setShowDeleteLogConfirm(true)}
+                    disabled={deleteLog.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir
+                  </Button>
                 </div>
               )}
               {logDetail?.status === 'completed' && (
