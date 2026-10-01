@@ -76,6 +76,65 @@ jobs:
           print("artifact_url=" + (found.get("url") or ""))
           PY
 
+      - name: Inspect Manus credit usage
+        if: steps.key.outputs.available == 'true'
+        shell: bash
+        env:
+          TASK_ID: ${{ steps.site.outputs.task_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          headers = {"x-manus-api-key": key}
+
+          # Current task total
+          url = "https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id})
+          req = urllib.request.Request(url, headers=headers)
+          with urllib.request.urlopen(req, timeout=30) as r:
+              detail = json.load(r)
+
+          task = detail.get("task") or detail.get("data") or {}
+          print("MANUS_TASK_CREDIT_USAGE=" + str(task.get("credit_usage", "unknown")))
+          print("MANUS_TASK_STATUS=" + str(task.get("status", "unknown")))
+          print("MANUS_TASK_TITLE=" + str(task.get("title", "")))
+
+          # Recent account usage entries for context
+          cursor = None
+          matched = []
+          recent_costs = []
+          for _ in range(5):
+              qs = {"limit": "100"}
+              if cursor:
+                  qs["cursor"] = cursor
+              url = "https://api.manus.ai/v2/usage.list?" + urllib.parse.urlencode(qs)
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  usage = json.load(r)
+              if not usage.get("ok"):
+                  break
+              for item in usage.get("data", []):
+                  if item.get("type") == "cost":
+                      recent_costs.append({
+                          "task_id": item.get("task_id"),
+                          "title": item.get("title"),
+                          "credits": item.get("credits"),
+                          "created_at": item.get("created_at"),
+                      })
+                  if item.get("task_id") == task_id:
+                      matched.append(item)
+              if matched or not usage.get("has_more"):
+                  break
+              cursor = usage.get("next_cursor")
+              if not cursor:
+                  break
+
+          print("MANUS_MATCHED_USAGE=" + json.dumps(matched, ensure_ascii=False))
+          print("MANUS_RECENT_COSTS=" + json.dumps(recent_costs[:20], ensure_ascii=False))
+          PY
+
       - name: Inspect Manus checkpoints
         if: steps.key.outputs.available == 'true'
         id: checkpoints
