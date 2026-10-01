@@ -127,7 +127,7 @@ function DialogContent({
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 grid gap-4 rounded-lg border p-4 sm:p-6 shadow-lg duration-200",
           // Mobile: use explicit insets with auto width/height.
           // Avoid w-full together with left/right, which can push the dialog outside the viewport on iOS.
-          "left-2 right-2 top-2 bottom-2 w-auto max-w-none max-h-none overflow-hidden",
+          "left-2 right-2 top-2 bottom-2 w-auto max-w-none max-h-none",
           // Desktop: centered modal
           "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:w-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:max-h-[90vh]",
           className
