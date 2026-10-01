@@ -1,0 +1,50 @@
+name: Inspect Manus sync result
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-manus-sync-result.yml"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect FitPrime Manus task
+        shell: bash
+        env:
+          MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
+          TASK_ID: mWZnZ1zyTEHgSRCXWXU4Dw
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          key = os.environ["MANUS_API_KEY"]
+          task_id = os.environ["TASK_ID"]
+          headers = {"x-manus-api-key": key}
+
+          def get(url):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          detail = get("https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id}))
+          cps = get("https://api.manus.ai/v2/website.listCheckpoints?" + urllib.parse.urlencode({"task_id": task_id}))
+          msgs = get("https://api.manus.ai/v2/task.listMessages?" + urllib.parse.urlencode({
+              "task_id": task_id, "order": "desc", "limit": "12"
+          }))
+
+          task = detail.get("task") or {}
+          print("TASK_STATUS=", task.get("status"))
+          print("TASK_CREDIT_USAGE=", task.get("credit_usage"))
+          print("TASK_AGENT_PROFILE=", task.get("agent_profile"))
+          print("TASK_UPDATED_AT=", task.get("updated_at"))
+          print("TASK_BACKGROUND=", task.get("has_running_background_jobs"))
+          print("PUBLISHED_VERSION=", cps.get("published_version_id"))
+          print("CHECKPOINTS_TOP_5=")
+          for cp in (cps.get("data") or [])[:5]:
+              print(json.dumps(cp, ensure_ascii=False))
+          print("RECENT_MESSAGES=")
+          print(json.dumps(msgs, ensure_ascii=False, indent=2)[:40000])
+          PY
