@@ -25,7 +25,8 @@ jobs:
         run: |
           if [ -z "$MANUS_API_KEY" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::MANUS_API_KEY is not configured. Skipping Manus publish."
+            echo "::error::MANUS_API_KEY is not configured. Add it in Settings > Secrets and variables > Actions, then rerun this workflow."
+            exit 1
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
