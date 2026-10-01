@@ -1046,7 +1046,7 @@ export default function TrainingDiaryPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-0">
         {/* Banner de Status Offline */}
         {!offlineTraining.isOnline && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
@@ -1088,26 +1088,32 @@ export default function TrainingDiaryPage() {
         )}
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Dumbbell className="h-6 w-6 text-primary" />
-              Diário de Treino do Maromba
-              {/* Indicador de status de conexão */}
-              {offlineTraining.isOnline ? (
-                <Wifi className="h-4 w-4 text-green-500" />
-              ) : (
-                <WifiOff className="h-4 w-4 text-amber-500" />
-              )}
-            </h1>
-            <p className="text-muted-foreground">
-              Registre e acompanhe a evolução dos treinos dos seus alunos
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex items-start gap-2">
+              <Dumbbell className="h-5 w-5 sm:h-6 sm:w-6 text-primary mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-bold leading-tight">
+                    Diário de Treino do Maromba
+                  </h1>
+                  {/* Indicador de status de conexão */}
+                  {offlineTraining.isOnline ? (
+                    <Wifi className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                  )}
+                </div>
+                <p className="text-sm sm:text-base text-muted-foreground mt-1 leading-relaxed">
+                  Registre e acompanhe a evolução dos treinos dos seus alunos
+                </p>
+              </div>
+            </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:min-w-[200px]">
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger className="w-full sm:w-[200px] h-11 sm:h-10">
                 <SelectValue placeholder="Filtrar por aluno" />
               </SelectTrigger>
               <SelectContent>
@@ -1120,7 +1126,7 @@ export default function TrainingDiaryPage() {
               </SelectContent>
             </Select>
             
-            <Button onClick={() => setShowNewLogModal(true)}>
+            <Button className="h-11 sm:h-10 text-base sm:text-sm" onClick={() => setShowNewLogModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Registro Maromba
             </Button>
@@ -1129,27 +1135,27 @@ export default function TrainingDiaryPage() {
         
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1 p-1 bg-muted/50">
-              <TabsTrigger value="sessoes" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="grid w-full grid-cols-5 gap-1 p-1 h-auto rounded-xl bg-muted/50">
+              <TabsTrigger value="sessoes" className="min-w-0 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-2 text-[10px] sm:text-sm leading-none sm:leading-normal rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Calendar className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Sessões</span>
+                <span className="truncate max-w-full">Sessões</span>
               </TabsTrigger>
-              <TabsTrigger value="registros" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="registros" className="min-w-0 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-2 text-[10px] sm:text-sm leading-none sm:leading-normal rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Dumbbell className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Registros</span>
+                <span className="truncate max-w-full">Registros</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="cardio" className="min-w-0 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-2 text-[10px] sm:text-sm leading-none sm:leading-normal rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Heart className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Cardio</span>
+                <span className="truncate max-w-full">Cardio</span>
               </TabsTrigger>
-              <TabsTrigger value="cardio-stats" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="cardio-stats" className="min-w-0 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-2 text-[10px] sm:text-sm leading-none sm:leading-normal rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <TrendingUp className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Evolução</span>
+                <span className="truncate max-w-full">Evolução</span>
               </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="dashboard" className="min-w-0 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-2 text-[10px] sm:text-sm leading-none sm:leading-normal rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <BarChart3 className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Análise</span>
+                <span className="truncate max-w-full">Análise</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -2679,8 +2685,8 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="max-w-4xl sm:max-w-4xl flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
-            <DialogHeader>
+          <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-4xl sm:max-w-4xl max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <DialogHeader className="flex-shrink-0 pr-6">
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Dumbbell className="h-5 w-5 text-primary" />
@@ -2713,7 +2719,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 overflow-y-auto -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain -mx-4 px-4 sm:-mx-6 sm:px-6 pb-2 [scrollbar-gutter:stable]">
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -2768,12 +2774,12 @@ export default function TrainingDiaryPage() {
                 <div className="space-y-4">
                   {currentExercises.map((exercise, exIndex) => (
                     <Card key={exIndex} className="overflow-hidden">
-                      <CardHeader className="p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => toggleExerciseExpand(exIndex)}>
-                            <span className="text-lg font-bold text-primary">{exIndex + 1}</span>
-                            <div>
-                              <h4 className="font-semibold">{exercise.exerciseName}</h4>
+                      <CardHeader className="p-3 sm:p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex items-start gap-3 cursor-pointer flex-1 min-w-0" onClick={() => toggleExerciseExpand(exIndex)}>
+                            <span className="text-lg font-bold text-primary flex-shrink-0">{exIndex + 1}</span>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-semibold text-sm sm:text-base leading-snug break-words">{exercise.exerciseName}</h4>
                               {exercise.originalExerciseName && (
                                 <p className="text-xs text-blue-600 flex items-center gap-1">
                                   <RefreshCw className="h-3 w-3" />
@@ -2785,7 +2791,7 @@ export default function TrainingDiaryPage() {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pl-10 sm:pl-0">
                             {isEditing && (
                               <Button
                                 variant="outline"
@@ -2794,16 +2800,16 @@ export default function TrainingDiaryPage() {
                                   e.stopPropagation();
                                   openSubstitutionModal(exIndex);
                                 }}
-                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-7 px-2"
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2.5 text-xs"
                               >
                                 <RefreshCw className="h-3 w-3 mr-1" />
                                 Trocar
                               </Button>
                             )}
-                            <Badge variant="outline">
+                            <Badge variant="outline" className="text-xs whitespace-nowrap">
                               {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
                             </Badge>
-                            <div className="cursor-pointer" onClick={() => toggleExerciseExpand(exIndex)}>
+                            <div className="cursor-pointer h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted flex-shrink-0" onClick={() => toggleExerciseExpand(exIndex)}>
                               {exercise.isExpanded ? (
                                 <ChevronUp className="h-4 w-4" />
                               ) : (
@@ -3077,61 +3083,74 @@ export default function TrainingDiaryPage() {
             )}
             </div>
             
-            <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4 flex justify-between">
+                        <DialogFooter className="flex-shrink-0 border-t mt-2 pt-3 sm:pt-4 bg-background pb-[calc(0.25rem+env(safe-area-inset-bottom))]">
               {logDetail?.status === 'in_progress' && (
-                <>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => setShowDeleteLogConfirm(true)}
-                    disabled={deleteLog.isPending}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir
-                  </Button>
-                  <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setShowLogDetailModal(false)}>
-                    Fechar
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => {
-                      // Salvar todas as séries atuais
-                      currentExercises.forEach((ex) => {
-                        ex.sets.forEach((set) => {
-                          if (set.id) {
-                            updateSet.mutate({
-                              id: set.id,
-                              weight: set.weight,
-                              reps: set.reps,
-                              restTime: set.restTime,
-                              setType: set.setType,
-                              isDropSet: set.isDropSet,
-                              dropWeight: set.dropWeight,
-                              dropReps: set.dropReps,
-                              isRestPause: set.isRestPause,
-                              restPauseWeight: set.restPauseWeight,
-                              restPauseReps: set.restPauseReps,
-                              restPausePause: set.restPausePause,
-                            });
-                          }
+                <div className="w-full flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto h-11 sm:h-10"
+                      onClick={() => setShowLogDetailModal(false)}
+                    >
+                      Fechar
+                    </Button>
+                    <Button 
+                      variant="secondary"
+                      className="w-full sm:w-auto h-11 sm:h-10"
+                      onClick={() => {
+                        // Salvar todas as séries atuais
+                        currentExercises.forEach((ex) => {
+                          ex.sets.forEach((set) => {
+                            if (set.id) {
+                              updateSet.mutate({
+                                id: set.id,
+                                weight: set.weight,
+                                reps: set.reps,
+                                restTime: set.restTime,
+                                setType: set.setType,
+                                isDropSet: set.isDropSet,
+                                dropWeight: set.dropWeight,
+                                dropReps: set.dropReps,
+                                isRestPause: set.isRestPause,
+                                restPauseWeight: set.restPauseWeight,
+                                restPauseReps: set.restPauseReps,
+                                restPausePause: set.restPausePause,
+                              });
+                            }
+                          });
                         });
-                      });
-                      toast.success("Alterações salvas!");
-                    }} 
-                    disabled={updateSet.isPending}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {updateSet.isPending ? "Salvando..." : "Salvar"}
-                  </Button>
-                  <Button onClick={handleCompleteLog} disabled={completeLog.isPending}>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
-                  </Button>
+                        toast.success("Alterações salvas!");
+                      }} 
+                      disabled={updateSet.isPending}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {updateSet.isPending ? "Salvando..." : "Salvar"}
+                    </Button>
                   </div>
-                </>
+
+                  <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
+                    <Button
+                      className="w-full sm:w-auto h-11 sm:h-10 sm:min-w-[170px]"
+                      onClick={handleCompleteLog}
+                      disabled={completeLog.isPending}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
+                    </Button>
+                    <Button 
+                      variant="destructive"
+                      className="w-full sm:w-auto h-11 sm:h-10"
+                      onClick={() => setShowDeleteLogConfirm(true)}
+                      disabled={deleteLog.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                  </div>
+                </div>
               )}
               {logDetail?.status === 'completed' && (
-                <Button onClick={() => setShowLogDetailModal(false)}>
+                <Button className="w-full sm:w-auto h-11 sm:h-10" onClick={() => setShowLogDetailModal(false)}>
                   Fechar
                 </Button>
               )}
