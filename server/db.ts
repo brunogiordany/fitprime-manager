@@ -2909,6 +2909,34 @@ export async function getWorkoutLogWithDetails(id: number) {
   };
 }
 
+// Tipos de carga usados no Diário de Treino.
+// Persistimos como metadado reservado nas notes do exercício para manter compatibilidade
+// com o banco atual e evitar uma migração de schema apenas para este ajuste.
+export type WorkoutLoadType = 'kg' | 'bodyweight' | 'bodyweight_plus' | 'no_load';
+
+const WORKOUT_LOAD_TYPE_REGEX = /(?:^|\n)\[\[LOAD_TYPE:(kg|bodyweight|bodyweight_plus|no_load)\]\](?:\n|$)/;
+
+export function getWorkoutExerciseLoadType(notes: string | null | undefined): WorkoutLoadType {
+  const match = notes?.match(WORKOUT_LOAD_TYPE_REGEX);
+  return (match?.[1] as WorkoutLoadType | undefined) || 'kg';
+}
+
+export function stripWorkoutExerciseLoadType(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const cleaned = notes
+    .replace(WORKOUT_LOAD_TYPE_REGEX, '\n')
+    .replace(/^\s+|\s+$/g, '');
+  return cleaned || null;
+}
+
+export function withWorkoutExerciseLoadType(
+  notes: string | null | undefined,
+  loadType: WorkoutLoadType = 'kg'
+): string {
+  const visibleNotes = stripWorkoutExerciseLoadType(notes);
+  return `[[LOAD_TYPE:${loadType}]]${visibleNotes ? `\n${visibleNotes}` : ''}`;
+}
+
 // Obter exercícios de um log
 export async function getWorkoutLogExercises(workoutLogId: number) {
   const db = await getDb();
@@ -2916,6 +2944,15 @@ export async function getWorkoutLogExercises(workoutLogId: number) {
   return await db.select().from(workoutLogExercises)
     .where(eq(workoutLogExercises.workoutLogId, workoutLogId))
     .orderBy(asc(workoutLogExercises.orderIndex));
+}
+
+export async function getWorkoutLogExerciseById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(workoutLogExercises)
+    .where(eq(workoutLogExercises.id, id))
+    .limit(1);
+  return result[0] || null;
 }
 
 // Criar exercício do log
@@ -2997,40 +3034,51 @@ export async function calculateWorkoutLogStats(workoutLogId: number) {
     const allSets = await db.select().from(workoutLogSets)
       .where(eq(workoutLogSets.workoutLogExerciseId, ex.id));
     
-    // Filtrar séries que têm peso E reps preenchidos (considera como "feita")
+    const loadType = getWorkoutExerciseLoadType(ex.notes);
+    const usesMeasuredLoad = loadType === 'kg' || loadType === 'bodyweight_plus';
+    
+    // Uma série realizada não depende de existir carga em kg.
+    // Peso corporal e máquinas sem carga mensurada continuam contando séries/reps.
     const completedSets = allSets.filter(s => {
-      const weight = parseFloat(s.weight?.toString() || '0');
       const reps = s.reps || 0;
-      return weight > 0 && reps > 0;
+      return reps > 0 || s.isCompleted === true;
     });
     
     for (const set of completedSets) {
       totalSets++;
       totalReps += set.reps || 0;
       const weight = parseFloat(set.weight?.toString() || '0');
-      totalVolume += weight * (set.reps || 0);
+      if (usesMeasuredLoad) {
+        totalVolume += weight * (set.reps || 0);
+      }
       
       // Adicionar drop set se houver
-      if (set.isDropSet && set.dropWeight && set.dropReps) {
+      if (set.isDropSet && set.dropReps) {
         totalReps += set.dropReps;
-        totalVolume += parseFloat(set.dropWeight.toString()) * set.dropReps;
+        if (usesMeasuredLoad && set.dropWeight) {
+          totalVolume += parseFloat(set.dropWeight.toString()) * set.dropReps;
+        }
       }
       
       // Adicionar rest-pause se houver
-      if (set.isRestPause && set.restPauseWeight && set.restPauseReps) {
+      if (set.isRestPause && set.restPauseReps) {
         totalReps += set.restPauseReps;
-        totalVolume += parseFloat(set.restPauseWeight.toString()) * set.restPauseReps;
+        if (usesMeasuredLoad && set.restPauseWeight) {
+          totalVolume += parseFloat(set.restPauseWeight.toString()) * set.restPauseReps;
+        }
       }
     }
     
     // Atualizar estatísticas do exercício
     const exSets = completedSets.length;
     const exReps = completedSets.reduce((sum, s) => sum + (s.reps || 0), 0);
-    const exVolume = completedSets.reduce((sum, s) => {
-      const w = parseFloat(s.weight?.toString() || '0');
-      return sum + w * (s.reps || 0);
-    }, 0);
-    const maxWeight = completedSets.length > 0 
+    const exVolume = usesMeasuredLoad
+      ? completedSets.reduce((sum, s) => {
+          const w = parseFloat(s.weight?.toString() || '0');
+          return sum + w * (s.reps || 0);
+        }, 0)
+      : 0;
+    const maxWeight = usesMeasuredLoad && completedSets.length > 0 
       ? Math.max(...completedSets.map(s => parseFloat(s.weight?.toString() || '0')))
       : 0;
     
@@ -3488,20 +3536,33 @@ export async function getExerciseProgressHistory(
       .where(eq(workoutLogSets.workoutLogExerciseId, item.exercise.id))
       .orderBy(asc(workoutLogSets.setNumber));
     
-    // Calcular carga máxima e volume
-    const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight?.toString() || '0')));
-    const totalVolume = sets.reduce((sum, s) => {
-      const w = parseFloat(s.weight?.toString() || '0');
-      return sum + w * (s.reps || 0);
-    }, 0);
+    const loadType = getWorkoutExerciseLoadType(item.exercise.notes);
+    const usesMeasuredLoad = loadType === 'kg' || loadType === 'bodyweight_plus';
+    const performedSets = sets.filter(s => (s.reps || 0) > 0 || s.isCompleted === true);
+    
+    // Para peso corporal/sem carga, evolução principal passa a ser repetições.
+    const maxWeight = usesMeasuredLoad && performedSets.length > 0
+      ? Math.max(...performedSets.map(s => parseFloat(s.weight?.toString() || '0')))
+      : 0;
+    const maxReps = performedSets.length > 0
+      ? Math.max(...performedSets.map(s => s.reps || 0))
+      : 0;
+    const totalVolume = usesMeasuredLoad
+      ? performedSets.reduce((sum, s) => {
+          const w = parseFloat(s.weight?.toString() || '0');
+          return sum + w * (s.reps || 0);
+        }, 0)
+      : 0;
     
     return {
       date: item.log.trainingDate,
       exerciseName: item.exercise.exerciseName,
+      loadType,
       maxWeight,
+      maxReps,
       totalVolume,
-      totalSets: sets.length,
-      totalReps: sets.reduce((sum, s) => sum + (s.reps || 0), 0),
+      totalSets: performedSets.length,
+      totalReps: performedSets.reduce((sum, s) => sum + (s.reps || 0), 0),
       sets,
     };
   }));
