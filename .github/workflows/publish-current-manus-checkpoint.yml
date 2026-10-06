@@ -13,7 +13,7 @@ jobs:
     env:
       MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
       TASK_ID: mWZnZ1zyTEHgSRCXWXU4Dw
-      EXPECTED_VERSION: e1a9ce0b
+      EXPECTED_VERSION: 241dbfe3
       PUBLIC_URL: https://fitprimehub-sfh8sqab.manus.space/
     steps:
       - name: Verify latest checkpoint
