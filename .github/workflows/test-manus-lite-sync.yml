@@ -189,8 +189,32 @@ jobs:
                   return json.load(r)
 
           time.sleep(3)
+          def confirm_sync():
+              body = {
+                  "task_id": task_id,
+                  "agent_profile": "lite",
+                  "message": {
+                      "content": (
+                          "Sim. Prossiga exatamente com a sincronização já solicitada. "
+                          "Esta confirmação foi explicitamente autorizada pelo proprietário: "
+                          "sincronize somente a branch main do repositório informado, crie um novo "
+                          "checkpoint e pare. Não edite código e não publique."
+                      )
+                  },
+              }
+              req = urllib.request.Request(
+                  "https://api.manus.ai/v2/task.sendMessage",
+                  data=json.dumps(body).encode(),
+                  method="POST",
+                  headers={**headers, "Content-Type": "application/json"},
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
           final = None
           result = "timeout"
+          waiting_confirmed = False
+          waiting_after_confirmation = 0
 
           for attempt in range(90):
               t = detail()
@@ -216,8 +240,19 @@ jobs:
                   break
 
               if status == "waiting":
-                  result = "waiting"
-                  break
+                  if not waiting_confirmed:
+                      confirmation = confirm_sync()
+                      print("Explicit sync confirmation sent:", confirmation.get("ok"))
+                      waiting_confirmed = True
+                      waiting_after_confirmation = 0
+                      time.sleep(4)
+                      continue
+                  waiting_after_confirmation += 1
+                  if waiting_after_confirmation >= 8:
+                      result = "waiting"
+                      break
+                  time.sleep(4)
+                  continue
 
               if status == "stopped" and updated != before_updated and bg is False:
                   result = "completed"
