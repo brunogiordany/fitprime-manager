@@ -10084,6 +10084,11 @@ Seja motivador mas realista e profissional.`;
             ex.notes = db.stripWorkoutExerciseLoadType(ex.notes);
             if (ex.sets) {
               for (const set of ex.sets) {
+                (set as any).loadType = db.getWorkoutSetLoadType(
+                  set.notes,
+                  (ex as any).loadType || 'kg'
+                );
+                set.notes = db.stripWorkoutSetLoadType(set.notes);
                 if (set.notes && set.notes.includes('[[EXTRAS]]')) {
                   const [notes, extrasJson] = set.notes.split('[[EXTRAS]]');
                   set.notes = notes.trim();
@@ -10136,6 +10141,7 @@ Seja motivador mas realista e profissional.`;
           sets: z.array(z.object({
             setNumber: z.number(),
             setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
+            loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
             weight: z.number().optional(),
             reps: z.number().optional(),
             restTime: z.number().optional(),
@@ -10234,7 +10240,10 @@ Seja motivador mas realista e profissional.`;
                   restPausePause: set.restPausePause || set.restPauses?.[0]?.pauseTime,
                   rpe: set.rpe,
                   isCompleted: set.isCompleted,
-                  notes: notesWithExtras,
+                  notes: db.withWorkoutSetLoadType(
+                    notesWithExtras,
+                    set.loadType || loadType || 'kg'
+                  ),
                 });
               }
             }
@@ -10308,7 +10317,7 @@ Seja motivador mas realista e profissional.`;
         plannedReps: z.string().optional(),
         plannedRest: z.number().optional(),
         loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
-        notes: z.string().optional(),
+        notes: z.string().nullable().optional(),
         isCompleted: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -10349,6 +10358,7 @@ Seja motivador mas realista e profissional.`;
         workoutLogExerciseId: z.number(),
         setNumber: z.number(),
         setType: z.enum(['warmup', 'feeler', 'working', 'drop', 'rest_pause', 'failure']).optional(),
+        loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
         weight: z.number().optional(),
         reps: z.number().optional(),
         restTime: z.number().optional(),
@@ -10360,7 +10370,7 @@ Seja motivador mas realista e profissional.`;
         restPauseReps: z.number().optional(),
         restPausePause: z.number().optional(),
         rpe: z.number().optional(),
-        notes: z.string().optional(),
+        notes: z.string().nullable().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await import('./db');
@@ -10380,7 +10390,7 @@ Seja motivador mas realista e profissional.`;
           restPauseReps: input.restPauseReps,
           restPausePause: input.restPausePause,
           rpe: input.rpe,
-          notes: input.notes,
+          notes: db.withWorkoutSetLoadType(input.notes, input.loadType || 'kg'),
         });
         return { id };
       }),
@@ -10389,6 +10399,7 @@ Seja motivador mas realista e profissional.`;
     updateSet: personalProcedure
       .input(z.object({
         id: z.number(),
+        loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
         weight: z.number().optional(),
         reps: z.number().optional(),
         restTime: z.number().optional(),
@@ -10402,19 +10413,33 @@ Seja motivador mas realista e profissional.`;
         restPausePause: z.number().optional(),
         rpe: z.number().optional(),
         isCompleted: z.boolean().optional(),
-        notes: z.string().optional(),
+        notes: z.string().nullable().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, weight, dropWeight, restPauseWeight, setType, ...rest } = input;
+        const { id, loadType, notes, weight, dropWeight, restPauseWeight, setType, ...rest } = input;
         const db = await import('./db');
         const toDecimal = (val?: number) => val !== undefined ? val.toString() : undefined;
-        await db.updateWorkoutLogSet(id, {
+        const updateData: any = {
           ...rest,
           weight: toDecimal(weight),
           dropWeight: toDecimal(dropWeight),
           restPauseWeight: toDecimal(restPauseWeight),
           setType: setType as "warmup" | "feeler" | "working" | "drop" | "rest_pause" | "failure" | undefined,
-        });
+        };
+        
+        if (loadType !== undefined || notes !== undefined) {
+          const existing = await db.getWorkoutLogSetById(id);
+          const currentLoadType = db.getWorkoutSetLoadType(existing?.notes, 'kg');
+          const visibleNotes = notes !== undefined
+            ? notes
+            : db.stripWorkoutSetLoadType(existing?.notes);
+          updateData.notes = db.withWorkoutSetLoadType(
+            visibleNotes,
+            loadType || currentLoadType
+          );
+        }
+        
+        await db.updateWorkoutLogSet(id, updateData);
         return { success: true };
       }),
     
