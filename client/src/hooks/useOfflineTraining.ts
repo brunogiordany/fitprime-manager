@@ -212,6 +212,7 @@ export function useOfflineTraining(options: UseOfflineTrainingOptions) {
             const exercises = Array.from(exerciseMap.entries()).map(([exerciseName, sets]) => ({
               exerciseName,
               muscleGroup: sets[0]?.muscleGroup,
+              loadType: sets[0]?.loadType || 'kg',
               sets: sets.map((s: OfflineWorkoutSet) => ({
                 setNumber: s.setNumber,
                 setType: s.setType as 'warmup' | 'feeler' | 'working' | 'drop' | 'rest_pause' | 'failure' | undefined,
