@@ -2976,7 +2976,18 @@ export default function TrainingDiaryPage() {
                           <div className="flex items-start gap-3 cursor-pointer flex-1 min-w-0" onClick={() => toggleExerciseExpand(exIndex)}>
                             <span className="text-lg font-bold text-primary flex-shrink-0">{exIndex + 1}</span>
                             <div className="min-w-0 flex-1">
-                              <h4 className="font-semibold text-sm sm:text-base leading-snug break-words">{exercise.exerciseName}</h4>
+                              {isEditing && logDetail.status === 'in_progress' ? (
+                                <Input
+                                  className="font-semibold text-sm sm:text-base h-9"
+                                  value={exercise.exerciseName}
+                                  placeholder="Nome do exercício"
+                                  onChange={(e) => handleExerciseNameChange(exIndex, e.target.value)}
+                                  onBlur={() => persistExerciseName(exIndex)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              ) : (
+                                <h4 className="font-semibold text-sm sm:text-base leading-snug break-words">{exercise.exerciseName}</h4>
+                              )}
                               {exercise.originalExerciseName && (
                                 <p className="text-xs text-blue-600 flex items-center gap-1">
                                   <RefreshCw className="h-3 w-3" />
@@ -2989,7 +3000,7 @@ export default function TrainingDiaryPage() {
                             </div>
                           </div>
                           <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pl-10 sm:pl-0">
-                            {isEditing && (
+                            {isEditing && logDetail.status === 'in_progress' && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -3019,6 +3030,13 @@ export default function TrainingDiaryPage() {
                       
                       {exercise.isExpanded && (
                         <CardContent className="p-0">
+                          {isEditing && logDetail.status === 'in_progress' ? (
+                            renderLoadTypeSelector(exercise, exIndex)
+                          ) : (
+                            <div className="px-3 py-2 border-b bg-muted/20">
+                              <Badge variant="outline">{getLoadTypeLabel(exercise.loadType)}</Badge>
+                            </div>
+                          )}
                           {/* Lista de séries - layout compacto */}
                           <div className="divide-y">
                             {exercise.sets.map((set, setIndex) => (
@@ -3076,16 +3094,7 @@ export default function TrainingDiaryPage() {
                                   {/* Linha 2: Peso + Reps + Descanso */}
                                   {isEditing ? (
                                     <div className="flex items-center gap-3 pl-9">
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-16 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.weight || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'weight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs text-muted-foreground">kg</span>
-                                      </div>
+                                      {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                       
                                       <div className="flex items-center gap-1">
                                         <Input
@@ -3112,7 +3121,7 @@ export default function TrainingDiaryPage() {
                                   ) : (
                                     <div className="flex items-center gap-3 pl-9">
                                       <span className="font-semibold text-foreground">
-                                        {set.weight || 0}kg
+                                        {formatLoadValue(exercise, set)}
                                       </span>
                                       <span className="text-muted-foreground">×</span>
                                       <span className="font-semibold text-foreground">
@@ -3294,8 +3303,16 @@ export default function TrainingDiaryPage() {
                     variant="secondary"
                     className="w-full sm:w-auto h-11 sm:h-10 px-2"
                     onClick={() => {
-                      // Salvar todas as séries atuais
+                      // Salvar nome/tipo de carga dos exercícios e todas as séries atuais
                       currentExercises.forEach((ex) => {
+                        if (ex.id && ex.exerciseName.trim()) {
+                          updateExercise.mutate({
+                            id: ex.id,
+                            exerciseName: ex.exerciseName.trim(),
+                            loadType: ex.loadType || "kg",
+                            notes: ex.notes,
+                          });
+                        }
                         ex.sets.forEach((set) => {
                           if (set.id) {
                             updateSet.mutate({
