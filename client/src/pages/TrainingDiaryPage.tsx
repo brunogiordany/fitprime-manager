@@ -1035,6 +1035,36 @@ export default function TrainingDiaryPage() {
     }
   };
   
+  const renderLoadTypeSelector = (exercise: ExerciseData, exerciseIndex: number) => (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-2 border-b bg-muted/20">
+      <Label className="text-xs text-muted-foreground whitespace-nowrap">Tipo de carga</Label>
+      <Select
+        value={exercise.loadType || "kg"}
+        onValueChange={(value) => handleExerciseLoadTypeChange(exerciseIndex, value as LoadType)}
+      >
+        <SelectTrigger className="h-9 w-full sm:w-[210px] text-sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {LOAD_TYPES.map((type) => (
+            <SelectItem key={type.value} value={type.value}>
+              {type.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <span className="text-xs text-muted-foreground sm:ml-auto">
+        {exercise.loadType === "bodyweight"
+          ? "Séries contam pelas repetições, sem exigir kg."
+          : exercise.loadType === "bodyweight_plus"
+            ? "Informe apenas a carga adicionada ao peso corporal."
+            : exercise.loadType === "no_load"
+              ? "Ideal para máquina/nível sem carga em kg."
+              : "Informe a carga externa em kg."}
+      </span>
+    </div>
+  );
+  
   const renderLoadEditor = (exercise: ExerciseData, exerciseIndex: number, set: SetData, setIndex: number) => {
     const loadType = exercise.loadType || "kg";
     
