@@ -2204,7 +2204,7 @@ export default function TrainingDiaryPage() {
                     {!progressExercise && filteredExercises.length > 0 && (
                       <div className="border rounded-lg p-3 sm:p-4 bg-muted/20 text-center">
                         <p className="text-sm text-muted-foreground">
-                          Selecione um exercício acima para ver a evolução de carga
+                          Selecione um exercício acima para ver a evolução
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {filteredExercises.length} exercícios disponíveis
@@ -2239,19 +2239,26 @@ export default function TrainingDiaryPage() {
                         );
                       }
                       
+                      const progressLoadType = (filteredProgress[0]?.loadType || "kg") as LoadType;
+                      const progressUsesLoad = isMeasuredLoad(progressLoadType);
+                      const progressMetric = (item: any) =>
+                        progressUsesLoad ? (item.maxWeight || 0) : (item.maxReps || 0);
+                      const progressUnit = progressUsesLoad ? "kg" : " reps";
+                      const progressMetricLabel = progressUsesLoad ? "Carga Máxima" : "Repetições Máximas";
+                      
                       return (
                         <div className="space-y-4">
                           {/* Resumo compacto */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
                               <p className="text-xl font-bold text-primary">
-                                {Math.max(...filteredProgress.map((i: any) => i.maxWeight || 0))}kg
+                                {Math.max(...filteredProgress.map(progressMetric))}{progressUnit}
                               </p>
                               <p className="text-xs text-muted-foreground">Recorde</p>
                             </div>
                             <div className="text-center p-3 bg-muted/50 rounded-lg">
                               <p className="text-xl font-bold">
-                                {(filteredProgress.reduce((sum: number, i: any) => sum + (i.maxWeight || 0), 0) / filteredProgress.length).toFixed(1)}kg
+                                {(filteredProgress.reduce((sum: number, i: any) => sum + progressMetric(i), 0) / filteredProgress.length).toFixed(1)}{progressUnit}
                               </p>
                               <p className="text-xs text-muted-foreground">Média</p>
                             </div>
@@ -2272,7 +2279,7 @@ export default function TrainingDiaryPage() {
                           {/* Gráfico de linha compacto */}
                           <div className="border rounded-lg p-4 bg-muted/20">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium">Tendência de Carga Máxima</span>
+                              <span className="text-sm font-medium">Tendência de {progressMetricLabel}</span>
                               <span className="text-xs text-muted-foreground">
                                 {filteredProgress.length} registros
                               </span>
@@ -2287,12 +2294,12 @@ export default function TrainingDiaryPage() {
                                 
                                 {/* Linha de evolução */}
                                 {(() => {
-                                  const maxW = Math.max(...filteredProgress.map((i: any) => i.maxWeight || 0));
-                                  const minW = Math.min(...filteredProgress.map((i: any) => i.maxWeight || 0));
+                                  const maxW = Math.max(...filteredProgress.map(progressMetric));
+                                  const minW = Math.min(...filteredProgress.map(progressMetric));
                                   const range = maxW - minW || 1;
                                   const points = filteredProgress.slice().reverse().map((item: any, idx: number) => {
                                     const x = (idx / Math.max(filteredProgress.length - 1, 1)) * 100;
-                                    const y = 35 - ((item.maxWeight - minW) / range) * 30;
+                                    const y = 35 - ((progressMetric(item) - minW) / range) * 30;
                                     return `${x},${y}`;
                                   }).join(' ');
                                   return (
@@ -2306,7 +2313,7 @@ export default function TrainingDiaryPage() {
                                       {/* Pontos */}
                                       {filteredProgress.slice().reverse().map((item: any, idx: number) => {
                                         const x = (idx / Math.max(filteredProgress.length - 1, 1)) * 100;
-                                        const y = 35 - ((item.maxWeight - minW) / range) * 30;
+                                        const y = 35 - ((progressMetric(item) - minW) / range) * 30;
                                         return (
                                           <circle
                                             key={idx}
@@ -2361,7 +2368,9 @@ export default function TrainingDiaryPage() {
                                       </div>
                                       <div className="flex items-center gap-4">
                                         <div className="text-right">
-                                          <div className="font-bold text-primary">{item.maxWeight}kg</div>
+                                          <div className="font-bold text-primary">
+                                            {progressUsesLoad ? `${item.maxWeight || 0}kg` : `${item.maxReps || 0} reps`}
+                                          </div>
                                           <div className="text-xs text-muted-foreground">
                                             {item.totalSets} séries • {item.totalReps} reps
                                           </div>
@@ -2399,7 +2408,7 @@ export default function TrainingDiaryPage() {
                                                         </Badge>
                                                       </td>
                                                       <td className="py-2 px-2 text-right font-bold">
-                                                        {set.weight ? `${set.weight}kg` : '-'}
+                                                        {formatLoadValueByType(item.loadType as LoadType | undefined, set.weight)}
                                                       </td>
                                                       <td className="py-2 px-2 text-right">
                                                         {set.reps || '-'}
@@ -2439,7 +2448,7 @@ export default function TrainingDiaryPage() {
                       <div className="text-center py-8 text-muted-foreground">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
                         <p>Digite o nome do exercício</p>
-                        <p className="text-sm">para ver a evolução de carga ao longo do tempo.</p>
+                        <p className="text-sm">para ver a evolução ao longo do tempo.</p>
                       </div>
                     )}
                   </CardContent>
