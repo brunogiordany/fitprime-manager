@@ -887,15 +887,21 @@ export default function TrainingDiaryPage() {
   const getLoadTypeLabel = (loadType?: LoadType) =>
     LOAD_TYPES.find(item => item.value === (loadType || "kg"))?.label || "Carga (kg)";
   
-  const formatLoadValue = (exercise: ExerciseData, set: SetData) => {
-    const loadType = exercise.loadType || "kg";
-    if (loadType === "bodyweight") return "PC";
-    if (loadType === "no_load") return "—";
-    if (loadType === "bodyweight_plus") {
-      return set.weight && set.weight > 0 ? `PC + ${set.weight}kg` : "PC";
+  const formatLoadValueByType = (loadType: LoadType | undefined, weight: number | string | null | undefined) => {
+    const normalized = loadType || "kg";
+    const parsedWeight = weight === null || weight === undefined || weight === ""
+      ? undefined
+      : Number(weight);
+    if (normalized === "bodyweight") return "PC";
+    if (normalized === "no_load") return "—";
+    if (normalized === "bodyweight_plus") {
+      return parsedWeight && parsedWeight > 0 ? `PC + ${parsedWeight}kg` : "PC";
     }
-    return set.weight !== undefined ? `${set.weight}kg` : "-";
+    return parsedWeight !== undefined && !Number.isNaN(parsedWeight) ? `${parsedWeight}kg` : "-";
   };
+  
+  const formatLoadValue = (exercise: ExerciseData, set: SetData) =>
+    formatLoadValueByType(exercise.loadType, set.weight);
   
   const resetNewLog = () => {
     setNewLog({
