@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
           import json, os, urllib.parse, urllib.request
 
           key = os.environ["MANUS_API_KEY"]
@@ -160,7 +160,7 @@ jobs:
           BEFORE_UPDATED: ${{ steps.baseline.outputs.before_updated }}
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
           import json, os, time, urllib.parse, urllib.request
 
           key = os.environ["MANUS_API_KEY"]
@@ -271,10 +271,12 @@ jobs:
           after_credit = int(final.get("credit_usage") or 0)
           delta = max(0, after_credit - before_credit)
 
-          print("result=" + result)
-          print("after_credit=" + str(after_credit))
-          print("credit_delta=" + str(delta))
-          print("final_status=" + str(final.get("status") or ""))
+          output_path = os.environ["GITHUB_OUTPUT"]
+          with open(output_path, "a") as output:
+              output.write("result=" + result + "\n")
+              output.write("after_credit=" + str(after_credit) + "\n")
+              output.write("credit_delta=" + str(delta) + "\n")
+              output.write("final_status=" + str(final.get("status") or "") + "\n")
           PY
 
       - name: Show recent Manus messages on incomplete run
@@ -337,7 +339,8 @@ jobs:
               raise SystemExit("No checkpoint returned after sync")
           if current == before:
               raise SystemExit("Manus stopped but did not create a new checkpoint; refusing to publish the old version")
-          print("version_id=" + current)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("version_id=" + current + "\n")
           PY
 
       - name: Publish the new checkpoint
@@ -376,7 +379,7 @@ jobs:
           EXPECTED_VERSION: ${{ steps.checkpoint.outputs.version_id }}
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
           import json, os, time, urllib.parse, urllib.request
           key = os.environ["MANUS_API_KEY"]
           website_id = os.environ["WEBSITE_ID"]
@@ -404,8 +407,9 @@ jobs:
           if version != expected:
               raise SystemExit(f"Published version {version} does not match new checkpoint {expected}")
 
-          print("live_version=" + version)
-          print("site_urls=" + ",".join(final.get("site_urls") or []))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write("live_version=" + version + "\n")
+              output.write("site_urls=" + ",".join(final.get("site_urls") or []) + "\n")
           PY
 
       - name: Final credit measurement and summary
