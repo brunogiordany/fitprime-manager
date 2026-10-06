@@ -319,7 +319,7 @@ jobs:
           BEFORE_VERSION: ${{ steps.baseline.outputs.before_version }}
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
           import json, os, urllib.parse, urllib.request
 
           key = os.environ["MANUS_API_KEY"]
