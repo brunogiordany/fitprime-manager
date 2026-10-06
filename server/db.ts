@@ -3571,34 +3571,39 @@ export async function getExerciseProgressHistory(
       .where(eq(workoutLogSets.workoutLogExerciseId, item.exercise.id))
       .orderBy(asc(workoutLogSets.setNumber));
     
-    const loadType = getWorkoutExerciseLoadType(item.exercise.notes);
-    const usesMeasuredLoad = loadType === 'kg' || loadType === 'bodyweight_plus';
-    const performedSets = sets.filter(s => (s.reps || 0) > 0 || s.isCompleted === true);
+    const exerciseFallbackLoadType = getWorkoutExerciseLoadType(item.exercise.notes);
+    const normalizedSets = sets.map(set => ({
+      ...set,
+      loadType: getWorkoutSetLoadType(set.notes, exerciseFallbackLoadType),
+    }));
+    const performedSets = normalizedSets.filter(s => (s.reps || 0) > 0 || s.isCompleted === true);
+    const measuredSets = performedSets.filter(s => s.loadType === 'kg' || s.loadType === 'bodyweight_plus');
     
-    // Para peso corporal/sem carga, evolução principal passa a ser repetições.
-    const maxWeight = usesMeasuredLoad && performedSets.length > 0
-      ? Math.max(...performedSets.map(s => parseFloat(s.weight?.toString() || '0')))
+    // Em exercícios mistos, aquecimento pode ser PC/sem carga e séries válidas podem usar kg.
+    // A evolução de carga considera apenas as séries realmente mensuradas em kg.
+    const maxWeight = measuredSets.length > 0
+      ? Math.max(...measuredSets.map(s => parseFloat(s.weight?.toString() || '0')))
       : 0;
     const maxReps = performedSets.length > 0
       ? Math.max(...performedSets.map(s => s.reps || 0))
       : 0;
-    const totalVolume = usesMeasuredLoad
-      ? performedSets.reduce((sum, s) => {
-          const w = parseFloat(s.weight?.toString() || '0');
-          return sum + w * (s.reps || 0);
-        }, 0)
-      : 0;
+    const totalVolume = measuredSets.reduce((sum, s) => {
+      const w = parseFloat(s.weight?.toString() || '0');
+      return sum + w * (s.reps || 0);
+    }, 0);
     
     return {
       date: item.log.trainingDate,
       exerciseName: item.exercise.exerciseName,
-      loadType,
+      loadType: exerciseFallbackLoadType,
+      hasMeasuredLoad: measuredSets.length > 0,
+      hasNonMeasuredLoad: performedSets.some(s => s.loadType === 'bodyweight' || s.loadType === 'no_load'),
       maxWeight,
       maxReps,
       totalVolume,
       totalSets: performedSets.length,
       totalReps: performedSets.reduce((sum, s) => sum + (s.reps || 0), 0),
-      sets,
+      sets: normalizedSets,
     };
   }));
   
