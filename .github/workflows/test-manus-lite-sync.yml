@@ -90,11 +90,13 @@ jobs:
           cps = checkpoints.get("data", [])
           latest = cps[0] if cps else {}
 
-          print("task_id=" + task_id)
-          print("before_credit=" + str(task.get("credit_usage") or 0))
-          print("before_updated=" + str(task.get("updated_at") or 0))
-          print("before_version=" + str(latest.get("version_id") or ""))
-          print("before_status=" + str(task.get("status") or ""))
+          output_path = os.environ["GITHUB_OUTPUT"]
+          with open(output_path, "a") as output:
+              output.write("task_id=" + task_id + "\n")
+              output.write("before_credit=" + str(task.get("credit_usage") or 0) + "\n")
+              output.write("before_updated=" + str(task.get("updated_at") or 0) + "\n")
+              output.write("before_version=" + str(latest.get("version_id") or "") + "\n")
+              output.write("before_status=" + str(task.get("status") or "") + "\n")
           PY
 
       - name: Ask Manus Lite to sync GitHub only
