@@ -1,3 +1,4 @@
 Deploy FitPrime production
 Reason: diary load modes + editable exercise names
-Target main: 0196ea50fd7cb47246e7e513d592a4f3f11fb800
+Target main: 713a8b3e3f9d0eba3c142512d1b5e3e738417821
+Retry: authorized Manus Lite confirmation handling
