@@ -2228,8 +2228,12 @@ export default function TrainingDiaryPage() {
                         );
                       }
                       
-                      const progressLoadType = (filteredProgress[0]?.loadType || "kg") as LoadType;
-                      const progressUsesLoad = isMeasuredLoad(progressLoadType);
+                      const progressUsesLoad = filteredProgress.some((item: any) =>
+                        item.hasMeasuredLoad === true || (
+                          item.hasMeasuredLoad === undefined &&
+                          isMeasuredLoad((item.loadType || "kg") as LoadType)
+                        )
+                      );
                       const progressMetric = (item: any) =>
                         progressUsesLoad ? (item.maxWeight || 0) : (item.maxReps || 0);
                       const progressUnit = progressUsesLoad ? "kg" : " reps";
@@ -2397,7 +2401,7 @@ export default function TrainingDiaryPage() {
                                                         </Badge>
                                                       </td>
                                                       <td className="py-2 px-2 text-right font-bold">
-                                                        {formatLoadValueByType(item.loadType as LoadType | undefined, set.weight)}
+                                                        {formatLoadValueByType((set.loadType || item.loadType) as LoadType | undefined, set.weight)}
                                                       </td>
                                                       <td className="py-2 px-2 text-right">
                                                         {set.reps || '-'}
@@ -3553,7 +3557,6 @@ export default function TrainingDiaryPage() {
                       
                       {exercise.isExpanded && (
                         <CardContent className="p-0">
-                          {renderLoadTypeSelector(exercise, exIndex)}
                           <div className="divide-y px-3">
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="py-3">
@@ -3595,6 +3598,7 @@ export default function TrainingDiaryPage() {
                                     </SelectContent>
                                   </Select>
                                   
+                                  {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
                                   {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                   
                                   <div className="flex items-center gap-1">
@@ -3714,26 +3718,21 @@ export default function TrainingDiaryPage() {
                                       {(set.drops && set.drops.length > 0 ? set.drops : [{ weight: set.dropWeight, reps: set.dropReps, restTime: undefined }]).map((drop, dropIndex) => (
                                         <div key={dropIndex} className="flex items-center gap-2 flex-wrap bg-white/50 dark:bg-black/20 p-2 rounded">
                                           <span className="text-xs font-medium text-purple-600 dark:text-purple-400 w-14">Drop {dropIndex + 1}</span>
-                                          <div className="flex items-center gap-1">
-                                            <Input
-                                              type="number"
-                                              className="h-7 w-14 text-center text-sm"
-                                              placeholder="0"
-                                              value={drop.weight || ''}
-                                              onChange={(e) => {
-                                                const updated = [...currentExercises];
-                                                const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
-                                                drops[dropIndex] = { ...drops[dropIndex], weight: e.target.value ? parseFloat(e.target.value) : undefined };
-                                                updated[exIndex].sets[setIndex].drops = drops;
-                                                // Manter compatibilidade com campos antigos
-                                                if (dropIndex === 0) {
-                                                  updated[exIndex].sets[setIndex].dropWeight = drops[0].weight;
-                                                }
-                                                setCurrentExercises(updated);
-                                              }}
-                                            />
-                                            <span className="text-xs text-muted-foreground">kg</span>
-                                          </div>
+                                          {renderTechniqueLoadEditor(
+                                            exercise,
+                                            set,
+                                            drop.weight,
+                                            (value) => {
+                                              const updated = [...currentExercises];
+                                              const drops = updated[exIndex].sets[setIndex].drops || [{ weight: set.dropWeight, reps: set.dropReps }];
+                                              drops[dropIndex] = { ...drops[dropIndex], weight: value };
+                                              updated[exIndex].sets[setIndex].drops = drops;
+                                              if (dropIndex === 0) {
+                                                updated[exIndex].sets[setIndex].dropWeight = drops[0].weight;
+                                              }
+                                              setCurrentExercises(updated);
+                                            }
+                                          )}
                                           <span className="text-muted-foreground">×</span>
                                           <div className="flex items-center gap-1">
                                             <Input
@@ -3844,25 +3843,21 @@ export default function TrainingDiaryPage() {
                                             <span className="text-xs text-muted-foreground">s</span>
                                           </div>
                                           <span className="text-muted-foreground">→</span>
-                                          <div className="flex items-center gap-1">
-                                            <Input
-                                              type="number"
-                                              className="h-7 w-14 text-center text-sm"
-                                              placeholder="0"
-                                              value={pause.weight || ''}
-                                              onChange={(e) => {
-                                                const updated = [...currentExercises];
-                                                const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
-                                                pauses[pauseIndex] = { ...pauses[pauseIndex], weight: e.target.value ? parseFloat(e.target.value) : undefined };
-                                                updated[exIndex].sets[setIndex].restPauses = pauses;
-                                                if (pauseIndex === 0) {
-                                                  updated[exIndex].sets[setIndex].restPauseWeight = pauses[0].weight;
-                                                }
-                                                setCurrentExercises(updated);
-                                              }}
-                                            />
-                                            <span className="text-xs text-muted-foreground">kg</span>
-                                          </div>
+                                          {renderTechniqueLoadEditor(
+                                            exercise,
+                                            set,
+                                            pause.weight,
+                                            (value) => {
+                                              const updated = [...currentExercises];
+                                              const pauses = updated[exIndex].sets[setIndex].restPauses || [{ weight: set.restPauseWeight, reps: set.restPauseReps, pauseTime: set.restPausePause }];
+                                              pauses[pauseIndex] = { ...pauses[pauseIndex], weight: value };
+                                              updated[exIndex].sets[setIndex].restPauses = pauses;
+                                              if (pauseIndex === 0) {
+                                                updated[exIndex].sets[setIndex].restPauseWeight = pauses[0].weight;
+                                              }
+                                              setCurrentExercises(updated);
+                                            }
+                                          )}
                                           <span className="text-muted-foreground">×</span>
                                           <div className="flex items-center gap-1">
                                             <Input
