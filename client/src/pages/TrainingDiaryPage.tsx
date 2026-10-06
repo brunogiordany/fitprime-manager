@@ -2647,11 +2647,8 @@ export default function TrainingDiaryPage() {
                                   className="font-semibold border-0 p-0 h-auto focus-visible:ring-0"
                                   placeholder="Nome do exercício"
                                   value={exercise.exerciseName}
-                                  onChange={(e) => {
-                                    const updated = [...currentExercises];
-                                    updated[exIndex].exerciseName = e.target.value;
-                                    setCurrentExercises(updated);
-                                  }}
+                                  onChange={(e) => handleExerciseNameChange(exIndex, e.target.value)}
+                                  onBlur={() => persistExerciseName(exIndex)}
                                   onClick={(e) => e.stopPropagation()}
                                 />
                                 {exercise.muscleGroup && (
@@ -2674,6 +2671,7 @@ export default function TrainingDiaryPage() {
                         
                         {exercise.isExpanded && (
                           <CardContent className="p-0">
+                            {renderLoadTypeSelector(exercise, exIndex)}
                             {/* Lista de séries - layout compacto sem rolagem */}
                             <div className="divide-y">
                               {exercise.sets.map((set, setIndex) => (
@@ -2711,16 +2709,7 @@ export default function TrainingDiaryPage() {
                                       </SelectContent>
                                     </Select>
                                     
-                                    <div className="flex items-center gap-1">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-16 text-center text-sm"
-                                        placeholder="0"
-                                        value={set.weight || ""}
-                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'weight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                      />
-                                      <span className="text-xs text-muted-foreground">kg</span>
-                                    </div>
+                                    {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                     
                                     <div className="flex items-center gap-1">
                                       <Input
