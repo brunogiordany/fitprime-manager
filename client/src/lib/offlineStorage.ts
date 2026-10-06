@@ -617,6 +617,7 @@ export interface OfflineWorkoutSet {
   id: string; // ID temporário offline
   exerciseName: string;
   muscleGroup?: string;
+  loadType?: 'kg' | 'bodyweight' | 'bodyweight_plus' | 'no_load';
   setNumber: number;
   weight?: number;
   reps?: number;
