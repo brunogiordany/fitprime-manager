@@ -64,6 +64,21 @@ const SET_TYPES = [
   { value: "failure", label: "Falha", color: "bg-red-500" },
 ];
 
+type LoadType = "kg" | "bodyweight" | "bodyweight_plus" | "no_load";
+
+const LOAD_TYPES: { value: LoadType; label: string; shortLabel: string }[] = [
+  { value: "kg", label: "Carga (kg)", shortLabel: "kg" },
+  { value: "bodyweight", label: "Peso corporal", shortLabel: "PC" },
+  { value: "bodyweight_plus", label: "Peso corporal + carga", shortLabel: "PC + kg" },
+  { value: "no_load", label: "Sem carga / máquina", shortLabel: "Sem carga" },
+];
+
+const isMeasuredLoad = (loadType?: LoadType) =>
+  (loadType || "kg") === "kg" || loadType === "bodyweight_plus";
+
+const isSetPerformed = (set: { reps?: number; isCompleted?: boolean }) =>
+  (set.reps || 0) > 0 || set.isCompleted === true;
+
 // Sentimentos
 const FEELINGS = [
   { value: "great", label: "Excelente", emoji: "🔥" },
@@ -222,6 +237,7 @@ interface ExerciseData {
   originalExerciseName?: string; // Nome original antes da substituição
   substitutedAt?: Date; // Data/hora da substituição
   muscleGroup?: string;
+  loadType?: LoadType;
   plannedSets?: number;
   plannedReps?: string;
   plannedRest?: number;
@@ -551,6 +567,15 @@ export default function TrainingDiaryPage() {
     },
   });
   
+  const updateExercise = trpc.trainingDiary.updateExercise.useMutation({
+    onSuccess: () => {
+      refetchLogDetail();
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar exercício", { description: error.message });
+    },
+  });
+  
   const completeLog = trpc.trainingDiary.complete.useMutation({
     onSuccess: (data) => {
       toast.success("Treino finalizado!", {
@@ -675,6 +700,7 @@ export default function TrainingDiaryPage() {
           exerciseId: ex.id,
           exerciseName: ex.name,
           muscleGroup: ex.muscleGroup,
+          loadType: "kg",
           plannedSets: ex.sets || 3,
           plannedReps: ex.reps || "8-12",
           plannedRest: ex.restTime || 60,
@@ -713,6 +739,7 @@ export default function TrainingDiaryPage() {
         exerciseId: ex.id,
         exerciseName: ex.name,
         muscleGroup: ex.muscleGroup,
+        loadType: "kg",
         plannedSets: ex.sets || 3,
         plannedReps: ex.reps || "8-12",
         plannedRest: ex.restTime || 60,
@@ -741,6 +768,7 @@ export default function TrainingDiaryPage() {
         exerciseId: ex.exerciseId,
         exerciseName: ex.exerciseName,
         muscleGroup: ex.muscleGroup,
+        loadType: (ex.loadType || "kg") as LoadType,
         plannedSets: ex.plannedSets,
         plannedReps: ex.plannedReps,
         plannedRest: ex.plannedRest,
@@ -847,6 +875,7 @@ export default function TrainingDiaryPage() {
           ex.sets.map(s => ({
             exerciseName: ex.exerciseName,
             muscleGroup: ex.muscleGroup,
+            loadType: ex.loadType || "kg",
             setNumber: s.setNumber,
             weight: s.weight,
             reps: s.reps,
@@ -896,6 +925,7 @@ export default function TrainingDiaryPage() {
         exerciseId: ex.exerciseId,
         exerciseName: ex.exerciseName,
         muscleGroup: ex.muscleGroup,
+        loadType: ex.loadType || "kg",
         plannedSets: ex.plannedSets,
         plannedReps: ex.plannedReps,
         plannedRest: ex.plannedRest,
@@ -1036,8 +1066,8 @@ export default function TrainingDiaryPage() {
     currentExercises.forEach(ex => {
       ex.sets.forEach(set => {
         totalSets++;
-        // Considera como "feita" se tem peso E reps preenchidos
-        if (set.weight && set.reps) completedSets++;
+        // Peso corporal/sem carga também contam como série realizada.
+        if (isSetPerformed(set)) completedSets++;
       });
     });
     
@@ -2398,6 +2428,7 @@ export default function TrainingDiaryPage() {
                       setCurrentExercises([...currentExercises, {
                         exerciseName: "",
                         muscleGroup: "",
+                        loadType: "kg",
                         plannedSets: 3,
                         plannedReps: "8-12",
                         plannedRest: 60,
@@ -2453,7 +2484,7 @@ export default function TrainingDiaryPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline">
-                                {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
+                                {exercise.sets.filter(isSetPerformed).length}/{exercise.sets.length} séries
                               </Badge>
                               {exercise.isExpanded ? (
                                 <ChevronUp className="h-4 w-4" />
@@ -2807,7 +2838,7 @@ export default function TrainingDiaryPage() {
                               </Button>
                             )}
                             <Badge variant="outline" className="text-xs whitespace-nowrap">
-                              {exercise.sets.filter(s => s.weight && s.reps).length}/{exercise.sets.length} séries
+                              {exercise.sets.filter(isSetPerformed).length}/{exercise.sets.length} séries
                             </Badge>
                             <div className="cursor-pointer h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted flex-shrink-0" onClick={() => toggleExerciseExpand(exIndex)}>
                               {exercise.isExpanded ? (
