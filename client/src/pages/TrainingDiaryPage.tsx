@@ -212,6 +212,7 @@ interface SetData {
   id?: number;
   setNumber: number;
   setType?: string;
+  loadType?: LoadType;
   weight?: number;
   reps?: number;
   restTime?: number;
@@ -706,6 +707,7 @@ export default function TrainingDiaryPage() {
           sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
             setNumber: i + 1,
             setType: i === 0 ? "warmup" : "working",
+            loadType: "kg",
             weight: undefined,
             reps: undefined,
             restTime: ex.restTime || 60,
@@ -745,6 +747,7 @@ export default function TrainingDiaryPage() {
         sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
           setNumber: i + 1,
           setType: i === 0 ? "warmup" : "working",
+          loadType: "kg",
           weight: undefined,
           reps: undefined,
           restTime: ex.restTime || 60,
@@ -775,6 +778,7 @@ export default function TrainingDiaryPage() {
           id: s.id,
           setNumber: s.setNumber,
           setType: s.setType,
+          loadType: (s.loadType || ex.loadType || "kg") as LoadType,
           weight: s.weight ? parseFloat(s.weight) : undefined,
           reps: s.reps,
           restTime: s.restTime,
@@ -950,7 +954,7 @@ export default function TrainingDiaryPage() {
           ex.sets.map(s => ({
             exerciseName: ex.exerciseName,
             muscleGroup: ex.muscleGroup,
-            loadType: ex.loadType || "kg",
+            loadType: s.loadType || ex.loadType || "kg",
             setNumber: s.setNumber,
             weight: s.weight,
             reps: s.reps,
@@ -1008,6 +1012,7 @@ export default function TrainingDiaryPage() {
         sets: ex.sets.map(s => ({
           setNumber: s.setNumber,
           setType: s.setType as any,
+          loadType: s.loadType || ex.loadType || "kg",
           weight: s.weight,
           reps: s.reps,
           restTime: s.restTime,
@@ -1157,6 +1162,7 @@ export default function TrainingDiaryPage() {
     const newSet: SetData = {
       setNumber: newSetNumber,
       setType: "working",
+      loadType: exercise.sets[exercise.sets.length - 1]?.loadType || exercise.loadType || "kg",
       weight: undefined,
       reps: undefined,
       restTime: exercise.plannedRest || 60,
@@ -1172,6 +1178,7 @@ export default function TrainingDiaryPage() {
         workoutLogExerciseId: exercise.id,
         setNumber: newSetNumber,
         setType: "working",
+        loadType: newSet.loadType,
         restTime: exercise.plannedRest || 60,
       });
     }
@@ -2627,9 +2634,9 @@ export default function TrainingDiaryPage() {
                         notes: "",
                         isCompleted: false,
                         sets: [
-                          { setNumber: 1, setType: "warmup", isCompleted: false },
-                          { setNumber: 2, setType: "working", isCompleted: false },
-                          { setNumber: 3, setType: "working", isCompleted: false },
+                          { setNumber: 1, setType: "warmup", loadType: "kg", isCompleted: false },
+                          { setNumber: 2, setType: "working", loadType: "kg", isCompleted: false },
+                          { setNumber: 3, setType: "working", loadType: "kg", isCompleted: false },
                         ],
                         isExpanded: true,
                       }]);
