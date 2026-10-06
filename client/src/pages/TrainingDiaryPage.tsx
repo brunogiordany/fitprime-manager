@@ -871,23 +871,6 @@ export default function TrainingDiaryPage() {
     }
   };
   
-  const handleExerciseLoadTypeChange = (exerciseIndex: number, loadType: LoadType) => {
-    const exercise = currentExercises[exerciseIndex];
-    if (!exercise) return;
-    
-    const updated = [...currentExercises];
-    updated[exerciseIndex] = { ...exercise, loadType };
-    setCurrentExercises(updated);
-    
-    if (exercise.id && isEditing) {
-      updateExercise.mutate({
-        id: exercise.id,
-        loadType,
-        notes: exercise.notes,
-      });
-    }
-  };
-  
   const getLoadTypeLabel = (loadType?: LoadType) =>
     LOAD_TYPES.find(item => item.value === (loadType || "kg"))?.label || "Carga (kg)";
   
@@ -905,7 +888,7 @@ export default function TrainingDiaryPage() {
   };
   
   const formatLoadValue = (exercise: ExerciseData, set: SetData) =>
-    formatLoadValueByType(exercise.loadType, set.weight);
+    formatLoadValueByType(set.loadType || exercise.loadType || "kg", set.weight);
   
   const resetNewLog = () => {
     setNewLog({
@@ -1046,38 +1029,36 @@ export default function TrainingDiaryPage() {
     }
   };
   
-  const renderLoadTypeSelector = (exercise: ExerciseData, exerciseIndex: number) => (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-2 border-b bg-muted/20">
-      <Label className="text-xs text-muted-foreground whitespace-nowrap">Tipo de carga</Label>
+  const renderSetLoadTypeSelector = (
+    exercise: ExerciseData,
+    exerciseIndex: number,
+    set: SetData,
+    setIndex: number
+  ) => {
+    const value = set.loadType || exercise.loadType || "kg";
+    return (
       <Select
-        value={exercise.loadType || "kg"}
-        onValueChange={(value) => handleExerciseLoadTypeChange(exerciseIndex, value as LoadType)}
+        value={value}
+        onValueChange={(nextValue) =>
+          handleUpdateSet(exerciseIndex, setIndex, "loadType", nextValue as LoadType)
+        }
       >
-        <SelectTrigger className="h-9 w-full sm:w-[210px] text-sm">
+        <SelectTrigger className="h-8 w-[118px] text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {LOAD_TYPES.map((type) => (
             <SelectItem key={type.value} value={type.value}>
-              {type.label}
+              {type.shortLabel}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <span className="text-xs text-muted-foreground sm:ml-auto">
-        {exercise.loadType === "bodyweight"
-          ? "Séries contam pelas repetições, sem exigir kg."
-          : exercise.loadType === "bodyweight_plus"
-            ? "Informe apenas a carga adicionada ao peso corporal."
-            : exercise.loadType === "no_load"
-              ? "Ideal para máquina/nível sem carga em kg."
-              : "Informe a carga externa em kg."}
-      </span>
-    </div>
-  );
+    );
+  };
   
   const renderLoadEditor = (exercise: ExerciseData, exerciseIndex: number, set: SetData, setIndex: number) => {
-    const loadType = exercise.loadType || "kg";
+    const loadType = set.loadType || exercise.loadType || "kg";
     
     if (loadType === "bodyweight") {
       return (
@@ -1122,10 +1103,11 @@ export default function TrainingDiaryPage() {
   
   const renderTechniqueLoadEditor = (
     exercise: ExerciseData,
+    set: SetData,
     value: number | undefined,
     onChange: (value: number | undefined) => void
   ) => {
-    const loadType = exercise.loadType || "kg";
+    const loadType = set.loadType || exercise.loadType || "kg";
     
     if (loadType === "bodyweight") {
       return <Badge variant="outline" className="h-8 px-2.5">PC</Badge>;
