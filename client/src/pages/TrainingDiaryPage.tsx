@@ -2752,16 +2752,11 @@ export default function TrainingDiaryPage() {
                                       </div>
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <div className="flex items-center gap-1">
-                                            <Input
-                                              type="number"
-                                              className="h-8 w-16 text-center text-sm"
-                                              placeholder="0"
-                                              value={set.dropWeight || ""}
-                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'dropWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                            />
-                                            <span className="text-xs text-muted-foreground">kg</span>
-                                          </div>
+                                          {renderTechniqueLoadEditor(
+                                            exercise,
+                                            set.dropWeight,
+                                            (value) => handleUpdateSet(exIndex, setIndex, 'dropWeight', value)
+                                          )}
                                           <span className="text-muted-foreground">×</span>
                                           <div className="flex items-center gap-1">
                                             <Input
@@ -2787,16 +2782,11 @@ export default function TrainingDiaryPage() {
                                       </div>
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <div className="flex items-center gap-1">
-                                            <Input
-                                              type="number"
-                                              className="h-8 w-16 text-center text-sm"
-                                              placeholder="0"
-                                              value={set.restPauseWeight || ""}
-                                              onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                                            />
-                                            <span className="text-xs text-muted-foreground">kg</span>
-                                          </div>
+                                          {renderTechniqueLoadEditor(
+                                            exercise,
+                                            set.restPauseWeight,
+                                            (value) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', value)
+                                          )}
                                           <span className="text-muted-foreground">×</span>
                                           <div className="flex items-center gap-1">
                                             <Input
