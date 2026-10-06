@@ -10080,6 +10080,8 @@ Seja motivador mas realista e profissional.`;
         // Deserializar drops e restPauses das notes de cada série
         if (log?.exercises) {
           for (const ex of log.exercises) {
+            (ex as any).loadType = db.getWorkoutExerciseLoadType(ex.notes);
+            ex.notes = db.stripWorkoutExerciseLoadType(ex.notes);
             if (ex.sets) {
               for (const set of ex.sets) {
                 if (set.notes && set.notes.includes('[[EXTRAS]]')) {
@@ -10129,6 +10131,7 @@ Seja motivador mas realista e profissional.`;
           plannedSets: z.number().optional(),
           plannedReps: z.string().optional(),
           plannedRest: z.number().optional(),
+          loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
           notes: z.string().optional(),
           sets: z.array(z.object({
             setNumber: z.number(),
@@ -10188,12 +10191,13 @@ Seja motivador mas realista e profissional.`;
         if (exercises && exercises.length > 0) {
           for (let i = 0; i < exercises.length; i++) {
             const ex = exercises[i];
-            const { sets, ...exData } = ex;
+            const { sets, loadType, notes, ...exData } = ex;
             
             const exerciseId = await db.createWorkoutLogExercise({
               workoutLogId: logId,
               orderIndex: i,
               ...exData,
+              notes: db.withWorkoutExerciseLoadType(notes, loadType || 'kg'),
             });
             
             // Criar séries do exercício
@@ -10276,6 +10280,7 @@ Seja motivador mas realista e profissional.`;
         plannedSets: z.number().optional(),
         plannedReps: z.string().optional(),
         plannedRest: z.number().optional(),
+        loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -10283,10 +10288,12 @@ Seja motivador mas realista e profissional.`;
         // Obter o próximo índice
         const exercises = await db.getWorkoutLogExercises(input.workoutLogId);
         const orderIndex = exercises.length;
+        const { loadType, notes, ...exerciseData } = input;
         
         const id = await db.createWorkoutLogExercise({
-          ...input,
+          ...exerciseData,
           orderIndex,
+          notes: db.withWorkoutExerciseLoadType(notes, loadType || 'kg'),
         });
         return { id };
       }),
@@ -10300,13 +10307,30 @@ Seja motivador mas realista e profissional.`;
         plannedSets: z.number().optional(),
         plannedReps: z.string().optional(),
         plannedRest: z.number().optional(),
+        loadType: z.enum(['kg', 'bodyweight', 'bodyweight_plus', 'no_load']).optional(),
         notes: z.string().optional(),
         isCompleted: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, ...data } = input;
+        const { id, loadType, notes, ...data } = input;
         const db = await import('./db');
-        await db.updateWorkoutLogExercise(id, data);
+        const updateData: any = { ...data };
+        
+        // O tipo de carga é persistido dentro de notes como metadado reservado.
+        // Ao editar nome/notas, preservamos o tipo atual e nunca expomos o marcador na UI.
+        if (loadType !== undefined || notes !== undefined) {
+          const existing = await db.getWorkoutLogExerciseById(id);
+          const currentLoadType = db.getWorkoutExerciseLoadType(existing?.notes);
+          const visibleNotes = notes !== undefined
+            ? notes
+            : db.stripWorkoutExerciseLoadType(existing?.notes);
+          updateData.notes = db.withWorkoutExerciseLoadType(
+            visibleNotes,
+            loadType || currentLoadType
+          );
+        }
+        
+        await db.updateWorkoutLogExercise(id, updateData);
         return { success: true };
       }),
     
