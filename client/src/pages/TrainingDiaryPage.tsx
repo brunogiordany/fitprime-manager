@@ -568,9 +568,6 @@ export default function TrainingDiaryPage() {
   });
   
   const updateExercise = trpc.trainingDiary.updateExercise.useMutation({
-    onSuccess: () => {
-      refetchLogDetail();
-    },
     onError: (error) => {
       toast.error("Erro ao atualizar exercício", { description: error.message });
     },
@@ -807,30 +804,97 @@ export default function TrainingDiaryPage() {
   const handleExerciseSubstitution = (newExercise: ExerciseAlternative) => {
     if (substitutingExerciseIndex === null) return;
     
-    setCurrentExercises((prev) => {
-      const updated = [...prev];
-      const currentExercise = updated[substitutingExerciseIndex];
-      
-      // Salvar nome original se ainda não foi substituído
-      const originalName = currentExercise.originalExerciseName || currentExercise.exerciseName;
-      
-      // Atualizar exercício
-      updated[substitutingExerciseIndex] = {
-        ...currentExercise,
+    const currentExercise = currentExercises[substitutingExerciseIndex];
+    if (!currentExercise) return;
+    
+    const originalName = currentExercise.originalExerciseName || currentExercise.exerciseName;
+    const nextNotes = currentExercise.notes 
+      ? `${currentExercise.notes} | Substituído: ${originalName} → ${newExercise.name}`
+      : `Substituído: ${originalName} → ${newExercise.name}`;
+    
+    const updated = [...currentExercises];
+    updated[substitutingExerciseIndex] = {
+      ...currentExercise,
+      exerciseName: newExercise.name,
+      originalExerciseName: originalName,
+      substitutedAt: new Date(),
+      notes: nextNotes,
+    };
+    setCurrentExercises(updated);
+    
+    // Em registros em andamento, a troca precisa persistir no banco imediatamente.
+    if (currentExercise.id && isEditing) {
+      updateExercise.mutate({
+        id: currentExercise.id,
         exerciseName: newExercise.name,
-        originalExerciseName: originalName,
-        substitutedAt: new Date(),
-        notes: currentExercise.notes 
-          ? `${currentExercise.notes} | Substituído: ${originalName} → ${newExercise.name}`
-          : `Substituído: ${originalName} → ${newExercise.name}`,
-      };
-      
-      return updated;
-    });
+        loadType: currentExercise.loadType || "kg",
+        notes: nextNotes,
+      });
+    }
     
     toast.success(`Exercício substituído para: ${newExercise.name}`);
     setShowSubstitutionModal(false);
     setSubstitutingExerciseIndex(null);
+  };
+  
+  const handleExerciseNameChange = (exerciseIndex: number, name: string) => {
+    const updated = [...currentExercises];
+    updated[exerciseIndex] = { ...updated[exerciseIndex], exerciseName: name };
+    setCurrentExercises(updated);
+  };
+  
+  const persistExerciseName = (exerciseIndex: number) => {
+    const exercise = currentExercises[exerciseIndex];
+    if (!exercise) return;
+    
+    const trimmedName = exercise.exerciseName.trim();
+    if (!trimmedName) {
+      toast.error("Informe o nome do exercício");
+      return;
+    }
+    
+    if (trimmedName !== exercise.exerciseName) {
+      const updated = [...currentExercises];
+      updated[exerciseIndex] = { ...exercise, exerciseName: trimmedName };
+      setCurrentExercises(updated);
+    }
+    
+    if (exercise.id && isEditing) {
+      updateExercise.mutate({
+        id: exercise.id,
+        exerciseName: trimmedName,
+      });
+    }
+  };
+  
+  const handleExerciseLoadTypeChange = (exerciseIndex: number, loadType: LoadType) => {
+    const exercise = currentExercises[exerciseIndex];
+    if (!exercise) return;
+    
+    const updated = [...currentExercises];
+    updated[exerciseIndex] = { ...exercise, loadType };
+    setCurrentExercises(updated);
+    
+    if (exercise.id && isEditing) {
+      updateExercise.mutate({
+        id: exercise.id,
+        loadType,
+        notes: exercise.notes,
+      });
+    }
+  };
+  
+  const getLoadTypeLabel = (loadType?: LoadType) =>
+    LOAD_TYPES.find(item => item.value === (loadType || "kg"))?.label || "Carga (kg)";
+  
+  const formatLoadValue = (exercise: ExerciseData, set: SetData) => {
+    const loadType = exercise.loadType || "kg";
+    if (loadType === "bodyweight") return "PC";
+    if (loadType === "no_load") return "—";
+    if (loadType === "bodyweight_plus") {
+      return set.weight && set.weight > 0 ? `PC + ${set.weight}kg` : "PC";
+    }
+    return set.weight !== undefined ? `${set.weight}kg` : "-";
   };
   
   const resetNewLog = () => {
@@ -863,6 +927,11 @@ export default function TrainingDiaryPage() {
     if (!newLog.trainingDate) {
       console.log('Validation failed: trainingDate missing');
       toast.error("Selecione a data do treino");
+      return;
+    }
+    
+    if (currentExercises.some(ex => !ex.exerciseName.trim())) {
+      toast.error("Preencha o nome de todos os exercícios");
       return;
     }
     
@@ -964,6 +1033,84 @@ export default function TrainingDiaryPage() {
         [field]: value,
       });
     }
+  };
+  
+  const renderLoadEditor = (exercise: ExerciseData, exerciseIndex: number, set: SetData, setIndex: number) => {
+    const loadType = exercise.loadType || "kg";
+    
+    if (loadType === "bodyweight") {
+      return (
+        <Badge variant="outline" className="h-8 px-2.5 whitespace-nowrap">
+          PC
+        </Badge>
+      );
+    }
+    
+    if (loadType === "no_load") {
+      return (
+        <Badge variant="outline" className="h-8 px-2.5 whitespace-nowrap text-muted-foreground">
+          Sem carga
+        </Badge>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-1">
+        {loadType === "bodyweight_plus" && (
+          <span className="text-xs font-semibold text-muted-foreground">+</span>
+        )}
+        <Input
+          type="number"
+          inputMode="decimal"
+          step="0.5"
+          min="0"
+          className="h-8 w-16 text-center text-sm"
+          placeholder="0"
+          value={set.weight ?? ""}
+          onChange={(e) => handleUpdateSet(
+            exerciseIndex,
+            setIndex,
+            "weight",
+            e.target.value ? parseFloat(e.target.value) : undefined
+          )}
+        />
+        <span className="text-xs text-muted-foreground">kg</span>
+      </div>
+    );
+  };
+  
+  const renderTechniqueLoadEditor = (
+    exercise: ExerciseData,
+    value: number | undefined,
+    onChange: (value: number | undefined) => void
+  ) => {
+    const loadType = exercise.loadType || "kg";
+    
+    if (loadType === "bodyweight") {
+      return <Badge variant="outline" className="h-8 px-2.5">PC</Badge>;
+    }
+    if (loadType === "no_load") {
+      return <Badge variant="outline" className="h-8 px-2.5 text-muted-foreground">Sem carga</Badge>;
+    }
+    
+    return (
+      <div className="flex items-center gap-1">
+        {loadType === "bodyweight_plus" && (
+          <span className="text-xs font-semibold text-muted-foreground">+</span>
+        )}
+        <Input
+          type="number"
+          inputMode="decimal"
+          step="0.5"
+          min="0"
+          className="h-8 w-16 text-center text-sm"
+          placeholder="0"
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+        />
+        <span className="text-xs text-muted-foreground">kg</span>
+      </div>
+    );
   };
   
   const handleAddSet = (exerciseIndex: number) => {
