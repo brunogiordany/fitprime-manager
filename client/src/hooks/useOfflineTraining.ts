@@ -216,6 +216,7 @@ export function useOfflineTraining(options: UseOfflineTrainingOptions) {
               sets: sets.map((s: OfflineWorkoutSet) => ({
                 setNumber: s.setNumber,
                 setType: s.setType as 'warmup' | 'feeler' | 'working' | 'drop' | 'rest_pause' | 'failure' | undefined,
+                loadType: s.loadType || 'kg',
                 weight: s.weight,
                 reps: s.reps,
                 rpe: s.rpe,
