@@ -3520,8 +3520,15 @@ export default function TrainingDiaryPage() {
                             setCurrentExercises(updated);
                           }}>
                             <Dumbbell className="h-4 w-4 text-primary" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">{exercise.exerciseName}</span>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <Input
+                                className="font-medium h-9"
+                                value={exercise.exerciseName}
+                                placeholder="Nome do exercício"
+                                onChange={(e) => handleExerciseNameChange(exIndex, e.target.value)}
+                                onBlur={() => persistExerciseName(exIndex)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
                               {exercise.originalExerciseName && (
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                                   <RefreshCw className="h-3 w-3" />
@@ -3561,8 +3568,9 @@ export default function TrainingDiaryPage() {
                       </CardHeader>
                       
                       {exercise.isExpanded && (
-                        <CardContent className="p-3 pt-0">
-                          <div className="divide-y">
+                        <CardContent className="p-0">
+                          {renderLoadTypeSelector(exercise, exIndex)}
+                          <div className="divide-y px-3">
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="py-3">
                                 {/* Linha principal da série */}
@@ -3603,20 +3611,7 @@ export default function TrainingDiaryPage() {
                                     </SelectContent>
                                   </Select>
                                   
-                                  <div className="flex items-center gap-1">
-                                    <Input
-                                      type="number"
-                                      className="h-8 w-16 text-center text-sm"
-                                      placeholder="0"
-                                      value={set.weight || ''}
-                                      onChange={(e) => {
-                                        const updated = [...currentExercises];
-                                        updated[exIndex].sets[setIndex].weight = e.target.value ? parseFloat(e.target.value) : undefined;
-                                        setCurrentExercises(updated);
-                                      }}
-                                    />
-                                    <span className="text-xs text-muted-foreground">kg</span>
-                                  </div>
+                                  {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                   
                                   <div className="flex items-center gap-1">
                                     <Input
