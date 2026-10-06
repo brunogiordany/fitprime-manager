@@ -1,16 +1,17 @@
-name: One-shot Manus Lite sync test
+name: Deploy FitPrime via Manus Lite
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/test-manus-lite-sync.yml"
+      - ".github/deploy-fitprime.trigger"
 
 permissions:
   contents: read
 
 concurrency:
-  group: fitprime-manus-lite-sync-test
+  group: fitprime-manus-lite-deploy
   cancel-in-progress: false
 
 jobs:
@@ -20,7 +21,7 @@ jobs:
     env:
       MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
       TARGET_SITE: fitprimehub-sfh8sqab.manus.space
-      CREDIT_CAP: "1500"
+      CREDIT_CAP: "500"
 
     steps:
       - name: Validate API key
@@ -111,7 +112,7 @@ jobs:
           sha = os.environ["GITHUB_SHA"]
 
           message = f"""
-          DEPLOY SYNC ONLY. This is a controlled low-cost deployment test.
+          DEPLOY SYNC ONLY. This is the controlled low-cost FitPrime production deployment.
 
           Do not write, edit, generate, refactor, format, or otherwise change any application source code.
           Do not diagnose bugs. Do not redesign anything. Do not make improvements.
@@ -398,7 +399,7 @@ jobs:
           delta = max(0, after - before)
 
           print("==============================================")
-          print("FITPRIME MANUS LITE SYNC TEST")
+          print("FITPRIME MANUS LITE DEPLOY")
           print("Credits before:", before)
           print("Credits after: ", after)
           print("CREDIT DELTA:  ", delta)
@@ -411,7 +412,7 @@ jobs:
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary:
               with open(summary, "a") as f:
-                  f.write("## FitPrime Manus Lite sync test\n\n")
+                  f.write("## FitPrime Manus Lite deploy\n\n")
                   f.write(f"- Credits before: **{before}**\n")
                   f.write(f"- Credits after: **{after}**\n")
                   f.write(f"- Sync cost: **{delta} credits**\n")
