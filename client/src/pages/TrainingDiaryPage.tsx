@@ -3932,6 +3932,7 @@ export default function TrainingDiaryPage() {
                                 updated[exIndex].sets.push({
                                   setNumber: (lastSet?.setNumber || 0) + 1,
                                   setType: 'working',
+                                  loadType: lastSet?.loadType || exercise.loadType || 'kg',
                                   restTime: lastSet?.restTime || 60,
                                   isCompleted: false,
                                 });
@@ -4008,6 +4009,7 @@ export default function TrainingDiaryPage() {
                       sets: ex.sets.map(s => ({
                         setNumber: s.setNumber,
                         setType: s.setType as any,
+                        loadType: s.loadType || ex.loadType || "kg",
                         weight: s.weight,
                         reps: s.reps,
                         restTime: s.restTime,
