@@ -2937,6 +2937,28 @@ export function withWorkoutExerciseLoadType(
   return `[[LOAD_TYPE:${loadType}]]${visibleNotes ? `\n${visibleNotes}` : ''}`;
 }
 
+// A partir de agora o tipo de carga também pode variar por série.
+// Mantemos o mesmo marcador reservado nas notes da série para não exigir migração de banco.
+export function getWorkoutSetLoadType(
+  notes: string | null | undefined,
+  fallback: WorkoutLoadType = 'kg'
+): WorkoutLoadType {
+  const match = notes?.match(WORKOUT_LOAD_TYPE_REGEX);
+  return (match?.[1] as WorkoutLoadType | undefined) || fallback;
+}
+
+export function stripWorkoutSetLoadType(notes: string | null | undefined): string | null {
+  return stripWorkoutExerciseLoadType(notes);
+}
+
+export function withWorkoutSetLoadType(
+  notes: string | null | undefined,
+  loadType: WorkoutLoadType = 'kg'
+): string {
+  const visibleNotes = stripWorkoutSetLoadType(notes);
+  return `[[LOAD_TYPE:${loadType}]]${visibleNotes ? `\n${visibleNotes}` : ''}`;
+}
+
 // Obter exercícios de um log
 export async function getWorkoutLogExercises(workoutLogId: number) {
   const db = await getDb();
@@ -3009,6 +3031,15 @@ export async function updateWorkoutLogSet(id: number, data: Partial<InsertWorkou
   await db.update(workoutLogSets).set(data).where(eq(workoutLogSets.id, id));
 }
 
+export async function getWorkoutLogSetById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(workoutLogSets)
+    .where(eq(workoutLogSets.id, id))
+    .limit(1);
+  return result[0] || null;
+}
+
 // Excluir série
 export async function deleteWorkoutLogSet(id: number) {
   const db = await getDb();
@@ -3034,17 +3065,19 @@ export async function calculateWorkoutLogStats(workoutLogId: number) {
     const allSets = await db.select().from(workoutLogSets)
       .where(eq(workoutLogSets.workoutLogExerciseId, ex.id));
     
-    const loadType = getWorkoutExerciseLoadType(ex.notes);
-    const usesMeasuredLoad = loadType === 'kg' || loadType === 'bodyweight_plus';
+    const exerciseFallbackLoadType = getWorkoutExerciseLoadType(ex.notes);
     
     // Uma série realizada não depende de existir carga em kg.
-    // Peso corporal e máquinas sem carga mensurada continuam contando séries/reps.
+    // O tipo de carga agora é individual por série e cai no tipo legado do exercício
+    // para registros antigos que ainda não possuem o marcador na própria série.
     const completedSets = allSets.filter(s => {
       const reps = s.reps || 0;
       return reps > 0 || s.isCompleted === true;
     });
     
     for (const set of completedSets) {
+      const loadType = getWorkoutSetLoadType(set.notes, exerciseFallbackLoadType);
+      const usesMeasuredLoad = loadType === 'kg' || loadType === 'bodyweight_plus';
       totalSets++;
       totalReps += set.reps || 0;
       const weight = parseFloat(set.weight?.toString() || '0');
@@ -3072,14 +3105,16 @@ export async function calculateWorkoutLogStats(workoutLogId: number) {
     // Atualizar estatísticas do exercício
     const exSets = completedSets.length;
     const exReps = completedSets.reduce((sum, s) => sum + (s.reps || 0), 0);
-    const exVolume = usesMeasuredLoad
-      ? completedSets.reduce((sum, s) => {
-          const w = parseFloat(s.weight?.toString() || '0');
-          return sum + w * (s.reps || 0);
-        }, 0)
-      : 0;
-    const maxWeight = usesMeasuredLoad && completedSets.length > 0 
-      ? Math.max(...completedSets.map(s => parseFloat(s.weight?.toString() || '0')))
+    const measuredSets = completedSets.filter(s => {
+      const loadType = getWorkoutSetLoadType(s.notes, exerciseFallbackLoadType);
+      return loadType === 'kg' || loadType === 'bodyweight_plus';
+    });
+    const exVolume = measuredSets.reduce((sum, s) => {
+      const w = parseFloat(s.weight?.toString() || '0');
+      return sum + w * (s.reps || 0);
+    }, 0);
+    const maxWeight = measuredSets.length > 0 
+      ? Math.max(...measuredSets.map(s => parseFloat(s.weight?.toString() || '0')))
       : 0;
     
     await updateWorkoutLogExercise(ex.id, {
