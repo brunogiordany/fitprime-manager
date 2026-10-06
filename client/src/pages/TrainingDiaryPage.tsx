@@ -2675,8 +2675,7 @@ export default function TrainingDiaryPage() {
                         
                         {exercise.isExpanded && (
                           <CardContent className="p-0">
-                            {renderLoadTypeSelector(exercise, exIndex)}
-                            {/* Lista de séries - layout compacto sem rolagem */}
+                            {/* Lista de séries - cada série pode ter seu próprio tipo de carga */}
                             <div className="divide-y">
                               {exercise.sets.map((set, setIndex) => (
                                 <div key={setIndex} className="p-3">
@@ -2713,6 +2712,7 @@ export default function TrainingDiaryPage() {
                                       </SelectContent>
                                     </Select>
                                     
+                                    {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
                                     {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                     
                                     <div className="flex items-center gap-1">
@@ -2758,6 +2758,7 @@ export default function TrainingDiaryPage() {
                                         <div className="flex items-center gap-2 flex-wrap">
                                           {renderTechniqueLoadEditor(
                                             exercise,
+                                            set,
                                             set.dropWeight,
                                             (value) => handleUpdateSet(exIndex, setIndex, 'dropWeight', value)
                                           )}
@@ -2788,6 +2789,7 @@ export default function TrainingDiaryPage() {
                                         <div className="flex items-center gap-2 flex-wrap">
                                           {renderTechniqueLoadEditor(
                                             exercise,
+                                            set,
                                             set.restPauseWeight,
                                             (value) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', value)
                                           )}
@@ -3024,14 +3026,7 @@ export default function TrainingDiaryPage() {
                       
                       {exercise.isExpanded && (
                         <CardContent className="p-0">
-                          {isEditing && logDetail.status === 'in_progress' ? (
-                            renderLoadTypeSelector(exercise, exIndex)
-                          ) : (
-                            <div className="px-3 py-2 border-b bg-muted/20">
-                              <Badge variant="outline">{getLoadTypeLabel(exercise.loadType)}</Badge>
-                            </div>
-                          )}
-                          {/* Lista de séries - layout compacto */}
+                          {/* Lista de séries - cada série possui seu próprio tipo de carga */}
                           <div className="divide-y">
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="p-3">
@@ -3087,7 +3082,8 @@ export default function TrainingDiaryPage() {
                                   
                                   {/* Linha 2: Peso + Reps + Descanso */}
                                   {isEditing ? (
-                                    <div className="flex items-center gap-3 pl-9">
+                                    <div className="flex items-center gap-2 pl-9 flex-wrap">
+                                      {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
                                       {renderLoadEditor(exercise, exIndex, set, setIndex)}
                                       
                                       <div className="flex items-center gap-1">
@@ -3113,7 +3109,10 @@ export default function TrainingDiaryPage() {
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="flex items-center gap-3 pl-9">
+                                    <div className="flex items-center gap-2 pl-9 flex-wrap">
+                                      <Badge variant="outline" className="text-[10px]">
+                                        {getLoadTypeLabel(set.loadType || exercise.loadType)}
+                                      </Badge>
                                       <span className="font-semibold text-foreground">
                                         {formatLoadValue(exercise, set)}
                                       </span>
@@ -3140,6 +3139,7 @@ export default function TrainingDiaryPage() {
                                       <div className="flex items-center gap-2 flex-wrap">
                                         {renderTechniqueLoadEditor(
                                           exercise,
+                                          set,
                                           set.dropWeight,
                                           (value) => handleUpdateSet(exIndex, setIndex, 'dropWeight', value)
                                         )}
@@ -3156,7 +3156,7 @@ export default function TrainingDiaryPage() {
                                         </div>
                                       </div>
                                     ) : (
-                                      <span className="text-sm">{set.dropWeight}kg × {set.dropReps} reps</span>
+                                      <span className="text-sm">{formatLoadValueByType(set.loadType || exercise.loadType, set.dropWeight)} × {set.dropReps} reps</span>
                                     )}
                                   </div>
                                 )}
@@ -3171,6 +3171,7 @@ export default function TrainingDiaryPage() {
                                       <div className="flex items-center gap-2 flex-wrap">
                                         {renderTechniqueLoadEditor(
                                           exercise,
+                                          set,
                                           set.restPauseWeight,
                                           (value) => handleUpdateSet(exIndex, setIndex, 'restPauseWeight', value)
                                         )}
@@ -3198,7 +3199,7 @@ export default function TrainingDiaryPage() {
                                         </div>
                                       </div>
                                     ) : (
-                                      <span className="text-sm">{set.restPauseWeight}kg × {set.restPauseReps} reps (pausa: {set.restPausePause}s)</span>
+                                      <span className="text-sm">{formatLoadValueByType(set.loadType || exercise.loadType, set.restPauseWeight)} × {set.restPauseReps} reps (pausa: {set.restPausePause}s)</span>
                                     )}
                                   </div>
                                 )}
@@ -3293,8 +3294,7 @@ export default function TrainingDiaryPage() {
                           updateExercise.mutate({
                             id: ex.id,
                             exerciseName: ex.exerciseName.trim(),
-                            loadType: ex.loadType || "kg",
-                            notes: ex.notes,
+                            notes: ex.notes ?? undefined,
                           });
                         }
                         ex.sets.forEach((set) => {
