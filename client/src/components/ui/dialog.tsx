@@ -116,7 +116,15 @@ function DialogContent({
     const update = () => setDesktopLayout(query.matches);
     update();
     query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
+    // Chromium device emulation and iOS orientation transitions do not always
+    // dispatch a media-query change, so also listen for viewport width changes.
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      query.removeEventListener("change", update);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
   }, [mobileFullscreen]);
 
   const handleEscapeKeyDown = React.useCallback(
