@@ -1,0 +1,97 @@
+name: Verify real FitPrime diary focus
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, fix/diary-focus-scroll-20261018]
+    paths:
+      - 'client/src/components/diary/**'
+      - 'client/src/components/ui/dialog.tsx'
+      - 'client/src/pages/TrainingDiaryPage.tsx'
+      - 'client/src/__smoke__/DiaryFocusRegression.tsx'
+      - 'client/diary-focus-regression.html'
+      - 'scripts/test-diary-focus.cjs'
+      - '.github/workflows/test-diary-focus.yml'
+permissions:
+  contents: read
+concurrency:
+  group: diary-focus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focus-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install isolated browser test runner
+        run: |
+          npm install --prefix /tmp/diary-playwright --no-save --no-package-lock playwright@1.56.1
+          node /tmp/diary-playwright/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Prepare old application code baseline
+        run: |
+          cp client/src/components/ui/dialog.tsx /tmp/diary-fixed-dialog.tsx
+          git fetch --depth=1 origin 21182e6281193439f2fada47c442039f57b09beb
+          git show 21182e6281193439f2fada47c442039f57b09beb:client/src/components/ui/dialog.tsx > client/src/components/ui/dialog.tsx
+      - name: Start isolated real-page fixture
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4173 > /tmp/diary-focus-vite.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:4173/diary-focus-regression.html; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/diary-focus-vite.log
+          exit 1
+      - name: Prove old real editor fails the focus-isolation conditions
+        env:
+          PLAYWRIGHT_MODULE: /tmp/diary-playwright/node_modules/playwright
+          DIARY_BROWSER: webkit
+          DIARY_BASELINE: '1'
+          DIARY_SCREENSHOT_DIR: test-artifacts/focus/baseline
+        run: node scripts/test-diary-focus.cjs
+      - name: Restore proposed fix
+        if: always()
+        run: cp /tmp/diary-fixed-dialog.tsx client/src/components/ui/dialog.tsx
+      - name: Build proposed production code
+        run: pnpm build
+      - name: Real editor focus, scroll, dropdowns, six saves, cleanup (Chromium)
+        env:
+          PLAYWRIGHT_MODULE: /tmp/diary-playwright/node_modules/playwright
+          DIARY_BROWSER: chromium
+          DIARY_SCREENSHOT_DIR: test-artifacts/focus/chromium
+        run: node scripts/test-diary-focus.cjs
+      - name: Real editor focus, scroll, dropdowns, six saves, cleanup (WebKit)
+        env:
+          PLAYWRIGHT_MODULE: /tmp/diary-playwright/node_modules/playwright
+          DIARY_BROWSER: webkit
+          DIARY_SCREENSHOT_DIR: test-artifacts/focus/webkit
+        run: node scripts/test-diary-focus.cjs
+      - name: Preserve original shell and desktop regression coverage
+        env:
+          PLAYWRIGHT_MODULE: /tmp/diary-playwright/node_modules/playwright
+          DIARY_BROWSER: webkit
+          DIARY_SCREENSHOT_DIR: test-artifacts/focus/desktop-and-shell
+        run: node scripts/test-diary-mobile.cjs
+      - name: Keep fixtures out of production entrypoints
+        run: |
+          test ! -f dist/public/diary-focus-regression.html
+          test ! -f dist/public/diary-mobile-smoke.html
+      - name: Preserve screenshots and logs
+        if: always()
+        run: |
+          mkdir -p test-artifacts/focus
+          cp /tmp/diary-focus-vite.log test-artifacts/focus/vite.log || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: diary-real-focus-evidence
+          path: test-artifacts/focus
+          if-no-files-found: ignore
