@@ -1,0 +1,74 @@
+/* Opt-in to the diary only. Other dialogs and all desktop layout stay intact. */
+[data-diary-focus-layer] { display: contents; }
+
+@media (max-width: 639px) {
+  html[data-diary-focus-lock] {
+    height: 100% !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    scroll-behavior: auto !important;
+    background: var(--background) !important;
+  }
+  html[data-diary-focus-lock] body {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    background: var(--background) !important;
+  }
+  html[data-diary-focus-lock] #root {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+  /* Preserve save/error notifications. Portaled dialogs are outside #root. */
+  html[data-diary-focus-lock] #root [data-sonner-toaster],
+  html[data-diary-focus-lock] #root [data-sonner-toaster] * {
+    visibility: visible !important;
+  }
+  [data-diary-focus-layer] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--background);
+  }
+  [data-diary-focus-layer][data-keyboard-open="true"] {
+    top: var(--diary-keyboard-top);
+    bottom: auto;
+    height: var(--diary-keyboard-height);
+  }
+  /* The frame owns geometry. No separately moving fixed overlay/content. */
+  [data-diary-focus-layer] > [data-slot="dialog-overlay"] {
+    position: absolute !important;
+    inset: 0 !important;
+    background: var(--background) !important;
+    animation: none !important;
+  }
+  [data-diary-focus-layer] > [data-slot="dialog-content"].diary-fullscreen-modal {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    animation: none !important;
+  }
+  [data-diary-focus-layer] [data-testid="training-diary-scroll"] {
+    touch-action: pan-y;
+    overflow-anchor: none;
+    overscroll-behavior-y: contain;
+  }
+}
