@@ -273,6 +273,8 @@ export default function TrainingDiaryPage() {
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSavingLog, setIsSavingLog] = useState(false);
+  const logDetailDialogRef = useRef<HTMLDivElement | null>(null);
+  const syncLogDetailViewportRef = useRef<() => void>(() => {});
   
   // Estados para substituição de exercícios
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
@@ -691,6 +693,67 @@ export default function TrainingDiaryPage() {
     });
   };
   
+  // iOS Safari/PWA: after a number input closes, the visual viewport and the
+  // layout viewport can briefly have different heights/offsets. A fixed modal
+  // based on top/bottom or 100dvh then leaves a gap under its footer.
+  // Bind only this training diary modal to the *visible* viewport, including
+  // after keyboard dismissal. Do not change other desktop/dialog layouts.
+  useEffect(() => {
+    if (!showLogDetailModal) return;
+
+    const root = document.documentElement;
+    const formerScrollBehavior = root.style.scrollBehavior;
+    // The site's global html { scroll-behavior: smooth } can animate the page
+    // underneath the Radix portal when iOS scrolls a focused input into view.
+    root.style.scrollBehavior = "auto";
+
+    const visual = window.visualViewport;
+    let frame: number | undefined;
+    const sync = () => {
+      frame = undefined;
+      const modal = logDetailDialogRef.current;
+      if (!modal) return;
+
+      if (window.matchMedia("(min-width: 640px)").matches) {
+        modal.style.removeProperty("--diary-viewport-top");
+        modal.style.removeProperty("--diary-viewport-height");
+        return;
+      }
+      const top = Math.max(0, visual?.offsetTop ?? 0);
+      const height = Math.max(240, visual?.height ?? window.innerHeight);
+      modal.style.setProperty("--diary-viewport-top", `${top}px`);
+      modal.style.setProperty("--diary-viewport-height", `${height}px`);
+    };
+    const requestSync = () => {
+      if (frame !== undefined) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(sync);
+    };
+    syncLogDetailViewportRef.current = requestSync;
+    requestSync();
+
+    // iOS emits more than one resize as the keyboard transitions.
+    const settleTimers = [80, 250, 500].map(delay => window.setTimeout(requestSync, delay));
+    visual?.addEventListener("resize", requestSync);
+    visual?.addEventListener("scroll", requestSync);
+    window.addEventListener("resize", requestSync);
+    window.addEventListener("orientationchange", requestSync);
+    document.addEventListener("focusin", requestSync);
+    document.addEventListener("focusout", requestSync);
+
+    return () => {
+      if (frame !== undefined) cancelAnimationFrame(frame);
+      settleTimers.forEach(window.clearTimeout);
+      visual?.removeEventListener("resize", requestSync);
+      visual?.removeEventListener("scroll", requestSync);
+      window.removeEventListener("resize", requestSync);
+      window.removeEventListener("orientationchange", requestSync);
+      document.removeEventListener("focusin", requestSync);
+      document.removeEventListener("focusout", requestSync);
+      syncLogDetailViewportRef.current = () => {};
+      root.style.scrollBehavior = formerScrollBehavior;
+    };
+  }, [showLogDetailModal]);
+
   // Efeito para carregar exercícios quando abre modal de sessão com treino vinculado
   useEffect(() => {
     if (showSessionLogModal && selectedSession?.workoutId && selectedWorkout?.days) {
@@ -1025,6 +1088,13 @@ export default function TrainingDiaryPage() {
   
   const handleSaveLog = async () => {
     if (isSavingLog) return;
+    // Explicitly dismiss the iOS keyboard *before* the async re-renders. This
+    // avoids leaving the modal positioned over the old keyboard-sized viewport.
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && logDetailDialogRef.current?.contains(focused)) {
+      focused.blur();
+    }
+    syncLogDetailViewportRef.current();
     setIsSavingLog(true);
     try {
       const pending: Promise<unknown>[] = [];
@@ -1065,6 +1135,9 @@ export default function TrainingDiaryPage() {
       }
     } finally {
       setIsSavingLog(false);
+      syncLogDetailViewportRef.current();
+      // iOS keyboard has an animated close; remeasure after it settles too.
+      window.setTimeout(() => syncLogDetailViewportRef.current(), 300);
     }
   };
 
@@ -2979,7 +3052,11 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="flex min-h-0 min-w-0 flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-4xl sm:max-h-[90dvh] sm:rounded-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent
+            ref={logDetailDialogRef}
+            className="left-0 right-0 top-[var(--diary-viewport-top,0px)] bottom-auto h-[var(--diary-viewport-height,100dvh)] max-h-[var(--diary-viewport-height,100dvh)] w-full max-w-none min-h-0 min-w-0 flex flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[90dvh] sm:w-full sm:max-w-4xl sm:rounded-lg sm:border"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
             <DialogHeader className="shrink-0 border-b px-3 py-3 pr-11 sm:px-6 sm:pr-12">
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -3013,7 +3090,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 pb-6 pt-3 sm:px-6 [scrollbar-gutter:stable]">
+            <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 pb-8 pt-3 sm:px-6 [scrollbar-gutter:stable]" style={{ WebkitOverflowScrolling: "touch" }}>
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -3067,8 +3144,8 @@ export default function TrainingDiaryPage() {
                 {/* Exercícios */}
                 <div className="space-y-4">
                   {currentExercises.map((exercise, exIndex) => (
-                    <Card key={exIndex} className="overflow-hidden">
-                      <CardHeader className="p-3 sm:p-4">
+                    <Card key={exIndex} className="gap-0 overflow-hidden py-0">
+                      <CardHeader className="block p-3 sm:p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-start gap-3 cursor-pointer flex-1 min-w-0" onClick={() => toggleExerciseExpand(exIndex)}>
                             <span className="text-lg font-bold text-primary flex-shrink-0">{exIndex + 1}</span>
