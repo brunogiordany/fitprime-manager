@@ -1,6 +1,8 @@
 Deploy FitPrime production
-Reason: verified iPhone full-screen diary modal; prevent bottom gap and stacked save popups
-Application commit: 9256a1e1eff68b31d2c4eb944d9ff1bb457d7ba2
-Validation: pnpm build passed on main (39089852716), 6 save cycles + viewport/footer/toast checks passed in Chromium AND Safari WebKit on main (39089852786)
-Deployment: Manus Lite exact GitHub main sync / new checkpoint / website.publish API
-No source-code editing by Manus; keep credit cap; verify live published version
+Reason: isolate document scrolling when an iPhone diary field receives focus, before Save
+Application commit: 48c802efb2e21305e4491e574c506fa054965785
+Validation on main: standalone build 39131465427 SUCCESS; actual editor focus regression 39131465494 SUCCESS; mobile/desktop shell regression 39131465498 SUCCESS
+Actual editor tested in Chromium and WebKit with synthetic data: independent keyboard viewport/pan, input focus before save, six saves, per-set load types, last exercise focus, close/reopen and original scroll restoration
+Deployment: Manus Lite exact GitHub main synchronization/checkpoint ONLY, then stop; existing API publishes
+No code editing, formatting, programming or refactoring by Manus
+After publication: verify-diary-public.yml must confirm focus isolation in actual public JavaScript and CSS
