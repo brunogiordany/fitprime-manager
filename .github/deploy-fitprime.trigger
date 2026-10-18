@@ -1,4 +1,6 @@
 Deploy FitPrime production
-Reason: mobile diary layout cleanup + per-set load types + save error fix
-Target main: 388c28ad9db3c1d5c8432191d1f08d13857dfb16
-Deployment: pinned FitPrime Manus task + repeated authorized confirmations
+Reason: stabilize iPhone training diary after editing and saving
+Application commit: afb95cc860619d5dff8f92583fe89f9e7647717e
+Verification: pnpm build passed in GitHub Actions run 39086069427
+Deployment: Manus Lite GitHub sync/checkpoint ONLY, then publish via Manus API
+No Manus source-code edits permitted
