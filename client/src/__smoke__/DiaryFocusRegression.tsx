@@ -39,7 +39,7 @@ function reply(path: string, type: string, input: any): any {
   calls.push({ path, type, input: structuredClone(input) });
   if (path === "auth.me") return { id: 7, role: "admin", name: "Teste", email: "focus@example.invalid" };
   if (path === "students.list") return [student];
-  if (path === "subscription.paymentStatus") return { isBlocked: false, status: "active", isActive: true, daysRemaining: 30 };
+  if (path === "subscription.paymentStatus") return { isValid: true, status: "active", daysOverdue: 0, expiresAt: null, message: "Synthetic active subscription" };
   if (path === "personal.featureFlags") return {};
   if (path === "chat.totalUnread") return 0;
   if (path === "trainingDiary.list") return Array.from({ length: 25 }, (_, index) => ({
