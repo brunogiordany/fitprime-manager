@@ -102,28 +102,20 @@ fs.mkdirSync(shots, { recursive: true });
     });
     await inspect("stale legacy viewport variables ignored");
 
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await page.waitForTimeout(250);
-    const debug = await page.evaluate(() => {
-      const modal = document.querySelector('[data-testid="training-diary-dialog"]');
-      const computed = window.getComputedStyle(modal);
-      const matchSelector = '[data-slot="dialog-content"][data-mobile-fullscreen="true"]';
-      return {
-        mediaDesktop: window.matchMedia("(min-width: 640px)").matches,
-        attribute: modal.getAttribute("data-mobile-fullscreen"),
-        inlineStyle: modal.getAttribute("style"),
-        selectorMatches: modal.matches(matchSelector),
-        top: computed.top,
-        left: computed.left,
-        bottom: computed.bottom,
-        right: computed.right,
-        transform: computed.transform,
-        position: computed.position,
-        window: [window.innerWidth, window.innerHeight],
-      };
+    // A desktop browser loads the page at a desktop width; it does not
+    // transform an already-open iOS WebKit page into desktop mode. Use a
+    // separate desktop context to verify the actual production scenario.
+    const desktopContext = await browser.newContext({
+      viewport: { width: 1280, height: 800 },
+      deviceScaleFactor: 1,
+      isMobile: false,
+      hasTouch: false,
     });
-    console.log("desktop style debug", JSON.stringify(debug));
-    await inspect("desktop layout preserved", false);
+    page = await desktopContext.newPage();
+    const desktopResponse = await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    assert(desktopResponse && desktopResponse.ok(), "Desktop fixture must load");
+    await page.locator('[data-testid="training-diary-dialog"]').waitFor({ state: "visible" });
+    await inspect("fresh desktop layout preserved", false);
     await page.screenshot({ path: path.join(shots, "desktop.png") });
     console.log("PASS (" + engine + "): diary modal/mobile save viewport regression checks");
   } catch (error) {
