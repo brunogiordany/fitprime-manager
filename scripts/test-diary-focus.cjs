@@ -19,9 +19,8 @@ fs.mkdirSync(out, { recursive: true });
       if (url.origin !== base || url.pathname.startsWith('/api/')) return route.abort();
       return route.continue();
     });
-    // Native keyboards do NOT resize the layout viewport on iOS. Unlike the
-    // previous test, drive visual viewport height AND offset independently.
-    // This models those events; it is not a physical iPhone OS keyboard test.
+    // Independently model the visual viewport changed by a mobile keyboard.
+    // This is not a physical iPhone OS keyboard test.
     await context.addInitScript(() => {
       const nativeViewport = window.visualViewport;
       const shim = new EventTarget();
@@ -55,7 +54,22 @@ fs.mkdirSync(out, { recursive: true });
     await weight.tap();
 
     const inspect = async (label, visibleTop = 0, visibleHeight = 844) => {
-      await page.waitForTimeout(90);
+      if (!baseline) {
+        // Background protection must be immediate, including while the keyboard
+        // is animating. Only the foreground geometry waits for animation settle.
+        const isolated = await page.evaluate(() => ({
+          lock: document.documentElement.getAttribute('data-diary-focus-lock'),
+          hidden: getComputedStyle(document.getElementById('root')).visibility,
+        }));
+        assert.equal(isolated.lock, 'v1', label + ': immediate document lock');
+        assert.equal(isolated.hidden, 'hidden', label + ': no transient background painting');
+        await page.waitForFunction(([top, height]) => {
+          const modal = document.querySelector('[data-testid="training-diary-dialog"]');
+          if (!modal) return false;
+          const rect = modal.getBoundingClientRect();
+          return Math.abs(rect.top - top) < 2 && Math.abs(rect.bottom - top - height) < 2;
+        }, [visibleTop, visibleHeight], { timeout: 2000 });
+      }
       const value = await page.evaluate(() => {
         const modal = document.querySelector('[data-testid="training-diary-dialog"]');
         const footer = document.querySelector('[data-testid="training-diary-footer"]');
@@ -63,13 +77,10 @@ fs.mkdirSync(out, { recursive: true });
         const root = document.getElementById('root');
         const box = el => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; };
         return {
-          lock: document.documentElement.getAttribute('data-diary-focus-lock'),
-          rootVisibility: getComputedStyle(root).visibility,
-          bodyPosition: getComputedStyle(document.body).position,
-          y: window.scrollY, layoutHeight: document.documentElement.clientHeight,
-          modal: box(modal), footer: box(footer), scroll: box(scroll),
-          focused: document.activeElement?.tagName,
-          keyboard: document.querySelector('[data-diary-focus-layer]')?.getAttribute('data-keyboard-open'),
+          lock: document.documentElement.getAttribute('data-diary-focus-lock'), rootVisibility: getComputedStyle(root).visibility,
+          bodyPosition: getComputedStyle(document.body).position, y: window.scrollY,
+          layoutHeight: document.documentElement.clientHeight, modal: box(modal), footer: box(footer), scroll: box(scroll),
+          focused: document.activeElement?.tagName, keyboard: document.querySelector('[data-diary-focus-layer]')?.getAttribute('data-keyboard-open'),
           toastCount: document.querySelectorAll('[data-sonner-toast]').length,
         };
       });
@@ -104,7 +115,6 @@ fs.mkdirSync(out, { recursive: true });
     await page.screenshot({ path: path.join(out, 'actual-editor-keyboard.png') });
     await page.evaluate(() => window.scrollTo(0, 90));
     await inspect('browser focus attempts document scroll', 70, 444);
-
     await page.evaluate(() => window.__setDiaryViewport({ height: 844, offsetTop: 60, pageTop: 60 }));
     await inspect('keyboard dismissed while input remains focused');
     await page.evaluate(() => window.__setDiaryViewport(null));
@@ -128,8 +138,6 @@ fs.mkdirSync(out, { recursive: true });
     const loadSelector = card.locator('[data-slot="select-trigger"]').nth(1);
     await loadSelector.click();
     await page.getByRole('option', { name: 'PC', exact: true }).click();
-    // Timers are not exact on a busy WebKit runner. Wait for the mutation,
-    // not an arbitrary 80ms, while retaining the strict per-set assertion.
     await page.waitForFunction(() => window.__diaryFocusFixture.log.exercises[0].sets[0].loadType === 'bodyweight');
     const loads = await page.evaluate(() => window.__diaryFocusFixture.log.exercises[0].sets.map(set => set.loadType));
     assert.deepEqual(loads, ['bodyweight', 'kg', 'kg']);
@@ -144,7 +152,6 @@ fs.mkdirSync(out, { recursive: true });
     await inspect('exercise name focus and blur');
     await page.screenshot({ path: path.join(out, 'actual-editor-six-saves.png') });
 
-    // Repeat the original trigger near the end of a long, internally-scrolled log.
     const lastWeight = cards.last().locator('input[type="number"]').first();
     await lastWeight.tap();
     await page.evaluate(() => window.__setDiaryViewport({ height: 444, offsetTop: 35, pageTop: 35 }));
@@ -171,7 +178,7 @@ fs.mkdirSync(out, { recursive: true });
     console.error('FAIL', error.stack || error);
     console.error('PAGE_ERRORS', JSON.stringify(errors));
     if (page) {
-      console.error('PAGE_TEXT', (await page.locator('body').innerText().catch(() => '')).slice(0,3500));
+      console.error('FOCUS_STATE', await page.evaluate(() => ({ focus: document.activeElement?.outerHTML, viewport: { height: window.visualViewport.height, top: window.visualViewport.offsetTop }, layer: document.querySelector('[data-diary-focus-layer]')?.getAttribute('style') })).catch(() => null));
       await page.screenshot({ path: path.join(out, 'failure.png') }).catch(() => {});
     }
     process.exitCode = 1;
