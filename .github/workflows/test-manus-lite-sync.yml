@@ -21,6 +21,7 @@ jobs:
     env:
       MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
       TARGET_SITE: fitprimehub-sfh8sqab.manus.space
+      FITPRIME_TASK_ID: mWZnZ1zyTEHgSRCXWXU4Dw
       CREDIT_CAP: "500"
 
     steps:
@@ -41,37 +42,8 @@ jobs:
           import json, os, urllib.parse, urllib.request
 
           key = os.environ["MANUS_API_KEY"]
-          target = os.environ["TARGET_SITE"]
+          task_id = os.environ["FITPRIME_TASK_ID"]
           headers = {"x-manus-api-key": key}
-
-          cursor = None
-          found = None
-          for _ in range(20):
-              qs = {"type": "website", "limit": "100"}
-              if cursor:
-                  qs["cursor"] = cursor
-              req = urllib.request.Request(
-                  "https://api.manus.ai/v2/artifact.list?" + urllib.parse.urlencode(qs),
-                  headers=headers
-              )
-              with urllib.request.urlopen(req, timeout=30) as r:
-                  data = json.load(r)
-              if not data.get("ok"):
-                  raise SystemExit(f"artifact.list failed: {data}")
-              for item in data.get("data", []):
-                  if target in (item.get("url") or ""):
-                      found = item
-                      break
-              if found or not data.get("has_more"):
-                  break
-              cursor = data.get("next_cursor")
-              if not cursor:
-                  break
-
-          if not found:
-              raise SystemExit(f"Could not locate website artifact for {target}")
-
-          task_id = found["task_id"]
 
           req = urllib.request.Request(
               "https://api.manus.ai/v2/task.detail?" + urllib.parse.urlencode({"task_id": task_id}),
