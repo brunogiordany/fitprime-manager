@@ -93,10 +93,14 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  mobileFullscreen = false,
   onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  // Solid full-bleed mobile sheet with viewport-edge anchoring. This avoids
+  // iOS visualViewport height becoming stale after focusing a numeric input.
+  mobileFullscreen?: boolean;
 }) {
   const { isComposing } = useDialogComposition();
 
@@ -120,16 +124,19 @@ function DialogContent({
 
   return (
     <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay />
+      <DialogOverlay className={mobileFullscreen ? "bg-background sm:bg-black/50" : undefined} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 grid gap-4 rounded-lg border p-4 sm:p-6 shadow-lg duration-200",
-          // Mobile: use explicit insets with auto width/height.
-          // Avoid w-full together with left/right, which can push the dialog outside the viewport on iOS.
-          "left-2 right-2 top-2 bottom-2 w-auto max-w-none max-h-none",
-          // Desktop: centered modal
-          "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:w-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:max-h-[90vh]",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 duration-200",
+          mobileFullscreen
+            // On iPhone, CSS inset anchors all four edges to the viewport.
+            // No JS-computed visualViewport offsets or heights and no stale gap
+            // when the keyboard collapses. The opaque overlay is a second guard
+            // against exposing the page behind the modal.
+            ? "inset-0 flex h-auto min-h-0 w-auto max-h-none max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 shadow-none sm:right-auto sm:bottom-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[90dvh] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:border sm:shadow-lg"
+            // Unchanged layout for every other dialog in the application.
+            : "left-2 right-2 top-2 bottom-2 grid w-auto max-h-none max-w-none gap-4 rounded-lg border p-4 shadow-lg sm:inset-auto sm:top-[50%] sm:left-[50%] sm:max-h-[90vh] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6",
           className
         )}
         onEscapeKeyDown={handleEscapeKeyDown}
