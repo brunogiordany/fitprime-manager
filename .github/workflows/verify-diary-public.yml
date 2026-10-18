@@ -1,0 +1,19 @@
+name: Verify public diary focus assets
+on:
+  workflow_run:
+    workflows: [Deploy FitPrime via Manus Lite]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Read published assets without accessing personal workout data
+        run: python3 scripts/verify-diary-public.py
