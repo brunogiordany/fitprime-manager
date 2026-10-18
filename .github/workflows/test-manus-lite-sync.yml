@@ -192,15 +192,18 @@ jobs:
 
           time.sleep(3)
           def confirm_sync():
+              sha = os.environ.get("GITHUB_SHA", "")
               body = {
                   "task_id": task_id,
                   "agent_profile": "lite",
                   "message": {
                       "content": (
-                          "Sim. Prossiga exatamente com a sincronização já solicitada. "
-                          "Esta confirmação foi explicitamente autorizada pelo proprietário: "
-                          "sincronize somente a branch main do repositório informado, crie um novo "
-                          "checkpoint e pare. Não edite código e não publique."
+                          "Sim. O proprietário autoriza explicitamente continuar esta sincronização "
+                          f"do FitPrime no commit {sha}. Use somente leitura do GitHub e, se o remoto "
+                          "interno não estiver disponível, está autorizado usar a CLI gh, git ou HTTPS "
+                          "autenticado exclusivamente para obter este repositório/commit. Não altere, "
+                          "gere, formate ou corrija código. Apenas sincronize exatamente o conteúdo do "
+                          "GitHub, crie o checkpoint e pare. Não publique."
                       )
                   },
               }
@@ -215,8 +218,9 @@ jobs:
 
           final = None
           result = "timeout"
-          waiting_confirmed = False
-          waiting_after_confirmation = 0
+          last_status = None
+          confirmations_sent = 0
+          waiting_checks = 0
 
           for attempt in range(90):
               t = detail()
@@ -242,24 +246,28 @@ jobs:
                   break
 
               if status == "waiting":
-                  if not waiting_confirmed:
+                  waiting_checks += 1
+                  if last_status != "waiting" and confirmations_sent < 4:
                       confirmation = confirm_sync()
-                      print("Explicit sync confirmation sent:", confirmation.get("ok"))
-                      waiting_confirmed = True
-                      waiting_after_confirmation = 0
+                      confirmations_sent += 1
+                      waiting_checks = 0
+                      print(f"Explicit sync confirmation #{confirmations_sent} sent:", confirmation.get("ok"))
+                      last_status = status
                       time.sleep(4)
                       continue
-                  waiting_after_confirmation += 1
-                  if waiting_after_confirmation >= 8:
+                  if waiting_checks >= 10:
                       result = "waiting"
                       break
+                  last_status = status
                   time.sleep(4)
                   continue
 
+              waiting_checks = 0
               if status == "stopped" and updated != before_updated and bg is False:
                   result = "completed"
                   break
 
+              last_status = status
               time.sleep(4)
           else:
               try:
