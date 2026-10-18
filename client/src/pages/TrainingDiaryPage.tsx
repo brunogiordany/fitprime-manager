@@ -2919,7 +2919,7 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="w-auto max-w-none h-auto max-h-none sm:w-full sm:max-w-4xl sm:max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogContent className="w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] h-[calc(100dvh-0.75rem)] max-h-[calc(100dvh-0.75rem)] sm:w-full sm:max-w-4xl sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden p-3 sm:p-6 rounded-xl sm:rounded-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader className="flex-shrink-0 pr-6">
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -2953,7 +2953,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain -mx-4 px-4 sm:-mx-6 sm:px-6 pb-2 [scrollbar-gutter:stable]">
+            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain -mx-3 px-3 sm:-mx-6 sm:px-6 pb-6 [scrollbar-gutter:stable]">
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -3292,7 +3292,7 @@ export default function TrainingDiaryPage() {
             )}
             </div>
             
-                        <DialogFooter className="flex-shrink-0 border-t mt-2 pt-3 sm:pt-4 bg-background pb-[calc(0.25rem+env(safe-area-inset-bottom))]">
+            <DialogFooter className="flex-shrink-0 -mx-3 sm:-mx-6 px-3 sm:px-6 pt-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] border-t bg-background/100 shadow-[0_-10px_28px_rgba(0,0,0,0.12)]">
               {logDetail?.status === 'in_progress' && (
                 <div className="w-full grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
                   <Button
@@ -3319,6 +3319,7 @@ export default function TrainingDiaryPage() {
                           if (set.id) {
                             updateSet.mutate({
                               id: set.id,
+                              loadType: set.loadType || ex.loadType || "kg",
                               weight: set.weight,
                               reps: set.reps,
                               restTime: set.restTime,
@@ -3342,7 +3343,7 @@ export default function TrainingDiaryPage() {
                     {updateSet.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                   <Button
-                    className="w-full sm:w-auto h-11 sm:h-10 px-2 text-sm sm:min-w-[170px]"
+                    className="col-span-2 sm:col-span-1 w-full sm:w-auto h-12 sm:h-10 px-3 text-sm font-semibold sm:min-w-[170px]"
                     onClick={handleCompleteLog}
                     disabled={completeLog.isPending}
                   >
@@ -3350,8 +3351,8 @@ export default function TrainingDiaryPage() {
                     {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
                   </Button>
                   <Button 
-                    variant="destructive"
-                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
+                    variant="outline"
+                    className="col-span-2 sm:col-span-1 w-full sm:w-auto h-10 px-2 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setShowDeleteLogConfirm(true)}
                     disabled={deleteLog.isPending}
                   >
@@ -3361,7 +3362,7 @@ export default function TrainingDiaryPage() {
                 </div>
               )}
               {logDetail?.status === 'completed' && (
-                <Button className="w-full sm:w-auto h-11 sm:h-10" onClick={() => setShowLogDetailModal(false)}>
+                <Button className="w-full sm:w-auto h-11 sm:h-10" variant="outline" onClick={() => setShowLogDetailModal(false)}>
                   Fechar
                 </Button>
               )}
