@@ -20,23 +20,33 @@ const DialogCompositionContext = React.createContext<{
 export const useDialogComposition = () =>
   React.useContext(DialogCompositionContext);
 
-function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+function Dialog({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) {
   const composingRef = React.useRef(false);
   const justEndedRef = React.useRef(false);
   const endTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const contextValue = React.useMemo(
     () => ({
       isComposing: () => composingRef.current,
-      setComposing: (composing: boolean) => { composingRef.current = composing; },
+      setComposing: (composing: boolean) => {
+        composingRef.current = composing;
+      },
       justEndedComposing: () => justEndedRef.current,
       markCompositionEnd: () => {
         justEndedRef.current = true;
-        if (endTimerRef.current) clearTimeout(endTimerRef.current);
-        endTimerRef.current = setTimeout(() => { justEndedRef.current = false; }, 150);
+        if (endTimerRef.current) {
+          clearTimeout(endTimerRef.current);
+        }
+        endTimerRef.current = setTimeout(() => {
+          justEndedRef.current = false;
+        }, 150);
       },
     }),
     []
   );
+
   return (
     <DialogCompositionContext.Provider value={contextValue}>
       <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -44,16 +54,28 @@ function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>)
   );
 }
 
-function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+function DialogTrigger({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
-function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+
+function DialogPortal({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
-function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
+
+function DialogClose({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
-function DialogOverlay({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+
+function DialogOverlay({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
@@ -65,6 +87,7 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
     />
   );
 }
+
 DialogOverlay.displayName = "DialogOverlay";
 
 function DialogContent({
@@ -79,10 +102,14 @@ function DialogContent({
   mobileFullscreen?: boolean;
 }) {
   const { isComposing } = useDialogComposition();
+
   const handleEscapeKeyDown = React.useCallback(
     (e: KeyboardEvent) => {
       const isCurrentlyComposing = (e as any).isComposing || isComposing();
-      if (isCurrentlyComposing) { e.preventDefault(); return; }
+      if (isCurrentlyComposing) {
+        e.preventDefault();
+        return;
+      }
       onEscapeKeyDown?.(e);
     },
     [isComposing, onEscapeKeyDown]
@@ -106,7 +133,7 @@ function DialogContent({
       {showCloseButton && (
         <DialogPrimitive.Close
           data-slot="dialog-close"
-          className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=closed]:text-muted-foreground absolute top-2 right-2 sm:top-4 sm:right-4 z-50 rounded-full p-1.5 bg-background/80 backdrop-blur-sm border opacity-100 transition-opacity hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
+          className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-2 right-2 sm:top-4 sm:right-4 z-50 rounded-full p-1.5 bg-background/80 backdrop-blur-sm border opacity-100 transition-opacity hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
         >
           <XIcon />
           <span className="sr-only">Close</span>
@@ -118,6 +145,7 @@ function DialogContent({
   if (mobileFullscreen) {
     return (
       <DialogPortal data-slot="dialog-portal">
+        {/* Mount the lock INSIDE Portal: closed dialogs must not lock the page. */}
         <MobileDiaryLayer>
           <DialogOverlay className="bg-background sm:bg-black/50" />
           {content}
@@ -125,21 +153,74 @@ function DialogContent({
       </DialogPortal>
     );
   }
-  // Preserve the ordinary dialog's existing Radix portal/presence structure.
-  return <DialogPortal data-slot="dialog-portal"><DialogOverlay />{content}</DialogPortal>;
+
+  // Preserve the ordinary dialogs' existing Radix presence and sibling layout.
+  return (
+    <DialogPortal data-slot="dialog-portal">
+      <DialogOverlay />
+      {content}
+    </DialogPortal>
+  );
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-header" className={cn("flex flex-col gap-2 text-center sm:text-left", className)} {...props} />;
-}
-function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-footer" className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)} {...props} />;
-}
-function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title data-slot="dialog-title" className={cn("text-lg leading-none font-semibold", className)} {...props} />;
-}
-function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description data-slot="dialog-description" className={cn("text-muted-foreground text-sm", className)} {...props} />;
+  return (
+    <div
+      data-slot="dialog-header"
+      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      {...props}
+    />
+  );
 }
 
-export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger };
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function DialogTitle({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn("text-lg leading-none font-semibold", className)}
+      {...props}
+    />
+  );
+}
+
+function DialogDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return (
+    <DialogPrimitive.Description
+      data-slot="dialog-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  );
+}
+
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger
+};
