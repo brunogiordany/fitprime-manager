@@ -210,7 +210,7 @@ function App() {
         // switchable
       >
         <TooltipProvider>
-          <Toaster />
+          <Toaster position="top-center" />
           <ProtectionLayer />
           <Router />
           <InstallPrompt />
