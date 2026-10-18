@@ -103,6 +103,24 @@ fs.mkdirSync(shots, { recursive: true });
     await inspect("stale legacy viewport variables ignored");
 
     await page.setViewportSize({ width: 1280, height: 800 });
+    const debug = await page.evaluate(() => {
+      const modal = document.querySelector('[data-testid="training-diary-dialog"]');
+      const computed = window.getComputedStyle(modal);
+      const matchSelector = '[data-slot="dialog-content"][data-mobile-fullscreen="true"]';
+      return {
+        mediaDesktop: window.matchMedia("(min-width: 640px)").matches,
+        attribute: modal.getAttribute("data-mobile-fullscreen"),
+        selectorMatches: modal.matches(matchSelector),
+        top: computed.top,
+        left: computed.left,
+        bottom: computed.bottom,
+        right: computed.right,
+        transform: computed.transform,
+        position: computed.position,
+        window: [window.innerWidth, window.innerHeight],
+      };
+    });
+    console.log("desktop style debug", JSON.stringify(debug));
     await inspect("desktop layout preserved", false);
     await page.screenshot({ path: path.join(shots, "desktop.png") });
     console.log("PASS (" + engine + "): diary modal/mobile save viewport regression checks");
