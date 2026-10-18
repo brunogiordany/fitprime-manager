@@ -504,24 +504,54 @@ html {
   }
 }
 
-/* Diário de treino: viewport-edge mobile sheet independent of the iOS keyboard.
-   These are scoped to this one dialog so other FitPrime modals are unaffected. */
+/* Diário de treino mobile: encapsulate the entire visible area. Never use
+   visualViewport-based JavaScript heights: on iOS those can stay truncated
+   after the numeric keyboard dismisses, exposing the underlying page.
+   The !important rules override Tailwind's dialog positioning utilities
+   without touching any other modal or page. */
+[data-slot="dialog-content"].diary-fullscreen-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--background) !important;
+  transform: none !important;
+}
+
 @media (max-width: 639px) {
-  [data-slot="dialog-content"][data-mobile-fullscreen="true"] input,
-  [data-slot="dialog-content"][data-mobile-fullscreen="true"] textarea {
-    /* Prevent Safari from automatically zooming a focused 14px input. */
-    font-size: 16px;
+  [data-slot="dialog-content"].diary-fullscreen-modal input,
+  [data-slot="dialog-content"].diary-fullscreen-modal textarea {
+    font-size: 16px !important;
   }
 }
 
 @media (min-width: 640px) {
-  [data-slot="dialog-content"][data-mobile-fullscreen="true"] {
-    /* Fullscreen mobile uses edge anchors; desktop must explicitly return to
-       centering rather than competing with the mobile top/left utilities. */
-    top: 50%;
-    left: 50%;
-    right: auto;
-    bottom: auto;
-    transform: translate(-50%, -50%);
+  [data-slot="dialog-content"].diary-fullscreen-modal {
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    width: min(56rem, calc(100vw - 2rem)) !important;
+    height: auto !important;
+    max-width: 56rem !important;
+    max-height: 90dvh !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.2) !important;
+    transform: translate(-50%, -50%) !important;
   }
 }
