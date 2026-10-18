@@ -98,7 +98,6 @@ fs.mkdirSync(out, { recursive: true });
       return;
     }
 
-    // User-reported trigger: tap editable controls BEFORE pressing Save.
     await page.evaluate(() => window.__setDiaryViewport({ height: 444, offsetTop: 70, pageTop: 70 }));
     const keyboard = await inspect('keyboard-only resize + 70px pan (layout unchanged)', 70, 444);
     assert.equal(keyboard.layoutHeight, 844, 'This test must not merely resize the whole browser');
@@ -106,7 +105,6 @@ fs.mkdirSync(out, { recursive: true });
     await page.evaluate(() => window.scrollTo(0, 90));
     await inspect('browser focus attempts document scroll', 70, 444);
 
-    // Simulate Done while focus remains on the input, with a stale toolbar pan.
     await page.evaluate(() => window.__setDiaryViewport({ height: 844, offsetTop: 60, pageTop: 60 }));
     await inspect('keyboard dismissed while input remains focused');
     await page.evaluate(() => window.__setDiaryViewport(null));
@@ -115,35 +113,48 @@ fs.mkdirSync(out, { recursive: true });
       await weight.fill(String(30 + cycle));
       const reps = card.locator('input[type="number"]').nth(1);
       await reps.fill(String(8 + cycle));
-      await page.waitForTimeout(70);
       await dialog.getByRole('button', { name: 'Salvar', exact: true }).click();
-      await page.waitForFunction(() => document.querySelector('[data-testid="training-diary-dialog"]')?.textContent.includes('Salvando...') === false);
+      await page.waitForFunction(expected => {
+        const set = window.__diaryFocusFixture.log.exercises[0].sets[0];
+        return Number(set.weight) === 30 + expected && set.reps === 8 + expected &&
+          !document.querySelector('[data-testid="training-diary-dialog"]')?.textContent.includes('Salvando...');
+      }, cycle);
       await inspect('actual save cycle ' + cycle);
     }
     const persisted = await page.evaluate(() => window.__diaryFocusFixture.log.exercises[0].sets[0]);
     assert.equal(Number(persisted.weight), 36, 'Actual save handler must persist latest weight in synthetic transport');
     assert.equal(persisted.reps, 14, 'Actual save handler must persist latest reps');
 
-    // Load type remains per SET. A sibling must not inherit the changed mode.
     const loadSelector = card.locator('[data-slot="select-trigger"]').nth(1);
     await loadSelector.click();
     await page.getByRole('option', { name: 'PC', exact: true }).click();
-    await page.waitForTimeout(80);
+    // Timers are not exact on a busy WebKit runner. Wait for the mutation,
+    // not an arbitrary 80ms, while retaining the strict per-set assertion.
+    await page.waitForFunction(() => window.__diaryFocusFixture.log.exercises[0].sets[0].loadType === 'bodyweight');
     const loads = await page.evaluate(() => window.__diaryFocusFixture.log.exercises[0].sets.map(set => set.loadType));
     assert.deepEqual(loads, ['bodyweight', 'kg', 'kg']);
     await inspect('load-type dropdown focus');
     await loadSelector.click();
     await page.getByRole('option', { name: 'kg', exact: true }).click();
+    await page.waitForFunction(() => window.__diaryFocusFixture.log.exercises[0].sets[0].loadType === 'kg');
     const nameInput = card.locator('input[placeholder="Nome do exercício"]');
     await nameInput.fill('Hack Squat editado');
     await nameInput.press('Tab');
-    await page.waitForTimeout(80);
+    await page.waitForFunction(() => window.__diaryFocusFixture.log.exercises[0].exerciseName === 'Hack Squat editado');
     await inspect('exercise name focus and blur');
     await page.screenshot({ path: path.join(out, 'actual-editor-six-saves.png') });
 
+    // Repeat the original trigger near the end of a long, internally-scrolled log.
+    const lastWeight = cards.last().locator('input[type="number"]').first();
+    await lastWeight.tap();
+    await page.evaluate(() => window.__setDiaryViewport({ height: 444, offsetTop: 35, pageTop: 35 }));
+    await inspect('last exercise focus with keyboard', 35, 444);
+    await page.evaluate(() => { document.activeElement?.blur(); window.__setDiaryViewport(null); });
+    await inspect('last exercise keyboard dismissed');
+
     await dialog.getByRole('button', { name: 'Fechar', exact: true }).click();
     await dialog.waitFor({ state: 'hidden' });
-    await page.waitForTimeout(100);
+    await page.waitForFunction(() => document.documentElement.getAttribute('data-diary-focus-lock') === null);
     const restored = await page.evaluate(() => ({ lock: document.documentElement.getAttribute('data-diary-focus-lock'), visibility: getComputedStyle(document.getElementById('root')).visibility, x: window.scrollX, y: window.scrollY }));
     assert.equal(restored.lock, null, 'Close must release scroll lock');
     assert.equal(restored.visibility, 'visible', 'Close must restore dashboard');
