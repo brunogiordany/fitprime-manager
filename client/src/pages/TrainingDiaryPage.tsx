@@ -1043,7 +1043,7 @@ export default function TrainingDiaryPage() {
           handleUpdateSet(exerciseIndex, setIndex, "loadType", nextValue as LoadType)
         }
       >
-        <SelectTrigger className="h-8 w-[118px] text-xs">
+        <SelectTrigger className="h-10 w-full text-sm">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -1062,31 +1062,31 @@ export default function TrainingDiaryPage() {
     
     if (loadType === "bodyweight") {
       return (
-        <Badge variant="outline" className="h-8 px-2.5 whitespace-nowrap">
+        <div className="h-10 w-full rounded-md border border-input bg-muted/30 flex items-center justify-center text-sm font-medium">
           PC
-        </Badge>
+        </div>
       );
     }
     
     if (loadType === "no_load") {
       return (
-        <Badge variant="outline" className="h-8 px-2.5 whitespace-nowrap text-muted-foreground">
+        <div className="h-10 w-full rounded-md border border-input bg-muted/30 flex items-center justify-center text-xs text-muted-foreground">
           Sem carga
-        </Badge>
+        </div>
       );
     }
     
     return (
-      <div className="flex items-center gap-1">
+      <div className="relative">
         {loadType === "bodyweight_plus" && (
-          <span className="text-xs font-semibold text-muted-foreground">+</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">+</span>
         )}
         <Input
           type="number"
           inputMode="decimal"
           step="0.5"
           min="0"
-          className="h-8 w-16 text-center text-sm"
+          className={`h-10 w-full text-center text-sm ${loadType === "bodyweight_plus" ? "pl-6" : ""}`}
           placeholder="0"
           value={set.weight ?? ""}
           onChange={(e) => handleUpdateSet(
@@ -1096,7 +1096,65 @@ export default function TrainingDiaryPage() {
             e.target.value ? parseFloat(e.target.value) : undefined
           )}
         />
-        <span className="text-xs text-muted-foreground">kg</span>
+      </div>
+    );
+  };
+  
+  const renderSetMetricsEditor = (
+    exercise: ExerciseData,
+    exerciseIndex: number,
+    set: SetData,
+    setIndex: number
+  ) => {
+    const loadType = set.loadType || exercise.loadType || "kg";
+    const loadLabel = loadType === "bodyweight_plus"
+      ? "Extra (kg)"
+      : loadType === "kg"
+        ? "Carga (kg)"
+        : "Carga";
+    
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="min-w-0 space-y-1">
+          <Label className="text-[11px] text-muted-foreground">Tipo de carga</Label>
+          {renderSetLoadTypeSelector(exercise, exerciseIndex, set, setIndex)}
+        </div>
+        <div className="min-w-0 space-y-1">
+          <Label className="text-[11px] text-muted-foreground">{loadLabel}</Label>
+          {renderLoadEditor(exercise, exerciseIndex, set, setIndex)}
+        </div>
+        <div className="min-w-0 space-y-1">
+          <Label className="text-[11px] text-muted-foreground">Repetições</Label>
+          <Input
+            type="number"
+            inputMode="numeric"
+            className="h-10 w-full text-center text-sm"
+            placeholder="0"
+            value={set.reps ?? ""}
+            onChange={(e) => handleUpdateSet(
+              exerciseIndex,
+              setIndex,
+              "reps",
+              e.target.value ? parseInt(e.target.value) : undefined
+            )}
+          />
+        </div>
+        <div className="min-w-0 space-y-1">
+          <Label className="text-[11px] text-muted-foreground">Descanso (s)</Label>
+          <Input
+            type="number"
+            inputMode="numeric"
+            className="h-10 w-full text-center text-sm"
+            placeholder="60"
+            value={set.restTime ?? ""}
+            onChange={(e) => handleUpdateSet(
+              exerciseIndex,
+              setIndex,
+              "restTime",
+              e.target.value ? parseInt(e.target.value) : undefined
+            )}
+          />
+        </div>
       </div>
     );
   };
@@ -1126,7 +1184,7 @@ export default function TrainingDiaryPage() {
           inputMode="decimal"
           step="0.5"
           min="0"
-          className="h-8 w-16 text-center text-sm"
+          className="h-10 w-20 text-center text-sm"
           placeholder="0"
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
@@ -2715,32 +2773,7 @@ export default function TrainingDiaryPage() {
                                         ))}
                                       </SelectContent>
                                     </Select>
-                                    
-                                    {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
-                                    {renderLoadEditor(exercise, exIndex, set, setIndex)}
-                                    
-                                    <div className="flex items-center gap-1">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-14 text-center text-sm"
-                                        placeholder="0"
-                                        value={set.reps || ""}
-                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'reps', e.target.value ? parseInt(e.target.value) : undefined)}
-                                      />
-                                      <span className="text-xs text-muted-foreground">reps</span>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-1">
-                                      <Input
-                                        type="number"
-                                        className="h-8 w-14 text-center text-sm"
-                                        placeholder="60"
-                                        value={set.restTime || ""}
-                                        onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restTime', e.target.value ? parseInt(e.target.value) : undefined)}
-                                      />
-                                      <span className="text-xs text-muted-foreground">s</span>
-                                    </div>
-                                    
+
                                     <Button
                                       variant="ghost"
                                       size="icon"
@@ -2749,6 +2782,10 @@ export default function TrainingDiaryPage() {
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
+                                  </div>
+                                  
+                                  <div className="mt-3 pl-9">
+                                    {renderSetMetricsEditor(exercise, exIndex, set, setIndex)}
                                   </div>
                                   
                                   {/* Área expandida para Drop Set */}
@@ -3084,33 +3121,10 @@ export default function TrainingDiaryPage() {
                                     )}
                                   </div>
                                   
-                                  {/* Linha 2: Peso + Reps + Descanso */}
+                                  {/* Linha 2: dados da série otimizados para mobile */}
                                   {isEditing ? (
-                                    <div className="flex items-center gap-2 pl-9 flex-wrap">
-                                      {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
-                                      {renderLoadEditor(exercise, exIndex, set, setIndex)}
-                                      
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-14 text-center text-sm"
-                                          placeholder="0"
-                                          value={set.reps || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'reps', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs text-muted-foreground">reps</span>
-                                      </div>
-                                      
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          type="number"
-                                          className="h-8 w-14 text-center text-sm"
-                                          placeholder="60"
-                                          value={set.restTime || ""}
-                                          onChange={(e) => handleUpdateSet(exIndex, setIndex, 'restTime', e.target.value ? parseInt(e.target.value) : undefined)}
-                                        />
-                                        <span className="text-xs text-muted-foreground">s</span>
-                                      </div>
+                                    <div className="pl-9">
+                                      {renderSetMetricsEditor(exercise, exIndex, set, setIndex)}
                                     </div>
                                   ) : (
                                     <div className="flex items-center gap-2 pl-9 flex-wrap">
@@ -3597,40 +3611,7 @@ export default function TrainingDiaryPage() {
                                       ))}
                                     </SelectContent>
                                   </Select>
-                                  
-                                  {renderSetLoadTypeSelector(exercise, exIndex, set, setIndex)}
-                                  {renderLoadEditor(exercise, exIndex, set, setIndex)}
-                                  
-                                  <div className="flex items-center gap-1">
-                                    <Input
-                                      type="number"
-                                      className="h-8 w-14 text-center text-sm"
-                                      placeholder="0"
-                                      value={set.reps || ''}
-                                      onChange={(e) => {
-                                        const updated = [...currentExercises];
-                                        updated[exIndex].sets[setIndex].reps = e.target.value ? parseInt(e.target.value) : undefined;
-                                        setCurrentExercises(updated);
-                                      }}
-                                    />
-                                    <span className="text-xs text-muted-foreground">reps</span>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-1">
-                                    <Input
-                                      type="number"
-                                      className="h-8 w-14 text-center text-sm"
-                                      placeholder="60"
-                                      value={set.restTime || ''}
-                                      onChange={(e) => {
-                                        const updated = [...currentExercises];
-                                        updated[exIndex].sets[setIndex].restTime = e.target.value ? parseInt(e.target.value) : undefined;
-                                        setCurrentExercises(updated);
-                                      }}
-                                    />
-                                    <span className="text-xs text-muted-foreground">s</span>
-                                  </div>
-                                  
+
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -3647,6 +3628,10 @@ export default function TrainingDiaryPage() {
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
+                                </div>
+                                
+                                <div className="mt-3 pl-9">
+                                  {renderSetMetricsEditor(exercise, exIndex, set, setIndex)}
                                 </div>
                                 
                                 {/* Botões Toggle para Drop Set e Rest-Pause */}
