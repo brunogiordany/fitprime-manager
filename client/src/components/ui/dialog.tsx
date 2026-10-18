@@ -134,7 +134,7 @@ function DialogContent({
             // No JS-computed visualViewport offsets or heights and no stale gap
             // when the keyboard collapses. The opaque overlay is a second guard
             // against exposing the page behind the modal.
-            ? "inset-0 flex h-auto min-h-0 w-auto max-h-none max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 shadow-none sm:right-auto sm:bottom-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[90dvh] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:border sm:shadow-lg"
+            ? "top-0 right-0 bottom-0 left-0 flex h-auto min-h-0 w-auto max-h-none max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 shadow-none sm:top-[50%] sm:right-auto sm:bottom-auto sm:left-[50%] sm:h-auto sm:max-h-[90dvh] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:border sm:shadow-lg"
             // Unchanged layout for every other dialog in the application.
             : "left-2 right-2 top-2 bottom-2 grid w-auto max-h-none max-w-none gap-4 rounded-lg border p-4 shadow-lg sm:inset-auto sm:top-[50%] sm:left-[50%] sm:max-h-[90vh] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:p-6",
           className
