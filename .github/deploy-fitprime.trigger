@@ -1,4 +1,4 @@
 Deploy FitPrime production
 Reason: mobile diary layout cleanup + per-set load types + save error fix
-Target main: 14ca9943476c896593b8724f5f991d75738f8f14
-Authorized fallbacks: GitHub remote / gh CLI / git HTTPS read-only sync
+Target main: 388c28ad9db3c1d5c8432191d1f08d13857dfb16
+Deployment: pinned FitPrime Manus task + repeated authorized confirmations
