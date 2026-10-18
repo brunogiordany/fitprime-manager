@@ -4,14 +4,16 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const engine = process.env.DIARY_BROWSER === "webkit" ? "webkit" : "chromium";
 
 const url = process.env.DIARY_SMOKE_URL || "http://127.0.0.1:4173/diary-mobile-smoke.html";
 const shots = path.resolve(process.env.DIARY_SCREENSHOT_DIR || "test-artifacts/diary");
 fs.mkdirSync(shots, { recursive: true });
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
+  const browserType = engine === "webkit" ? webkit : chromium;
+  const browser = await browserType.launch({ headless: true, args: engine === "chromium" ? ["--no-sandbox"] : [] });
   let page;
   try {
     const context = await browser.newContext({
@@ -103,7 +105,7 @@ fs.mkdirSync(shots, { recursive: true });
     await page.setViewportSize({ width: 1280, height: 800 });
     await inspect("desktop layout preserved", false);
     await page.screenshot({ path: path.join(shots, "desktop.png") });
-    console.log("PASS: diary modal/mobile save viewport regression checks");
+    console.log("PASS (" + engine + "): diary modal/mobile save viewport regression checks");
   } catch (error) {
     console.error("FAIL:", error.stack || error.message);
     if (page) {
