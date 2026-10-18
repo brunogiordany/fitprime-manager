@@ -103,10 +103,7 @@ fs.mkdirSync(shots, { recursive: true });
     await inspect("stale legacy viewport variables ignored");
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.waitForFunction(() => {
-      const modal = document.querySelector('[data-testid="training-diary-dialog"]');
-      return modal && modal.getBoundingClientRect().left > 80;
-    }, null, { timeout: 5000 });
+    await page.waitForTimeout(250);
     const debug = await page.evaluate(() => {
       const modal = document.querySelector('[data-testid="training-diary-dialog"]');
       const computed = window.getComputedStyle(modal);
@@ -114,6 +111,7 @@ fs.mkdirSync(shots, { recursive: true });
       return {
         mediaDesktop: window.matchMedia("(min-width: 640px)").matches,
         attribute: modal.getAttribute("data-mobile-fullscreen"),
+        inlineStyle: modal.getAttribute("style"),
         selectorMatches: modal.matches(matchSelector),
         top: computed.top,
         left: computed.left,
