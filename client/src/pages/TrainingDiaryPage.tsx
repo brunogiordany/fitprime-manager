@@ -272,6 +272,7 @@ export default function TrainingDiaryPage() {
   const [expandedHistoryItem, setExpandedHistoryItem] = useState<number | null>(null); // Item expandido no histórico
   const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSavingLog, setIsSavingLog] = useState(false);
   
   // Estados para substituição de exercícios
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
@@ -590,9 +591,12 @@ export default function TrainingDiaryPage() {
     },
   });
   
+  // Editing a single field must not refetch and reinitialize the entire form.
+  // Refreshing the query here used to collapse/reset the mobile scroll context
+  // and could overwrite values while the iPhone keyboard was still open.
   const updateSet = trpc.trainingDiary.updateSet.useMutation({
-    onSuccess: () => {
-      refetchLogDetail();
+    onError: (error) => {
+      toast.error("Não foi possível salvar a série", { description: error.message });
     },
   });
   
@@ -795,7 +799,12 @@ export default function TrainingDiaryPage() {
         })),
         isExpanded: true,
       }));
-      setCurrentExercises(exercises);
+      // Keep which exercise cards the user opened or closed when a query
+      // refresh is actually necessary (e.g. after adding/removing a series).
+      setCurrentExercises(previous => exercises.map(exercise => ({
+        ...exercise,
+        isExpanded: previous.find(saved => saved.id === exercise.id)?.isExpanded ?? true,
+      })));
     }
   }, [logDetail]);
   
@@ -1014,18 +1023,69 @@ export default function TrainingDiaryPage() {
     });
   };
   
-  const handleUpdateSet = (exerciseIndex: number, setIndex: number, field: string, value: any) => {
-    const updatedExercises = [...currentExercises];
-    const set = updatedExercises[exerciseIndex].sets[setIndex];
-    (set as any)[field] = value;
-    setCurrentExercises(updatedExercises);
-    
-    // Se estiver editando um log existente, salvar automaticamente
-    if (set.id && isEditing) {
-      updateSet.mutate({
-        id: set.id,
-        [field]: value,
+  const handleSaveLog = async () => {
+    if (isSavingLog) return;
+    setIsSavingLog(true);
+    try {
+      const pending: Promise<unknown>[] = [];
+      currentExercises.forEach((exercise) => {
+        if (exercise.id && exercise.exerciseName.trim()) {
+          pending.push(updateExercise.mutateAsync({
+            id: exercise.id,
+            exerciseName: exercise.exerciseName.trim(),
+            notes: exercise.notes ?? undefined,
+          }));
+        }
+        exercise.sets.forEach((set) => {
+          if (set.id) {
+            pending.push(updateSet.mutateAsync({
+              id: set.id,
+              loadType: set.loadType || exercise.loadType || "kg",
+              weight: set.weight,
+              reps: set.reps,
+              restTime: set.restTime,
+              setType: set.setType,
+              isDropSet: set.isDropSet,
+              dropWeight: set.dropWeight,
+              dropReps: set.dropReps,
+              isRestPause: set.isRestPause,
+              restPauseWeight: set.restPauseWeight,
+              restPauseReps: set.restPauseReps,
+              restPausePause: set.restPausePause,
+            }));
+          }
+        });
       });
+      const results = await Promise.allSettled(pending);
+      const failed = results.filter(result => result.status === "rejected");
+      if (failed.length) {
+        toast.error(`Erro ao salvar ${failed.length} alteração(ões). Tente novamente.`);
+      } else {
+        toast.success("Alterações salvas!");
+      }
+    } finally {
+      setIsSavingLog(false);
+    }
+  };
+
+  const handleUpdateSet = (exerciseIndex: number, setIndex: number, field: string, value: any) => {
+    const set = currentExercises[exerciseIndex]?.sets[setIndex];
+    if (!set) return;
+    // Update immutably so one field never mutates a shared React/query object.
+    setCurrentExercises(previous => previous.map((exercise, index) =>
+      index === exerciseIndex
+        ? {
+            ...exercise,
+            sets: exercise.sets.map((item, itemIndex) =>
+              itemIndex === setIndex ? { ...item, [field]: value } : item
+            ),
+          }
+        : exercise
+    ));
+
+    // Keep the existing auto-save behavior, without refetching the full form.
+    if (set.id && isEditing) {
+      updateSet.mutate({ id: set.id, [field]: value });
     }
   };
   
@@ -2919,8 +2979,8 @@ export default function TrainingDiaryPage() {
             setIsEditing(false);
           }
          }}>
-          <DialogContent className="w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] h-[calc(100dvh-0.75rem)] max-h-[calc(100dvh-0.75rem)] sm:w-full sm:max-w-4xl sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden p-3 sm:p-6 rounded-xl sm:rounded-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
-            <DialogHeader className="flex-shrink-0 pr-6">
+          <DialogContent className="flex min-h-0 min-w-0 flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-4xl sm:max-h-[90dvh] sm:rounded-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <DialogHeader className="shrink-0 border-b px-3 py-3 pr-11 sm:px-6 sm:pr-12">
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Dumbbell className="h-5 w-5 text-primary" />
@@ -2953,7 +3013,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain -mx-3 px-3 sm:-mx-6 sm:px-6 pb-6 [scrollbar-gutter:stable]">
+            <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 pb-6 pt-3 sm:px-6 [scrollbar-gutter:stable]">
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -3292,77 +3352,46 @@ export default function TrainingDiaryPage() {
             )}
             </div>
             
-            <DialogFooter className="flex-shrink-0 -mx-3 sm:-mx-6 px-3 sm:px-6 pt-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] border-t bg-background/100 shadow-[0_-10px_28px_rgba(0,0,0,0.12)]">
+            <DialogFooter className="relative z-10 shrink-0 border-t bg-background px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-3">
               {logDetail?.status === 'in_progress' && (
-                <div className="w-full grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
+                    className="order-3 h-9 w-full sm:order-1 sm:h-10 sm:w-auto"
                     onClick={() => setShowLogDetailModal(false)}
                   >
                     Fechar
                   </Button>
-                  <Button 
+                  <Button
                     variant="secondary"
-                    className="w-full sm:w-auto h-11 sm:h-10 px-2"
-                    onClick={() => {
-                      // Salvar nome/tipo de carga dos exercícios e todas as séries atuais
-                      currentExercises.forEach((ex) => {
-                        if (ex.id && ex.exerciseName.trim()) {
-                          updateExercise.mutate({
-                            id: ex.id,
-                            exerciseName: ex.exerciseName.trim(),
-                            notes: ex.notes ?? undefined,
-                          });
-                        }
-                        ex.sets.forEach((set) => {
-                          if (set.id) {
-                            updateSet.mutate({
-                              id: set.id,
-                              loadType: set.loadType || ex.loadType || "kg",
-                              weight: set.weight,
-                              reps: set.reps,
-                              restTime: set.restTime,
-                              setType: set.setType,
-                              isDropSet: set.isDropSet,
-                              dropWeight: set.dropWeight,
-                              dropReps: set.dropReps,
-                              isRestPause: set.isRestPause,
-                              restPauseWeight: set.restPauseWeight,
-                              restPauseReps: set.restPauseReps,
-                              restPausePause: set.restPausePause,
-                            });
-                          }
-                        });
-                      });
-                      toast.success("Alterações salvas!");
-                    }} 
-                    disabled={updateSet.isPending}
+                    className="order-1 h-11 w-full font-medium sm:order-2 sm:h-10 sm:w-auto"
+                    onClick={handleSaveLog}
+                    disabled={isSavingLog || updateSet.isPending}
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    {updateSet.isPending ? "Salvando..." : "Salvar"}
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSavingLog || updateSet.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                   <Button
-                    className="col-span-2 sm:col-span-1 w-full sm:w-auto h-12 sm:h-10 px-3 text-sm font-semibold sm:min-w-[170px]"
+                    className="order-2 h-11 w-full px-2 text-sm font-semibold sm:order-3 sm:h-10 sm:w-auto sm:min-w-[170px]"
                     onClick={handleCompleteLog}
-                    disabled={completeLog.isPending}
+                    disabled={completeLog.isPending || isSavingLog}
                   >
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    <CheckCircle2 className="mr-1.5 h-4 w-4 shrink-0" />
                     {completeLog.isPending ? "Finalizando..." : "Finalizar Treino"}
                   </Button>
-                  <Button 
-                    variant="outline"
-                    className="col-span-2 sm:col-span-1 w-full sm:w-auto h-10 px-2 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                  <Button
+                    variant="ghost"
+                    className="order-4 h-9 w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:h-10 sm:w-auto"
                     onClick={() => setShowDeleteLogConfirm(true)}
                     disabled={deleteLog.isPending}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Excluir
                   </Button>
                 </div>
               )}
               {logDetail?.status === 'completed' && (
-                <Button className="w-full sm:w-auto h-11 sm:h-10" variant="outline" onClick={() => setShowLogDetailModal(false)}>
+                <Button className="h-11 w-full sm:h-10 sm:w-auto" variant="outline" onClick={() => setShowLogDetailModal(false)}>
                   Fechar
                 </Button>
               )}
