@@ -95,6 +95,7 @@ function DialogContent({
   showCloseButton = true,
   mobileFullscreen = false,
   onEscapeKeyDown,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
@@ -103,6 +104,20 @@ function DialogContent({
   mobileFullscreen?: boolean;
 }) {
   const { isComposing } = useDialogComposition();
+
+  // Observe screen WIDTH, never the keyboard/visualViewport height on iOS.
+  const [desktopLayout, setDesktopLayout] = React.useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches
+  );
+
+  React.useEffect(() => {
+    if (!mobileFullscreen) return;
+    const query = window.matchMedia("(min-width: 640px)");
+    const update = () => setDesktopLayout(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, [mobileFullscreen]);
 
   const handleEscapeKeyDown = React.useCallback(
     (e: KeyboardEvent) => {
@@ -141,6 +156,14 @@ function DialogContent({
           className
         )}
         onEscapeKeyDown={handleEscapeKeyDown}
+        style={mobileFullscreen ? {
+          ...style,
+          top: desktopLayout ? "50%" : "0",
+          left: desktopLayout ? "50%" : "0",
+          right: desktopLayout ? "auto" : "0",
+          bottom: desktopLayout ? "auto" : "0",
+          transform: desktopLayout ? "translate(-50%, -50%)" : "none",
+        } : style}
         {...props}
       >
         {children}
