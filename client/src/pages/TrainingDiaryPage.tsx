@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  diaryDialogClassName,
+  diaryDialogHeaderClassName,
+  diaryDialogScrollClassName,
+  diaryDialogFooterClassName,
+  diaryDialogActionsClassName,
+} from "@/lib/diaryMobileLayout";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -274,7 +281,6 @@ export default function TrainingDiaryPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSavingLog, setIsSavingLog] = useState(false);
   const logDetailDialogRef = useRef<HTMLDivElement | null>(null);
-  const syncLogDetailViewportRef = useRef<() => void>(() => {});
   
   // Estados para substituição de exercícios
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
@@ -573,7 +579,9 @@ export default function TrainingDiaryPage() {
   
   const updateExercise = trpc.trainingDiary.updateExercise.useMutation({
     onError: (error) => {
-      toast.error("Erro ao atualizar exercício", { description: error.message });
+      toast.error("Erro ao atualizar exercício", {
+        id: "fitprime-diary-exercise-error", description: error.message,
+      });
     },
   });
   
@@ -598,7 +606,9 @@ export default function TrainingDiaryPage() {
   // and could overwrite values while the iPhone keyboard was still open.
   const updateSet = trpc.trainingDiary.updateSet.useMutation({
     onError: (error) => {
-      toast.error("Não foi possível salvar a série", { description: error.message });
+      toast.error("Não foi possível salvar a série", {
+        id: "fitprime-diary-set-error", description: error.message,
+      });
     },
   });
   
@@ -693,65 +703,14 @@ export default function TrainingDiaryPage() {
     });
   };
   
-  // iOS Safari/PWA: after a number input closes, the visual viewport and the
-  // layout viewport can briefly have different heights/offsets. A fixed modal
-  // based on top/bottom or 100dvh then leaves a gap under its footer.
-  // Bind only this training diary modal to the *visible* viewport, including
-  // after keyboard dismissal. Do not change other desktop/dialog layouts.
+  // Keep the page behind a mobile diary modal from smooth-scrolling when
+  // Safari tries to reveal an input. The dialog itself owns the only scrollbar.
   useEffect(() => {
     if (!showLogDetailModal) return;
-
     const root = document.documentElement;
-    const formerScrollBehavior = root.style.scrollBehavior;
-    // The site's global html { scroll-behavior: smooth } can animate the page
-    // underneath the Radix portal when iOS scrolls a focused input into view.
+    const previous = root.style.scrollBehavior;
     root.style.scrollBehavior = "auto";
-
-    const visual = window.visualViewport;
-    let frame: number | undefined;
-    const sync = () => {
-      frame = undefined;
-      const modal = logDetailDialogRef.current;
-      if (!modal) return;
-
-      if (window.matchMedia("(min-width: 640px)").matches) {
-        modal.style.removeProperty("--diary-viewport-top");
-        modal.style.removeProperty("--diary-viewport-height");
-        return;
-      }
-      const top = Math.max(0, visual?.offsetTop ?? 0);
-      const height = Math.max(240, visual?.height ?? window.innerHeight);
-      modal.style.setProperty("--diary-viewport-top", `${top}px`);
-      modal.style.setProperty("--diary-viewport-height", `${height}px`);
-    };
-    const requestSync = () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(sync);
-    };
-    syncLogDetailViewportRef.current = requestSync;
-    requestSync();
-
-    // iOS emits more than one resize as the keyboard transitions.
-    const settleTimers = [80, 250, 500].map(delay => window.setTimeout(requestSync, delay));
-    visual?.addEventListener("resize", requestSync);
-    visual?.addEventListener("scroll", requestSync);
-    window.addEventListener("resize", requestSync);
-    window.addEventListener("orientationchange", requestSync);
-    document.addEventListener("focusin", requestSync);
-    document.addEventListener("focusout", requestSync);
-
-    return () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      settleTimers.forEach(window.clearTimeout);
-      visual?.removeEventListener("resize", requestSync);
-      visual?.removeEventListener("scroll", requestSync);
-      window.removeEventListener("resize", requestSync);
-      window.removeEventListener("orientationchange", requestSync);
-      document.removeEventListener("focusin", requestSync);
-      document.removeEventListener("focusout", requestSync);
-      syncLogDetailViewportRef.current = () => {};
-      root.style.scrollBehavior = formerScrollBehavior;
-    };
+    return () => { root.style.scrollBehavior = previous; };
   }, [showLogDetailModal]);
 
   // Efeito para carregar exercícios quando abre modal de sessão com treino vinculado
@@ -1094,7 +1053,6 @@ export default function TrainingDiaryPage() {
     if (focused instanceof HTMLElement && logDetailDialogRef.current?.contains(focused)) {
       focused.blur();
     }
-    syncLogDetailViewportRef.current();
     setIsSavingLog(true);
     try {
       const pending: Promise<unknown>[] = [];
@@ -1129,15 +1087,16 @@ export default function TrainingDiaryPage() {
       const results = await Promise.allSettled(pending);
       const failed = results.filter(result => result.status === "rejected");
       if (failed.length) {
-        toast.error(`Erro ao salvar ${failed.length} alteração(ões). Tente novamente.`);
+        toast.error(`Erro ao salvar ${failed.length} alteração(ões). Tente novamente.`, {
+          id: "fitprime-diary-save", duration: 4000,
+        });
       } else {
-        toast.success("Alterações salvas!");
+        toast.success("Alterações salvas!", {
+          id: "fitprime-diary-save", duration: 1800,
+        });
       }
     } finally {
       setIsSavingLog(false);
-      syncLogDetailViewportRef.current();
-      // iOS keyboard has an animated close; remeasure after it settles too.
-      window.setTimeout(() => syncLogDetailViewportRef.current(), 300);
     }
   };
 
@@ -1219,7 +1178,7 @@ export default function TrainingDiaryPage() {
           inputMode="decimal"
           step="0.5"
           min="0"
-          className={`h-10 w-full text-center text-sm ${loadType === "bodyweight_plus" ? "pl-6" : ""}`}
+          className={`h-10 w-full text-center text-base sm:text-sm ${loadType === "bodyweight_plus" ? "pl-6" : ""}`}
           placeholder="0"
           value={set.weight ?? ""}
           onChange={(e) => handleUpdateSet(
@@ -1261,7 +1220,7 @@ export default function TrainingDiaryPage() {
           <Input
             type="number"
             inputMode="numeric"
-            className="h-10 w-full text-center text-sm"
+            className="h-10 w-full text-center text-base sm:text-sm"
             placeholder="0"
             value={set.reps ?? ""}
             onChange={(e) => handleUpdateSet(
@@ -1277,7 +1236,7 @@ export default function TrainingDiaryPage() {
           <Input
             type="number"
             inputMode="numeric"
-            className="h-10 w-full text-center text-sm"
+            className="h-10 w-full text-center text-base sm:text-sm"
             placeholder="60"
             value={set.restTime ?? ""}
             onChange={(e) => handleUpdateSet(
@@ -3054,10 +3013,12 @@ export default function TrainingDiaryPage() {
          }}>
           <DialogContent
             ref={logDetailDialogRef}
-            className="left-0 right-0 top-[var(--diary-viewport-top,0px)] bottom-auto h-[var(--diary-viewport-height,100dvh)] max-h-[var(--diary-viewport-height,100dvh)] w-full max-w-none min-h-0 min-w-0 flex flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[90dvh] sm:w-full sm:max-w-4xl sm:rounded-lg sm:border"
+            mobileFullscreen
+            data-testid="training-diary-dialog"
+            className={diaryDialogClassName}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <DialogHeader className="shrink-0 border-b px-3 py-3 pr-11 sm:px-6 sm:pr-12">
+            <DialogHeader className={diaryDialogHeaderClassName}>
               <DialogTitle className="flex items-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Dumbbell className="h-5 w-5 text-primary" />
@@ -3090,7 +3051,7 @@ export default function TrainingDiaryPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 pb-8 pt-3 sm:px-6 [scrollbar-gutter:stable]" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div data-testid="training-diary-scroll" className={diaryDialogScrollClassName} style={{ WebkitOverflowScrolling: "touch" }}>
             {logDetail && (
               <div className="space-y-6">
                 {/* Status e progresso */}
@@ -3152,7 +3113,7 @@ export default function TrainingDiaryPage() {
                             <div className="min-w-0 flex-1">
                               {isEditing && logDetail.status === 'in_progress' ? (
                                 <Input
-                                  className="font-semibold text-sm sm:text-base h-9"
+                                  className="font-semibold text-base h-9"
                                   value={exercise.exerciseName}
                                   placeholder="Nome do exercício"
                                   onChange={(e) => handleExerciseNameChange(exIndex, e.target.value)}
@@ -3429,9 +3390,9 @@ export default function TrainingDiaryPage() {
             )}
             </div>
             
-            <DialogFooter className="relative z-10 shrink-0 border-t bg-background px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-3">
+            <DialogFooter data-testid="training-diary-footer" className={diaryDialogFooterClassName}>
               {logDetail?.status === 'in_progress' && (
-                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+                <div className={diaryDialogActionsClassName}>
                   <Button
                     variant="outline"
                     className="order-3 h-9 w-full sm:order-1 sm:h-10 sm:w-auto"

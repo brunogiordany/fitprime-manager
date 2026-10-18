@@ -1,0 +1,77 @@
+name: Verify FitPrime mobile diary UI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - fix/diary-iphone-fullscreen-20261017
+    paths:
+      - "client/src/components/ui/dialog.tsx"
+      - "client/src/pages/TrainingDiaryPage.tsx"
+      - "client/src/App.tsx"
+      - "client/src/index.css"
+      - "client/src/lib/diaryMobileLayout.ts"
+      - "client/src/__smoke__/DiaryMobileSmoke.tsx"
+      - "client/diary-mobile-smoke.html"
+      - "scripts/test-diary-mobile.cjs"
+      - ".github/workflows/test-diary-mobile-ui.yml"
+
+jobs:
+  mobile-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install application
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify production build
+        run: pnpm build
+
+      - name: Install isolated Playwright runner
+        run: |
+          npm install --prefix /tmp/fitprime-playwright --no-save --no-package-lock playwright@1.56.1
+          node /tmp/fitprime-playwright/node_modules/playwright/cli.js install --with-deps chromium webkit
+
+      - name: Start dev-only smoke fixture
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4173 > /tmp/fitprime-vite.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:4173/diary-mobile-smoke.html; then
+              echo "FitPrime fixture ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/fitprime-vite.log
+          exit 1
+
+      - name: Verify 6 saves and responsive coverage in Chromium
+        env:
+          PLAYWRIGHT_MODULE: /tmp/fitprime-playwright/node_modules/playwright
+          DIARY_BROWSER: chromium
+          DIARY_SCREENSHOT_DIR: test-artifacts/diary/chromium
+        run: node scripts/test-diary-mobile.cjs
+
+      - name: Verify 6 saves and responsive coverage in WebKit
+        env:
+          PLAYWRIGHT_MODULE: /tmp/fitprime-playwright/node_modules/playwright
+          DIARY_BROWSER: webkit
+          DIARY_SCREENSHOT_DIR: test-artifacts/diary/webkit
+        run: node scripts/test-diary-mobile.cjs
+
+      - name: Preserve visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diary-mobile-chromium-screenshots
+          path: test-artifacts/diary
+          if-no-files-found: ignore
