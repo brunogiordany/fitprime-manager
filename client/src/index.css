@@ -503,3 +503,25 @@ html {
     transform: translateY(-1px);
   }
 }
+
+/* Diário de treino: viewport-edge mobile sheet independent of the iOS keyboard.
+   These are scoped to this one dialog so other FitPrime modals are unaffected. */
+@media (max-width: 639px) {
+  [data-slot="dialog-content"][data-mobile-fullscreen="true"] input,
+  [data-slot="dialog-content"][data-mobile-fullscreen="true"] textarea {
+    /* Prevent Safari from automatically zooming a focused 14px input. */
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 640px) {
+  [data-slot="dialog-content"][data-mobile-fullscreen="true"] {
+    /* Fullscreen mobile uses edge anchors; desktop must explicitly return to
+       centering rather than competing with the mobile top/left utilities. */
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+}
